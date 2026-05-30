@@ -1,0 +1,516 @@
+import 'package:bosskin/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+import '../../../core/utils/error_utils.dart';
+import 'package:intl/intl.dart';
+import '../../../data/models/department_model.dart';
+import '../../../data/models/employee.dart';
+import '../../../data/models/salary_grade.dart';
+import '../../../data/repositories/employee_repository.dart';
+import '../../../data/repositories/salary_grade_repository.dart';
+import '../../../data/services/api_service.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../widgets/department_picker_field.dart';
+import 'employee_locations_screen.dart';
+
+class EmployeeFormScreen extends StatefulWidget {
+  final Employee? employee;
+  final List<DepartmentFlat> departments;
+
+  const EmployeeFormScreen({
+    super.key,
+    this.employee,
+    required this.departments,
+  });
+
+  @override
+  State<EmployeeFormScreen> createState() => _EmployeeFormScreenState();
+}
+
+class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
+  final _form = GlobalKey<FormState>();
+  final _repo = EmployeeRepository();
+  final _gradeRepo = SalaryGradeRepository();
+
+  late final TextEditingController _fullName;
+  late final TextEditingController _email;
+  late final TextEditingController _phone;
+  late final TextEditingController _password;
+  late final TextEditingController _passwordConfirm;
+  late final TextEditingController _address;
+  late final TextEditingController _idCard;
+  late final TextEditingController _bankAccount;
+  late final TextEditingController _bankName;
+  late final TextEditingController _contractSalary;
+
+  Gender _gender = Gender.male;
+  DateTime? _dob;
+  DateTime _joinDate = DateTime.now();
+  int? _deptId;
+  int? _positionId;
+  int? _gradeId;
+
+  List<Map<String, dynamic>> _positions = [];
+  List<SalaryGrade> _grades = [];
+  bool _loadingPos = false;
+  bool _saving = false;
+
+  bool get _isEdit => widget.employee != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.employee;
+    _fullName = TextEditingController(text: e?.fullName ?? '');
+    _email = TextEditingController(text: e?.email ?? '');
+    _password = TextEditingController();
+    _passwordConfirm = TextEditingController();
+    _phone = TextEditingController(text: e?.phone ?? '');
+    _address = TextEditingController(text: e?.address ?? '');
+    _idCard = TextEditingController(text: e?.identityCard ?? '');
+    _bankAccount = TextEditingController(text: e?.bankAccount ?? '');
+    _bankName = TextEditingController(text: e?.bankName ?? '');
+    _contractSalary = TextEditingController(
+      text: e?.contractSalary != null ? e!.contractSalary!.toStringAsFixed(0) : '',
+    );
+    if (e != null) {
+      _gender = e.gender;
+      _dob = e.dateOfBirth;
+      _joinDate = e.joinDate;
+      _deptId = e.departmentId;
+      _positionId = e.positionId;
+      _gradeId = e.salaryGradeId;
+      _loadPositions(e.departmentId);
+    }
+    _loadGrades();
+  }
+
+  Future<void> _loadGrades() async {
+    try {
+      final list = await _gradeRepo.getAll();
+      if (mounted) setState(() => _grades = list);
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    for (final c in [
+      _fullName,
+      _email,
+      _password,
+      _passwordConfirm,
+      _phone,
+      _address,
+      _idCard,
+      _bankAccount,
+      _bankName,
+      _contractSalary,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _loadPositions(int deptId, {bool resetPosition = false}) async {
+    setState(() {
+      _loadingPos = true;
+      if (resetPosition) _positionId = null;
+    });
+    try {
+      final res = await ApiService.instance.dio
+          .get('/positions', queryParameters: {'departmentId': deptId});
+      if (!mounted) return;
+      final positions = List<Map<String, dynamic>>.from(res.data);
+      setState(() {
+        _positions = positions;
+        _loadingPos = false;
+        // Giữ positionId nếu nó tồn tại trong danh sách mới
+        if (_positionId != null &&
+            !positions.any((p) => p['id'] == _positionId)) {
+          _positionId = null;
+        }
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingPos = false);
+    }
+  }
+
+  Future<void> _pickDate(bool isDob) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: isDob ? (_dob ?? DateTime(1990)) : _joinDate,
+      firstDate: isDob ? DateTime(1950) : DateTime(2000),
+      lastDate: now,
+    );
+    if (picked == null) return;
+    setState(() {
+      isDob ? _dob = picked : _joinDate = picked;
+    });
+  }
+
+  Future<void> _save() async {
+    final s = AppLocalizations.of(context)!;
+    if (!_form.currentState!.validate()) return;
+    if (_deptId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.pleaseChooseDepartment)),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    final data = {
+      'fullName': _fullName.text.trim(),
+      'email': _email.text.trim(),
+      'phone': _phone.text.trim().isEmpty ? null : _phone.text.trim(),
+      'gender': _gender.name.toUpperCase(),
+      'dateOfBirth':
+          _dob != null ? DateFormat('yyyy-MM-dd').format(_dob!) : null,
+      'joinDate': DateFormat('yyyy-MM-dd').format(_joinDate),
+      'departmentId': _deptId,
+      'positionId': _positionId,
+      'salaryGradeId': _gradeId,
+      'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
+      'identityCard': _idCard.text.trim().isEmpty ? null : _idCard.text.trim(),
+      'bankAccount':
+          _bankAccount.text.trim().isEmpty ? null : _bankAccount.text.trim(),
+      'bankName': _bankName.text.trim().isEmpty ? null : _bankName.text.trim(),
+      'contractSalary': _contractSalary.text.trim().isEmpty
+          ? null
+          : double.tryParse(_contractSalary.text.trim().replaceAll(',', '')),
+    };
+    if (!_isEdit) {
+      data['password'] = _password.text;
+    }
+    try {
+      if (_isEdit) {
+        await _repo.update(widget.employee!.id, data);
+      } else {
+        await _repo.create(data);
+      }
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      setState(() => _saving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isEdit ? s.editInfoAdminTitle : s.addEmployee),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
+                  : Text(_isEdit ? s.save : s.create),
+            ),
+          ),
+        ],
+      ),
+      body: Form(
+        key: _form,
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            _section(s.basicInfo, [
+              _row([
+                _field(TextFormField(
+                  controller: _fullName,
+                  decoration: InputDecoration(labelText: '${s.fullName} *'),
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? s.requiredField : null,
+                )),
+                _field(TextFormField(
+                  controller: _email,
+                  decoration: InputDecoration(labelText: '${s.workEmail} *'),
+                  enabled: !_isEdit,
+                  validator: (v) =>
+                      v == null || !v.contains('@') ? s.invalidEmail : null,
+                )),
+              ]),
+              if (!_isEdit) ...[
+                const SizedBox(height: 12),
+                _row([
+                  _field(TextFormField(
+                    controller: _password,
+                    obscureText: true,
+                    decoration: InputDecoration(labelText: s.passwordLabel),
+                    validator: (v) {
+                      if (_isEdit) return null;
+                      if (v == null || v.length < 6) return s.atLeast6Chars;
+                      return null;
+                    },
+                  )),
+                  _field(TextFormField(
+                    controller: _passwordConfirm,
+                    obscureText: true,
+                    decoration:
+                        InputDecoration(labelText: s.confirmPasswordLabel),
+                    validator: (v) {
+                      if (_isEdit) return null;
+                      if (v == null || v.isEmpty) return s.requiredField;
+                      if (v != _password.text) return s.passwordMismatch;
+                      return null;
+                    },
+                  )),
+                ]),
+              ],
+              _row([
+                _field(TextFormField(
+                  controller: _phone,
+                  decoration: InputDecoration(labelText: s.phone),
+                  keyboardType: TextInputType.phone,
+                )),
+                _field(DropdownButtonFormField<Gender>(
+                  value: _gender,
+                  borderRadius: BorderRadius.circular(12),
+                  decoration: InputDecoration(labelText: '${s.gender} *'),
+                  items: [
+                    DropdownMenuItem(
+                        value: Gender.male, child: Text(s.genderMale)),
+                    DropdownMenuItem(
+                        value: Gender.female, child: Text(s.genderFemale)),
+                    DropdownMenuItem(
+                        value: Gender.other, child: Text(s.genderOther)),
+                  ],
+                  onChanged: (v) => setState(() => _gender = v!),
+                )),
+              ]),
+              _row([
+                _field(_datePicker(s.dateOfBirth, _dob, () => _pickDate(true))),
+                _field(_datePicker(
+                    '${s.joinDate} *', _joinDate, () => _pickDate(false))),
+              ]),
+            ]),
+            const SizedBox(height: 28),
+            _section(s.departmentAndPosition, [
+              _row([
+                _field(DepartmentPickerField(
+                  departments: widget.departments,
+                  value: _deptId,
+                  label: '${s.department} *',
+                  onChanged: (v) {
+                    setState(() => _deptId = v);
+                    if (v != null) _loadPositions(v, resetPosition: true);
+                  },
+                )),
+                _field(_loadingPos
+                    ? InputDecorator(
+                        decoration:
+                            InputDecoration(labelText: s.position),
+                        child: LinearProgressIndicator(),
+                      )
+                    : DropdownButtonFormField<int>(
+                        value: _positions.any((p) => p['id'] == _positionId)
+                            ? _positionId
+                            : null,
+                        borderRadius: BorderRadius.circular(12),
+                        decoration: InputDecoration(labelText: s.position),
+                        items: _positions
+                            .map((p) => DropdownMenuItem<int>(
+                                  value: p['id'] as int,
+                                  child: Text(p['name'] as String),
+                                ))
+                            .toList(),
+                        onChanged: _deptId == null
+                            ? null
+                            : (v) => setState(() => _positionId = v),
+                      )),
+              ]),
+            ]),
+            const SizedBox(height: 28),
+            _section(s.salaryGrade, [
+              _row([
+                _field(DropdownButtonFormField<int>(
+                  value: _grades.any((g) => g.id == _gradeId) ? _gradeId : null,
+                  borderRadius: BorderRadius.circular(12),
+                  decoration: InputDecoration(labelText: s.salaryGrade),
+                  items: [
+                    const DropdownMenuItem<int>(value: null, child: Text('—')),
+                    ..._grades.map((g) => DropdownMenuItem<int>(
+                          value: g.id,
+                          child: Text('${g.code} · ${g.name}'),
+                        )),
+                  ],
+                  onChanged: (v) => setState(() => _gradeId = v),
+                )),
+                _field(TextFormField(
+                  controller: _contractSalary,
+                  decoration: const InputDecoration(
+                    labelText: 'Lương hợp đồng (VNĐ)',
+                    hintText: 'VD: 20000000',
+                  ),
+                  keyboardType: TextInputType.number,
+                )),
+              ]),
+            ]),
+            const SizedBox(height: 28),
+            _section(s.additionalInfo, [
+              TextFormField(
+                controller: _address,
+                decoration: InputDecoration(labelText: s.address),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              _row([
+                _field(TextFormField(
+                  controller: _idCard,
+                  decoration: InputDecoration(labelText: s.identityCardLabel),
+                )),
+                _field(const SizedBox()),
+              ]),
+            ]),
+            const SizedBox(height: 28),
+            _section(s.bankInfo, [
+              _row([
+                _field(TextFormField(
+                  controller: _bankAccount,
+                  decoration: InputDecoration(labelText: s.bankAccountLabel),
+                )),
+                _field(TextFormField(
+                  controller: _bankName,
+                  decoration: InputDecoration(labelText: s.bankNameLabel),
+                )),
+              ]),
+            ]),
+            if (widget.employee != null) ...[
+              const SizedBox(height: 28),
+              _section(s.checkInRadius, [
+                _EmployeeLocationsPreview(
+                  employeeId: widget.employee!.id,
+                  employeeName: widget.employee!.fullName,
+                ),
+              ]),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _section(String title, List<Widget> children) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Divider(height: 16),
+          ...children,
+        ],
+      );
+
+  Widget _row(List<Widget> children) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: children
+              .expand((w) => [Expanded(child: w), const SizedBox(width: 16)])
+              .toList()
+            ..removeLast(),
+        ),
+      );
+
+  Expanded _field(Widget child) => Expanded(child: child);
+
+  Widget _datePicker(String label, DateTime? value, VoidCallback onTap) =>
+      InkWell(
+        onTap: onTap,
+        child: InputDecorator(
+          decoration: InputDecoration(
+              labelText: label,
+              suffixIcon: const Icon(Icons.calendar_today, size: 18)),
+          child: Text(
+            value != null ? DateFormat('dd/MM/yyyy').format(value) : '—',
+            style: TextStyle(color: value != null ? null : Colors.grey[500]),
+          ),
+        ),
+      );
+}
+
+class _EmployeeLocationsPreview extends StatefulWidget {
+  final int employeeId;
+  final String employeeName;
+
+  const _EmployeeLocationsPreview({
+    required this.employeeId,
+    required this.employeeName,
+  });
+
+  @override
+  State<_EmployeeLocationsPreview> createState() =>
+      _EmployeeLocationsPreviewState();
+}
+
+class _EmployeeLocationsPreviewState
+    extends State<_EmployeeLocationsPreview> {
+  final _api = ApiService.instance;
+  List<Map<String, dynamic>> _locations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final list = await _api.get<List<Map<String, dynamic>>>(
+        '/employees/${widget.employeeId}/locations',
+        (d) => (d as List).map((e) => Map<String, dynamic>.from(e)).toList(),
+      );
+      if (mounted) setState(() => _locations = list);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ..._locations.map((loc) => ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.location_pin,
+                  color: AppTheme.error, size: 20),
+              title: Text(loc['name'] ?? '',
+                  style: const TextStyle(fontSize: 13)),
+              subtitle: Text(
+                '${(loc['latitude'] as num?)?.toStringAsFixed(5) ?? ''}, '
+                '${(loc['longitude'] as num?)?.toStringAsFixed(5) ?? ''}  '
+                '· ${loc['radiusMeters']}m',
+                style: const TextStyle(fontSize: 11),
+              ),
+            )),
+        OutlinedButton.icon(
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EmployeeLocationsScreen(
+                  employeeId: widget.employeeId,
+                  employeeName: widget.employeeName,
+                ),
+              ),
+            );
+            _load();
+          },
+          icon: const Icon(Icons.edit_location_alt_outlined, size: 16),
+          label: Text(_locations.isEmpty ? s.addLocation : s.editLocation),
+        ),
+      ],
+    );
+  }
+}

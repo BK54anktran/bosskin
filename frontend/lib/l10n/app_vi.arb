@@ -1,0 +1,690 @@
+﻿{
+  "@@locale": "vi",
+  "appName": "BossKin",
+  "menu": "Menu",
+  "notifications": "Thông báo",
+  "dashboard": "Tổng quan",
+  "employees": "Nhân viên",
+  "departments": "Phòng ban",
+  "shifts": "Ca làm",
+  "roles": "Phân quyền",
+  "attendance": "Chấm công",
+  "checkInOut": "Check-in / Check-out",
+  "attendanceRequests": "Yêu cầu chấm công",
+  "leaves": "Nghỉ phép",
+  "payroll": "Bảng lương",
+  "profile": "Thông tin cá nhân",
+  "editRequests": "Yêu cầu chỉnh sửa",
+  "personalInfo": "Thông tin cá nhân",
+  "logout": "Đăng xuất",
+  "language": "Ngôn ngữ",
+  "vietnamese": "Tiếng Việt",
+  "english": "English",
+  "selectLanguage": "Chọn ngôn ngữ",
+  "save": "Lưu",
+  "cancel": "Hủy",
+  "confirm": "Xác nhận",
+  "retry": "Thử lại",
+  "close": "Đóng",
+  "loading": "Đang tải...",
+  "sendRequest": "Gửi yêu cầu chỉnh sửa",
+  "saveChanges": "Lưu thay đổi",
+  "editInfoTitle": "Yêu cầu chỉnh sửa thông tin cá nhân",
+  "editInfoAdminTitle": "Chỉnh sửa thông tin cá nhân",
+  "editInfoSubtitle": "Thay đổi sẽ được gửi cho admin duyệt",
+  "workInfo": "Thông tin công việc",
+  "employeeCode": "Mã nhân viên",
+  "department": "Phòng ban",
+  "position": "Chức vụ",
+  "address": "Địa chỉ",
+  "workEmail": "Email công việc",
+  "joinDate": "Ngày vào làm",
+  "fullName": "Họ và tên",
+  "gender": "Giới tính",
+  "genderMale": "Nam",
+  "genderFemale": "Nữ",
+  "genderOther": "Khác",
+  "dateOfBirth": "Ngày sinh",
+  "phone": "Số điện thoại",
+  "personalEmail": "Email cá nhân",
+  "avatarUrl": "URL ảnh đại diện",
+  "updateAvatarTitle": "Cập nhật ảnh đại diện",
+  "avatarUrlLabel": "URL ảnh đại diện",
+  "avatarUrlHint": "https://...",
+  "currentPassword": "Mật khẩu hiện tại",
+  "newPassword": "Mật khẩu mới",
+  "confirmPassword": "Xác nhận mật khẩu mới",
+  "changePassword": "Đổi mật khẩu",
+  "passwordNote": "Mật khẩu mới sẽ có hiệu lực cho lần đăng nhập tiếp theo",
+  "noChanges": "Không có thông tin nào thay đổi",
+  "chooseDate": "Chọn ngày",
+  "dateCancel": "Hủy",
+  "dateOk": "OK",
+  "chooseLanguage": "Chọn ngôn ngữ",
+  "vietnameseShort": "Tiếng Việt",
+  "englishShort": "English",
+  "user": "Người dùng",
+  "admin": "Quản trị viên",
+  "employee": "Nhân viên",
+  "profileLoadError": "Không thể tải thông tin",
+  "avatarUpdatedSuccess": "Cập nhật ảnh đại diện thành công",
+  "saveSuccess": "Lưu thành công",
+  "requestSentSuccess": "Đã gửi yêu cầu mới, đơn chờ cũ (nếu có) đã được hủy tự động",
+  "companyManagementTitle": "Quản lý công ty",
+  "companyManagementSubtitle": "Quản lý tất cả công ty trên nền tảng BossKin",
+  "createCompany": "Tạo công ty",
+  "createCompanyNew": "Tạo công ty mới",
+  "companyInfoSection": "Thông tin công ty",
+  "adminAccountSection": "Tài khoản Admin công ty",
+  "accountUsedToLoginSystem": "Tài khoản dùng để đăng nhập vào hệ thống",
+  "companyName": "Tên công ty *",
+  "companyCode": "Mã công ty * (VD: ACME)",
+  "companyCodeHint": "Viết hoa, không dấu",
+  "phoneNumber": "Số điện thoại",
+  "domain": "Domain",
+  "contactEmail": "Email liên hệ",
+  "adminEmailLabel": "Email admin *",
+  "passwordLabel": "Mật khẩu *",
+  "invalidEmail": "Email không hợp lệ",
+  "atLeast6Chars": "Ít nhất 6 ký tự",
+  "genericError": "Đã có lỗi xảy ra",
+  "companyLoadError": "Không thể tải danh sách công ty",
+  "companyLoginError": "Không thể đăng nhập vào công ty",
+  "requiredField": "Bắt buộc",
+  "noCompaniesYet": "Chưa có công ty nào",
+  "signIn": "Đăng nhập",
+  "welcomeBack": "Chào mừng trở lại! Vui lòng đăng nhập.",
+  "serverSettings": "Cài đặt server",
+  "serverAddress": "Địa chỉ server",
+  "enterServerAddress": "Nhập IP hoặc domain của server:",
+  "serverHint": "http://192.168.x.x:8080",
+  "loginFailed": "Email hoặc mật khẩu không đúng",
+  "passwordMinLength": "Mật khẩu ít nhất 6 ký tự",
+  "todayAttendance": "Chấm công hôm nay",
+  "viewAll": "Xem tất cả",
+  "recentPayroll": "Bảng lương gần đây",
+  "viewDetails": "Xem chi tiết",
+  "totalSalary": "Tổng chi lương",
+  "employeeCount": "Số nhân viên",
+  "paidStatus": "Đã thanh toán",
+  "present": "Có mặt",
+  "leave": "Nghỉ phép",
+  "absent": "Vắng mặt",
+  "late": "Đi muộn",
+  "onTime": "Đúng giờ",
+  "workStatus": "Trạng thái",
+  "earlyIn": "Vào sớm",
+  "lateIn": "Vào muộn",
+  "earlyOut": "Về sớm",
+  "lateOut": "Về muộn",
+  "overtime": "Tăng ca",
+  "todayStatistics": "Thống kê hôm nay",
+  "email": "Email",
+  "adminLoginTitle": "Đăng nhập quản trị",
+  "systemAdministrator": "SYSTEM ADMINISTRATOR",
+  "adminLoginSubtitle": "Chỉ dành cho quản trị viên hệ thống BossKin.",
+  "backToCompanyLogin": "← Quay lại đăng nhập công ty",
+  "loadRequestsError": "Không thể tải danh sách",
+  "approveRequestFor": "Đã duyệt yêu cầu của {name}",
+  "rejectRequestFor": "Đã từ chối yêu cầu của {name}",
+  "rejectRequestTitle": "Từ chối yêu cầu của {name}",
+  "rejectionReasonLabel": "Lý do từ chối",
+  "enterReason": "Nhập lý do...",
+  "noPendingRequests": "Không có yêu cầu nào đang chờ",
+  "noProcessedRequests": "Chưa có yêu cầu nào được xử lý",
+  "chooseTime": "Chọn giờ",
+  "shiftAssignmentsTab": "Phân công ca",
+  "shiftListTab": "Danh sách ca",
+  "createShiftTitle": "Tạo ca làm mới",
+  "editShiftTitle": "Sửa ca làm",
+  "createShift": "Tạo ca mới",
+  "deleteShiftAssignmentWarning": "Ca này có thể đã có dữ liệu chấm công và yêu cầu sửa giờ liên quan. Xóa ca sẽ xóa toàn bộ dữ liệu đó. Bạn có chắc muốn xóa?",
+  "deleteShiftTitle": "Xóa ca làm",
+  "deleteShiftPrompt": "Xóa ca \"{name}\"?",
+  "shiftNameLabel": "Tên ca *",
+  "shiftNameRequired": "Nhập tên ca",
+  "enterShiftName": "Nhập tên ca",
+  "shiftCodeLabel": "Mã ca *",
+  "shiftCodeRequired": "Nhập mã ca",
+  "enterShiftCode": "Nhập mã ca",
+  "shiftTypeLabel": "Loại ca",
+  "shiftStartLabel": "Giờ bắt đầu",
+  "shiftEndLabel": "Giờ kết thúc",
+  "shiftBreakStartLabel": "Nghỉ trưa từ",
+  "shiftBreakEndLabel": "Nghỉ trưa đến",
+  "displayColor": "Màu hiển thị",
+  "applyToDepartments": "Áp dụng cho phòng ban",
+  "noDepartments": "Không có phòng ban",
+  "workingHours": "Giờ làm",
+  "shiftEditTooltip": "Sửa",
+  "shiftDeleteTooltip": "Xóa",
+  "noShiftsYet": "Chưa có ca làm nào. Tạo ca mới để bắt đầu.",
+  "shift": "Ca làm",
+  "breakTime": "Thời gian nghỉ",
+  "totalTime": "Tổng thời gian",
+  "dayHours": "Thời gian ngày",
+  "dayOT": "Tăng ca ngày",
+  "nightHours": "Thời gian đêm",
+  "nightOT": "Tăng ca đêm",
+  "action": "Hành động",
+  "date": "Ngày",
+  "createdAt": "Tạo lúc",
+  "note": "Ghi chú",
+  "response": "Phản hồi",
+  "chooseMonth": "Chọn tháng",
+  "year": "Năm",
+  "month": "Tháng",
+  "refresh": "Làm mới",
+  "edit": "Chỉnh sửa",
+  "delete": "Xóa",
+  "rowsPerPage": "Số hàng / trang",
+  "previousPage": "Trang trước",
+  "nextPage": "Trang sau",
+  "departmentShort": "Phòng ban",
+  "all": "Tất cả",
+  "employeeShort": "Nhân viên",
+  "selectEmployeeToViewTimesheet": "Chọn nhân viên để xem bảng chấm công",
+  "checkIn": "Check-in",
+  "checkOut": "Check-out",
+  "request": "Yêu cầu",
+  "overtime": "Tăng ca",
+  "extraHours": "Giờ làm thêm (không OT)",
+  "extraHoursDayNight": "Ngày / đêm",
+  "extraHoursDuration": "Thời lượng giờ làm thêm",
+  "processingBy": "Xử lý bởi",
+  "approvedBy": "Duyệt bởi",
+  "rejectedBy": "Từ chối bởi",
+  "cancelledBy": "Hủy bởi",
+  "insideShift": "Trong ca",
+  "outsideShift": "Ngoài ca",
+  "day": "Ngày",
+  "night": "Đêm",
+  "unknown": "Không rõ",
+  "noAttendanceDataForThisDay": "Không có dữ liệu chấm công trong ngày này",
+  "checkInRequest": "Yêu cầu check-in",
+  "checkOutRequest": "Yêu cầu check-out",
+  "requestedTime": "Giờ yêu cầu",
+  "status": "Trạng thái",
+  "addEmployee": "Thêm nhân viên",
+  "syncEmployeeAccounts": "Đồng bộ tài khoản",
+  "syncEmployeeAccountsDesc": "Hệ thống sẽ tạo tài khoản cho các nhân viên chưa có user, hoặc nối lại tài khoản cùng email nếu có.",
+  "sync": "Đồng bộ",
+  "syncEmployeeAccountsSuccess": "Đã tạo {created} tài khoản, nối {linked} tài khoản, bỏ qua {skipped} nhân viên.",
+  "initialPassword": "Mật khẩu khởi tạo *",
+  "confirmPasswordLabel": "Xác nhận mật khẩu *",
+  "employeeSearchHint": "Tìm theo tên, email, mã NV...",
+  "noEmployeesFound": "Không tìm thấy nhân viên",
+  "employeeDeleteTitle": "Nghỉ việc nhân viên",
+  "employeeDeletePrompt": "Đánh dấu \"{name}\" là không còn làm việc?",
+  "employeeStatusActive": "Đang làm",
+  "employeeStatusInactive": "Nghỉ việc",
+  "employeeStatusOnLeave": "Nghỉ phép",
+  "fromDate": "Từ ngày",
+  "toDate": "Đến ngày",
+  "parentDepartment": "Phòng ban cha",
+  "noParentDepartment": "— Không có (cấp cao nhất) —",
+  "dayOvertime": "Tăng ca ngày",
+  "nightOvertime": "Tăng ca đêm",
+  "otTime": "Giờ OT",
+  "noApprovedRequests": "Không có yêu cầu đã duyệt",
+  "createAttendanceRequestTitle": "Tạo yêu cầu chấm công / OT",
+  "chooseShiftApply": "Chọn ca áp dụng",
+  "requestType": "Loại yêu cầu",
+  "leaveAllDay": "Cả ngày",
+  "search": "Tìm kiếm",
+  "searchHint": "Tên, phòng ban, ghi chú...",
+  "filterType": "Loại",
+  "clearFilters": "Xóa lọc",
+  "approve": "Duyệt",
+  "unapprove": "Bỏ duyệt",
+  "dayShifts": "Ca làm trong ngày",
+  "otDayNight": "OT ngày / đêm",
+  "otScope": "Phạm vi OT",
+  "overtimeDuration": "Thời lượng OT",
+  "timeFormatHint": "HH:mm",
+  "pleaseChooseShift": "Vui lòng chọn ca",
+  "pleaseEnterCheckInTime": "Vui lòng nhập giờ check-in",
+  "pleaseEnterCheckOutTime": "Vui lòng nhập giờ check-out",
+  "pleaseEnterOvertimeDuration": "Vui lòng nhập thời lượng OT",
+  "validHhmmFormat": "Dạng hợp lệ: HH:mm",
+  "requestSent": "Đã gửi yêu cầu",
+  "approved": "Đã duyệt",
+  "rejected": "Đã từ chối",
+  "cancelled": "Đã hủy",
+  "rejectRequest": "Từ chối yêu cầu",
+  "reason": "Lý do",
+  "enterRejectionReason": "Nhập lý do từ chối",
+  "reject": "Từ chối",
+  "durationMustBeHHmm": "Thời lượng phải ở dạng HH:mm",
+  "invalidDuration": "Thời lượng không hợp lệ",
+  "chooseShift": "Chọn ca",
+  "noShiftsToday": "Ngày này chưa được xếp ca",
+  "attendanceAccountNotLinked": "Tài khoản chưa được liên kết với nhân viên nào",
+  "attendanceCheckInOutDisabled": "Chức năng check-in/out đang tắt",
+  "attendanceNoShiftsOnDate": "Ngày này chưa được xếp ca",
+  "loggedInEmployee": "Nhân viên đang đăng nhập",
+  "todayShift": "Ca hôm nay",
+  "checkInSuccess": "Check-in thành công",
+  "checkOutSuccess": "Check-out thành công",
+  "locationUnavailable": "Không lấy được vị trí",
+  "outsideAllowedZone": "Bạn đang nằm ngoài khu vực được phép check-in",
+  "locationCheckEnabled": "Bật kiểm tra vị trí check-in",
+  "useCurrentLocation": "Lấy vị trí hiện tại",
+  "latitude": "Vĩ độ",
+  "longitude": "Kinh độ",
+  "radius": "Bán kính",
+  "clearLocation": "Xóa vị trí",
+  "add": "Thêm",
+  "noLocations": "Chưa có vị trí làm việc",
+  "addLocation": "Thêm vị trí",
+  "editLocation": "Sửa vị trí",
+  "locationName": "Tên vị trí",
+  "locationRequired": "Vui lòng chọn vị trí trên bản đồ",
+  "deleteLocationConfirm": "Xóa vị trí",
+  "checkInRadius": "Vị trí check-in",
+  "checkInTime": "Giờ vào",
+  "checkOutTime": "Giờ ra",
+  "workedHours": "Giờ công",
+  "historyTitle": "Lịch sử chấm công",
+  "noHistoryThisMonth": "Không có lịch sử chấm công trong tháng này",
+  "createRequest": "Tạo yêu cầu",
+  "pendingTab": "Chờ duyệt",
+  "pending": "Chờ duyệt",
+  "apply": "Áp dụng",
+  "byDay": "Theo ngày",
+  "byMonth": "Theo tháng",
+  "processedTab": "Đã xử lý",
+  "checkInRequestTime": "Giờ check-in yêu cầu",
+  "checkOutRequestTime": "Giờ check-out yêu cầu",
+  "updatePasswordSuccess": "Đã đổi mật khẩu. Vui lòng đăng nhập lại",
+  "fillAllPasswordFields": "Vui lòng nhập đầy đủ mật khẩu",
+  "newPasswordMinLength": "Mật khẩu mới phải có ít nhất 6 ký tự",
+  "passwordMismatch": "Mật khẩu xác nhận không khớp",
+  "errorPrefix": "Lỗi",
+  "deleteDepartmentTitle": "Xóa phòng ban",
+  "deleteDepartmentPrompt": "Xóa \"{name}\"? Phòng ban không được có phòng con hoặc nhân viên.",
+  "@deleteDepartmentPrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addDepartment": "Thêm phòng ban",
+  "noDepartmentsYet": "Chưa có phòng ban nào",
+  "createFirstDepartment": "Tạo phòng ban đầu tiên",
+  "managePositions": "Quản lý chức vụ",
+  "addSubDepartment": "Thêm phòng con",
+  "editDepartment": "Chỉnh sửa phòng ban",
+  "departmentNameLabel": "Tên phòng ban *",
+  "departmentCodeLabel": "Mã phòng ban *",
+  "departmentCodeHintAlt": "VD: IT, HR",
+  "descriptionLabel": "Mô tả",
+  "create": "Tạo",
+  "deletePositionTitle": "Xóa chức vụ",
+  "deletePositionPrompt": "Xóa chức vụ \"{name}\"?",
+  "@deletePositionPrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "positionsOfDepartment": "Chức vụ — {name}",
+  "@positionsOfDepartment": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addPosition": "Thêm chức vụ",
+  "noPositionsYet": "Chưa có chức vụ nào",
+  "editPosition": "Chỉnh sửa chức vụ",
+  "positionNameLabel": "Tên chức vụ *",
+  "positionCodeLabel": "Mã chức vụ *",
+  "positionCodeHintText": "VD: CEO, SE_SR",
+  "employeeCountLabel": "{count} nhân viên",
+  "@employeeCountLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "pleaseChooseDepartment": "Vui lòng chọn phòng ban",
+  "pleaseChoosePosition": "Vui lòng chọn chức vụ",
+  "deleteRoleTitle": "Xóa vai trò",
+  "deleteRolePrompt": "Bạn có chắc muốn xóa vai trò \"{name}\"?",
+  "@deleteRolePrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addRole": "Thêm vai trò",
+  "editRole": "Chỉnh sửa vai trò",
+  "noRolesYet": "Chưa có vai trò nào",
+  "roleNameLabel": "Tên vai trò",
+  "roleNameRequired": "Tên vai trò không được để trống",
+  "permissionsLabel": "Quyền hạn",
+  "roleGroupsTab": "Nhóm quyền",
+  "directPermissionsTab": "Quyền riêng",
+  "company": "Công ty",
+  "noUsersYet": "Chưa có người dùng nào",
+  "noResults": "Không có kết quả phù hợp",
+  "scopeDepartmentLabel": "Phạm vi phòng ban",
+  "scopeCompanyLabel": "Toàn công ty",
+  "scopeCompanyDesc": "Không giới hạn phòng ban",
+  "scopeSelfLabel": "Chỉ mình tôi",
+  "scopeSelfDesc": "Chỉ xem dữ liệu của tài khoản hiện tại",
+  "scopeMyDepartmentLabel": "Chỉ phòng ban của tôi",
+  "scopeMyDepartmentDesc": "Giới hạn trong đúng phòng ban mà tài khoản thuộc về",
+  "scopeMyDepartmentAndBelowLabel": "Phòng ban của tôi và cấp dưới",
+  "scopeMyDepartmentAndBelowDesc": "Bao gồm phòng ban của tôi và toàn bộ phòng ban con",
+  "scopeSelfPlusDepartments": "Chỉ mình tôi + {count} phòng ban",
+  "@scopeSelfPlusDepartments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scopeOneDepartment": "1 phòng ban",
+  "scopeDepartments": "{count} phòng ban",
+  "@scopeDepartments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orSelectSpecificDepartment": "Hoặc chọn phòng ban cụ thể:",
+  "permUiDashboardView": "Hiển thị mục Tổng quan trên menu",
+  "permUiEmployeeView": "Hiển thị mục Nhân viên trên menu",
+  "permUiEmployeeCreate": "Nút Thêm nhân viên",
+  "permUiEmployeeUpdate": "Nút Chỉnh sửa nhân viên",
+  "permUiEmployeeDelete": "Nút Nghỉ việc nhân viên",
+  "permUiDepartmentView": "Hiển thị mục Phòng ban trên menu",
+  "permUiDepartmentManage": "Nút Thêm/sửa/xóa phòng ban",
+  "permUiPositionManage": "Nút Thêm/sửa/xóa chức vụ",
+  "permUiAttendanceView": "Hiển thị mục Chấm công trên menu",
+  "permUiAttendanceManage": "Nút quản lý chấm công",
+  "permUiAttendanceSelf": "Hiển thị mục Chấm công cá nhân",
+  "permUiAttendanceApprove": "Duyệt yêu cầu chấm công",
+  "permUiShiftView": "Hiển thị mục Ca làm trên menu",
+  "permUiShiftManage": "Nút Thêm/sửa/xóa ca làm",
+  "permUiPayrollView": "Hiển thị mục Bảng lương trên menu",
+  "permUiPayrollCreate": "Nút tạo bảng lương",
+  "permUiPayrollApprove": "Nút duyệt bảng lương",
+  "permUiPayrollPay": "Nút chi trả bảng lương",
+  "permUiRoleView": "Hiển thị mục Phân quyền trên menu",
+  "permUiRoleManage": "Nút Thêm/sửa/xóa vai trò",
+  "permUiUserManage": "Nút Thêm/sửa/xóa tài khoản",
+  "permUiCompanyManage": "Nút Quản lý công ty",
+  "permUiLeaveCreateForOthers": "Tạo đơn nghỉ phép hộ nhân viên",
+  "permUiLeaveView": "Hiển thị mục Nghỉ phép trên menu",
+  "permUiLeaveRequestCreate": "Tạo đơn nghỉ phép",
+  "permUiLeaveRequestApprove": "Duyệt/từ chối đơn nghỉ phép",
+  "permUiLeaveGrantManual": "Cấp phép thủ công",
+  "permUiLeaveTypeView": "Xem danh sách loại nghỉ phép",
+  "permUiLeaveTypeManage": "Quản lý loại nghỉ phép",
+  "permUiLeaveAccrualView": "Xem rule cộng phép",
+  "permUiLeaveAccrualManage": "Quản lý rule cộng phép",
+  "permUiCompanySettingView": "Xem cài đặt chung công ty",
+  "permUiCompanySettingManage": "Quản lý cài đặt chung công ty",
+  "permDescEmployeeView": "Xem danh sách nhân viên",
+  "permDescEmployeeCreate": "Thêm nhân viên mới",
+  "permDescEmployeeUpdate": "Cập nhật thông tin nhân viên",
+  "permDescEmployeeDelete": "Xóa/vô hiệu hóa nhân viên",
+  "permDescDepartmentView": "Xem cơ cấu phòng ban",
+  "permDescDepartmentManage": "Tạo/sửa/xóa phòng ban",
+  "permDescPositionManage": "Tạo/sửa/xóa chức vụ",
+  "permDescAttendanceView": "Xem dữ liệu chấm công",
+  "permDescAttendanceManage": "Chỉnh sửa chấm công",
+  "permDescAttendanceSelf": "Tự check-in/check-out",
+  "permDescAttendanceApprove": "Duyệt yêu cầu chấm công",
+  "permDescShiftView": "Xem ca làm",
+  "permDescShiftManage": "Quản lý ca làm",
+  "permDescPayrollView": "Xem bảng lương",
+  "permDescPayrollCreate": "Tạo bảng lương",
+  "permDescPayrollApprove": "Phê duyệt bảng lương",
+  "permDescPayrollPay": "Đánh dấu đã thanh toán lương",
+  "permDescRoleView": "Xem danh sách vai trò",
+  "permDescRoleManage": "Tạo/sửa/xóa vai trò",
+  "permDescUserManage": "Quản lý tài khoản người dùng",
+  "permDescCompanyManage": "Toàn quyền quản trị công ty",
+  "permDescLeaveCreateForOthers": "Tạo đơn nghỉ phép thay mặt nhân viên khác trong phạm vi được cấp",
+  "permDescLeaveView": "Xem đơn nghỉ và số phép",
+  "permDescLeaveRequestCreate": "Tạo đơn nghỉ phép",
+  "permDescLeaveRequestApprove": "Duyệt hoặc từ chối đơn nghỉ phép",
+  "permDescLeaveGrantManual": "Cấp phép thủ công cho nhân viên",
+  "permDescLeaveTypeView": "Xem danh sách loại nghỉ phép",
+  "permDescLeaveTypeManage": "Tạo/sửa/xóa loại nghỉ phép",
+  "permDescLeaveAccrualView": "Xem cấu hình rule cộng phép",
+  "permDescLeaveAccrualManage": "Quản lý rule cộng phép tự động",
+  "permDescCompanySettingView": "Xem cài đặt chung của công ty",
+  "permDescCompanySettingManage": "Cập nhật cài đặt chung của công ty",
+  "permDescDashboardView": "Hiển thị mục Tổng quan trên menu",
+  "assignedShifts": "Ca đã phân công",
+  "maxShiftsPerDay": "Đã đạt tối đa 2 ca/ngày",
+  "addSecondShift": "Thêm ca thứ 2",
+  "customHoursLabel": "Giờ tùy chỉnh",
+  "shiftTemplatesLabel": "Ca mẫu",
+  "noShiftsAvailable": "Chưa có ca nào",
+  "editShiftAssignment": "Chỉnh sửa ca",
+  "startLabel": "Bắt đầu",
+  "endLabel": "Kết thúc",
+  "adminNoteReason": "Lý do: {note}",
+  "@adminNoteReason": {
+    "placeholders": {
+      "note": {"type": "String"}
+    }
+  },
+  "noChangesContent": "Không có thay đổi nào",
+  "sentAtLabel": "Gửi lúc:",
+  "goBack": "Quay lại",
+  "processedTabLabel": "Đã xử lý"
+  ,"defaultLabel": "Mặc định"
+  ,"loginToCompany": "Đăng nhập vào công ty"
+  ,"activate": "Kích hoạt"
+  ,"deactivate": "Vô hiệu hoá"
+  ,"stopped": "Dừng"
+  ,"basicInfo": "Thông tin cơ bản"
+  ,"departmentAndPosition": "Phòng ban & Chức vụ"
+  ,"additionalInfo": "Thông tin bổ sung"
+  ,"bankInfo": "Thông tin ngân hàng"
+  ,"identityCardLabel": "CCCD / CMND"
+  ,"bankAccountLabel": "Số tài khoản"
+  ,"bankNameLabel": "Ngân hàng"
+  ,"monday": "Thứ 2"
+  ,"tuesday": "Thứ 3"
+  ,"wednesday": "Thứ 4"
+  ,"thursday": "Thứ 5"
+  ,"friday": "Thứ 6"
+  ,"saturday": "Thứ 7"
+  ,"sunday": "Chủ nhật"
+  ,"breakTime": "Nghỉ"
+  ,"applyTimeRange": "Áp dụng {from} – {to}"
+  ,"@applyTimeRange": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  }
+  ,"invalidData": "Dữ liệu không hợp lệ"
+  ,"sessionExpired": "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại"
+  ,"noPermissionForAction": "Không có quyền thực hiện thao tác này"
+  ,"dataNotFound": "Không tìm thấy dữ liệu"
+  ,"dataConflict": "Xung đột dữ liệu, vui lòng kiểm tra lại"
+  ,"serverErrorTryLater": "Lỗi server, vui lòng thử lại sau"
+  ,"cannotConnectServerCode": "Không thể kết nối server (mã lỗi {code})"
+  ,"@cannotConnectServerCode": {
+    "placeholders": {
+      "code": {"type": "String"}
+    }
+  }
+  ,"leaveApplyDepartment": "Phòng ban áp dụng"
+  ,"leaveAllCompany": "Toàn công ty"
+  ,"leaveTypeLabel": "Loại nghỉ phép"
+  ,"leaveTypeCode": "Mã loại phép"
+  ,"leaveTypeName": "Tên loại phép"
+  ,"leaveCreateRequest": "Tạo đơn nghỉ phép"
+  ,"leaveManualGrant": "Cấp phép thủ công"
+  ,"leaveRequestsTab": "Yêu cầu phép"
+  ,"leaveTypesTab": "Loại nghỉ phép"
+  ,"leaveRulesTab": "Thiết lập cộng phép"
+  ,"leaveRequestHistory": "Lịch sử yêu cầu"
+  ,"leaveCurrentBalance": "Số dư phép hiện tại"
+  ,"leaveRemaining": "Còn"
+  ,"leaveValidity": "Hiệu lực"
+  ,"leaveAddType": "Thêm loại phép"
+  ,"leaveEditType": "Cập nhật loại phép"
+  ,"leaveUnit": "Đơn vị"
+  ,"leaveDeductPerDay": "Trừ mỗi ngày"
+  ,"leavePaid": "Có lương"
+  ,"leaveUnpaid": "Không lương"
+  ,"leaveAddRule": "Thêm rule cộng phép"
+  ,"leaveEditRule": "Cập nhật rule cộng phép"
+  ,"leaveRunNow": "Chạy ngay"
+  ,"leaveUnitDay": "ngày"
+  ,"leaveUnitHour": "tiếng"
+  ,"leaveGrantAmount": "Số lượng cộng"
+  ,"leaveFrequency": "Chu kỳ"
+  ,"leaveDayOfMonth": "Ngày trong tháng"
+  ,"leaveMonthOfYear": "Tháng trong năm"
+  ,"leaveMinTenure": "Số năm kinh nghiệm tối thiểu"
+  ,"leaveExpireAfterDays": "Hết hạn sau X ngày (tùy chọn)"
+  ,"leaveUnlimited": "Không giới hạn"
+  ,"leaveValidFrom": "Hiệu lực từ"
+  ,"leaveValidTo": "Hiệu lực đến"
+  ,"leaveByDay": "Theo ngày"
+  ,"leaveByHour": "Theo giờ"
+  ,"leaveFromTime": "Từ giờ"
+  ,"leaveToTime": "Đến giờ"
+  ,"leaveRequestMode": "Kiểu đơn"
+  ,"leaveAmount": "Số lượng"
+  ,"leaveAmountGtZero": "Số lượng phải > 0"
+  ,"leaveRuleName": "Tên rule"
+  ,"leaveRequestCreated": "Đã tạo đơn nghỉ phép"
+  ,"leaveManualGrantCreated": "Đã cấp phép thủ công"
+  ,"leaveRequestApproved": "Đã duyệt đơn"
+  ,"leaveRejectRequest": "Từ chối đơn"
+  ,"leaveRequestRejected": "Đã từ chối đơn"
+  ,"leaveTypeCreated": "Đã thêm loại phép"
+  ,"leaveTypeUpdated": "Đã cập nhật loại phép"
+  ,"leaveTypeDeleted": "Đã xóa loại phép"
+  ,"leaveRuleCreated": "Đã thêm rule"
+  ,"leaveRuleUpdated": "Đã cập nhật rule"
+  ,"leaveRuleDeleted": "Đã xóa rule"
+  ,"leaveDeleteTypeConfirm": "Bạn có chắc muốn xóa loại phép này?"
+  ,"leaveDeleteRuleConfirm": "Bạn có chắc muốn xóa rule này?"
+  ,"leaveAccrualRunDone": "Đã chạy cộng phép tự động"
+  ,"leaveCompanySettingTitle": "Thiết lập công ty cho phép"
+  ,"leaveHoursPerDay": "1 ngày = bao nhiêu giờ"
+  ,"payrollSettings": "Lương"
+  ,"standardWorkDaysLabel": "Số ngày công tiêu chuẩn / tháng"
+  ,"payrollCutoffDayLabel": "Ngày chốt lương (bắt đầu kỳ)"
+  ,"daysSuffix": "ngày"
+  ,"companySettings": "Cài đặt công ty"
+  ,"companySettingAttendanceTitle": "Thiết lập chấm công"
+  ,"companySettingDayNightMode": "Phân biệt ngày/đêm"
+  ,"companySettingOtMode": "Bật chế độ OT"
+  ,"companySettingDayFrom": "Ban ngày từ"
+  ,"companySettingDayTo": "Ban ngày đến"
+  ,"companySettingNightSummary": "Ban đêm: {end} ~ {start}"
+  ,"@companySettingNightSummary": { "placeholders": { "end": { "type": "String" }, "start": { "type": "String" } } }
+  ,"companySettingAttendanceWindowTitle": "Phạm vi giờ check-in/out"
+  ,"companySettingCheckInBefore": "Check-in trước ca"
+  ,"companySettingCheckInAfter": "Check-in sau ca"
+  ,"companySettingCheckOutBefore": "Check-out trước ca"
+  ,"companySettingCheckOutAfter": "Check-out sau ca"
+  ,"invalidTimeFormat": "Định dạng thời gian không hợp lệ (dùng HH:mm)"
+  ,"companySettingLeaveTitle": "Thiết lập phép"
+  ,"leaveRemainingDays": "Số ngày phép còn lại"
+  ,"leaveRemainingBalance": "Số dư phép"
+  ,"leaveCancelRequest": "Hủy yêu cầu"
+  ,"leaveCancelConfirm": "Bạn có chắc muốn hủy yêu cầu phép này? Số dư sẽ được hoàn lại."
+  ,"leaveCancelledSuccess": "Đã hủy yêu cầu phép"
+  ,"cannotConnectServer": "Không thể kết nối server, kiểm tra kết nối mạng"
+  ,"leaveDepleted": "Hết ngày"
+  ,"leaveExpired": "Hết hạn"
+  ,"payroll": "Bảng lương"
+  ,"payrollList": "Danh sách bảng lương"
+  ,"payrollGenerate": "Tạo bảng lương"
+  ,"payrollGenerateBtn": "Tạo bảng lương"
+  ,"payslip": "Phiếu lương"
+  ,"payrollStatusDraft": "Nháp"
+  ,"payrollStatusApproved": "Đã duyệt"
+  ,"payrollStatusPaid": "Đã thanh toán"
+  ,"payrollApprove": "Duyệt"
+  ,"payrollPay": "Thanh toán"
+  ,"payrollEdit": "Chỉnh sửa"
+  ,"baseSalary": "Lương cơ bản"
+  ,"baseSalaryMonthly": "Lương bậc / tháng"
+  ,"baseSalaryPerDay": "Đơn giá / ngày"
+  ,"baseSalaryPerHour": "Lương bậc / giờ"
+  ,"actualWorkDays": "Ngày làm thực tế"
+  ,"actualWorkHours": "Giờ làm thực tế"
+  ,"grossSalary": "Tổng lương gộp"
+  ,"netSalary": "Lương thực nhận"
+  ,"allowance": "Phụ cấp"
+  ,"bonus": "Thưởng"
+  ,"overtimePay": "Lương OT"
+  ,"socialInsurance": "BHXH (8%)"
+  ,"healthInsurance": "BHYT (1.5%)"
+  ,"unemploymentInsurance": "BHTN (1%)"
+  ,"personalIncomeTax": "Thuế TNCN"
+  ,"otherDeductions": "Khấu trừ khác"
+  ,"presentDays": "Ngày công"
+  ,"overtimeHours": "Giờ OT"
+  ,"dayShiftHours": "Giờ ca ngày"
+  ,"nightShiftHours": "Giờ ca đêm"
+  ,"otDayShift": "OT ca ngày"
+  ,"otNightShift": "OT ca đêm"
+  ,"salaryHistory": "Lịch sử lương"
+  ,"salaryHistoryAdd": "Thêm mức lương"
+  ,"effectiveDate": "Ngày hiệu lực"
+  ,"actualSalary": "Lương thực tế"
+  ,"totalDeductions": "Tổng khấu trừ"
+  ,"payrollNoSalaryConfig": "Chưa cấu hình lương cho nhân viên này"
+  ,"payrollConfirmApprove": "Xác nhận duyệt bảng lương?"
+  ,"payrollConfirmPay": "Xác nhận đã thanh toán?"
+  ,"selfPayroll": "Phiếu lương của tôi"
+  ,"salaryGrade": "Bậc lương"
+  ,"salaryGradeAdd": "Thêm bậc lương"
+  ,"salaryGradeEdit": "Sửa bậc lương"
+  ,"salaryGradeCode": "Mã bậc"
+  ,"salaryGradeName": "Tên bậc"
+  ,"payTypeDaily": "Ngày công"
+  ,"payTypeHourly": "Giờ công"
+  ,"baseRate": "Đơn giá cơ bản"
+  ,"salaryFormula": "Công thức lương"
+  ,"formulaGross": "Công thức lương gộp"
+  ,"formulaNet": "Công thức lương thực nhận"
+  ,"formulaVariables": "Biến số"
+  ,"formulaValidate": "Kiểm tra"
+  ,"formulaValid": "Công thức hợp lệ"
+  ,"formulaInvalid": "Công thức có lỗi"
+  ,"formulaTabGrade": "Bậc lương"
+  ,"formulaTabFormula": "Công thức lương"
+  ,"formulaTabPayroll": "Bảng lương"
+  ,"formulaTabVariables": "Biến số"
+  ,"varColName": "Tên biến"
+  ,"varColDesc": "Mô tả"
+  ,"varColExpr": "Biểu thức"
+  ,"varColScope": "Scope"
+  ,"varColActions": "Thao tác"
+  ,"varAddGlobal": "Thêm biến Global"
+  ,"varScopeSystem": "Hệ thống"
+  ,"varScopeGlobal": "Toàn công ty"
+  ,"varEditGlobal": "Sửa biến Global"
+  ,"varAddGlobalTitle": "Thêm biến Global"
+  ,"varNameHint": "VD: THUONG_LE"
+  ,"varNameLabel": "Tên biến (A-Z, 0-9, _)"
+  ,"varDescLabel": "Mô tả (tuỳ chọn)"
+  ,"varExprLabel": "Biểu thức"
+  ,"varExprHint": "VD: BASE_RATE * 0.5"
+  ,"varExprValid": "Biểu thức hợp lệ"
+  ,"varChipInsertHint": "Nhấn chip để chèn vào biểu thức"
+  ,"varCannotDelete": "Không thể xoá"
+  ,"varUsedInFormulas": "đang được dùng trong {count} công thức"
+  ,"varFixFormulasFirst": "Vui lòng xoá biến này khỏi các công thức trên trước."
+  ,"varPrivateSection": "Biến Private (công thức này)"
+  ,"varGlobalSection": "Biến Global (toàn công ty)"
+  ,"varNoPrivate": "Chưa có biến private"
+  ,"varNoGlobal": "Chưa có biến global"
+  ,"varAddPrivate": "Thêm biến private"
+  ,"varEditPrivate": "Sửa biến private"
+}

@@ -1,0 +1,2 @@
+ALTER TABLE leave_requests
+    ADD COLUMN applied BOOLEAN NOT NULL DEFAULT TRUE;

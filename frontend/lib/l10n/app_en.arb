@@ -1,0 +1,686 @@
+﻿{
+  "@@locale": "en",
+  "appName": "BossKin",
+  "menu": "Menu",
+  "notifications": "Notifications",
+  "dashboard": "Dashboard",
+  "employees": "Employees",
+  "departments": "Departments",
+  "shifts": "Shifts",
+  "roles": "Roles",
+  "attendance": "Attendance",
+  "checkInOut": "Check-in / Check-out",
+  "attendanceRequests": "Attendance requests",
+  "leaves": "Leaves",
+  "payroll": "Payroll",
+  "profile": "Profile",
+  "editRequests": "Edit requests",
+  "personalInfo": "Personal info",
+  "logout": "Logout",
+  "language": "Language",
+  "vietnamese": "Vietnamese",
+  "english": "English",
+  "selectLanguage": "Select language",
+  "save": "Save",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "retry": "Retry",
+  "close": "Close",
+  "loading": "Loading...",
+  "sendRequest": "Send request",
+  "saveChanges": "Save changes",
+  "editInfoTitle": "Edit personal information",
+  "editInfoAdminTitle": "Edit personal information",
+  "editInfoSubtitle": "Changes will be sent for admin approval",
+  "workInfo": "Work information",
+  "employeeCode": "Employee code",
+  "department": "Department",
+  "position": "Position",
+  "address": "Address",
+  "workEmail": "Work email",
+  "joinDate": "Join date",
+  "fullName": "Full name",
+  "gender": "Gender",
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderOther": "Other",
+  "dateOfBirth": "Date of birth",
+  "phone": "Phone number",
+  "personalEmail": "Personal email",
+  "avatarUrl": "Avatar URL",
+  "updateAvatarTitle": "Update avatar",
+  "avatarUrlLabel": "Avatar URL",
+  "avatarUrlHint": "https://...",
+  "currentPassword": "Current password",
+  "newPassword": "New password",
+  "confirmPassword": "Confirm new password",
+  "changePassword": "Change password",
+  "passwordNote": "The new password will take effect on the next login",
+  "noChanges": "No changes to submit",
+  "chooseDate": "Select date",
+  "dateCancel": "Cancel",
+  "dateOk": "OK",
+  "chooseLanguage": "Choose language",
+  "vietnameseShort": "Vietnamese",
+  "englishShort": "English",
+  "user": "User",
+  "admin": "Admin",
+  "employee": "Employee",
+  "profileLoadError": "Unable to load profile",
+  "avatarUpdatedSuccess": "Avatar updated successfully",
+  "saveSuccess": "Saved successfully",
+  "requestSentSuccess": "A new request was sent, any old pending request has been canceled automatically",
+  "companyManagementTitle": "Company management",
+  "companyManagementSubtitle": "Manage all companies on the BossKin platform",
+  "createCompany": "Create company",
+  "createCompanyNew": "Create new company",
+  "companyInfoSection": "Company information",
+  "adminAccountSection": "Company admin account",
+  "accountUsedToLoginSystem": "Account used to sign in to the system",
+  "companyName": "Company name *",
+  "companyCode": "Company code * (e.g. ACME)",
+  "companyCodeHint": "Uppercase, no accents",
+  "phoneNumber": "Phone number",
+  "domain": "Domain",
+  "contactEmail": "Contact email",
+  "adminEmailLabel": "Admin email *",
+  "passwordLabel": "Password *",
+  "invalidEmail": "Invalid email",
+  "atLeast6Chars": "At least 6 characters",
+  "genericError": "An error occurred",
+  "companyLoadError": "Unable to load company list",
+  "companyLoginError": "Unable to sign in to company",
+  "requiredField": "Required",
+  "noCompaniesYet": "No companies yet",
+  "signIn": "Sign in",
+  "welcomeBack": "Welcome back! Please sign in.",
+  "serverSettings": "Server settings",
+  "serverAddress": "Server address",
+  "enterServerAddress": "Enter the server IP or domain:",
+  "serverHint": "http://192.168.x.x:8080",
+  "loginFailed": "Incorrect email or password",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "todayAttendance": "Today's attendance",
+  "viewAll": "View all",
+  "recentPayroll": "Recent payroll",
+  "viewDetails": "View details",
+  "totalSalary": "Total salary",
+  "employeeCount": "Employees",
+  "paidStatus": "Paid",
+  "present": "Present",
+  "leave": "Leave",
+  "absent": "Absent",
+  "late": "Late",
+  "onTime": "On time",
+  "workStatus": "Status",
+  "earlyIn": "Early in",
+  "lateIn": "Late in",
+  "earlyOut": "Early out",
+  "lateOut": "Late out",
+  "overtime": "Overtime",
+  "todayStatistics": "Today's statistics",
+  "email": "Email",
+  "adminLoginTitle": "Admin sign in",
+  "systemAdministrator": "SYSTEM ADMINISTRATOR",
+  "adminLoginSubtitle": "For BossKin system administrators only.",
+  "backToCompanyLogin": "← Back to company sign in",
+  "loadRequestsError": "Unable to load list",
+  "approveRequestFor": "Approved request for {name}",
+  "rejectRequestFor": "Rejected request for {name}",
+  "rejectRequestTitle": "Reject request for {name}",
+  "rejectionReasonLabel": "Rejection reason",
+  "enterReason": "Enter reason...",
+  "noPendingRequests": "No requests waiting for approval",
+  "noProcessedRequests": "No processed requests yet",
+  "chooseTime": "Choose time",
+  "shiftAssignmentsTab": "Shift assignments",
+  "shiftListTab": "Shift list",
+  "createShiftTitle": "Create shift",
+  "editShiftTitle": "Edit shift",
+  "createShift": "Create shift",
+  "deleteShiftAssignmentWarning": "This shift may have attendance records and edit requests linked to it. Deleting it will remove all related data. Are you sure?",
+  "deleteShiftTitle": "Delete shift",
+  "deleteShiftPrompt": "Delete shift \"{name}\"?",
+  "shiftNameLabel": "Shift name *",
+  "shiftNameRequired": "Enter shift name",
+  "enterShiftName": "Enter shift name",
+  "shiftCodeLabel": "Shift code *",
+  "shiftCodeRequired": "Enter shift code",
+  "enterShiftCode": "Enter shift code",
+  "shiftTypeLabel": "Shift type",
+  "shiftStartLabel": "Start time",
+  "shiftEndLabel": "End time",
+  "shiftBreakStartLabel": "Break from",
+  "shiftBreakEndLabel": "Break to",
+  "displayColor": "Display color",
+  "applyToDepartments": "Apply to departments",
+  "noDepartments": "No departments",
+  "workingHours": "Working hours",
+  "shiftEditTooltip": "Edit",
+  "shiftDeleteTooltip": "Delete",
+  "noShiftsYet": "No shifts yet. Create a new shift to get started.",
+  "shift": "Shift",
+  "breakTime": "Break",
+  "totalTime": "Total time",
+  "dayHours": "Day hours",
+  "dayOT": "Day OT",
+  "nightHours": "Night hours",
+  "nightOT": "Night OT",
+  "action": "Action",
+  "date": "Date",
+  "createdAt": "Created at",
+  "note": "Note",
+  "response": "Response",
+  "chooseMonth": "Choose month",
+  "year": "Year",
+  "month": "Month",
+  "refresh": "Refresh",
+  "edit": "Edit",
+  "delete": "Delete",
+  "rowsPerPage": "Rows / page",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "departmentShort": "Department",
+  "all": "All",
+  "employeeShort": "Employee",
+  "selectEmployeeToViewTimesheet": "Choose an employee to view the timesheet",
+  "checkIn": "Check-in",
+  "checkOut": "Check-out",
+  "request": "Request",
+  "overtime": "Overtime",
+  "extraHours": "Extra hours (non-OT)",
+  "extraHoursDayNight": "Day / night",
+  "extraHoursDuration": "Extra hours duration",
+  "processingBy": "Processed by",
+  "approvedBy": "Approved by",
+  "rejectedBy": "Rejected by",
+  "cancelledBy": "Cancelled by",
+  "insideShift": "In shift",
+  "outsideShift": "Outside shift",
+  "day": "Day",
+  "night": "Night",
+  "unknown": "Unknown",
+  "noAttendanceDataForThisDay": "No attendance data for this day",
+  "checkInRequest": "Check-in request",
+  "checkOutRequest": "Check-out request",
+  "requestedTime": "Requested time",
+  "status": "Status",
+  "addEmployee": "Add employee",
+  "syncEmployeeAccounts": "Sync accounts",
+  "syncEmployeeAccountsDesc": "The system will create accounts for employees without a user, or re-link accounts with matching emails if available.",
+  "sync": "Sync",
+  "syncEmployeeAccountsSuccess": "Created {created} accounts, linked {linked} accounts, skipped {skipped} employees.",
+  "initialPassword": "Initial password *",
+  "confirmPasswordLabel": "Confirm password *",
+  "employeeSearchHint": "Search by name, email, employee code...",
+  "noEmployeesFound": "No employees found",
+  "employeeDeleteTitle": "Retire employee",
+  "employeeDeletePrompt": "Mark \"{name}\" as no longer working?",
+  "employeeStatusActive": "Active",
+  "employeeStatusInactive": "Inactive",
+  "employeeStatusOnLeave": "On leave",
+  "fromDate": "From date",
+  "toDate": "To date",
+  "parentDepartment": "Parent department",
+  "noParentDepartment": "— None (top level) —",
+  "dayOvertime": "Day overtime",
+  "nightOvertime": "Night overtime",
+  "otTime": "OT time",
+  "noApprovedRequests": "No approved requests",
+  "createAttendanceRequestTitle": "Create attendance / OT request",
+  "chooseShiftApply": "Choose shift to apply",
+  "requestType": "Request type",
+  "leaveAllDay": "All day",
+  "search": "Search",
+  "searchHint": "Name, department, note...",
+  "filterType": "Type",
+  "clearFilters": "Clear filters",
+  "approve": "Approve",
+  "unapprove": "Unapprove",
+  "dayShifts": "Shifts of the day",
+  "otDayNight": "Day / night OT",
+  "otScope": "OT scope",
+  "overtimeDuration": "OT duration",
+  "timeFormatHint": "HH:mm",
+  "pleaseChooseShift": "Please choose a shift",
+  "pleaseEnterCheckInTime": "Please enter check-in time",
+  "pleaseEnterCheckOutTime": "Please enter check-out time",
+  "pleaseEnterOvertimeDuration": "Please enter OT duration",
+  "validHhmmFormat": "Valid format: HH:mm",
+  "requestSent": "Request sent",
+  "approved": "Approved",
+  "rejected": "Rejected",
+  "cancelled": "Cancelled",
+  "rejectRequest": "Reject request",
+  "reason": "Reason",
+  "enterRejectionReason": "Enter rejection reason",
+  "reject": "Reject",
+  "durationMustBeHHmm": "Duration must be in HH:mm format",
+  "invalidDuration": "Invalid duration",
+  "chooseShift": "Choose shift",
+  "noShiftsToday": "No shifts assigned for today",
+  "attendanceAccountNotLinked": "This account is not linked to any employee",
+  "attendanceCheckInOutDisabled": "Check-in/out is disabled",
+  "attendanceNoShiftsOnDate": "No shift has been assigned for this date",
+  "loggedInEmployee": "Logged-in employee",
+  "todayShift": "Today's shifts",
+  "checkInSuccess": "Check-in successful",
+  "checkOutSuccess": "Check-out successful",
+  "locationUnavailable": "Location unavailable",
+  "outsideAllowedZone": "You are outside the allowed check-in zone",
+  "locationCheckEnabled": "Enable location-based check-in",
+  "useCurrentLocation": "Use current location",
+  "latitude": "Latitude",
+  "longitude": "Longitude",
+  "radius": "Radius",
+  "clearLocation": "Clear location",
+  "add": "Add",
+  "noLocations": "No work locations set",
+  "addLocation": "Add location",
+  "editLocation": "Edit location",
+  "locationName": "Location name",
+  "locationRequired": "Please select a location on the map",
+  "deleteLocationConfirm": "Delete location",
+  "checkInRadius": "Check-in location",
+  "checkInTime": "Check-in time",
+  "checkOutTime": "Check-out time",
+  "workedHours": "Worked hours",
+  "historyTitle": "Attendance history",
+  "noHistoryThisMonth": "No attendance history this month",
+  "createRequest": "Create request",
+  "pendingTab": "Pending",
+  "pending": "Pending",
+  "apply": "Apply",
+  "byDay": "By day",
+  "byMonth": "By month",
+  "processedTab": "Processed",
+  "checkInRequestTime": "Requested check-in time",
+  "checkOutRequestTime": "Requested check-out time",
+  "updatePasswordSuccess": "Password changed. Please sign in again",
+  "fillAllPasswordFields": "Please enter all password fields",
+  "newPasswordMinLength": "New password must be at least 6 characters",
+  "passwordMismatch": "Password confirmation does not match",
+  "errorPrefix": "Error",
+  "deleteDepartmentTitle": "Delete department",
+  "deleteDepartmentPrompt": "Delete \"{name}\"? Department must not have sub-departments or employees.",
+  "@deleteDepartmentPrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addDepartment": "Add department",
+  "noDepartmentsYet": "No departments yet",
+  "createFirstDepartment": "Create first department",
+  "managePositions": "Manage positions",
+  "addSubDepartment": "Add sub-department",
+  "editDepartment": "Edit department",
+  "departmentNameLabel": "Department name *",
+  "departmentCodeLabel": "Department code *",
+  "departmentCodeHintAlt": "e.g. IT, HR",
+  "descriptionLabel": "Description",
+  "create": "Create",
+  "deletePositionTitle": "Delete position",
+  "deletePositionPrompt": "Delete position \"{name}\"?",
+  "@deletePositionPrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "positionsOfDepartment": "Positions — {name}",
+  "@positionsOfDepartment": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addPosition": "Add position",
+  "noPositionsYet": "No positions yet",
+  "editPosition": "Edit position",
+  "positionNameLabel": "Position name *",
+  "positionCodeLabel": "Position code *",
+  "positionCodeHintText": "e.g. CEO, SE_SR",
+  "employeeCountLabel": "{count} employees",
+  "@employeeCountLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "pleaseChooseDepartment": "Please choose a department",
+  "pleaseChoosePosition": "Please choose a position",
+  "deleteRoleTitle": "Delete role",
+  "deleteRolePrompt": "Are you sure you want to delete role \"{name}\"?",
+  "@deleteRolePrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "addRole": "Add role",
+  "editRole": "Edit role",
+  "noRolesYet": "No roles yet",
+  "roleNameLabel": "Role name",
+  "roleNameRequired": "Role name cannot be empty",
+  "permissionsLabel": "Permissions",
+  "roleGroupsTab": "Role groups",
+  "directPermissionsTab": "Direct permissions",
+  "company": "Company",
+  "noUsersYet": "No users yet",
+  "noResults": "No matching results",
+  "scopeDepartmentLabel": "Department scope",
+  "scopeCompanyLabel": "Entire company",
+  "scopeCompanyDesc": "Not limited to a department",
+  "scopeSelfLabel": "Only myself",
+  "scopeSelfDesc": "Only view data of the current account",
+  "scopeMyDepartmentLabel": "Only my department",
+  "scopeMyDepartmentDesc": "Limit to exactly the department of the current account",
+  "scopeMyDepartmentAndBelowLabel": "My department and below",
+  "scopeMyDepartmentAndBelowDesc": "Include my department and all descendant departments",
+  "scopeSelfPlusDepartments": "Only myself + {count} departments",
+  "@scopeSelfPlusDepartments": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "scopeOneDepartment": "1 department",
+  "scopeDepartments": "{count} departments",
+  "@scopeDepartments": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "orSelectSpecificDepartment": "Or select a specific department:",
+  "permUiDashboardView": "Show Dashboard on menu",
+  "permUiEmployeeView": "Show Employees on menu",
+  "permUiEmployeeCreate": "Add employee button",
+  "permUiEmployeeUpdate": "Edit employee button",
+  "permUiEmployeeDelete": "Terminate employee button",
+  "permUiDepartmentView": "Show Departments on menu",
+  "permUiDepartmentManage": "Add/edit/delete department button",
+  "permUiPositionManage": "Add/edit/delete position button",
+  "permUiAttendanceView": "Show Attendance on menu",
+  "permUiAttendanceManage": "Attendance management button",
+  "permUiAttendanceSelf": "Show Personal Attendance menu",
+  "permUiAttendanceApprove": "Approve attendance requests",
+  "permUiShiftView": "Show Shifts on menu",
+  "permUiShiftManage": "Add/edit/delete shift button",
+  "permUiPayrollView": "Show Payroll on menu",
+  "permUiPayrollCreate": "Create payroll button",
+  "permUiPayrollApprove": "Approve payroll button",
+  "permUiPayrollPay": "Pay payroll button",
+  "permUiRoleView": "Show Roles on menu",
+  "permUiRoleManage": "Add/edit/delete role button",
+  "permUiUserManage": "Add/edit/delete user button",
+  "permUiCompanyManage": "Manage company button",
+  "permUiLeaveView": "Display Leave menu and screens",
+  "permUiLeaveRequestCreate": "Create leave requests",
+  "permUiLeaveRequestApprove": "Approve/reject leave requests",
+  "permUiLeaveGrantManual": "Grant leave balance manually",
+  "permUiLeaveTypeView": "View leave types list",
+  "permUiLeaveTypeManage": "Create/update/delete leave types",
+  "permUiLeaveAccrualView": "View accrual rule settings",
+  "permUiLeaveAccrualManage": "Manage automatic accrual rules",
+  "permUiCompanySettingView": "View company-wide settings",
+  "permUiCompanySettingManage": "Manage company-wide settings",
+  "permUiLeaveCreateForOthers": "Create leave request for others",
+  "permDescEmployeeView": "View employee list",
+  "permDescEmployeeCreate": "Create a new employee",
+  "permDescEmployeeUpdate": "Update employee information",
+  "permDescEmployeeDelete": "Delete/disable employee",
+  "permDescDepartmentView": "View department structure",
+  "permDescDepartmentManage": "Create/edit/delete department",
+  "permDescPositionManage": "Create/edit/delete position",
+  "permDescAttendanceView": "View attendance data",
+  "permDescAttendanceManage": "Edit attendance",
+  "permDescAttendanceSelf": "Self check-in/check-out",
+  "permDescAttendanceApprove": "Approve attendance requests",
+  "permDescShiftView": "View shifts",
+  "permDescShiftManage": "Manage shifts",
+  "permDescPayrollView": "View payroll",
+  "permDescPayrollCreate": "Create payroll",
+  "permDescPayrollApprove": "Approve payroll",
+  "permDescPayrollPay": "Mark payroll as paid",
+  "permDescRoleView": "View role list",
+  "permDescRoleManage": "Create/edit/delete role",
+  "permDescUserManage": "Manage user accounts",
+  "permDescCompanyManage": "Full company administration",
+  "permDescLeaveView": "View leave requests and leave balances",
+  "permDescLeaveRequestCreate": "Create leave requests",
+  "permDescLeaveRequestApprove": "Approve or reject leave requests",
+  "permDescLeaveGrantManual": "Grant leave balances manually to employees",
+  "permDescLeaveTypeView": "View leave type list",
+  "permDescLeaveTypeManage": "Create/update/delete leave types",
+  "permDescLeaveAccrualView": "View accrual rule configuration",
+  "permDescLeaveAccrualManage": "Manage automatic leave accrual rules",
+  "permDescCompanySettingView": "View company general settings",
+  "permDescCompanySettingManage": "Update company general settings",
+  "permDescLeaveCreateForOthers": "Create leave requests on behalf of other employees within granted scope",
+  "permDescDashboardView": "Show Dashboard on menu",
+  "assignedShifts": "Assigned shifts",
+  "maxShiftsPerDay": "Maximum 2 shifts per day reached",
+  "addSecondShift": "Add second shift",
+  "customHoursLabel": "Custom hours",
+  "shiftTemplatesLabel": "Shift templates",
+  "noShiftsAvailable": "No shifts available",
+  "editShiftAssignment": "Edit shift assignment",
+  "startLabel": "Start",
+  "endLabel": "End",
+  "adminNoteReason": "Reason: {note}",
+  "@adminNoteReason": {
+    "placeholders": {
+      "note": {"type": "String"}
+    }
+  },
+  "noChangesContent": "No changes",
+  "sentAtLabel": "Sent at:",
+  "goBack": "Go back",
+  "processedTabLabel": "Processed"
+  ,"defaultLabel": "Default"
+  ,"loginToCompany": "Login to company"
+  ,"activate": "Activate"
+  ,"deactivate": "Deactivate"
+  ,"stopped": "Stopped"
+  ,"basicInfo": "Basic information"
+  ,"departmentAndPosition": "Department & Position"
+  ,"additionalInfo": "Additional information"
+  ,"bankInfo": "Bank information"
+  ,"identityCardLabel": "ID card"
+  ,"bankAccountLabel": "Bank account"
+  ,"bankNameLabel": "Bank"
+  ,"monday": "Monday"
+  ,"tuesday": "Tuesday"
+  ,"wednesday": "Wednesday"
+  ,"thursday": "Thursday"
+  ,"friday": "Friday"
+  ,"saturday": "Saturday"
+  ,"sunday": "Sunday"
+  ,"breakTime": "Break"
+  ,"applyTimeRange": "Apply {from} – {to}"
+  ,"@applyTimeRange": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  }
+  ,"invalidData": "Invalid data"
+  ,"sessionExpired": "Session expired, please sign in again"
+  ,"noPermissionForAction": "No permission for this action"
+  ,"dataNotFound": "Data not found"
+  ,"dataConflict": "Data conflict, please check again"
+  ,"serverErrorTryLater": "Server error, please try again later"
+  ,"cannotConnectServerCode": "Cannot connect to server (error code {code})"
+  ,"@cannotConnectServerCode": {
+    "placeholders": {
+      "code": {"type": "String"}
+    }
+  }
+  ,"leaveApplyDepartment": "Apply department"
+  ,"leaveAllCompany": "All company"
+  ,"leaveTypeLabel": "Leave type"
+  ,"leaveTypeCode": "Leave type code"
+  ,"leaveTypeName": "Leave type name"
+  ,"leaveCreateRequest": "Create leave request"
+  ,"leaveManualGrant": "Manual grant"
+  ,"leaveRequestsTab": "Leave requests"
+  ,"leaveTypesTab": "Leave types"
+  ,"leaveRulesTab": "Accrual settings"
+  ,"leaveRequestHistory": "Request history"
+  ,"leaveCurrentBalance": "Current leave balance"
+  ,"leaveRemaining": "Remaining"
+  ,"leaveValidity": "Validity"
+  ,"leaveAddType": "Add leave type"
+  ,"leaveEditType": "Update leave type"
+  ,"leaveUnit": "Unit"
+  ,"leaveDeductPerDay": "Deduct per day"
+  ,"leavePaid": "Paid leave"
+  ,"leaveUnpaid": "Unpaid leave"
+  ,"leaveAddRule": "Add accrual rule"
+  ,"leaveEditRule": "Update accrual rule"
+  ,"leaveRunNow": "Run now"
+  ,"leaveUnitDay": "day(s)"
+  ,"leaveUnitHour": "hour(s)"
+  ,"leaveGrantAmount": "Grant amount"
+  ,"leaveFrequency": "Frequency"
+  ,"leaveDayOfMonth": "Day of month"
+  ,"leaveMonthOfYear": "Month of year"
+  ,"leaveMinTenure": "Minimum tenure years"
+  ,"leaveExpireAfterDays": "Expire after X days (optional)"
+  ,"leaveUnlimited": "Unlimited"
+  ,"leaveValidFrom": "Valid from"
+  ,"leaveValidTo": "Valid to"
+  ,"leaveByDay": "By day"
+  ,"leaveByHour": "By hour"
+  ,"leaveFromTime": "From time"
+  ,"leaveToTime": "To time"
+  ,"leaveRequestMode": "Request mode"
+  ,"leaveAmount": "Amount"
+  ,"leaveAmountGtZero": "Amount must be > 0"
+  ,"leaveRuleName": "Rule name"
+  ,"leaveRequestCreated": "Leave request created"
+  ,"leaveManualGrantCreated": "Manual leave grant created"
+  ,"leaveRequestApproved": "Leave request approved"
+  ,"leaveRejectRequest": "Reject request"
+  ,"leaveRequestRejected": "Leave request rejected"
+  ,"leaveTypeCreated": "Leave type created"
+  ,"leaveTypeUpdated": "Leave type updated"
+  ,"leaveTypeDeleted": "Leave type deleted"
+  ,"leaveRuleCreated": "Accrual rule created"
+  ,"leaveRuleUpdated": "Accrual rule updated"
+  ,"leaveRuleDeleted": "Accrual rule deleted"
+  ,"leaveDeleteTypeConfirm": "Are you sure you want to delete this leave type?"
+  ,"leaveDeleteRuleConfirm": "Are you sure you want to delete this accrual rule?"
+  ,"leaveAccrualRunDone": "Auto accrual executed"
+  ,"leaveCompanySettingTitle": "Company leave settings"
+  ,"leaveHoursPerDay": "How many hours per day"
+  ,"payrollSettings": "Payroll"
+  ,"standardWorkDaysLabel": "Standard work days / month"
+  ,"payrollCutoffDayLabel": "Payroll cutoff day (period start)"
+  ,"daysSuffix": "days"
+  ,"companySettings": "Company settings"
+  ,"companySettingAttendanceTitle": "Attendance settings"
+  ,"companySettingDayNightMode": "Enable day/night mode"
+  ,"companySettingOtMode": "Enable OT mode"
+  ,"companySettingDayFrom": "Day starts at"
+  ,"companySettingDayTo": "Day ends at"
+  ,"companySettingNightSummary": "Night: {end} ~ {start}"
+  ,"@companySettingNightSummary": { "placeholders": { "end": { "type": "String" }, "start": { "type": "String" } } }
+  ,"companySettingAttendanceWindowTitle": "Check-in/out time window"
+  ,"companySettingCheckInBefore": "Check-in before shift"
+  ,"companySettingCheckInAfter": "Check-in after shift"
+  ,"companySettingCheckOutBefore": "Check-out before shift"
+  ,"companySettingCheckOutAfter": "Check-out after shift"
+  ,"invalidTimeFormat": "Invalid time format (use HH:mm)"
+  ,"companySettingLeaveTitle": "Leave settings"
+  ,"leaveRemainingDays": "Remaining leave days"
+  ,"leaveRemainingBalance": "Leave balance"
+  ,"leaveCancelRequest": "Cancel request"
+  ,"leaveCancelConfirm": "Are you sure you want to cancel this leave request? Your balance will be restored."
+  ,"leaveCancelledSuccess": "Leave request cancelled"
+  ,"cannotConnectServer": "Cannot connect to server, please check your network"
+  ,"leaveDepleted": "Depleted"
+  ,"leaveExpired": "Expired"
+  ,"payroll": "Payroll"
+  ,"payrollList": "Payroll list"
+  ,"payrollGenerate": "Generate payroll"
+  ,"payrollGenerateBtn": "Generate payroll"
+  ,"payslip": "Payslip"
+  ,"payrollStatusDraft": "Draft"
+  ,"payrollStatusApproved": "Approved"
+  ,"payrollStatusPaid": "Paid"
+  ,"payrollApprove": "Approve"
+  ,"payrollPay": "Mark as paid"
+  ,"payrollEdit": "Edit"
+  ,"baseSalary": "Base salary"
+  ,"baseSalaryMonthly": "Grade salary / month"
+  ,"baseSalaryPerDay": "Rate per day"
+  ,"baseSalaryPerHour": "Grade salary / hour"
+  ,"actualWorkDays": "Actual work days"
+  ,"actualWorkHours": "Actual work hours"
+  ,"grossSalary": "Gross salary"
+  ,"netSalary": "Net salary"
+  ,"allowance": "Allowance"
+  ,"bonus": "Bonus"
+  ,"overtimePay": "Overtime pay"
+  ,"socialInsurance": "Social insurance (8%)"
+  ,"healthInsurance": "Health insurance (1.5%)"
+  ,"unemploymentInsurance": "Unemployment insurance (1%)"
+  ,"personalIncomeTax": "Personal income tax"
+  ,"otherDeductions": "Other deductions"
+  ,"presentDays": "Working days"
+  ,"overtimeHours": "Overtime hours"
+  ,"dayShiftHours": "Day shift hours"
+  ,"nightShiftHours": "Night shift hours"
+  ,"otDayShift": "OT day shift"
+  ,"otNightShift": "OT night shift"
+  ,"salaryHistory": "Salary history"
+  ,"salaryHistoryAdd": "Add salary level"
+  ,"effectiveDate": "Effective date"
+  ,"actualSalary": "Actual salary"
+  ,"totalDeductions": "Total deductions"
+  ,"payrollNoSalaryConfig": "No salary configured for this employee"
+  ,"payrollConfirmApprove": "Confirm payroll approval?"
+  ,"payrollConfirmPay": "Confirm payment?"
+  ,"selfPayroll": "My payslips"
+  ,"salaryGrade": "Salary Grade"
+  ,"salaryGradeAdd": "Add grade"
+  ,"salaryGradeEdit": "Edit grade"
+  ,"salaryGradeCode": "Code"
+  ,"salaryGradeName": "Name"
+  ,"payTypeDaily": "Daily"
+  ,"payTypeHourly": "Hourly"
+  ,"baseRate": "Base rate"
+  ,"salaryFormula": "Salary Formula"
+  ,"formulaGross": "Gross formula"
+  ,"formulaNet": "Net formula"
+  ,"formulaVariables": "Variables"
+  ,"formulaValidate": "Validate"
+  ,"formulaValid": "Formula is valid"
+  ,"formulaInvalid": "Formula has errors"
+  ,"formulaTabGrade": "Salary Grades"
+  ,"formulaTabFormula": "Formulas"
+  ,"formulaTabPayroll": "Payroll"
+  ,"formulaTabVariables": "Variables"
+  ,"varColName": "Variable"
+  ,"varColDesc": "Description"
+  ,"varColExpr": "Expression"
+  ,"varColScope": "Scope"
+  ,"varColActions": "Actions"
+  ,"varAddGlobal": "Add Global Variable"
+  ,"varScopeSystem": "System"
+  ,"varScopeGlobal": "Company-wide"
+  ,"varEditGlobal": "Edit Global Variable"
+  ,"varAddGlobalTitle": "Add Global Variable"
+  ,"varNameHint": "E.g. BONUS_RATE"
+  ,"varNameLabel": "Variable name (A-Z, 0-9, _)"
+  ,"varDescLabel": "Description (optional)"
+  ,"varExprLabel": "Expression"
+  ,"varExprHint": "E.g. BASE_RATE * 0.5"
+  ,"varExprValid": "Expression is valid"
+  ,"varChipInsertHint": "Tap a chip to insert into expression"
+  ,"varCannotDelete": "Cannot delete"
+  ,"varUsedInFormulas": "is used in {count} formula(s)"
+  ,"varFixFormulasFirst": "Please remove this variable from the formulas above first."
+  ,"varPrivateSection": "Private Variables (this formula)"
+  ,"varGlobalSection": "Global Variables (company-wide)"
+  ,"varNoPrivate": "No private variables yet"
+  ,"varNoGlobal": "No global variables yet"
+  ,"varAddPrivate": "Add private variable"
+  ,"varEditPrivate": "Edit private variable"
+}

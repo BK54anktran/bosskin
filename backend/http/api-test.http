@@ -1,0 +1,128 @@
+@baseUrl = http://localhost:8080/api/v1
+@adminEmail = admin@bosskin.vn
+@hrEmail = hr@bosskin.vn
+@password = Admin@123
+
+### ===== AUTH =====
+
+### Login admin
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
+
+###
+@token = {{loginAdmin.response.body.accessToken}}
+
+### Login HR Manager
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{hrEmail}}",
+  "password": "{{password}}"
+}
+
+
+### ===== EMPLOYEES =====
+
+### Lấy danh sách nhân viên
+GET {{baseUrl}}/employees
+Authorization: Bearer {{token}}
+
+### Tìm kiếm nhân viên
+GET {{baseUrl}}/employees?search=nguyen&size=5
+Authorization: Bearer {{token}}
+
+### Lọc theo phòng ban (IT = id 2)
+GET {{baseUrl}}/employees?departmentId=2
+Authorization: Bearer {{token}}
+
+### Lấy chi tiết nhân viên id=1
+GET {{baseUrl}}/employees/1
+Authorization: Bearer {{token}}
+
+### Tạo nhân viên mới
+POST {{baseUrl}}/employees
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Trần Văn Test",
+  "email": "test.tran@bosskin.vn",
+  "phone": "0912345678",
+  "gender": "MALE",
+  "joinDate": "2026-05-21",
+  "departmentId": 2,
+  "positionId": 4,
+  "baseSalary": 12000000
+}
+
+### Cập nhật nhân viên
+PUT {{baseUrl}}/employees/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "phone": "0999888777",
+  "baseSalary": 55000000
+}
+
+
+### ===== ATTENDANCE (Chấm công) =====
+
+### Chấm công vào
+POST {{baseUrl}}/attendances/check-in
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "employeeId": 3
+}
+
+### Chấm công ra
+POST {{baseUrl}}/attendances/check-out
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "employeeId": 3
+}
+
+### Xem chấm công tháng 5/2026
+GET {{baseUrl}}/attendances?year=2026&month=5
+Authorization: Bearer {{token}}
+
+### Chấm công của nhân viên cụ thể
+GET {{baseUrl}}/attendances?year=2026&month=5&employeeId=3
+Authorization: Bearer {{token}}
+
+
+### ===== PAYROLL (Lương) =====
+
+### Tạo bảng lương tháng 5/2026 cho nhân viên id=3
+POST {{baseUrl}}/payrolls/generate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "employeeId": 3,
+  "year": 2026,
+  "month": 5
+}
+
+### Xem bảng lương tháng 5/2026
+GET {{baseUrl}}/payrolls?year=2026&month=5
+Authorization: Bearer {{token}}
+
+### Phê duyệt bảng lương id=1
+POST {{baseUrl}}/payrolls/1/approve
+Authorization: Bearer {{token}}
+
+### Đánh dấu đã thanh toán
+POST {{baseUrl}}/payrolls/1/pay
+Authorization: Bearer {{token}}

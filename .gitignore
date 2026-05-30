@@ -1,0 +1,40 @@
+# Backend build outputs
+/backend/target/
+/backend/.mvn/
+
+# Frontend build outputs
+/frontend/build/
+/frontend/.dart_tool/
+/frontend/.flutter-plugins
+/frontend/.flutter-plugins-dependencies
+/frontend/.packages
+/frontend/.pub/
+/frontend/.pub-cache/
+
+# Flutter/IDE generated files
+**/app.*.symbols
+**/app.*.map.json
+**/.DS_Store
+**/.idea/
+**/.vscode/
+**/*.iml
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment files
+.env
+.env.*
+!.env.example
+**/. env
+backend/.env
+frontend/.env
+
+# Backend build outputs (gradle)
+/backend/.gradle/
+/backend/out/
+
+# Docker
+*.override.yml

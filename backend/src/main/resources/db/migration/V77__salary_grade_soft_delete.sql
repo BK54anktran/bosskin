@@ -1,0 +1,1 @@
+ALTER TABLE salary_grades ADD COLUMN deleted TINYINT(1) NOT NULL DEFAULT 0;

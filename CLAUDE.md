@@ -1,0 +1,291 @@
+# Bosskin — Claude Context
+
+## Stack
+- **Frontend**: Flutter (Dart) — Riverpod + GoRouter + Dio
+- **Backend**: Spring Boot 3.3 + Java 17 — JPA + JWT + Flyway + MySQL 8.0
+- **Infra**: Docker Compose (`docker-compose.yml` ở root)
+
+## Cấu trúc thư mục
+```
+frontend/lib/
+  data/models/              # Dart model classes (fromJson)
+  data/repositories/        # Dio HTTP calls
+  core/utils/               # Hàm dùng chung (format, error, dialog, ...)
+  presentation/
+    widgets/                # Shared widgets dùng lại nhiều màn hình
+    screens/                # UI screens theo module
+backend/src/main/java/com/bosskin/
+  entity/                   # JPA entities (kế thừa BaseEntity)
+  dto/                      # Request/Response DTOs
+  service/                  # Business logic
+  controller/               # REST controllers (@RequestMapping /api/v1/...)
+  repository/               # Spring Data JPA repos
+  security/                 # JWT + UserDetails
+backend/src/main/resources/db/migration/
+  V{n}__description.sql     # Flyway migrations — luôn tăng số version
+frontend/lib/l10n/
+  app_vi.arb                # Chuỗi tiếng Việt
+  app_en.arb                # Chuỗi tiếng Anh
+```
+
+## Auth & Roles
+- JWT Bearer token
+- Roles (thứ tự quyền): `ADMIN > HR_MANAGER > HR_STAFF > EMPLOYEE`
+- Controller dùng `@AuthenticationPrincipal User user` để lấy user hiện tại
+
+---
+
+## Quy tắc bắt buộc — Frontend
+
+### 1. Component & Widget
+- **Bắt buộc dùng lại** shared widget có sẵn trong `presentation/widgets/` trước khi tự viết:
+  - `PermissionGuard` — ẩn/hiện theo quyền
+  - `AppDropdown` — dropdown chuẩn
+  - `SearchTextField` — ô tìm kiếm
+  - `PaginationBar` — phân trang
+  - `StatusBadge` — chip trạng thái
+  - `EmptyState` — màn hình rỗng
+  - `DepartmentPickerField` — chọn phòng ban
+- Nếu logic UI lặp lại ≥ 2 màn hình → tách thành widget mới trong `presentation/widgets/`
+- Không viết widget local bên trong file screen nếu widget đó có thể tái sử dụng
+
+### 2. Hàm dùng chung
+- Format tiền, ngày, giờ, số → đặt trong `core/utils/`
+- Các utils hiện có: `error_utils.dart`, `dialog_utils.dart`, `text_utils.dart`, `attendance_message_utils.dart`
+- Không copy-paste cùng một hàm vào nhiều file — tạo util mới nếu chưa có
+
+### 3. Đa ngôn ngữ — BẮT BUỘC
+- **Mọi chuỗi hiển thị cho user đều phải qua l10n**, không được hardcode text trong widget
+- Khi thêm text mới: thêm vào **cả hai file** `app_vi.arb` và `app_en.arb`
+- Dùng `AppLocalizations.of(context)!` (biến `s`) để lấy chuỗi
+- Key đặt theo `camelCase`, mô tả rõ ngữ cảnh, ví dụ: `payrollBaseSalaryPerDay`, `leaveRequestApprove`
+- Không dùng `Text('Lương cơ bản')` trực tiếp — phải là `Text(s.baseSalary)`
+
+### 4. Phân quyền màn hình mới
+Mỗi màn hình/tính năng mới **bắt buộc** có hệ thống quyền đầy đủ:
+
+**Nguyên tắc phụ thuộc quyền:**
+- `VIEW` là điều kiện tiên quyết của mọi quyền khác (EDIT, APPROVE, DELETE đều cần VIEW trước)
+- Khi check quyền EDIT/APPROVE: luôn check `VIEW` trước, sau đó check quyền hành động
+
+**Các loại quyền theo tính năng** (ví dụ module `payroll`):
+```
+payroll.view        — xem danh sách / chi tiết
+payroll.edit        — tạo mới / chỉnh sửa
+payroll.approve     — duyệt
+payroll.delete      — xóa
+```
+
+**Scope dữ liệu** — scope luôn đi kèm với quyền `view`, các quyền khác kế thừa scope của view:
+- `ALL` — toàn bộ công ty
+- `MY_DEPARTMENT` — chỉ phòng ban của mình
+- `MY_DEPARTMENT_AND_BELOW` — phòng ban mình và phòng ban cấp dưới
+- `ONLY_ME` — chỉ bản thân
+- `PICK` — chọn cụ thể từng phòng ban (dùng `roleViewDepartment` trong Role entity)
+
+**Triển khai trên Frontend:**
+- Bọc UI bằng `PermissionGuard(permission: 'payroll.edit', child: ...)` để ẩn button/action
+- Không chỉ ẩn UI — repository cũng không được gọi API nếu không có quyền
+- Scope lấy từ `user.role.roleViewAllCompany` và `user.role.roleViewDepartmentId`
+
+---
+
+## Quy tắc bắt buộc — Backend
+
+### 1. DB Migration
+- Mỗi thay đổi schema **bắt buộc** có file Flyway mới (`V{n+1}__...sql`)
+- Kiểm tra version hiện tại: `ls db/migration/ | sort -t'V' -k2 -n | tail -3`
+- Entity dùng Lombok (`@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor`)
+- DTO tách rõ `Response` (read) và `Upsert`/`Request` (write)
+- Validation dùng `@NotNull`, `@Valid` trên DTO
+
+**Quy tắc clean schema — BẮT BUỘC:**
+- Đổi tên cột → migration phải `DROP COLUMN` cột cũ, `ADD COLUMN` cột mới (hoặc `CHANGE`/`RENAME COLUMN`), **không** giữ cột cũ
+- Thay thế cột bằng cột khác → `DROP COLUMN` cột cũ trong cùng migration
+- Bảng cũ không còn dùng → `DROP TABLE` trong migration tiếp theo
+- Không để lại "cột rác" hay "bảng rác" không có entity/code nào dùng
+- Nếu rename để backward-compat tạm thời → phải có comment `-- TODO: drop after deploy` và tạo migration drop ngay sau
+
+### 2. Phân quyền API — BẮT BUỘC
+- **Mọi API endpoint đều phải kiểm tra quyền** — không có endpoint nào bỏ qua
+- Dùng `user.can("module.action")` hoặc `@PreAuthorize` để guard
+- Service phải lọc dữ liệu theo scope của user:
+  - `roleViewAllCompany = true` → trả về toàn bộ công ty
+  - `roleViewAllCompany = false` + `roleViewDepartment != null` → lọc theo phòng ban đó
+  - Các scope khác xử lý tương tự
+- Quy tắc phụ thuộc quyền giống Frontend: EDIT/APPROVE/DELETE đều cần VIEW trước
+
+### 3. Đa ngôn ngữ — BẮT BUỘC
+- **Backend không được trả về message text trực tiếp** — chỉ trả về **key**
+- Ví dụ đúng: `throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied")`
+- Ví dụ sai: `throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện")`
+- Key lỗi đặt theo format `error.module.reason`, ví dụ:
+  - `error.permission.denied`
+  - `error.payroll.already_generated`
+  - `error.employee.not_found`
+- Frontend dùng key này để tra `app_vi.arb` / `app_en.arb` hiển thị đúng ngôn ngữ
+
+### 4. Cấu trúc Service
+- Service throw `ResponseStatusException` với **error key**, không phải message text
+- Business logic lọc theo scope nằm trong Service, không nằm trong Controller
+- Controller chỉ nhận request, delegate vào Service, trả về DTO
+
+---
+
+---
+
+## Quy tắc đặt tên — Frontend (Dart/Flutter)
+
+### Files
+| Loại | Convention | Ví dụ |
+|------|-----------|-------|
+| Screen | `snake_case_screen.dart` | `payroll_screen.dart` |
+| Widget dùng chung | `snake_case_widget.dart` hoặc tên mô tả | `status_badge.dart`, `pagination_bar.dart` |
+| Model | `snake_case.dart` | `payroll.dart`, `work_shift.dart` |
+| Repository | `snake_case_repository.dart` | `employee_repository.dart` |
+| Service | `snake_case_service.dart` | `auth_service.dart` |
+| Utils | `snake_case_utils.dart` | `error_utils.dart`, `text_utils.dart` |
+
+### Classes & Widgets
+| Loại | Convention | Ví dụ |
+|------|-----------|-------|
+| Widget/Screen public | `PascalCase` | `PayrollScreen`, `StatusBadge` |
+| Widget private (local) | `_PascalCase` | `_PayslipDialog`, `_InfoTile` |
+| State class | `_PascalCaseState` | `_PayrollScreenState` |
+| Model | `PascalCase` | `Payroll`, `WorkShift` |
+| Enum | `PascalCase`, values `camelCase` | `PayrollStatus { draft, approved, paid }` |
+| Repository/Service | `PascalCase + suffix` | `EmployeeRepository`, `AuthService` |
+
+### Variables & Methods
+| Loại | Convention | Ví dụ |
+|------|-----------|-------|
+| Variable, field | `camelCase` | `baseSalary`, `presentDays` |
+| Private state field | `_camelCase` | `_loading`, `_employees`, `_searchCtrl` |
+| Constant | `camelCase` (Dart) | `const defaultWorkDays = 22` |
+| TextEditingController | `_xCtrl` | `_searchCtrl`, `_hoursPerDayCtrl` |
+| Load data method | `_load()` hoặc `_loadX()` | `_load()`, `_loadDepts()` |
+| Submit/save method | `_save()`, `_submit()` | `_save()`, `_submitRequest()` |
+| Handler method | `_onX` hoặc `_handleX` | `_onApprove()`, `_handleDelete()` |
+| Boolean field | tiền tố `is`/`has`/`can` | `isLoading`, `hasError`, `canEdit` |
+| l10n biến local | `s` | `final s = AppLocalizations.of(context)!` |
+
+### API / Repository methods
+```dart
+// GET list   → getAll() hoặc getAll({filters})
+// GET single → getById(id)
+// POST       → create(body)
+// PUT/PATCH  → update(id, body)
+// DELETE     → delete(id)
+// Tên khác theo action: approve(id), generate(params)
+```
+
+---
+
+## Quy tắc đặt tên — Backend (Java/Spring)
+
+### Files & Packages
+| Loại | Convention | Ví dụ |
+|------|-----------|-------|
+| Entity | `PascalCase.java` | `Payroll.java`, `WorkShift.java` |
+| DTO | `PascalCaseDTO.java` | `PayrollDTO.java` |
+| Service | `PascalCaseService.java` | `PayrollService.java` |
+| Controller | `PascalCaseController.java` | `PayrollController.java` |
+| Repository | `PascalCaseRepository.java` | `PayrollRepository.java` |
+| Migration | `V{n}__lower_snake_desc.sql` | `V89__payroll_pay_type.sql` |
+
+### Classes & Fields
+| Loại | Convention | Ví dụ |
+|------|-----------|-------|
+| Class | `PascalCase` | `PayrollService` |
+| Field, method | `camelCase` | `baseSalary`, `generatePayroll()` |
+| Constant (`static final`) | `UPPER_SNAKE_CASE` | `DEFAULT_SOCIAL_INS_RATE`, `STANDARD_WORK_DAYS` |
+| Enum type | `PascalCase`, values `UPPER_CASE` | `Status { DRAFT, APPROVED, PAID }` |
+| DB column | `lower_snake_case` (trong `@Column(name=...)`) | `base_salary`, `pay_type` |
+| Boolean field | tiền tố `is` hoặc rõ nghĩa | `isDefault`, `active`, `deleted` |
+
+### Repository methods
+```java
+// Spring Data JPA naming:
+findByX(...)                      // tìm 1 hoặc nhiều theo field X
+findByXAndY(...)                  // kết hợp nhiều điều kiện
+findByCompanyIdAndActiveTrue(...) // boolean true/false đặt cuối
+existsByX(...)                    // check tồn tại
+countByX(...)                     // đếm
+// Custom query đặt tên mô tả rõ:
+findByMonthWithFilters(...)
+findByMonthWithDeptScope(...)
+```
+
+### Service methods
+```java
+// CRUD cơ bản:
+generate...() / create...()   // tạo mới
+get...() / getAll...()        // lấy dữ liệu
+update...() / patch...()      // cập nhật
+delete...() / remove...()     // xóa
+// Action nghiệp vụ:
+approve(id)
+markAsPaid(id)
+recalculate(id)
+// Internal/private helper:
+private buildFormulaVariables(...)
+private getOrThrow(id)        // lấy hoặc throw 404
+```
+
+### Controller endpoints
+```
+GET    /api/v1/{module}           → list
+GET    /api/v1/{module}/{id}      → detail
+POST   /api/v1/{module}           → create
+PUT    /api/v1/{module}/{id}      → full update
+PATCH  /api/v1/{module}/{id}      → partial update
+DELETE /api/v1/{module}/{id}      → delete
+POST   /api/v1/{module}/{id}/approve     → action
+POST   /api/v1/{module}/generate         → action đặc biệt
+GET    /api/v1/{module}/self      → self-service endpoint
+```
+
+### DTO inner classes
+```java
+// Trong XxxDTO.java:
+Response    // trả về client (read)
+Upsert      // tạo mới + sửa (write)
+PatchRequest// partial update
+XxxUpsert   // sub-object upsert (AttendanceUpsert, LeaveUpsert)
+XxxSetting  // sub-object response (AttendanceSetting)
+```
+
+---
+
+## Database / Payroll
+- Tính lương theo quy định Việt Nam: BHXH 8%, BHYT 1.5%, BHTN 1%, thuế TNCN lũy tiến
+- `pay_type`: `DAILY` (lương theo ngày) hoặc `HOURLY` (lương theo giờ) — lấy từ `SalaryGrade`
+- `standard_work_days`: số ngày công tiêu chuẩn/tháng, lưu trong `Company` (default 22), snapshot vào `Payroll` khi generate
+
+## Entities quan trọng
+| Entity | Bảng | Ghi chú |
+|--------|------|---------|
+| `Company` | `companies` | `standard_work_days` INT default 22 |
+| `Employee` | `employees` | FK → Company, SalaryGrade |
+| `SalaryGrade` | `salary_grades` | `pay_type` ENUM(DAILY, HOURLY), `base_salary` |
+| `Payroll` | `payrolls` | snapshot lương, unique(employee_id, year, month) |
+| `Role` | `roles` | `roleViewAllCompany` bool, `roleViewDepartment` FK |
+| `Permission` | `permissions` | `code` string, `module`, `requiredRule` |
+| `Attendance` | `attendances` | chấm công, FK → Employee |
+| `LeaveRequest` | `leave_requests` | nghỉ phép |
+| `WorkShift` | `work_shifts` | ca làm việc |
+
+## Migration version hiện tại
+Cao nhất: **V89** (`V89__payroll_pay_type.sql`)
+→ Migration tiếp theo phải là **V90**
+
+## Màn hình Flutter
+| Screen | Path |
+|--------|------|
+| Payroll (HR) | `screens/payroll/payroll_screen.dart` |
+| Payroll (self) | `screens/payroll/self_payroll_screen.dart` |
+| Company Settings | `screens/company_settings/company_settings_screen.dart` |
+| Employee | `screens/employee/` |
+| Attendance | `screens/attendance/` |
+| Leaves | `screens/leaves/` |
+| Roles & Permissions | `screens/roles/` |

@@ -1,0 +1,5 @@
+ALTER TABLE leave_types
+    ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE AFTER active;
+
+ALTER TABLE leave_accrual_rules
+    ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE AFTER active;

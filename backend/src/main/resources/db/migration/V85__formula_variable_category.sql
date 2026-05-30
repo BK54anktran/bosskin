@@ -1,0 +1,1 @@
+ALTER TABLE formula_variables ADD COLUMN category VARCHAR(50) NULL DEFAULT NULL;
