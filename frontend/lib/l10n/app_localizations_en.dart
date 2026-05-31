@@ -1951,4 +1951,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rememberMe => 'Remember me';
+
+  @override
+  String get disableUserTitle => 'Disable account';
+
+  @override
+  String disableUserPrompt(Object name) {
+    return 'Are you sure you want to disable $name\'s account?';
+  }
+
+  @override
+  String get disable => 'Disable';
 }

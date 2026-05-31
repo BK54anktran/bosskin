@@ -684,4 +684,7 @@
   ,"varAddPrivate": "Add private variable"
   ,"varEditPrivate": "Edit private variable"
   ,"rememberMe": "Remember me"
+  ,"disableUserTitle": "Disable account"
+  ,"disableUserPrompt": "Are you sure you want to disable {name}'s account?"
+  ,"disable": "Disable"
 }

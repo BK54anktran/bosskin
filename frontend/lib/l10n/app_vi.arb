@@ -688,4 +688,7 @@
   ,"varAddPrivate": "Thêm biến private"
   ,"varEditPrivate": "Sửa biến private"
   ,"rememberMe": "Ghi nhớ đăng nhập"
+  ,"disableUserTitle": "Vô hiệu hóa tài khoản"
+  ,"disableUserPrompt": "Bạn có chắc muốn vô hiệu hóa tài khoản của {name}?"
+  ,"disable": "Vô hiệu hóa"
 }

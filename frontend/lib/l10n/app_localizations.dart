@@ -3872,6 +3872,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Ghi nhớ đăng nhập'**
   String get rememberMe;
+
+  /// No description provided for @disableUserTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vô hiệu hóa tài khoản'**
+  String get disableUserTitle;
+
+  /// No description provided for @disableUserPrompt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc muốn vô hiệu hóa tài khoản của {name}?'**
+  String disableUserPrompt(Object name);
+
+  /// No description provided for @disable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vô hiệu hóa'**
+  String get disable;
 }
 
 class _AppLocalizationsDelegate

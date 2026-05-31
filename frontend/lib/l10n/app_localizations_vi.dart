@@ -1951,4 +1951,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get rememberMe => 'Ghi nhớ đăng nhập';
+
+  @override
+  String get disableUserTitle => 'Vô hiệu hóa tài khoản';
+
+  @override
+  String disableUserPrompt(Object name) {
+    return 'Bạn có chắc muốn vô hiệu hóa tài khoản của $name?';
+  }
+
+  @override
+  String get disable => 'Vô hiệu hóa';
 }
