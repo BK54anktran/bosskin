@@ -31,7 +31,7 @@ class _EditRequestsScreenState extends State<EditRequestsScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this);
+    _tabs = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
     _loadDepartments();
     _loadAll();
   }

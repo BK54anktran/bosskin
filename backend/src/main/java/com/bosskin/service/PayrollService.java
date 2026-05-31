@@ -52,18 +52,24 @@ public class PayrollService {
     }
 
     @Transactional
+    public Payroll generatePayrollWithFormula(Long employeeId, int year, int month, SalaryFormula inlineFormula) {
+        return doGeneratePayroll(employeeId, year, month, null, inlineFormula);
+    }
+
+    @Transactional
     public Payroll generatePayroll(Long employeeId, int year, int month, Long formulaId) {
         if (payrollRepository.findByEmployeeIdAndYearAndMonth(employeeId, year, month).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "error.payroll.already_exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.payroll.already_exists");
         }
+        return doGeneratePayroll(employeeId, year, month, formulaId, null);
+    }
 
+    private Payroll doGeneratePayroll(Long employeeId, int year, int month, Long formulaId, SalaryFormula inlineFormula) {
         Employee employee = employeeRepository.findById(employeeId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
 
         PayrollPeriod period = PayrollPeriod.of(year, month, employee.getCompany().getPayrollCutoffDay());
 
-        // BASE_RATE: từ SalaryGrade nếu có, fallback SalaryHistory — dùng from của kỳ để tra lịch sử lương
         BigDecimal baseSalary;
         if (employee.getSalaryGrade() != null) {
             baseSalary = employee.getSalaryGrade().getBaseRate();
@@ -92,17 +98,18 @@ public class PayrollService {
         BigDecimal snapDayOt      = BigDecimal.valueOf(attendances.stream().mapToDouble(a -> a.getSnapDayOt()      != null ? a.getSnapDayOt()      : 0).sum()).setScale(2, RoundingMode.HALF_UP);
         BigDecimal snapNightOt    = BigDecimal.valueOf(attendances.stream().mapToDouble(a -> a.getSnapNightOt()    != null ? a.getSnapNightOt()    : 0).sum()).setScale(2, RoundingMode.HALF_UP);
 
-        // Lookup công thức lương — ưu tiên formulaId nếu được chỉ định
-        Optional<SalaryFormula> formulaOpt;
-        if (formulaId != null) {
-            formulaOpt = salaryFormulaRepository.findById(formulaId);
+        // Resolve formula: inline > formulaId > auto-lookup
+        SalaryFormula formula;
+        if (inlineFormula != null) {
+            formula = inlineFormula;
         } else {
-            if (employee.getSalaryGrade() != null) {
-                // Ưu tiên công thức có effectiveDate <= đầu kỳ lương
+            Optional<SalaryFormula> formulaOpt;
+            if (formulaId != null) {
+                formulaOpt = salaryFormulaRepository.findById(formulaId);
+            } else if (employee.getSalaryGrade() != null) {
                 formulaOpt = salaryFormulaRepository
                     .findTopBySalaryGradeIdAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(
                         employee.getSalaryGrade().getId(), period.from());
-                // Fallback: lấy công thức mới nhất nếu chưa có công thức nào <= đầu kỳ
                 if (formulaOpt.isEmpty()) {
                     formulaOpt = salaryFormulaRepository
                         .findTopBySalaryGradeIdOrderByEffectiveDateDesc(
@@ -111,6 +118,8 @@ public class PayrollService {
             } else {
                 formulaOpt = Optional.empty();
             }
+            formula = formulaOpt.orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.payroll.formula_not_configured"));
         }
 
         BigDecimal grossSalary;
@@ -124,24 +133,15 @@ public class PayrollService {
         Map<String, Payroll.DeductionEntry> incomeEntries    = new java.util.LinkedHashMap<>();
         Map<String, Payroll.DeductionEntry> allowanceEntries = new java.util.LinkedHashMap<>();
 
-        SalaryFormula formula = formulaOpt.orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.payroll.formula_not_configured"));
-
         Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period);
 
-        // 1. Global vars (company-wide)
         List<FormulaVariable> globalVarList = formulaVariableRepository
             .findByCompanyIdOrderByName(employee.getCompany().getId());
         Map<String, String> globalVarExprs = globalVarList.stream()
             .collect(java.util.stream.Collectors.toMap(
                 FormulaVariable::getName, FormulaVariable::getExpression));
-        // 2. Private vars (formula-specific) override global if same name
         Map<String, String> allCustomExprs = new java.util.LinkedHashMap<>(globalVarExprs);
-        if (formula.getCustomVars() != null) {
-            allCustomExprs.putAll(formula.getCustomVars());
-        }
-        // 3. Income/allowance var expressions cũng là custom vars — được resolve trước Gross
-        //    để có thể dùng trong Gross formula
+        if (formula.getCustomVars() != null) allCustomExprs.putAll(formula.getCustomVars());
         sortedByOrder(formula.getIncomeVars()).forEach((k, v) -> {
             if (v != null && v.getExpression() != null) allCustomExprs.put(k, v.getExpression());
         });
@@ -149,12 +149,9 @@ public class PayrollService {
             if (v != null && v.getExpression() != null) allCustomExprs.put(k, v.getExpression());
         });
         try {
-            // Pass 1: resolve tất cả vars (private + income + allowance) trước khi tính Gross
             vars = formulaEngine.resolveCustomVars(allCustomExprs, vars);
             grossSalary = formulaEngine.evaluate(formula.getExpressionGross(), vars);
             vars.put("GROSS", grossSalary);
-
-            // Pass 2: resolve lại với GROSS để các biến khấu trừ có thể dùng GROSS
             vars = formulaEngine.resolveCustomVars(allCustomExprs, vars);
 
             BigDecimal socialRate   = vars.getOrDefault("SOCIAL_INS_RATE",  DEFAULT_SOCIAL_INS_RATE);
@@ -174,8 +171,6 @@ public class PayrollService {
                         ? FormulaEngine.pitVN(taxableIncome) : BigDecimal.ZERO);
 
             evaluateVarGroup(sortedByOrder(formula.getDeductionVars()), vars, customDeductions);
-
-            // Snapshot income/allowance theo sortOrder để đúng thứ tự trên phiếu lương
             evaluateVarGroup(sortedByOrder(formula.getIncomeVars()),    vars, incomeEntries);
             evaluateVarGroup(sortedByOrder(formula.getAllowanceVars()), vars, allowanceEntries);
 
@@ -219,14 +214,56 @@ public class PayrollService {
 
     @Transactional
     public Payroll patchDraft(Long payrollId, BigDecimal allowance, BigDecimal bonus,
-                               BigDecimal otherDeductions, String note) {
+                               BigDecimal otherDeductions, String note,
+                               Payroll.CustomFormula customFormula) {
         Payroll payroll = getOrThrow(payrollId);
         if (payroll.getStatus() != Payroll.Status.DRAFT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "error.payroll.edit_non_draft");
         }
-        // Tách phần gross không đổi (actualSalary + overtimePay) ra khỏi gross hiện tại
-        // để cộng lại allowance/bonus mới mà không tính lại formula
+
+        // Nếu có customFormula mới → tính lại hoàn toàn với formula inline
+        if (customFormula != null) {
+            payroll.setCustomFormula(customFormula);
+            // Tạo SalaryFormula tạm từ customFormula để tính lại
+            SalaryFormula inlineFormula = SalaryFormula.builder()
+                .salaryGrade(payroll.getEmployee().getSalaryGrade())
+                .name(customFormula.getName())
+                .effectiveDate(java.time.LocalDate.now())
+                .expressionGross(customFormula.getExpressionGross())
+                .expressionNet(customFormula.getExpressionNet())
+                .customVars(customFormula.getCustomVars() != null ? customFormula.getCustomVars() : new java.util.LinkedHashMap<>())
+                .deductionVars(withSortOrder(customFormula.getDeductionVars()))
+                .incomeVars(withSortOrder(customFormula.getIncomeVars()))
+                .allowanceVars(withSortOrder(customFormula.getAllowanceVars()))
+                .build();
+            Long employeeId = payroll.getEmployee().getId();
+            int year = payroll.getYear(), month = payroll.getMonth();
+            payrollRepository.delete(payroll);
+            payrollRepository.flush();
+            Payroll recalculated = generatePayrollWithFormula(employeeId, year, month, inlineFormula);
+            recalculated.setCustomFormula(customFormula);
+            if (allowance != null) recalculated.setAllowance(allowance);
+            if (bonus != null)     recalculated.setBonus(bonus);
+            if (otherDeductions != null) recalculated.setOtherDeductions(otherDeductions);
+            if (note != null)      recalculated.setNote(note);
+            // Recalculate net after manual adjustments
+            BigDecimal g = recalculated.getGrossSalary()
+                .subtract(recalculated.getAllowance() != null ? recalculated.getAllowance() : BigDecimal.ZERO)
+                .subtract(recalculated.getBonus() != null ? recalculated.getBonus() : BigDecimal.ZERO)
+                .add(recalculated.getAllowance() != null ? recalculated.getAllowance() : BigDecimal.ZERO)
+                .add(recalculated.getBonus() != null ? recalculated.getBonus() : BigDecimal.ZERO);
+            recalculated.setGrossSalary(g);
+            BigDecimal totalDed = recalculated.getSocialInsurance()
+                .add(recalculated.getHealthInsurance())
+                .add(recalculated.getUnemploymentInsurance())
+                .add(recalculated.getPersonalIncomeTax())
+                .add(recalculated.getOtherDeductions());
+            recalculated.setNetSalary(g.subtract(totalDed));
+            return payrollRepository.save(recalculated);
+        }
+
+        // Không có customFormula → chỉ patch allowance/bonus/note
         BigDecimal baseGross = payroll.getGrossSalary()
             .subtract(payroll.getAllowance())
             .subtract(payroll.getBonus());
@@ -273,6 +310,17 @@ public class PayrollService {
         payroll.setStatus(Payroll.Status.PAID);
         payroll.setPaidAt(LocalDateTime.now());
         return payrollRepository.save(payroll);
+    }
+
+    private static Map<String, SalaryFormula.DeductionVar> withSortOrder(Map<String, SalaryFormula.DeductionVar> vars) {
+        if (vars == null || vars.isEmpty()) return new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<String, SalaryFormula.DeductionVar> result = new java.util.LinkedHashMap<>();
+        int i = 0;
+        for (Map.Entry<String, SalaryFormula.DeductionVar> e : vars.entrySet()) {
+            SalaryFormula.DeductionVar dv = e.getValue();
+            result.put(e.getKey(), new SalaryFormula.DeductionVar(dv.getLabel(), dv.getExpression(), i++));
+        }
+        return result;
     }
 
     private static Map<String, SalaryFormula.DeductionVar> sortedByOrder(Map<String, SalaryFormula.DeductionVar> vars) {

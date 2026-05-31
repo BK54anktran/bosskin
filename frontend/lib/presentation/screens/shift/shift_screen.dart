@@ -36,7 +36,7 @@ class _ShiftScreenState extends State<ShiftScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
+    _tab = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
     _loadShifts();
     _loadDepartments();
   }

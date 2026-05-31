@@ -90,7 +90,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   void initState() {
     super.initState();
     final tabCount = 2 + (_canViewType ? 1 : 0) + (_canViewRule ? 1 : 0);
-    _tabs = TabController(length: tabCount, vsync: this);
+    _tabs = TabController(length: tabCount, vsync: this, animationDuration: Duration.zero);
     _loadDepartments();
     _loadAll();
   }
@@ -360,50 +360,46 @@ class _LeavesScreenState extends State<LeavesScreen>
       children: [
         // ── Header: dept filter + buttons ──
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          padding: const EdgeInsets.fromLTRB(16, 8, 12, 0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Row(
-                children: [
-                  DepartmentPickerField(
-                    compact: true,
-                    departments: _depts,
-                    value: _filterDeptId,
-                    allowAll: true,
-                    label: s.department,
-                    onChanged: (v) {
-                      setState(() => _filterDeptId = v);
-                      _loadAll();
-                    },
-                  ),
-                ],
+              DepartmentPickerField(
+                compact: true,
+                departments: _depts,
+                value: _filterDeptId,
+                allowAll: true,
+                label: s.department,
+                onChanged: (v) {
+                  setState(() => _filterDeptId = v);
+                  _loadAll();
+                },
               ),
-              if (_canCreate || _canManualGrant) ...[
-                const SizedBox(height: 8),
+              const Spacer(),
+              if (_canCreate || _canManualGrant)
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.end,
                   children: [
-                    if (_canCreate)
-                      FilledButton.icon(
-                        onPressed: _submitting ? null : _openCreateRequest,
-                        icon: const Icon(Icons.add),
-                        label: Text(s.leaveCreateRequest),
-                      ),
                     if (_canManualGrant)
                       OutlinedButton.icon(
                         onPressed: _submitting ? null : _openManualGrant,
-                        icon: const Icon(Icons.card_giftcard_outlined),
+                        icon: const Icon(Icons.card_giftcard_outlined, size: 18),
                         label: Text(s.leaveManualGrant),
+                      ),
+                    if (_canCreate)
+                      FilledButton.icon(
+                        onPressed: _submitting ? null : _openCreateRequest,
+                        icon: const Icon(Icons.add, size: 18),
+                        label: Text(s.leaveCreateRequest),
                       ),
                   ],
                 ),
-              ],
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         // ── Body ──
         if (_error != null)
           Padding(

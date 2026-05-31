@@ -685,36 +685,56 @@ Future<void> _showLeaveRequestCardDialog(
 
 // â”€â”€ Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-class AttendanceScreen extends StatelessWidget {
+class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
+
+  @override
+  State<AttendanceScreen> createState() => _AttendanceScreenState();
+}
+
+class _AttendanceScreenState extends State<AttendanceScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tab;
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
+  }
+
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
-    return DefaultTabController(
-      length: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              tabs: [
-                Tab(text: s.byDay),
-                Tab(text: s.byMonth),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          color: Colors.white,
+          child: TabBar(
+            controller: _tab,
+            tabs: [
+              Tab(text: s.byDay),
+              Tab(text: s.byMonth),
+            ],
           ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _DayViewTab(),
-                _TimesheetTab(),
-              ],
-            ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tab,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _DayViewTab(),
+              _TimesheetTab(),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

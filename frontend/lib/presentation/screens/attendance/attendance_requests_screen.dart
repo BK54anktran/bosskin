@@ -58,7 +58,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this);
+    _tabs = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
     _loadDepartments();
     _load();
   }
@@ -284,22 +284,20 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
       children: [
         // ── Header ──
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: _openCreateRequestDialog,
-                  icon: const Icon(Icons.add),
-                  label: Text(s.createRequest),
-                ),
+          padding: const EdgeInsets.fromLTRB(16, 8, 12, 0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Spacer(),
+              FilledButton.icon(
+                onPressed: _openCreateRequestDialog,
+                icon: const Icon(Icons.add, size: 18),
+                label: Text(s.createRequest),
               ),
-            ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         // ── Body ──
         if (_error != null)
           Padding(
@@ -1308,26 +1306,28 @@ class _FilterPanel extends StatelessWidget {
             spacing: 12,
             runSpacing: 8,
             children: [
-              DropdownButtonFormField<String>(
-                value: filterType,
-                isExpanded: false,
-                decoration: const InputDecoration(
-                  labelText: 'Type',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                  constraints: BoxConstraints(maxWidth: 240),
+              SizedBox(
+                width: 180,
+                child: DropdownButtonFormField<String>(
+                  initialValue: filterType,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Type',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  items: [
+                    DropdownMenuItem(value: 'ALL', child: Text(s.all)),
+                    DropdownMenuItem(value: 'CHECK_IN', child: Text(s.checkIn)),
+                    DropdownMenuItem(value: 'CHECK_OUT', child: Text(s.checkOut)),
+                    if (otEnabled)
+                      DropdownMenuItem(value: 'OT', child: Text(s.overtime)),
+                    DropdownMenuItem(value: 'EXTRA', child: Text(s.extraHours)),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) onTypeChanged(v);
+                  },
                 ),
-                items: [
-                  DropdownMenuItem(value: 'ALL', child: Text(s.all)),
-                  DropdownMenuItem(value: 'CHECK_IN', child: Text(s.checkIn)),
-                  DropdownMenuItem(value: 'CHECK_OUT', child: Text(s.checkOut)),
-                  if (otEnabled)
-                    DropdownMenuItem(value: 'OT', child: Text(s.overtime)),
-                  DropdownMenuItem(value: 'EXTRA', child: Text(s.extraHours)),
-                ],
-                onChanged: (v) {
-                  if (v != null) onTypeChanged(v);
-                },
               ),
               DepartmentPickerField(
                 departments: departments,

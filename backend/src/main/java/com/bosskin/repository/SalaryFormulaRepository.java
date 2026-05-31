@@ -29,14 +29,14 @@ public interface SalaryFormulaRepository extends JpaRepository<SalaryFormula, Lo
     Optional<SalaryFormula> findTopBySalaryGradeIdOrderByEffectiveDateDesc(Long gradeId);
 
     @Query(value = """
-        SELECT COUNT(*) > 0 FROM salary_formulas f
+        SELECT COUNT(*) FROM salary_formulas f
         JOIN salary_grades g ON f.salary_grade_id = g.id
         LEFT JOIN departments d ON g.department_id = d.id
         WHERE f.name = :name
           AND (g.department_id IS NULL OR d.company_id = :companyId)
           AND f.id != :excludeId
         """, nativeQuery = true)
-    boolean existsByNameAndCompanyIdAndIdNot(
+    long countByNameAndCompanyIdAndIdNot(
         @org.springframework.data.repository.query.Param("name") String name,
         @org.springframework.data.repository.query.Param("companyId") Long companyId,
         @org.springframework.data.repository.query.Param("excludeId") Long excludeId

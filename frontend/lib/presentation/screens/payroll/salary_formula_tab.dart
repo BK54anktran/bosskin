@@ -91,7 +91,7 @@ class _SalaryFormulaTabState extends State<SalaryFormulaTab> {
   void _openForm([SalaryFormula? existing, SalaryFormula? duplicateFrom]) async {
     final result = await showDialog<SalaryFormula>(
       context: context,
-      builder: (_) => _FormulaEditorDialog(
+      builder: (_) => FormulaEditorDialog(
         grades: _grades,
         existing: existing,
         duplicateFrom: duplicateFrom,
@@ -303,24 +303,37 @@ class _FormulaPreview extends StatelessWidget {
 
 // ─── Formula Editor Dialog ─────────────────────────────────────────────────────
 
-class _FormulaEditorDialog extends StatefulWidget {
+class FormulaEditorDialog extends StatefulWidget {
   final List<SalaryGrade> grades;
   final SalaryFormula? existing;
   final SalaryFormula? duplicateFrom;
   final SalaryFormulaRepository repo;
+  /// Nếu có onSave, override hành vi lưu mặc định (create/update repo).
+  /// Nhận các giá trị hiện tại của form và trả về Future<void>.
+  final Future<dynamic> Function({
+    required String name,
+    required String expressionGross,
+    required String expressionNet,
+    required Map<String, String> customVars,
+    required Map<String, DeductionVarEntry> deductionVars,
+    required Map<String, DeductionVarEntry> incomeVars,
+    required Map<String, DeductionVarEntry> allowanceVars,
+  })? onSave;
 
-  const _FormulaEditorDialog({
+  const FormulaEditorDialog({
+    super.key,
     required this.grades,
     required this.repo,
     this.existing,
     this.duplicateFrom,
+    this.onSave,
   });
 
   @override
-  State<_FormulaEditorDialog> createState() => _FormulaEditorDialogState();
+  State<FormulaEditorDialog> createState() => _FormulaEditorDialogState();
 }
 
-class _FormulaEditorDialogState extends State<_FormulaEditorDialog> {
+class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
   final _nameCtrl = TextEditingController();
   final _grossCtrl = TextEditingController();
   final _netCtrl = TextEditingController();
@@ -528,33 +541,46 @@ class _FormulaEditorDialogState extends State<_FormulaEditorDialog> {
     if (!_validated) { await _validate(); if (!_validated) return; }
     setState(() { _saving = true; _error = null; });
     try {
-      SalaryFormula result;
-      if (widget.existing == null) {
-        result = await widget.repo.create(
-          salaryGradeId: _selectedGrade!.id,
+      if (widget.onSave != null) {
+        final result = await widget.onSave!(
           name: _nameCtrl.text.trim(),
-          effectiveDate: _effectiveDate,
           expressionGross: _grossCtrl.text.trim(),
           expressionNet: _netCtrl.text.trim(),
-          customVars: _privateVars,
-          deductionVars: _deductionVars,
-          incomeVars: _incomeVars,
-          allowanceVars: _allowanceVars,
+          customVars: Map.of(_privateVars),
+          deductionVars: Map.of(_deductionVars),
+          incomeVars: Map.of(_incomeVars),
+          allowanceVars: Map.of(_allowanceVars),
         );
+        if (mounted) Navigator.pop(context, result);
       } else {
-        result = await widget.repo.update(
-          widget.existing!.id,
-          name: _nameCtrl.text.trim(),
-          effectiveDate: _effectiveDate,
-          expressionGross: _grossCtrl.text.trim(),
-          expressionNet: _netCtrl.text.trim(),
-          customVars: _privateVars,
-          deductionVars: _deductionVars,
-          incomeVars: _incomeVars,
-          allowanceVars: _allowanceVars,
-        );
+        SalaryFormula result;
+        if (widget.existing == null) {
+          result = await widget.repo.create(
+            salaryGradeId: _selectedGrade!.id,
+            name: _nameCtrl.text.trim(),
+            effectiveDate: _effectiveDate,
+            expressionGross: _grossCtrl.text.trim(),
+            expressionNet: _netCtrl.text.trim(),
+            customVars: _privateVars,
+            deductionVars: _deductionVars,
+            incomeVars: _incomeVars,
+            allowanceVars: _allowanceVars,
+          );
+        } else {
+          result = await widget.repo.update(
+            widget.existing!.id,
+            name: _nameCtrl.text.trim(),
+            effectiveDate: _effectiveDate,
+            expressionGross: _grossCtrl.text.trim(),
+            expressionNet: _netCtrl.text.trim(),
+            customVars: _privateVars,
+            deductionVars: _deductionVars,
+            incomeVars: _incomeVars,
+            allowanceVars: _allowanceVars,
+          );
+        }
+        if (mounted) Navigator.pop(context, result);
       }
-      if (mounted) Navigator.pop(context, result);
     } catch (e) {
       if (mounted) setState(() { _saving = false; _error = serverMsg(e); });
     }
@@ -574,25 +600,38 @@ class _FormulaEditorDialogState extends State<_FormulaEditorDialog> {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
     final isEdit = widget.existing != null;
+    final screenH = MediaQuery.of(context).size.height;
     return Dialog(
+      clipBehavior: Clip.none,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 700),
+        constraints: BoxConstraints(maxWidth: 680, maxHeight: screenH * 0.88),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                isEdit
-                    ? 'Sửa công thức lương'
-                    : widget.duplicateFrom != null
-                        ? 'Nhân bản công thức lương'
-                        : 'Thêm công thức lương',
+                widget.onSave != null
+                    ? 'Chỉnh sửa công thức lương'
+                    : isEdit
+                        ? 'Sửa công thức lương'
+                        : widget.duplicateFrom != null
+                            ? 'Nhân bản công thức lương'
+                            : 'Thêm công thức lương',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
+              if (widget.onSave != null) ...[
+                const SizedBox(height: 4),
+                const Text(
+                  'Thay đổi chỉ áp dụng cho bảng lương này. Công thức gốc không bị ảnh hưởng.',
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                ),
+              ],
               const SizedBox(height: 16),
               Expanded(
                 child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(top: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -614,8 +653,8 @@ class _FormulaEditorDialogState extends State<_FormulaEditorDialog> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Grade picker
-                      if (!isEdit) ...[
+                      // Grade picker — ẩn khi inline mode
+                      if (widget.onSave == null && !isEdit) ...[
                         DropdownButtonFormField<SalaryGrade>(
                           value: _selectedGrade,
                           isExpanded: true,
@@ -647,18 +686,20 @@ class _FormulaEditorDialogState extends State<_FormulaEditorDialog> {
                         const SizedBox(height: 12),
                       ],
 
-                      // Effective date
-                      InkWell(
-                        onTap: _pickDate,
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: s.effectiveDate,
-                            suffixIcon: const Icon(Icons.calendar_today, size: 18),
+                      // Effective date — ẩn khi inline mode
+                      if (widget.onSave == null) ...[
+                        InkWell(
+                          onTap: _pickDate,
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: s.effectiveDate,
+                              suffixIcon: const Icon(Icons.calendar_today, size: 18),
+                            ),
+                            child: Text(_dateFmt.format(_effectiveDate), style: const TextStyle(fontSize: 14)),
                           ),
-                          child: Text(_dateFmt.format(_effectiveDate), style: const TextStyle(fontSize: 14)),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Variable chips
                       Container(

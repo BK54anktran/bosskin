@@ -20,7 +20,7 @@ class _PayrollTabScreenState extends State<PayrollTabScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 4, vsync: this);
+    _tab = TabController(length: 4, vsync: this, animationDuration: Duration.zero);
   }
 
   @override
@@ -40,10 +40,10 @@ class _PayrollTabScreenState extends State<PayrollTabScreen>
           child: TabBar(
             controller: _tab,
             tabs: [
+              Tab(text: s.formulaTabPayroll),
               Tab(text: s.formulaTabGrade),
               Tab(text: s.formulaTabVariables),
               Tab(text: s.formulaTabFormula),
-              Tab(text: s.formulaTabPayroll),
             ],
           ),
         ),
@@ -51,10 +51,10 @@ class _PayrollTabScreenState extends State<PayrollTabScreen>
           child: TabBarView(
             controller: _tab,
             children: const [
+              PayrollScreen(),
               SalaryGradeTab(),
               VariablesTab(),
               SalaryFormulaTab(),
-              PayrollScreen(),
             ],
           ),
         ),

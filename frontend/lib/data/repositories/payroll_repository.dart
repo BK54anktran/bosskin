@@ -69,6 +69,7 @@ class PayrollRepository {
     double? bonus,
     double? otherDeductions,
     String? note,
+    CustomFormulaSnapshot? customFormula,
   }) async {
     return _api.patch(
       '/payrolls/$id',
@@ -78,6 +79,7 @@ class PayrollRepository {
         if (bonus != null) 'bonus': bonus,
         if (otherDeductions != null) 'otherDeductions': otherDeductions,
         if (note != null) 'note': note,
+        if (customFormula != null) 'customFormula': customFormula.toJson(),
       },
     );
   }

@@ -132,7 +132,7 @@ class _RolesScreenState extends State<RolesScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
   }
 
   @override
@@ -422,82 +422,71 @@ class _RolesTabState extends State<_RolesTab> {
       );
     }
 
-    return Stack(
+    return Column(
       children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SearchTextField(
-                      controller: _searchCtrl,
-                      onChanged: (_) => setState(() {}),
-                      onClear: () => setState(() {}),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  DepartmentPickerField(
-                    departments: _allDepts,
-                    value: _deptFilterId == 0 ? null : _deptFilterId,
-                    allowAll: true,
-                    allLabel:
-                        _deptFilterId == 0 ? s.scopeCompanyLabel : s.all,
-                    label: s.department,
-                    compact: true,
-                    onChanged: (v) => setState(() => _deptFilterId = v),
-                  ),
-                ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: SearchTextField(
+                  controller: _searchCtrl,
+                  onChanged: (_) => setState(() {}),
+                  onClear: () => setState(() {}),
+                ),
               ),
-            ),
-            Expanded(
-              child: filtered.isEmpty
-                  ? EmptyState(
-                      icon: Icons.admin_panel_settings_outlined,
-                      message: _roles.isEmpty ? s.noRolesYet : s.noResults,
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        itemCount: _pageSize.clamp(0, filtered.length - _page * _pageSize),
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (_, i) {
-                          final r = filtered[_page * _pageSize + i];
-                          return _RoleCard(
-                            role: r,
-                            onTap: () => _openEditDialog(role: r),
-                            onDelete: () => _delete(r),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-            PaginationBar(
-              total: filtered.length,
-              page: _page,
-              pageSize: _pageSize,
-              onPageSizeChanged: (v) => setState(() { _pageSize = v; _page = 0; }),
-              onPrev: _page > 0 ? () => setState(() => _page--) : null,
-              onNext: (_page + 1) * _pageSize < filtered.length ? () => setState(() => _page++) : null,
-            ),
-          ],
-        ),
-        PermissionGuard(
-          permission: 'ROLE_MANAGE',
-          child: Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton.extended(
-              heroTag: 'add_role',
-              onPressed: () => _openEditDialog(),
-              icon: const Icon(Icons.add),
-              label: Text(s.addRole),
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
-            ),
+              const SizedBox(width: 8),
+              DepartmentPickerField(
+                departments: _allDepts,
+                value: _deptFilterId == 0 ? null : _deptFilterId,
+                allowAll: true,
+                allLabel: _deptFilterId == 0 ? s.scopeCompanyLabel : s.all,
+                label: s.department,
+                compact: true,
+                onChanged: (v) => setState(() => _deptFilterId = v),
+              ),
+              const SizedBox(width: 8),
+              PermissionGuard(
+                permission: 'ROLE_MANAGE',
+                child: FilledButton.icon(
+                  onPressed: () => _openEditDialog(),
+                  icon: const Icon(Icons.add),
+                  label: Text(s.addRole),
+                ),
+              ),
+            ],
           ),
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? EmptyState(
+                  icon: Icons.admin_panel_settings_outlined,
+                  message: _roles.isEmpty ? s.noRolesYet : s.noResults,
+                )
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    itemCount: _pageSize.clamp(0, filtered.length - _page * _pageSize),
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final r = filtered[_page * _pageSize + i];
+                      return _RoleCard(
+                        role: r,
+                        onTap: () => _openEditDialog(role: r),
+                        onDelete: () => _delete(r),
+                      );
+                    },
+                  ),
+                ),
+        ),
+        PaginationBar(
+          total: filtered.length,
+          page: _page,
+          pageSize: _pageSize,
+          onPageSizeChanged: (v) => setState(() { _pageSize = v; _page = 0; }),
+          onPrev: _page > 0 ? () => setState(() => _page--) : null,
+          onNext: (_page + 1) * _pageSize < filtered.length ? () => setState(() => _page++) : null,
         ),
       ],
     );
@@ -1501,7 +1490,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
+    _tab = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
     _selectedRoles = widget.user.roles.map((r) => r.id).toSet();
     _selectedPerms = widget.user.directPermissions.toSet();
     _loadDeptScopes();

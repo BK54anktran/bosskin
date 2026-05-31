@@ -51,6 +51,7 @@ public class PayrollDTO {
         private BigDecimal nightOt;
         private Payroll.Status status;
         private String note;
+        private Payroll.CustomFormula customFormula;
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime approvedAt;
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -95,6 +96,7 @@ public class PayrollDTO {
                     .nightOt(p.getNightOt())
                     .status(p.getStatus())
                     .note(p.getNote())
+                    .customFormula(p.getCustomFormula())
                     .approvedAt(p.getApprovedAt())
                     .paidAt(p.getPaidAt())
                     .build();
@@ -107,5 +109,6 @@ public class PayrollDTO {
         private BigDecimal bonus;
         private BigDecimal otherDeductions;
         private String note;
+        private Payroll.CustomFormula customFormula;
     }
 }

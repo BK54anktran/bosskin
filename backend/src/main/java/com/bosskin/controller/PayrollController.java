@@ -101,7 +101,7 @@ public class PayrollController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
         return ResponseEntity.ok(PayrollDTO.Response.from(
-            payrollService.patchDraft(id, body.getAllowance(), body.getBonus(), body.getOtherDeductions(), body.getNote())
+            payrollService.patchDraft(id, body.getAllowance(), body.getBonus(), body.getOtherDeductions(), body.getNote(), body.getCustomFormula())
         ));
     }
 

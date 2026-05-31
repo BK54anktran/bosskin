@@ -216,8 +216,8 @@ public class SalaryFormulaController {
     private void requireUniqueName(String name, Long excludeId, Long companyId) {
         if (name == null || name.isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.formula.name_required");
-        boolean exists = formulaRepo.existsByNameAndCompanyIdAndIdNot(
-                name.trim(), companyId, excludeId != null ? excludeId : -1L);
+        boolean exists = formulaRepo.countByNameAndCompanyIdAndIdNot(
+                name.trim(), companyId, excludeId != null ? excludeId : -1L) > 0;
         if (exists)
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.formula.name_duplicate");
     }

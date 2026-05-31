@@ -326,10 +326,7 @@ class _VariablesTabState extends State<VariablesTab> {
                                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
                                     Expanded(flex: 2, child: Text('Scope',
                                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-                                    SizedBox(width: 56, child: Text('Hiện\ntrong CT',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-                                        textAlign: TextAlign.center)),
-                                    SizedBox(width: 72, child: Text('Actions',
+                                    SizedBox(width: 96, child: Text('Actions',
                                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
                                   ],
                                 ),
@@ -384,36 +381,43 @@ class _VariablesTabState extends State<VariablesTab> {
                                                 )),
                                                 Expanded(flex: 2, child: _ScopeChip(v.scope, v.scopeLabel)),
                                                 SizedBox(
-                                                  width: 56,
-                                                  child: v.scope == VariableScope.global && _canEdit
-                                                      ? Switch(
-                                                          value: v.showInFormula,
-                                                          onChanged: (_) => _toggleShow(v),
-                                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                        )
-                                                      : const SizedBox.shrink(),
-                                                ),
-                                                SizedBox(
-                                                  width: 72,
+                                                  width: 96,
                                                   child: v.scope == VariableScope.global && _canEdit
                                                       ? Row(
                                                           mainAxisSize: MainAxisSize.min,
                                                           children: [
-                                                            IconButton(
-                                                              icon: const Icon(Icons.edit_outlined, size: 18),
-                                                              color: AppTheme.textSecondary,
-                                                              tooltip: 'Sửa',
-                                                              onPressed: () => _openEdit(v),
-                                                              visualDensity: VisualDensity.compact,
-                                                              padding: EdgeInsets.zero,
+                                                            Tooltip(
+                                                              message: v.showInFormula ? 'Ẩn khỏi công thức' : 'Hiện trong công thức',
+                                                              child: IconButton(
+                                                                icon: Icon(
+                                                                  v.showInFormula ? Icons.visibility : Icons.visibility_off_outlined,
+                                                                  size: 16,
+                                                                ),
+                                                                color: v.showInFormula ? AppTheme.primary : AppTheme.textSecondary,
+                                                                onPressed: () => _toggleShow(v),
+                                                                visualDensity: VisualDensity.compact,
+                                                                padding: EdgeInsets.zero,
+                                                              ),
                                                             ),
-                                                            IconButton(
-                                                              icon: const Icon(Icons.delete_outline, size: 18),
-                                                              color: AppTheme.error,
-                                                              tooltip: 'Xoá',
-                                                              onPressed: () => _delete(v),
-                                                              visualDensity: VisualDensity.compact,
-                                                              padding: EdgeInsets.zero,
+                                                            Tooltip(
+                                                              message: 'Sửa',
+                                                              child: IconButton(
+                                                                icon: const Icon(Icons.edit_outlined, size: 16),
+                                                                color: AppTheme.textSecondary,
+                                                                onPressed: () => _openEdit(v),
+                                                                visualDensity: VisualDensity.compact,
+                                                                padding: EdgeInsets.zero,
+                                                              ),
+                                                            ),
+                                                            Tooltip(
+                                                              message: 'Xoá',
+                                                              child: IconButton(
+                                                                icon: const Icon(Icons.delete_outline, size: 16),
+                                                                color: AppTheme.error,
+                                                                onPressed: () => _delete(v),
+                                                                visualDensity: VisualDensity.compact,
+                                                                padding: EdgeInsets.zero,
+                                                              ),
                                                             ),
                                                           ],
                                                         )

@@ -16,6 +16,7 @@ import '../../../data/services/department_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import 'salary_formula_tab.dart' show FormulaEditorDialog;
 
 final _currFmt = NumberFormat('#,###', 'vi_VN');
 String _fmt(double v) => '${_currFmt.format(v)}đ';
@@ -145,6 +146,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   Future<void> _recalculate(Payroll p) async {
     int? formulaId;
+    CustomFormulaSnapshot? customFormula;
 
     if (p.salaryGradeId != null) {
       List<SalaryFormula> formulas = [];
@@ -154,29 +156,40 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
       if (!mounted) return;
 
-      if (formulas.length > 1) {
+      final hasCustom = p.customFormula != null;
+      if (formulas.length > 1 || hasCustom) {
         final cutoff = DateTime(p.year, p.month, 1);
         final eligible = formulas.where((f) => !f.effectiveDate.isAfter(cutoff)).toList()
           ..sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
-        final defaultFormula = eligible.isNotEmpty ? eligible.first : formulas.first;
+        final defaultFormula = eligible.isNotEmpty ? eligible.first : (formulas.isNotEmpty ? formulas.first : null);
 
-        final picked = await showDialog<SalaryFormula>(
+        final result = await showDialog<_FormulaPickResult>(
           context: context,
           builder: (ctx) => _PickFormulaDialog(
             formulas: formulas,
             initial: defaultFormula,
+            customFormula: p.customFormula,
             year: p.year,
             month: p.month,
           ),
         );
         if (!mounted) return;
-        if (picked == null) return;
-        formulaId = picked.id;
+        if (result == null) return;
+        if (result.isCustom) {
+          customFormula = p.customFormula;
+        } else {
+          formulaId = result.formula?.id;
+        }
       }
     }
 
     try {
-      final updated = await _repo.recalculate(p.id, formulaId: formulaId);
+      Payroll updated;
+      if (customFormula != null) {
+        updated = await _repo.updateDraft(p.id, customFormula: customFormula);
+      } else {
+        updated = await _repo.recalculate(p.id, formulaId: formulaId);
+      }
       setState(() => _items = _items.map((e) => e.id == p.id ? updated : e).toList());
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã tính lại bảng lương')),
@@ -214,9 +227,27 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   void _openEdit(Payroll p) async {
+    // Load công thức hiện tại (customFormula nếu có, không thì load từ grade)
+    SalaryFormula? baseFormula;
+    if (p.salaryGradeId != null) {
+      try {
+        final formulas = await _formulaRepo.getAll(gradeId: p.salaryGradeId);
+        if (formulas.isNotEmpty) {
+          final cutoff = DateTime(p.year, p.month, 1);
+          final eligible = formulas.where((f) => !f.effectiveDate.isAfter(cutoff)).toList()
+            ..sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
+          baseFormula = eligible.isNotEmpty ? eligible.first : formulas.first;
+        }
+      } catch (_) {}
+    }
+    if (!mounted) return;
     final updated = await showDialog<Payroll>(
       context: context,
-      builder: (_) => _EditDraftDialog(payroll: p, repo: _repo),
+      builder: (_) => _InlineFormulaEditDialog(
+        payroll: p,
+        repo: _repo,
+        baseFormula: baseFormula,
+      ),
     );
     if (updated != null) {
       setState(() => _items = _items.map((e) => e.id == p.id ? updated : e).toList());
@@ -355,11 +386,8 @@ class _FilterBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       color: AppTheme.background,
-      child: Wrap(
-        spacing: 8, runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Row(
         children: [
-          // Month/Year
           SizedBox(
             width: 130,
             child: DropdownButtonFormField<int>(
@@ -370,8 +398,9 @@ class _FilterBar extends StatelessWidget {
               onChanged: (v) => onChanged(year, v ?? month, deptId, status),
             ),
           ),
+          const SizedBox(width: 8),
           SizedBox(
-            width: 100,
+            width: 90,
             child: TextFormField(
               initialValue: year.toString(),
               decoration: InputDecoration(labelText: s.year, isDense: true),
@@ -382,10 +411,10 @@ class _FilterBar extends StatelessWidget {
               },
             ),
           ),
-          // Department
-          if (depts.isNotEmpty)
+          if (depts.isNotEmpty) ...[
+            const SizedBox(width: 8),
             SizedBox(
-              width: 200,
+              width: 180,
               child: DepartmentPickerField(
                 departments: depts,
                 value: deptId,
@@ -395,11 +424,13 @@ class _FilterBar extends StatelessWidget {
                 onChanged: (v) => onChanged(year, month, v, status),
               ),
             ),
-          // Status
+          ],
+          const SizedBox(width: 8),
           SizedBox(
-            width: 150,
+            width: 140,
             child: DropdownButtonFormField<String?>(
               value: status,
+              isExpanded: true,
               decoration: InputDecoration(labelText: s.status, isDense: true),
               items: [
                 DropdownMenuItem(value: null, child: Text(s.all)),
@@ -410,6 +441,7 @@ class _FilterBar extends StatelessWidget {
               onChanged: (v) => onChanged(year, month, deptId, v),
             ),
           ),
+          const Spacer(),
           if (canCreate)
             FilledButton.icon(
               onPressed: onGenerate,
@@ -579,13 +611,21 @@ class _StatusChip extends StatelessWidget {
 
 // ─── Pick formula dialog ───────────────────────────────────────────────────────
 
+class _FormulaPickResult {
+  final SalaryFormula? formula;
+  final bool isCustom;
+  const _FormulaPickResult({this.formula, this.isCustom = false});
+}
+
 class _PickFormulaDialog extends StatefulWidget {
   final List<SalaryFormula> formulas;
-  final SalaryFormula initial;
+  final SalaryFormula? initial;
+  final CustomFormulaSnapshot? customFormula;
   final int year, month;
   const _PickFormulaDialog({
     required this.formulas,
     required this.initial,
+    this.customFormula,
     required this.year,
     required this.month,
   });
@@ -595,7 +635,9 @@ class _PickFormulaDialog extends StatefulWidget {
 }
 
 class _PickFormulaDialogState extends State<_PickFormulaDialog> {
-  late SalaryFormula _selected;
+  // null = custom formula selected
+  SalaryFormula? _selected;
+  bool _customSelected = false;
 
   @override
   void initState() {
@@ -608,26 +650,57 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
     return AlertDialog(
       title: const Text('Chọn công thức tính lương'),
       content: SizedBox(
-        width: 360,
+        width: 400,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: widget.formulas.map((f) {
-            final isDefault = f == widget.initial;
-            return RadioListTile<SalaryFormula>(
-              value: f,
-              groupValue: _selected,
-              onChanged: (v) => setState(() => _selected = v!),
-              title: Text(
-                f.effectiveDate.toString().substring(0, 10),
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          children: [
+            // Option công thức đã chỉnh sửa (inline)
+            if (widget.customFormula != null)
+              RadioListTile<bool>(
+                value: true,
+                groupValue: _customSelected,
+                onChanged: (v) => setState(() { _customSelected = true; _selected = null; }),
+                title: Text(
+                  widget.customFormula!.name,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Công thức đã chỉnh sửa · chỉ áp dụng cho bảng lương này',
+                  style: TextStyle(fontSize: 12, color: Colors.orange[700]),
+                ),
+                dense: true,
               ),
-              subtitle: isDefault
-                  ? const Text('Gần nhất với tháng được chọn',
-                      style: TextStyle(fontSize: 12))
-                  : null,
-              dense: true,
-            );
-          }).toList(),
+            // Các công thức gốc
+            ...widget.formulas.map((f) {
+              final isDefault = f == widget.initial;
+              return RadioListTile<bool>(
+                value: false,
+                groupValue: _customSelected,
+                onChanged: (v) => setState(() { _customSelected = false; _selected = f; }),
+                title: Text(
+                  f.name,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _selected == f && !_customSelected ? null : AppTheme.textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  isDefault
+                      ? 'Hiệu lực: ${f.effectiveDate.toString().substring(0, 10)} · Gần nhất với tháng được chọn'
+                      : 'Hiệu lực: ${f.effectiveDate.toString().substring(0, 10)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDefault ? Colors.blue[700] : null,
+                  ),
+                ),
+                secondary: _selected == f && !_customSelected
+                    ? const Icon(Icons.check_circle, color: AppTheme.primary, size: 18)
+                    : null,
+                dense: true,
+              );
+            }),
+          ],
         ),
       ),
       actions: [
@@ -636,7 +709,12 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
           child: const Text('Huỷ'),
         ),
         FilledButton(
-          onPressed: () => Navigator.pop(context, _selected),
+          onPressed: () => Navigator.pop(
+            context,
+            _customSelected
+                ? const _FormulaPickResult(isCustom: true)
+                : _FormulaPickResult(formula: _selected),
+          ),
           child: const Text('Tính lại'),
         ),
       ],
@@ -1146,6 +1224,68 @@ class _PayslipSectionHeader extends StatelessWidget {
           const Expanded(child: Divider(indent: 8)),
         ]),
       );
+}
+
+// ─── Inline formula edit dialog — wrapper dùng FormulaEditorDialog ────────────
+
+class _InlineFormulaEditDialog extends StatelessWidget {
+  final Payroll payroll;
+  final PayrollRepository repo;
+  final SalaryFormula? baseFormula;
+  const _InlineFormulaEditDialog({
+    required this.payroll,
+    required this.repo,
+    this.baseFormula,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cf = payroll.customFormula;
+    final bf = baseFormula;
+
+    // Tạo SalaryFormula giả để truyền vào FormulaEditorDialog như "existing"
+    // nhưng override onSave để lưu inline thay vì update repo
+    final fakeExisting = bf != null ? SalaryFormula(
+      id: bf.id,
+      salaryGradeId: bf.salaryGradeId,
+      salaryGradeCode: bf.salaryGradeCode,
+      salaryGradeName: bf.salaryGradeName,
+      name: cf?.name ?? '${bf.name} (đã chỉnh sửa)',
+      effectiveDate: bf.effectiveDate,
+      expressionGross: cf?.expressionGross ?? bf.expressionGross,
+      expressionNet: cf?.expressionNet ?? bf.expressionNet,
+      customVars: cf?.customVars ?? bf.customVars,
+      deductionVars: cf?.deductionVars ?? bf.deductionVars,
+      incomeVars: cf?.incomeVars ?? bf.incomeVars,
+      allowanceVars: cf?.allowanceVars ?? bf.allowanceVars,
+    ) : null;
+
+    return FormulaEditorDialog(
+      grades: const [],
+      repo: SalaryFormulaRepository(),
+      existing: fakeExisting,
+      onSave: ({
+        required name,
+        required expressionGross,
+        required expressionNet,
+        required customVars,
+        required deductionVars,
+        required incomeVars,
+        required allowanceVars,
+      }) async {
+        final snapshot = CustomFormulaSnapshot(
+          name: name,
+          expressionGross: expressionGross,
+          expressionNet: expressionNet,
+          customVars: customVars,
+          deductionVars: deductionVars,
+          incomeVars: incomeVars,
+          allowanceVars: allowanceVars,
+        );
+        return await repo.updateDraft(payroll.id, customFormula: snapshot);
+      },
+    );
+  }
 }
 
 class _Row extends StatelessWidget {

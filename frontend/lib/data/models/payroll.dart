@@ -1,4 +1,49 @@
+import 'salary_formula.dart';
+
 enum PayrollStatus { draft, approved, paid }
+
+class CustomFormulaSnapshot {
+  final String name;
+  final String expressionGross;
+  final String expressionNet;
+  final Map<String, String> customVars;
+  final Map<String, DeductionVarEntry> deductionVars;
+  final Map<String, DeductionVarEntry> incomeVars;
+  final Map<String, DeductionVarEntry> allowanceVars;
+
+  const CustomFormulaSnapshot({
+    required this.name,
+    required this.expressionGross,
+    required this.expressionNet,
+    this.customVars = const {},
+    this.deductionVars = const {},
+    this.incomeVars = const {},
+    this.allowanceVars = const {},
+  });
+
+  factory CustomFormulaSnapshot.fromJson(Map<String, dynamic> j) => CustomFormulaSnapshot(
+    name: j['name'] as String? ?? '',
+    expressionGross: j['expressionGross'] as String? ?? '',
+    expressionNet: j['expressionNet'] as String? ?? '',
+    customVars: (j['customVars'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, v as String)),
+    deductionVars: (j['deductionVars'] as Map<String, dynamic>? ?? {})
+        .map((k, v) => MapEntry(k, DeductionVarEntry.fromJson(v as Map<String, dynamic>))),
+    incomeVars: (j['incomeVars'] as Map<String, dynamic>? ?? {})
+        .map((k, v) => MapEntry(k, DeductionVarEntry.fromJson(v as Map<String, dynamic>))),
+    allowanceVars: (j['allowanceVars'] as Map<String, dynamic>? ?? {})
+        .map((k, v) => MapEntry(k, DeductionVarEntry.fromJson(v as Map<String, dynamic>))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'expressionGross': expressionGross,
+    'expressionNet': expressionNet,
+    'customVars': customVars,
+    'deductionVars': deductionVars.map((k, v) => MapEntry(k, v.toJson())),
+    'incomeVars': incomeVars.map((k, v) => MapEntry(k, v.toJson())),
+    'allowanceVars': allowanceVars.map((k, v) => MapEntry(k, v.toJson())),
+  };
+}
 
 class PayrollDeductionEntry {
   final String label;
@@ -47,6 +92,7 @@ class Payroll {
   final double? nightOt;
   final PayrollStatus status;
   final String? note;
+  final CustomFormulaSnapshot? customFormula;
   final DateTime? paidAt;
   final DateTime? approvedAt;
   final String? payType;
@@ -87,6 +133,7 @@ class Payroll {
     this.nightOt,
     required this.status,
     this.note,
+    this.customFormula,
     this.paidAt,
     this.approvedAt,
     this.payType,
@@ -131,6 +178,9 @@ class Payroll {
         nightOt: (j['nightOt'] as num?)?.toDouble(),
         status: _status(j['status'] as String?),
         note: j['note'] as String?,
+        customFormula: j['customFormula'] != null
+            ? CustomFormulaSnapshot.fromJson(j['customFormula'] as Map<String, dynamic>)
+            : null,
         paidAt: j['paidAt'] != null ? DateTime.tryParse(j['paidAt'] as String) : null,
         approvedAt: j['approvedAt'] != null ? DateTime.tryParse(j['approvedAt'] as String) : null,
         payType: j['payType'] as String?,

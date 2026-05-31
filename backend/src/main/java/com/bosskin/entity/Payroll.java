@@ -119,6 +119,11 @@ public class Payroll extends BaseEntity {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
+    // Inline formula snapshot — chỉ áp dụng cho payroll này, không lưu vào salary_formulas
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "custom_formula", columnDefinition = "JSON")
+    private CustomFormula customFormula;
+
     // Snapshot các khoản khấu trừ tùy chỉnh khi generate: {"VAR_NAME": {label, amount}}
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_deductions", columnDefinition = "JSON")
@@ -145,5 +150,16 @@ public class Payroll extends BaseEntity {
         private String label;
         private BigDecimal amount;
         private int sortOrder;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class CustomFormula {
+        private String name;
+        private String expressionGross;
+        private String expressionNet;
+        private Map<String, String> customVars;
+        private Map<String, SalaryFormula.DeductionVar> deductionVars;
+        private Map<String, SalaryFormula.DeductionVar> incomeVars;
+        private Map<String, SalaryFormula.DeductionVar> allowanceVars;
     }
 }
