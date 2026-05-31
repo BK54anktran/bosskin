@@ -40,6 +40,10 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: ^13.0.2
 
+  # File picker
+  image_picker: ^1.1.2
+  http_parser: ^4.0.2
+
   # Utils
   uuid: ^4.4.0
   freezed_annotation: ^2.4.1

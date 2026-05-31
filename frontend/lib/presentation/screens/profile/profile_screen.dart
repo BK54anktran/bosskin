@@ -5,7 +5,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/language_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
-import '../../../core/utils/dialog_utils.dart';
+import '../../../core/utils/file_picker_utils.dart';
+import '../../../data/repositories/upload_repository.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/profile_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -94,43 +95,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _updateAvatar() async {
-    final s = AppLocalizations.of(context)!;
-    final ctrl = TextEditingController(text: _avatarCtrl.text);
-    final url = await showInstantDialog<String>(
-      context,
-      (dialogContext) => AlertDialog(
-        title: Text(s.updateAvatarTitle),
-        content: TextField(
-          controller: ctrl,
-          decoration: InputDecoration(
-            labelText: s.avatarUrlLabel,
-            hintText: s.avatarUrlHint,
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(),
-              child: Text(s.cancel)),
-          ElevatedButton(
-              onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(ctrl.text.trim()),
-              child: Text(s.save)),
-        ],
-      ),
-    );
-    if (url == null || url.isEmpty) return;
+    final picked = await pickImageFile();
+    if (picked == null || !mounted) return;
+
     setState(() => _saving = true);
     try {
+      final bytes = picked.bytes;
+      final filename = picked.filename;
+      final url = await UploadRepository().uploadImage(
+        bytes: bytes,
+        filename: filename,
+        folder: 'avatars',
+      );
       final updated = await ProfileService.instance.updateAvatar(url);
       await AuthService.instance.syncCurrentUserProfile(updated);
+      if (!mounted) return;
+      final s = AppLocalizations.of(context);
       setState(() {
         _profile = updated;
         _avatarCtrl.text = url;
       });
-      if (mounted) _showSnack(s.avatarUpdatedSuccess, success: true);
+      _showSnack(s.avatarUpdatedSuccess, success: true);
     } catch (e) {
-      if (mounted) _showSnack('${s.errorPrefix}: ${serverMsg(e)}');
+      if (mounted) {
+        final s = AppLocalizations.of(context);
+        _showSnack('${s.errorPrefix}: ${serverMsg(e)}');
+      }
     } finally {
-      setState(() => _saving = false);
+      if (mounted) setState(() => _saving = false);
     }
   }
 
