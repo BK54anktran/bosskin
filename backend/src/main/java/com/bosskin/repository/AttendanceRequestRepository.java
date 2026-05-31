@@ -142,6 +142,31 @@ public interface AttendanceRequestRepository extends JpaRepository<AttendanceReq
         @Param("requestDate") LocalDate requestDate
     );
 
+    @Query("""
+        SELECT r FROM AttendanceRequest r
+        JOIN FETCH r.employee e
+        JOIN FETCH e.department
+        LEFT JOIN FETCH r.shiftAssignment sa
+        LEFT JOIN FETCH sa.shift
+        WHERE r.employee.id = :employeeId
+          AND r.requestDate = :requestDate
+          AND r.requestType = :requestType
+          AND r.status = 'PENDING'
+          AND r.id <> :excludeId
+          AND (
+            (:shiftAssignmentId IS NULL AND r.shiftAssignment IS NULL)
+            OR (r.shiftAssignment.id = :shiftAssignmentId)
+          )
+        ORDER BY r.id DESC
+        """)
+    List<AttendanceRequest> findPendingPaired(
+        @Param("employeeId") Long employeeId,
+        @Param("requestDate") LocalDate requestDate,
+        @Param("requestType") AttendanceRequest.Type requestType,
+        @Param("excludeId") Long excludeId,
+        @Param("shiftAssignmentId") Long shiftAssignmentId
+    );
+
     long countByEmployee_Company_IdAndStatus(Long companyId, AttendanceRequest.Status status);
 
     List<AttendanceRequest> findByShiftAssignment_Id(Long shiftAssignmentId);

@@ -155,7 +155,7 @@ class AttendanceRepository {
     );
   }
 
-  Future<AttendanceChangeRequest> createRequest({
+  Future<List<AttendanceChangeRequest>> createRequest({
     required DateTime date,
     required String type,
     int? shiftAssignmentId,
@@ -168,10 +168,12 @@ class AttendanceRepository {
   }) async {
     return _api.post(
       '/attendance-requests',
-      (data) => AttendanceChangeRequest.fromJson(data as Map<String, dynamic>),
+      (data) => (data as List)
+          .map((e) => AttendanceChangeRequest.fromJson(e as Map<String, dynamic>))
+          .toList(),
       {
         'requestDate': date.toIso8601String().split('T').first,
-        'requestType': type,
+        if (type != 'CHECK_IN_OUT') 'requestType': type,
         if (shiftAssignmentId != null) 'shiftAssignmentId': shiftAssignmentId,
         if (requestedCheckIn != null) 'requestedCheckIn': requestedCheckIn,
         if (requestedCheckOut != null) 'requestedCheckOut': requestedCheckOut,

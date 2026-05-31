@@ -36,7 +36,7 @@ public class AttendanceRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<AttendanceRequestDTO.Response> create(
+    public ResponseEntity<List<AttendanceRequestDTO.Response>> create(
         @AuthenticationPrincipal User user,
         @Valid @RequestBody AttendanceRequestDTO.CreateRequest req
     ) {

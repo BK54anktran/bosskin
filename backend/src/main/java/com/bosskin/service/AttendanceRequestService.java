@@ -65,23 +65,51 @@ public class AttendanceRequestService {
     }
 
     @Transactional
-    public AttendanceRequestDTO.Response createRequest(User user, AttendanceRequestDTO.CreateRequest req) {
+    public List<AttendanceRequestDTO.Response> createRequest(User user, AttendanceRequestDTO.CreateRequest req) {
         Employee emp = getEmployeeOrThrow(user);
         validateRequest(req);
 
-        AttendanceRequest request = AttendanceRequest.builder()
-            .employee(emp)
-            .shiftAssignment(resolveShiftAssignment(emp, req))
-            .requestDate(req.getRequestDate())
-            .requestType(req.getRequestType())
-            .requestedCheckIn(req.getRequestedCheckIn())
-            .requestedCheckOut(req.getRequestedCheckOut())
-            .requestedOvertimeMinutes(req.getRequestedOvertimeMinutes())
-            .requestedOvertimeScope(req.getRequestedOvertimeScope())
-            .requestedOvertimePeriod(req.getRequestedOvertimePeriod())
-            .note(req.getNote())
-            .build();
-        return toResponse(requestRepository.save(request));
+        ShiftAssignment shift = resolveShiftAssignment(emp, req);
+        List<AttendanceRequest> created = new java.util.ArrayList<>();
+
+        AttendanceRequest.Type type = req.getRequestType();
+        if (type == AttendanceRequest.Type.OT || type == AttendanceRequest.Type.EXTRA) {
+            created.add(AttendanceRequest.builder()
+                .employee(emp)
+                .shiftAssignment(shift)
+                .requestDate(req.getRequestDate())
+                .requestType(type)
+                .requestedOvertimeMinutes(req.getRequestedOvertimeMinutes())
+                .requestedOvertimeScope(req.getRequestedOvertimeScope())
+                .requestedOvertimePeriod(req.getRequestedOvertimePeriod())
+                .note(req.getNote())
+                .build());
+        } else {
+            if (req.getRequestedCheckIn() != null) {
+                created.add(AttendanceRequest.builder()
+                    .employee(emp)
+                    .shiftAssignment(shift)
+                    .requestDate(req.getRequestDate())
+                    .requestType(AttendanceRequest.Type.CHECK_IN)
+                    .requestedCheckIn(req.getRequestedCheckIn())
+                    .note(req.getNote())
+                    .build());
+            }
+            if (req.getRequestedCheckOut() != null) {
+                created.add(AttendanceRequest.builder()
+                    .employee(emp)
+                    .shiftAssignment(shift)
+                    .requestDate(req.getRequestDate())
+                    .requestType(AttendanceRequest.Type.CHECK_OUT)
+                    .requestedCheckOut(req.getRequestedCheckOut())
+                    .note(req.getNote())
+                    .build());
+            }
+        }
+        if (created.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.check_in_or_out_required");
+        }
+        return requestRepository.saveAll(created).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -128,6 +156,7 @@ public class AttendanceRequestService {
         request.setProcessedAt(java.time.LocalDateTime.now());
         requestRepository.save(request);
         disableOlderAppliedRequests(request);
+        approvePairedRequest(request, admin, body != null ? body.getAdminNote() : null);
         clearAttendanceSnapIfApproved(request.getEmployee().getId(), request.getRequestDate());
         return toResponse(getRequestOrThrow(requestId, admin.getCompany().getId()));
     }
@@ -144,6 +173,7 @@ public class AttendanceRequestService {
         request.setProcessedBy(admin);
         request.setProcessedAt(java.time.LocalDateTime.now());
         requestRepository.save(request);
+        rejectPairedRequest(request, admin, body != null ? body.getAdminNote() : null);
         clearAttendanceSnapIfApproved(request.getEmployee().getId(), request.getRequestDate());
         return toResponse(getRequestOrThrow(requestId, admin.getCompany().getId()));
     }
@@ -292,30 +322,22 @@ public class AttendanceRequestService {
     }
 
     private void validateRequest(AttendanceRequestDTO.CreateRequest req) {
-        if (req.getRequestDate() == null || req.getRequestType() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu thông tin ngày hoặc loại yêu cầu");
+        if (req.getRequestDate() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.date_required");
         }
-        switch (req.getRequestType()) {
-            case CHECK_IN -> {
-                if (req.getRequestedCheckIn() == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập giờ check-in");
-                }
+        if (req.getRequestedCheckIn() == null && req.getRequestedCheckOut() == null
+                && req.getRequestedOvertimeMinutes() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.check_in_or_out_required");
+        }
+        if (req.getRequestedOvertimeMinutes() != null) {
+            if (req.getRequestedOvertimeMinutes() <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.ot_duration_invalid");
             }
-            case CHECK_OUT -> {
-                if (req.getRequestedCheckOut() == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập giờ check-out");
-                }
+            if (req.getRequestType() == AttendanceRequest.Type.OT && req.getRequestedOvertimeScope() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.ot_scope_required");
             }
-            case OT -> {
-                if (req.getRequestedOvertimeMinutes() == null || req.getRequestedOvertimeMinutes() <= 0) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập thời lượng OT hợp lệ");
-                }
-                if (req.getRequestedOvertimeScope() == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn phạm vi OT");
-                }
-                if (req.getRequestedOvertimePeriod() == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn OT ngày hoặc đêm");
-                }
+            if (req.getRequestedOvertimePeriod() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.ot_period_required");
             }
         }
     }
@@ -373,6 +395,45 @@ public class AttendanceRequestService {
         if (a == null) return 1;
         if (b == null) return -1;
         return a.compareTo(b);
+    }
+
+    private void approvePairedRequest(AttendanceRequest request, User admin, String adminNote) {
+        AttendanceRequest.Type pairedType = pairedType(request.getRequestType());
+        if (pairedType == null) return;
+        Long shiftId = request.getShiftAssignment() != null ? request.getShiftAssignment().getId() : null;
+        List<AttendanceRequest> paired = requestRepository.findPendingPaired(
+            request.getEmployee().getId(), request.getRequestDate(), pairedType, request.getId(), shiftId);
+        if (paired.isEmpty()) return;
+        AttendanceRequest peer = paired.get(0);
+        peer.setStatus(AttendanceRequest.Status.APPROVED);
+        peer.setApplied(true);
+        peer.setAdminNote(adminNote);
+        peer.setProcessedBy(admin);
+        peer.setProcessedAt(java.time.LocalDateTime.now());
+        requestRepository.save(peer);
+        disableOlderAppliedRequests(peer);
+    }
+
+    private void rejectPairedRequest(AttendanceRequest request, User admin, String adminNote) {
+        AttendanceRequest.Type pairedType = pairedType(request.getRequestType());
+        if (pairedType == null) return;
+        Long shiftId = request.getShiftAssignment() != null ? request.getShiftAssignment().getId() : null;
+        List<AttendanceRequest> paired = requestRepository.findPendingPaired(
+            request.getEmployee().getId(), request.getRequestDate(), pairedType, request.getId(), shiftId);
+        if (paired.isEmpty()) return;
+        AttendanceRequest peer = paired.get(0);
+        peer.setStatus(AttendanceRequest.Status.REJECTED);
+        peer.setApplied(false);
+        peer.setAdminNote(adminNote);
+        peer.setProcessedBy(admin);
+        peer.setProcessedAt(java.time.LocalDateTime.now());
+        requestRepository.save(peer);
+    }
+
+    private AttendanceRequest.Type pairedType(AttendanceRequest.Type type) {
+        if (type == AttendanceRequest.Type.CHECK_IN) return AttendanceRequest.Type.CHECK_OUT;
+        if (type == AttendanceRequest.Type.CHECK_OUT) return AttendanceRequest.Type.CHECK_IN;
+        return null;
     }
 
     private void clearAttendanceSnapIfApproved(Long employeeId, java.time.LocalDate date) {

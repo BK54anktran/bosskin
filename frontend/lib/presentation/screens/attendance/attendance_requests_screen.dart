@@ -412,7 +412,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
   final _otCtrl = TextEditingController();
 
   DateTime _requestDate = DateTime.now();
-  String _type = 'CHECK_IN';
+  String _type = 'CHECK_IN_OUT';
   String _otScope = 'IN_SHIFT';
   String _otPeriod = 'DAY';
   String _extraPeriod = 'DAY';
@@ -579,9 +579,8 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
         date: _requestDate,
         type: _type,
         shiftAssignmentId: effectiveShiftId,
-        requestedCheckIn: _type == 'CHECK_IN' ? _checkInCtrl.text.trim() : null,
-        requestedCheckOut:
-            _type == 'CHECK_OUT' ? _checkOutCtrl.text.trim() : null,
+        requestedCheckIn: _type == 'CHECK_IN_OUT' && _checkInCtrl.text.trim().isNotEmpty ? _checkInCtrl.text.trim() : null,
+        requestedCheckOut: _type == 'CHECK_IN_OUT' && _checkOutCtrl.text.trim().isNotEmpty ? _checkOutCtrl.text.trim() : null,
         requestedOvertimeMinutes: (_type == 'OT' || _type == 'EXTRA')
             ? _parseDurationMinutes(_otCtrl.text.trim(), s)
             : null,
@@ -613,8 +612,10 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
   void _onTypeChanged(String v) {
     setState(() {
       _type = v;
-      if (v != 'CHECK_IN') _checkInCtrl.clear();
-      if (v != 'CHECK_OUT') _checkOutCtrl.clear();
+      if (v != 'CHECK_IN_OUT') {
+        _checkInCtrl.clear();
+        _checkOutCtrl.clear();
+      }
       if (v != 'OT' && v != 'EXTRA') {
         _otCtrl.clear();
         _otScope = 'IN_SHIFT';
@@ -819,12 +820,8 @@ class _RequestForm extends StatelessWidget {
               ),
               items: [
                 DropdownMenuItem(
-                  value: 'CHECK_IN',
-                  child: Text(s.checkIn),
-                ),
-                DropdownMenuItem(
-                  value: 'CHECK_OUT',
-                  child: Text(s.checkOut),
+                  value: 'CHECK_IN_OUT',
+                  child: Text(s.checkInOut),
                 ),
                 if (otEnabled)
                   DropdownMenuItem(
@@ -841,26 +838,26 @@ class _RequestForm extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
-            if (type == 'CHECK_IN')
+            if (type == 'CHECK_IN_OUT') ...[
               _TimeInput(
                 controller: checkInCtrl,
                 label: s.checkInRequestTime,
                 onPick: () => onPickTime(checkInCtrl),
-                validator: (v) =>
-                    type == 'CHECK_IN' && (v == null || v.trim().isEmpty)
-                        ? s.pleaseEnterCheckInTime
-                        : null,
+                validator: (v) {
+                  if (type != 'CHECK_IN_OUT') return null;
+                  if ((v == null || v.trim().isEmpty) && checkOutCtrl.text.trim().isEmpty) {
+                    return s.pleaseEnterCheckInTime;
+                  }
+                  return null;
+                },
               ),
-            if (type == 'CHECK_OUT')
+              const SizedBox(height: 12),
               _TimeInput(
                 controller: checkOutCtrl,
                 label: s.checkOutRequestTime,
                 onPick: () => onPickTime(checkOutCtrl),
-                validator: (v) =>
-                    type == 'CHECK_OUT' && (v == null || v.trim().isEmpty)
-                        ? s.pleaseEnterCheckOutTime
-                        : null,
               ),
+            ],
             if (type == 'OT')
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
