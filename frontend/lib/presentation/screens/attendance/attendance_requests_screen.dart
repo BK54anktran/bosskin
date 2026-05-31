@@ -1206,7 +1206,7 @@ class _ShiftInfoCard extends StatelessWidget {
   }
 }
 
-class _FilterPanel extends StatelessWidget {
+class _FilterPanel extends StatefulWidget {
   final TextEditingController searchCtrl;
   final String filterType;
   final DateTime? filterFrom;
@@ -1238,14 +1238,22 @@ class _FilterPanel extends StatelessWidget {
   });
 
   @override
+  State<_FilterPanel> createState() => _FilterPanelState();
+}
+
+class _FilterPanelState extends State<_FilterPanel> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
     final dateFmt = DateFormat('dd/MM/yyyy', 'vi');
-    final hasFilters = searchCtrl.text.trim().isNotEmpty ||
-        filterType != 'ALL' ||
-        filterFrom != null ||
-        filterTo != null ||
-        filterDepartmentId != null;
+    final hasFilters = widget.searchCtrl.text.trim().isNotEmpty ||
+        widget.filterType != 'ALL' ||
+        widget.filterFrom != null ||
+        widget.filterTo != null ||
+        widget.filterDepartmentId != null;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     Widget dateButton({
       required String label,
@@ -1257,7 +1265,7 @@ class _FilterPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: Container(
           width: 150,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -1269,7 +1277,7 @@ class _FilterPanel extends StatelessWidget {
               Text(label,
                   style: const TextStyle(
                       fontSize: 11, color: AppTheme.textSecondary)),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 value == null ? s.all : dateFmt.format(value),
                 style: const TextStyle(
@@ -1283,6 +1291,66 @@ class _FilterPanel extends StatelessWidget {
       );
     }
 
+    final advancedFilters = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            SizedBox(
+              width: 180,
+              child: DropdownButtonFormField<String>(
+                initialValue: widget.filterType,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Type',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  DropdownMenuItem(value: 'ALL', child: Text(s.all)),
+                  DropdownMenuItem(value: 'CHECK_IN', child: Text(s.checkIn)),
+                  DropdownMenuItem(value: 'CHECK_OUT', child: Text(s.checkOut)),
+                  if (widget.otEnabled)
+                    DropdownMenuItem(value: 'OT', child: Text(s.overtime)),
+                  DropdownMenuItem(value: 'EXTRA', child: Text(s.extraHours)),
+                ],
+                onChanged: (v) {
+                  if (v != null) widget.onTypeChanged(v);
+                },
+              ),
+            ),
+            DepartmentPickerField(
+              departments: widget.departments,
+              value: widget.filterDepartmentId,
+              allowAll: true,
+              allLabel: s.all,
+              label: s.department,
+              compact: true,
+              onChanged: widget.onDepartmentChanged,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            dateButton(label: s.fromDate, value: widget.filterFrom, onTap: widget.onPickFrom),
+            dateButton(label: s.toDate, value: widget.filterTo, onTap: widget.onPickTo),
+            TextButton.icon(
+              onPressed: hasFilters ? widget.onClear : null,
+              icon: const Icon(Icons.clear_all_outlined),
+              label: Text(s.clearFilters),
+            ),
+          ],
+        ),
+      ],
+    );
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1293,73 +1361,47 @@ class _FilterPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SearchTextField(
-            controller: searchCtrl,
-            onChanged: onSearchChanged,
-            onClear: () => onSearchChanged(''),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
+          Row(
             children: [
-              SizedBox(
-                width: 180,
-                child: DropdownButtonFormField<String>(
-                  initialValue: filterType,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Type',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  items: [
-                    DropdownMenuItem(value: 'ALL', child: Text(s.all)),
-                    DropdownMenuItem(value: 'CHECK_IN', child: Text(s.checkIn)),
-                    DropdownMenuItem(value: 'CHECK_OUT', child: Text(s.checkOut)),
-                    if (otEnabled)
-                      DropdownMenuItem(value: 'OT', child: Text(s.overtime)),
-                    DropdownMenuItem(value: 'EXTRA', child: Text(s.extraHours)),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) onTypeChanged(v);
-                  },
+              Expanded(
+                child: SearchTextField(
+                  controller: widget.searchCtrl,
+                  onChanged: widget.onSearchChanged,
+                  onClear: () => widget.onSearchChanged(''),
                 ),
               ),
-              DepartmentPickerField(
-                departments: departments,
-                value: filterDepartmentId,
-                allowAll: true,
-                allLabel: s.all,
-                label: s.department,
-                compact: true,
-                onChanged: onDepartmentChanged,
-              ),
+              if (isMobile) ...[
+                const SizedBox(width: 8),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      onPressed: () => setState(() => _expanded = !_expanded),
+                      icon: Icon(
+                        _expanded ? Icons.filter_list_off : Icons.filter_list,
+                        color: hasFilters ? AppTheme.primary : AppTheme.textSecondary,
+                      ),
+                      tooltip: s.clearFilters,
+                    ),
+                    if (hasFilters && !_expanded)
+                      Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppTheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              dateButton(
-                label: s.fromDate,
-                value: filterFrom,
-                onTap: onPickFrom,
-              ),
-              dateButton(
-                label: s.toDate,
-                value: filterTo,
-                onTap: onPickTo,
-              ),
-              TextButton.icon(
-                onPressed: hasFilters ? onClear : null,
-                icon: const Icon(Icons.clear_all_outlined),
-                label: Text(s.clearFilters),
-              ),
-            ],
-          ),
+          if (!isMobile || _expanded) advancedFilters,
         ],
       ),
     );

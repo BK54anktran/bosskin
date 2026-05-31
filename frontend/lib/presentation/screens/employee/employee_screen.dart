@@ -14,6 +14,7 @@ import '../../widgets/permission_guard.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/payroll.dart';
 import '../../../data/repositories/salary_history_repository.dart';
+import '../../../data/services/auth_service.dart';
 import 'employee_form_screen.dart';
 
 class EmployeeScreen extends StatefulWidget {
@@ -438,6 +439,85 @@ class _EmployeeCard extends StatelessWidget {
     final e = employee;
     final isActive = e.status == EmployeeStatus.active;
 
+    final user = AuthService.instance.currentUser;
+    final canSalary = user != null && (user.isSystemAdmin || user.can('PAYROLL_CREATE'));
+    final canEdit = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_UPDATE'));
+    final canDelete = isActive && user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DELETE'));
+
+    final actionsMenu = PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, size: 20),
+      itemBuilder: (_) => [
+        if (canSalary)
+          PopupMenuItem(
+            value: 'salary',
+            child: Row(children: [
+              const Icon(Icons.payments_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(s.salaryHistory),
+            ]),
+          ),
+        if (canEdit)
+          PopupMenuItem(
+            value: 'edit',
+            child: Row(children: [
+              const Icon(Icons.edit_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(s.edit),
+            ]),
+          ),
+        if (canDelete)
+          PopupMenuItem(
+            value: 'delete',
+            child: Row(children: [
+              const Icon(Icons.person_off_outlined, size: 18, color: Colors.red),
+              const SizedBox(width: 10),
+              Text(s.employeeDeleteTitle, style: const TextStyle(color: Colors.red)),
+            ]),
+          ),
+      ],
+      onSelected: (v) {
+        if (v == 'salary') onSalaryHistory();
+        if (v == 'edit') onEdit();
+        if (v == 'delete') onDelete();
+      },
+    );
+
+    final info = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(e.fullName,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 15)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(e.employeeCode,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            ),
+            _StatusChip(e.status),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 12,
+          runSpacing: 2,
+          children: [
+            _InfoChip(Icons.email_outlined, e.email),
+            _InfoChip(Icons.account_tree_outlined, e.departmentName),
+            _InfoChip(Icons.work_outline, e.positionName ?? '—'),
+          ],
+        ),
+      ],
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -455,71 +535,8 @@ class _EmployeeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(e.fullName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 15)),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(e.employeeCode,
-                            style: const TextStyle(
-                                fontSize: 11, color: Colors.grey)),
-                      ),
-                      _StatusChip(e.status),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 2,
-                    children: [
-                      _InfoChip(Icons.email_outlined, e.email),
-                      _InfoChip(Icons.account_tree_outlined, e.departmentName),
-                      _InfoChip(Icons.work_outline, e.positionName ?? '—'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            PermissionGuard(
-              permission: 'PAYROLL_CREATE',
-              child: IconButton(
-                tooltip: s.salaryHistory,
-                icon: const Icon(Icons.payments_outlined, size: 18),
-                onPressed: onSalaryHistory,
-              ),
-            ),
-            PermissionGuard(
-              permission: 'EMPLOYEE_UPDATE',
-              child: IconButton(
-                tooltip: s.edit,
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                onPressed: onEdit,
-              ),
-            ),
-            if (isActive)
-              PermissionGuard(
-                permission: 'EMPLOYEE_DELETE',
-                child: IconButton(
-                  tooltip: s.employeeDeleteTitle,
-                  icon: const Icon(Icons.person_off_outlined,
-                      size: 18, color: Colors.red),
-                  onPressed: onDelete,
-                ),
-              ),
+            Expanded(child: info),
+            actionsMenu,
           ],
         ),
       ),

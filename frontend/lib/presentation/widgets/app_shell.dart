@@ -71,6 +71,33 @@ class _AppShellState extends State<AppShell>
     final navItems = _navItems(s);
     final isWide = MediaQuery.of(context).size.width >= 900;
 
+    final bottomItems = _bottomNavItems(s);
+    final user = AuthService.instance.currentUser;
+    final visibleBottomItems = bottomItems.where((item) {
+      if (user == null) return false;
+      if (item.requiredPermission == null) return true;
+      if (item.route == AppRoutes.attendanceRequests) {
+        return user.isSystemAdmin ||
+            user.can('ATTENDANCE_SELF') ||
+            user.can('ATTENDANCE_MANAGE') ||
+            user.can('ATTENDANCE_REQUEST_APPROVE');
+      }
+      return user.isSystemAdmin || user.can(item.requiredPermission!);
+    }).toList();
+
+    int? bottomIndex;
+    if (!isWide) {
+      for (var i = 0; i < visibleBottomItems.length; i++) {
+        final item = visibleBottomItems[i];
+        if (widget.location == item.route ||
+            (item.route != AppRoutes.dashboard &&
+                widget.location.startsWith('${item.route}/'))) {
+          bottomIndex = i;
+          break;
+        }
+      }
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
@@ -103,6 +130,31 @@ class _AppShellState extends State<AppShell>
         ],
       ),
       drawer: isWide ? null : const AppDrawer(),
+      bottomNavigationBar: isWide || visibleBottomItems.isEmpty
+          ? null
+          : BottomNavigationBar(
+              currentIndex: bottomIndex ?? 0,
+              onTap: (i) {
+                final route = visibleBottomItems[i].route;
+                if (widget.location != route) {
+                  while (shellNavigatorKey.currentState?.canPop() == true) {
+                    shellNavigatorKey.currentState!.pop();
+                  }
+                  context.go(route);
+                }
+              },
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: AppTheme.primary,
+              unselectedItemColor: AppTheme.textSecondary,
+              selectedFontSize: 11,
+              unselectedFontSize: 11,
+              items: visibleBottomItems
+                  .map((item) => BottomNavigationBarItem(
+                        icon: Icon(item.icon),
+                        label: item.label,
+                      ))
+                  .toList(),
+            ),
       body: isWide
           ? Row(
               children: [
@@ -155,6 +207,19 @@ class _AppShellState extends State<AppShell>
             requiredPermission: 'PAYROLL_VIEW'),
         _NavItem(s.selfPayroll, Icons.receipt_long_outlined, AppRoutes.selfPayroll,
             requiredPermission: 'ATTENDANCE_SELF'),
+      ];
+
+  static List<_NavItem> _bottomNavItems(AppLocalizations s) => [
+        _NavItem(s.dashboard, Icons.dashboard_outlined, AppRoutes.dashboard,
+            requiredPermission: 'DASHBOARD_VIEW'),
+        _NavItem(s.checkInOut, Icons.login_outlined, AppRoutes.checkInOut,
+            requiredPermission: 'ATTENDANCE_SELF'),
+        _NavItem(s.attendanceRequests, Icons.note_add_outlined,
+            AppRoutes.attendanceRequests,
+            requiredPermission: 'ATTENDANCE_SELF'),
+        _NavItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
+            requiredPermission: 'LEAVE_VIEW'),
+        _NavItem(s.profile, Icons.person_outline, AppRoutes.profile),
       ];
 
   static String _titleFor(String path, AppLocalizations s) {

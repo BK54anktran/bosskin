@@ -253,8 +253,9 @@ class AuthService extends ChangeNotifier {
 
   Future<AuthUser> login(
     String email,
-    String password,
-  ) async {
+    String password, {
+    bool rememberMe = true,
+  }) async {
     final deviceId =
         await DeviceService.instance.getOrCreateDeviceId();
 
@@ -298,21 +299,14 @@ class AuthService extends ChangeNotifier {
       permissions: perms,
     );
 
-    await Future.wait([
-      _safeWrite(
-        AppConstants.tokenKey,
-        token,
-      ),
-      _safeWrite(
-        AppConstants.userKey,
-        jsonEncode(_currentUser!.toJson()),
-      ),
-      if (refreshToken != null)
-        _safeWrite(
-          AppConstants.refreshTokenKey,
-          refreshToken,
-        ),
-    ]);
+    if (rememberMe) {
+      await Future.wait([
+        _safeWrite(AppConstants.tokenKey, token),
+        _safeWrite(AppConstants.userKey, jsonEncode(_currentUser!.toJson())),
+        if (refreshToken != null)
+          _safeWrite(AppConstants.refreshTokenKey, refreshToken),
+      ]);
+    }
     _currentRefreshToken = refreshToken;
 
     notifyListeners();

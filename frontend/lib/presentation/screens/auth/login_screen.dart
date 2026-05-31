@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/config/server_config.dart';
 import '../../../core/constants/app_constants.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -21,7 +22,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _rememberMe = true;
   String? _errorMessage;
+
+  static const _rememberMeKey = 'remember_me';
+  static const _savedEmailKey = 'saved_email';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPrefs();
+  }
+
+  Future<void> _loadSavedPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final remember = prefs.getBool(_rememberMeKey) ?? true;
+    final savedEmail = prefs.getString(_savedEmailKey) ?? '';
+    if (mounted) {
+      setState(() => _rememberMe = remember);
+      if (remember && savedEmail.isNotEmpty) {
+        _emailController.text = savedEmail;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -42,7 +65,15 @@ class _LoginScreenState extends State<LoginScreen> {
       await AuthService.instance.login(
         _emailController.text.trim(),
         _passwordController.text,
+        rememberMe: _rememberMe,
       );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_rememberMeKey, _rememberMe);
+      if (_rememberMe) {
+        await prefs.setString(_savedEmailKey, _emailController.text.trim());
+      } else {
+        await prefs.remove(_savedEmailKey);
+      }
       if (mounted) context.go(AppRoutes.dashboard);
     } catch (e) {
       setState(() {
@@ -117,6 +148,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: (v) =>
                           v == null || v.length < 6 ? s.passwordMinLength : null,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (v) =>
+                              setState(() => _rememberMe = v ?? true),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _rememberMe = !_rememberMe),
+                          child: Text(
+                            AppLocalizations.of(context)!.rememberMe,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ),
                     if (_errorMessage != null) ...[
                       const SizedBox(height: 12),

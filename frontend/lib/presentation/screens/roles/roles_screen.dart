@@ -426,17 +426,15 @@ class _RolesTabState extends State<_RolesTab> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: SearchTextField(
-                  controller: _searchCtrl,
-                  onChanged: (_) => setState(() {}),
-                  onClear: () => setState(() {}),
-                ),
-              ),
-              const SizedBox(width: 8),
-              DepartmentPickerField(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 600;
+              final searchField = SearchTextField(
+                controller: _searchCtrl,
+                onChanged: (_) => setState(() {}),
+                onClear: () => setState(() {}),
+              );
+              final deptField = DepartmentPickerField(
                 departments: _allDepts,
                 value: _deptFilterId == 0 ? null : _deptFilterId,
                 allowAll: true,
@@ -444,17 +442,41 @@ class _RolesTabState extends State<_RolesTab> {
                 label: s.department,
                 compact: true,
                 onChanged: (v) => setState(() => _deptFilterId = v),
-              ),
-              const SizedBox(width: 8),
-              PermissionGuard(
+              );
+              final addBtn = PermissionGuard(
                 permission: 'ROLE_MANAGE',
                 child: FilledButton.icon(
                   onPressed: () => _openEditDialog(),
                   icon: const Icon(Icons.add),
                   label: Text(s.addRole),
                 ),
-              ),
-            ],
+              );
+              if (isMobile) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    searchField,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: deptField),
+                        const SizedBox(width: 8),
+                        addBtn,
+                      ],
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: searchField),
+                  const SizedBox(width: 8),
+                  deptField,
+                  const SizedBox(width: 8),
+                  addBtn,
+                ],
+              );
+            },
           ),
         ),
         Expanded(
@@ -1208,13 +1230,35 @@ class _UsersTabState extends State<_UsersTab> {
   }
 
   Future<void> _toggleEnabled(AppUser user) async {
+    final s = AppLocalizations.of(context)!;
+    if (user.enabled) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(s.disableUserTitle),
+          content: Text(s.disableUserPrompt(user.fullName ?? user.email)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.disable),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
     try {
       await ApiService.instance.patch<Map<String, dynamic>>(
         '/users/${user.id}/enabled',
         (data) => data as Map<String, dynamic>,
         {'enabled': !user.enabled},
       );
-      _load();
+      if (mounted) _load();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1413,10 +1457,13 @@ class _UserCard extends StatelessWidget {
               ),
               PermissionGuard(
                 permission: 'USER_MANAGE',
-                child: Switch(
-                  value: user.enabled,
-                  onChanged: (_) => onToggleEnabled(),
-                  activeColor: AppTheme.primary,
+                child: Transform.scale(
+                  scale: 0.75,
+                  child: Switch(
+                    value: user.enabled,
+                    onChanged: (_) => onToggleEnabled(),
+                    activeThumbColor: AppTheme.primary,
+                  ),
                 ),
               ),
             ],

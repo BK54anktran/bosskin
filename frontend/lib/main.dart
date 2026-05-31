@@ -246,6 +246,17 @@ class BossKinApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
           ],
           debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            final width = MediaQuery.of(context).size.width;
+            // mobile < 600: scale 0.9, tablet 600-900: scale 0.95, desktop: 1.0
+            final scale = width < 600 ? 0.9 : (width < 900 ? 0.95 : 1.0);
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(scale),
+              ),
+              child: child!,
+            );
+          },
         );
       },
     );

@@ -8,6 +8,7 @@ import '../../../data/services/position_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/location_picker_field.dart';
 import '../../widgets/permission_guard.dart';
+import '../../../data/services/auth_service.dart';
 
 class DepartmentScreen extends StatefulWidget {
   const DepartmentScreen({super.key});
@@ -363,65 +364,16 @@ class _DepartmentTileState extends State<_DepartmentTile> {
                           ),
                         ),
                       ],
+                      if (!isDesktop)
+                        _ActionsMenu(
+                          s: s,
+                          onPositions: () => _showPositions(context, node),
+                          onAdd: () => widget.onAdd(node.id),
+                          onEdit: () => widget.onEdit(node),
+                          onDelete: () => widget.onDelete(node),
+                        ),
                     ],
                   ),
-                  if (!isDesktop)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            tooltip: s.managePositions,
-                            icon: const Icon(Icons.work_outline,
-                                size: 16, color: Color(0xFF3B82F6)),
-                            onPressed: () => _showPositions(context, node),
-                          ),
-                        ),
-                        PermissionGuard(
-                          permission: 'DEPARTMENT_MANAGE',
-                          child: SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              tooltip: s.addSubDepartment,
-                              icon: const Icon(Icons.add, size: 16),
-                              onPressed: () => widget.onAdd(node.id),
-                            ),
-                          ),
-                        ),
-                        PermissionGuard(
-                          permission: 'DEPARTMENT_MANAGE',
-                          child: SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              tooltip: s.edit,
-                              icon: const Icon(Icons.edit_outlined, size: 16),
-                              onPressed: () => widget.onEdit(node),
-                            ),
-                          ),
-                        ),
-                        PermissionGuard(
-                          permission: 'DEPARTMENT_MANAGE',
-                          child: SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              tooltip: s.delete,
-                              icon: const Icon(Icons.delete_outline,
-                                  size: 16, color: Colors.red),
-                              onPressed: () => widget.onDelete(node),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                 ],
               ),
             ),
@@ -453,6 +405,77 @@ class _DepartmentTileState extends State<_DepartmentTile> {
       Color(0xFF8B5CF6)
     ];
     return colors[level % colors.length];
+  }
+}
+
+// ── Mobile actions menu ──────────────────────────────────────────────────────
+
+class _ActionsMenu extends StatelessWidget {
+  final AppLocalizations s;
+  final VoidCallback onPositions;
+  final VoidCallback onAdd;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ActionsMenu({
+    required this.s,
+    required this.onPositions,
+    required this.onAdd,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final user = AuthService.instance.currentUser;
+    final canManage = user != null &&
+        (user.isSystemAdmin || user.can('DEPARTMENT_MANAGE'));
+
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, size: 18),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'positions',
+          child: Row(children: [
+            const Icon(Icons.work_outline, size: 18, color: Color(0xFF3B82F6)),
+            const SizedBox(width: 10),
+            Text(s.managePositions),
+          ]),
+        ),
+        if (canManage) ...[
+          PopupMenuItem(
+            value: 'add',
+            child: Row(children: [
+              const Icon(Icons.add, size: 18),
+              const SizedBox(width: 10),
+              Text(s.addSubDepartment),
+            ]),
+          ),
+          PopupMenuItem(
+            value: 'edit',
+            child: Row(children: [
+              const Icon(Icons.edit_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(s.edit),
+            ]),
+          ),
+          PopupMenuItem(
+            value: 'delete',
+            child: Row(children: [
+              const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+              const SizedBox(width: 10),
+              Text(s.delete, style: const TextStyle(color: Colors.red)),
+            ]),
+          ),
+        ],
+      ],
+      onSelected: (v) {
+        if (v == 'positions') onPositions();
+        if (v == 'add') onAdd();
+        if (v == 'edit') onEdit();
+        if (v == 'delete') onDelete();
+      },
+    );
   }
 }
 

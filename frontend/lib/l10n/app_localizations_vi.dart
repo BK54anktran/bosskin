@@ -1243,7 +1243,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get permDescPayrollView => 'Xem bảng lương';
 
   @override
-  String get permDescPayrollCreate => 'Tạo bảng lương';
+  String get permDescPayrollCreate => 'Tạo phiếu lương';
 
   @override
   String get permDescPayrollApprove => 'Phê duyệt bảng lương';
@@ -1692,10 +1692,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get payrollList => 'Danh sách bảng lương';
 
   @override
-  String get payrollGenerate => 'Tạo bảng lương';
+  String get payrollGenerate => 'Tạo phiếu lương';
 
   @override
-  String get payrollGenerateBtn => 'Tạo bảng lương';
+  String get payrollGenerateBtn => 'Tạo phiếu lương';
 
   @override
   String get payslip => 'Phiếu lương';
@@ -1948,4 +1948,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get varEditPrivate => 'Sửa biến private';
+
+  @override
+  String get rememberMe => 'Ghi nhớ đăng nhập';
 }

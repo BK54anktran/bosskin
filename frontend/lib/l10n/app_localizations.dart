@@ -2490,7 +2490,7 @@ abstract class AppLocalizations {
   /// No description provided for @permDescPayrollCreate.
   ///
   /// In vi, this message translates to:
-  /// **'Tạo bảng lương'**
+  /// **'Tạo phiếu lương'**
   String get permDescPayrollCreate;
 
   /// No description provided for @permDescPayrollApprove.
@@ -3360,13 +3360,13 @@ abstract class AppLocalizations {
   /// No description provided for @payrollGenerate.
   ///
   /// In vi, this message translates to:
-  /// **'Tạo bảng lương'**
+  /// **'Tạo phiếu lương'**
   String get payrollGenerate;
 
   /// No description provided for @payrollGenerateBtn.
   ///
   /// In vi, this message translates to:
-  /// **'Tạo bảng lương'**
+  /// **'Tạo phiếu lương'**
   String get payrollGenerateBtn;
 
   /// No description provided for @payslip.
@@ -3866,6 +3866,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Sửa biến private'**
   String get varEditPrivate;
+
+  /// No description provided for @rememberMe.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi nhớ đăng nhập'**
+  String get rememberMe;
 }
 
 class _AppLocalizationsDelegate

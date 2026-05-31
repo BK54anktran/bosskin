@@ -1176,9 +1176,11 @@ class _TimesheetTabState extends State<_TimesheetTab> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+        final dateColW = isMobile ? 56.0 : _dateColW;
         final cols = _cols(s, dayNight: _dayNightMode, otEnabled: _otEnabled);
         final totalMin = cols.fold(0.0, (sum, c) => sum + c.width);
-        final available = constraints.maxWidth - _dateColW - 1;
+        final available = constraints.maxWidth - dateColW - 1;
         final scale = available > totalMin ? available / totalMin : 1.0;
         final colWidths = cols.map((c) => c.width * scale).toList();
         final scrollWidth = colWidths.fold(0.0, (s, w) => s + w);
@@ -1189,10 +1191,10 @@ class _TimesheetTabState extends State<_TimesheetTab> {
           children: [
             // Cột Ngày - cố định
             SizedBox(
-              width: _dateColW,
+              width: dateColW,
               child: Column(
                 children: [
-                  _headCell(s.date, width: _dateColW),
+                  _headCell(s.date, width: dateColW),
                   Expanded(
                     child: ListView.builder(
                       controller: _vScrollFixed,
@@ -1201,10 +1203,10 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                       itemBuilder: (_, i) {
                         final row = merged[i];
                         if (row.rows.length <= 1) {
-                          return _dateCell(row.first);
+                          return _dateCell(row.first, width: dateColW);
                         }
                         final height = _rowHeight * row.rows.length;
-                        return _dateCellMerged(row, height);
+                        return _dateCellMerged(row, height, width: dateColW);
                       },
                     ),
                   ),
@@ -1291,7 +1293,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     );
   }
 
-  Widget _dateCell(TimesheetRow row) {
+  Widget _dateCell(TimesheetRow row, {double width = _dateColW}) {
     final isToday = row.date.year == DateTime.now().year &&
         row.date.month == DateTime.now().month &&
         row.date.day == DateTime.now().day;
@@ -1302,7 +1304,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
             : Colors.white;
 
     return Container(
-      width: _dateColW,
+      width: width,
       height: _rowHeight,
       alignment: Alignment.center,
       decoration: BoxDecoration(
@@ -1337,7 +1339,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     );
   }
 
-  Widget _dateCellMerged(_MergedTimesheetRow row, double height) {
+  Widget _dateCellMerged(_MergedTimesheetRow row, double height, {double width = _dateColW}) {
     final first = row.first;
     final isToday = first.date.year == DateTime.now().year &&
         first.date.month == DateTime.now().month &&
@@ -1349,7 +1351,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
             : Colors.white;
 
     return Container(
-      width: _dateColW,
+      width: width,
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
@@ -2382,9 +2384,11 @@ class _DayViewTabState extends State<_DayViewTab> {
     final s = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+        final dayFirstColW = isMobile ? 130.0 : _dayFirstColW;
         final cols = _cols(s, dayNight: _dayNightMode, otEnabled: _otEnabled);
         final dataMin = cols.fold<double>(0, (sum, c) => sum + c.width);
-        final available = constraints.maxWidth - _dayFirstColW - 1;
+        final available = constraints.maxWidth - dayFirstColW - 1;
         final scale = available > dataMin ? available / dataMin : 1.0;
         final dataWidths = cols.map((c) => c.width * scale).toList();
         final scrollWidth = dataWidths.fold<double>(0, (sum, w) => sum + w);
@@ -2397,11 +2401,11 @@ class _DayViewTabState extends State<_DayViewTab> {
                 children: [
                   // Cột Nhân viên - cố định
                   SizedBox(
-                    width: _dayFirstColW,
+                    width: dayFirstColW,
                     child: Column(
                       children: [
                         _headCell(s.employee,
-                            width: _dayFirstColW, isFirst: true),
+                            width: dayFirstColW, isFirst: true),
                         Expanded(
                           child: ListView.builder(
                             controller: _vScrollFixed,
@@ -2413,7 +2417,7 @@ class _DayViewTabState extends State<_DayViewTab> {
                               final rowCount =
                                   slots.isEmpty ? 1 : slots.length;
                               final height = _dayRowHeight * rowCount;
-                              return _dayEmployeeCell(row, _dayFirstColW, height);
+                              return _dayEmployeeCell(row, dayFirstColW, height);
                             },
                           ),
                         ),

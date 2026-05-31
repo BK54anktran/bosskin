@@ -438,7 +438,7 @@
   "permDescShiftView": "Xem ca làm",
   "permDescShiftManage": "Quản lý ca làm",
   "permDescPayrollView": "Xem bảng lương",
-  "permDescPayrollCreate": "Tạo bảng lương",
+  "permDescPayrollCreate": "Tạo phiếu lương",
   "permDescPayrollApprove": "Phê duyệt bảng lương",
   "permDescPayrollPay": "Đánh dấu đã thanh toán lương",
   "permDescRoleView": "Xem danh sách vai trò",
@@ -602,8 +602,8 @@
   ,"leaveExpired": "Hết hạn"
   ,"payroll": "Bảng lương"
   ,"payrollList": "Danh sách bảng lương"
-  ,"payrollGenerate": "Tạo bảng lương"
-  ,"payrollGenerateBtn": "Tạo bảng lương"
+  ,"payrollGenerate": "Tạo phiếu lương"
+  ,"payrollGenerateBtn": "Tạo phiếu lương"
   ,"payslip": "Phiếu lương"
   ,"payrollStatusDraft": "Nháp"
   ,"payrollStatusApproved": "Đã duyệt"
@@ -687,4 +687,5 @@
   ,"varNoGlobal": "Chưa có biến global"
   ,"varAddPrivate": "Thêm biến private"
   ,"varEditPrivate": "Sửa biến private"
+  ,"rememberMe": "Ghi nhớ đăng nhập"
 }

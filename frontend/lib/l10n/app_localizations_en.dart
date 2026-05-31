@@ -1948,4 +1948,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get varEditPrivate => 'Edit private variable';
+
+  @override
+  String get rememberMe => 'Remember me';
 }

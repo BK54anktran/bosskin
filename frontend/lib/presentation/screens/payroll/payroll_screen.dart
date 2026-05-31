@@ -383,73 +383,118 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    final monthField = SizedBox(
+      width: 130,
+      child: DropdownButtonFormField<int>(
+        value: month,
+        decoration: InputDecoration(labelText: s.month, isDense: true),
+        items: List.generate(12, (i) => DropdownMenuItem(
+            value: i + 1, child: Text('Tháng ${i + 1}'))),
+        onChanged: (v) => onChanged(year, v ?? month, deptId, status),
+      ),
+    );
+
+    final yearField = SizedBox(
+      width: 90,
+      child: TextFormField(
+        initialValue: year.toString(),
+        decoration: InputDecoration(labelText: s.year, isDense: true),
+        keyboardType: TextInputType.number,
+        onFieldSubmitted: (v) {
+          final y = int.tryParse(v);
+          if (y != null && y > 2000) onChanged(y, month, deptId, status);
+        },
+      ),
+    );
+
+    final statusField = SizedBox(
+      width: 140,
+      child: DropdownButtonFormField<String?>(
+        value: status,
+        isExpanded: true,
+        decoration: InputDecoration(labelText: s.status, isDense: true),
+        items: [
+          DropdownMenuItem(value: null, child: Text(s.all)),
+          DropdownMenuItem(value: 'DRAFT',    child: Text(s.payrollStatusDraft)),
+          DropdownMenuItem(value: 'APPROVED', child: Text(s.payrollStatusApproved)),
+          DropdownMenuItem(value: 'PAID',     child: Text(s.payrollStatusPaid)),
+        ],
+        onChanged: (v) => onChanged(year, month, deptId, v),
+      ),
+    );
+
+    final deptField = depts.isNotEmpty
+        ? SizedBox(
+            width: isMobile ? double.infinity : 180,
+            child: DepartmentPickerField(
+              departments: depts,
+              value: deptId,
+              label: s.department,
+              allowAll: true,
+              compact: true,
+              onChanged: (v) => onChanged(year, month, v, status),
+            ),
+          )
+        : null;
+
+    final generateBtn = canCreate
+        ? FilledButton.icon(
+            onPressed: onGenerate,
+            icon: const Icon(Icons.add, size: 16),
+            label: Text(s.payrollGenerateBtn),
+          )
+        : null;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       color: AppTheme.background,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 130,
-            child: DropdownButtonFormField<int>(
-              value: month,
-              decoration: InputDecoration(labelText: s.month, isDense: true),
-              items: List.generate(12, (i) => DropdownMenuItem(
-                  value: i + 1, child: Text('Tháng ${i + 1}'))),
-              onChanged: (v) => onChanged(year, v ?? month, deptId, status),
-            ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 90,
-            child: TextFormField(
-              initialValue: year.toString(),
-              decoration: InputDecoration(labelText: s.year, isDense: true),
-              keyboardType: TextInputType.number,
-              onFieldSubmitted: (v) {
-                final y = int.tryParse(v);
-                if (y != null && y > 2000) onChanged(y, month, deptId, status);
-              },
-            ),
-          ),
-          if (depts.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 180,
-              child: DepartmentPickerField(
-                departments: depts,
-                value: deptId,
-                label: s.department,
-                allowAll: true,
-                compact: true,
-                onChanged: (v) => onChanged(year, month, v, status),
-              ),
-            ),
-          ],
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 140,
-            child: DropdownButtonFormField<String?>(
-              value: status,
-              isExpanded: true,
-              decoration: InputDecoration(labelText: s.status, isDense: true),
-              items: [
-                DropdownMenuItem(value: null, child: Text(s.all)),
-                DropdownMenuItem(value: 'DRAFT',    child: Text(s.payrollStatusDraft)),
-                DropdownMenuItem(value: 'APPROVED', child: Text(s.payrollStatusApproved)),
-                DropdownMenuItem(value: 'PAID',     child: Text(s.payrollStatusPaid)),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    monthField,
+                    const SizedBox(width: 8),
+                    yearField,
+                    const SizedBox(width: 8),
+                    statusField,
+                  ],
+                ),
+                if (deptField != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(child: deptField),
+                      if (generateBtn != null) ...[
+                        const SizedBox(width: 8),
+                        generateBtn,
+                      ],
+                    ],
+                  ),
+                ] else if (generateBtn != null) ...[
+                  const SizedBox(height: 8),
+                  Align(alignment: Alignment.centerRight, child: generateBtn),
+                ],
               ],
-              onChanged: (v) => onChanged(year, month, deptId, v),
+            )
+          : Row(
+              children: [
+                monthField,
+                const SizedBox(width: 8),
+                yearField,
+                if (deptField != null) ...[
+                  const SizedBox(width: 8),
+                  deptField,
+                ],
+                const SizedBox(width: 8),
+                statusField,
+                const Spacer(),
+                if (generateBtn != null) generateBtn,
+              ],
             ),
-          ),
-          const Spacer(),
-          if (canCreate)
-            FilledButton.icon(
-              onPressed: onGenerate,
-              icon: const Icon(Icons.add, size: 16),
-              label: Text(s.payrollGenerateBtn),
-            ),
-        ],
-      ),
     );
   }
 }

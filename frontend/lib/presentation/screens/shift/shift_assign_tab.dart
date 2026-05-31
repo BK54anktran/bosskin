@@ -534,19 +534,35 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
       assignMap.putIfAbsent('${a.employeeId}_${a.workDate}', () => []).add(a);
     }
 
+    return LayoutBuilder(builder: (context, constraints) {
+      final nameW = constraints.maxWidth < 600 ? 130.0 : _nameW;
+      final dayW = constraints.maxWidth < 600 ? 60.0 : _dayW;
+      return _buildGridInner(periodDays, emps, canManage, s, assignMap, nameW, dayW);
+    });
+  }
+
+  Widget _buildGridInner(
+    List<DateTime> periodDays,
+    List<Employee> emps,
+    bool canManage,
+    AppLocalizations s,
+    Map<String, List<ShiftAssignment>> assignMap,
+    double nameW,
+    double dayW,
+  ) {
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // ── Frozen name column ─────────────────────────────────────────
       Container(
-        width: _nameW,
+        width: nameW,
         decoration: const BoxDecoration(
           border: Border(right: BorderSide(color: _border, width: 2)),
         ),
         child: Column(children: [
-          _cell(_nameW, _headH, _headBg,
+          _cell(nameW, _headH, _headBg,
               border:
                   const Border(bottom: BorderSide(color: _border, width: 2)),
               alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 20),
+              padding: const EdgeInsets.only(left: 8),
               child: Text(s.employeeShort,
                   style: TextStyle(
                       fontSize: 11,
@@ -560,12 +576,12 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
               itemCount: emps.length,
               itemExtent: _rowH,
               itemBuilder: (_, i) => _cell(
-                _nameW,
+                nameW,
                 _rowH,
                 i.isOdd ? const Color(0xFFF8F9FA) : Colors.white,
                 border: const Border(bottom: BorderSide(color: _border)),
                 alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 20, right: 4),
+                padding: const EdgeInsets.only(left: 8, right: 4),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,7 +620,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                   final dow = date.weekday;
                   final wknd = dow >= 6;
                   return _cell(
-                    _dayW,
+                    dayW,
                     _headH,
                     _headBg,
                     border: const Border(
@@ -644,7 +660,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                 physics: const ClampingScrollPhysics(),
                 padding: EdgeInsets.zero,
                 child: SizedBox(
-                  width: _dayW * periodDays.length,
+                  width: dayW * periodDays.length,
                   child: ListView.builder(
                     controller: _vBody,
                     physics: const ClampingScrollPhysics(),
@@ -675,7 +691,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                           for (final ov in overflows) {
                             final e = _endMin(ov);
                             if (e > 0) {
-                              bars.add(_timelineBar(ov, _dayW, _rowH,
+                              bars.add(_timelineBar(ov, dayW, _rowH,
                                   fromMin: 0,
                                   toMin: e,
                                   squareLeft: true,
@@ -688,12 +704,12 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                             final e = _endMin(assign);
                             final overnight = _isOvernight(assign);
                             if (s < 0) {
-                              bars.add(_fallbackBadgeBar(assign, _dayW, _rowH));
+                              bars.add(_fallbackBadgeBar(assign, dayW, _rowH));
                             } else if (e < 0 || e > s) {
-                              bars.add(_timelineBar(assign, _dayW, _rowH,
+                              bars.add(_timelineBar(assign, dayW, _rowH,
                                   fromMin: s, toMin: e < 0 ? s + 480 : e));
                             } else {
-                              bars.add(_timelineBar(assign, _dayW, _rowH,
+                              bars.add(_timelineBar(assign, dayW, _rowH,
                                   fromMin: s,
                                   toMin: 1440,
                                   squareRight: overnight));
@@ -704,7 +720,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                             onTap:
                                 canManage ? () => _onCellTap(emp, date) : null,
                             child: Container(
-                              width: _dayW,
+                              width: dayW,
                               height: _rowH,
                               decoration: BoxDecoration(
                                 color: bg,
