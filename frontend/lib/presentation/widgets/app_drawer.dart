@@ -143,6 +143,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         ),
                       ),
                       onTap: () {
+                        Navigator.pop(context);
                         while (shellNavigatorKey.currentState?.canPop() == true) {
                           shellNavigatorKey.currentState!.pop();
                         }
@@ -163,6 +164,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                   onTap: () {
+                    Navigator.pop(context);
                     while (shellNavigatorKey.currentState?.canPop() == true) {
                       shellNavigatorKey.currentState!.pop();
                     }
@@ -181,6 +183,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       ),
                     ),
                     onTap: () {
+                      Navigator.pop(context);
                       while (shellNavigatorKey.currentState?.canPop() == true) {
                         shellNavigatorKey.currentState!.pop();
                       }
