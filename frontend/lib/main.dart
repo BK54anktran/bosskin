@@ -38,7 +38,7 @@ void main() async {
   await initializeDateFormatting('vi', null);
   await LanguageService.instance.load();
   await DeviceService.instance.getOrCreateDeviceId();
-  await AuthService.instance.restoreSession();
+  await AuthService.instance.restoreAndVerify();
   runApp(const ProviderScope(child: BossKinApp()));
 }
 
@@ -70,6 +70,11 @@ final _router = GoRouter(
     final isAdminPath = path.startsWith('/admin');
     final isAdminLogin = path == AppRoutes.adminLogin;
     final isLoginPage = path == AppRoutes.login;
+
+    // Đã đăng nhập + remember me → bỏ qua màn login
+    if (isLoginPage && user != null) {
+      return _firstAccessibleRoute(user);
+    }
 
     if (isAdminPath && !isAdminLogin) {
       if (user == null || !user.isSystemAdmin) return AppRoutes.adminLogin;

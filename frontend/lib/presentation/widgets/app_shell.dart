@@ -200,9 +200,6 @@ class _AppShellState extends State<AppShell>
             requiredPermission: 'ATTENDANCE_SELF'),
         _NavItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
-        _NavItem(
-            s.companySettings, Icons.tune_outlined, AppRoutes.companySettings,
-            requiredPermission: 'COMPANY_SETTING_VIEW'),
         _NavItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,
             requiredPermission: 'PAYROLL_VIEW'),
         _NavItem(s.selfPayroll, Icons.receipt_long_outlined, AppRoutes.selfPayroll,
@@ -255,6 +252,10 @@ class _SideNav extends StatelessWidget {
     final user = AuthService.instance.currentUser;
     final isAdmin = user?.isAdmin ?? false;
 
+    final s = AppLocalizations.of(context)!;
+    final canSeeCompanySettings = user != null &&
+        (user.isSystemAdmin || user.can('COMPANY_SETTING_VIEW'));
+
     return Container(
       width: 220,
       color: Colors.white,
@@ -302,7 +303,7 @@ class _SideNav extends StatelessWidget {
                 const Divider(height: 16, indent: 8, endIndent: 8),
                 _sideNavTile(
                   context,
-                  AppLocalizations.of(context)!.profile,
+                  s.profile,
                   Icons.person_outline,
                   AppRoutes.profile,
                   location.startsWith(AppRoutes.profile) &&
@@ -311,7 +312,7 @@ class _SideNav extends StatelessWidget {
                 if (isAdmin)
                   _sideNavTile(
                     context,
-                    AppLocalizations.of(context)!.editRequests,
+                    s.editRequests,
                     Icons.assignment_outlined,
                     AppRoutes.editRequests,
                     location.startsWith(AppRoutes.editRequests),
@@ -320,6 +321,19 @@ class _SideNav extends StatelessWidget {
               ],
             ),
           ),
+          if (canSeeCompanySettings) ...[
+            const Divider(height: 1, thickness: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: _sideNavTile(
+                context,
+                s.companySettings,
+                Icons.tune_outlined,
+                AppRoutes.companySettings,
+                location.startsWith(AppRoutes.companySettings),
+              ),
+            ),
+          ],
         ],
       ),
     );

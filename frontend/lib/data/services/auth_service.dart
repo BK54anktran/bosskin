@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/config/server_config.dart';
 import '../../core/constants/app_constants.dart';
@@ -127,22 +128,31 @@ class AuthService extends ChangeNotifier {
   bool get _isLinuxDev =>
       !kIsWeb && Platform.isLinux;
 
+  // Windows desktop dùng SharedPreferences thay vì SecureStorage (ổn định hơn)
+  bool get _useSharedPrefs =>
+      !kIsWeb && !Platform.isAndroid && !Platform.isIOS && Platform.isWindows;
+
   // =========================================================
   // SAFE STORAGE HELPERS
   // =========================================================
 
   Future<String?> _safeRead(String key) async {
     if (_isLinuxDev) {
-      if (key == AppConstants.tokenKey ||
-          key == AppConstants.adminTokenKey) {
+      if (key == AppConstants.tokenKey || key == AppConstants.adminTokenKey) {
         return _currentUser?.token;
       }
-      if (key == AppConstants.refreshTokenKey) {
-        return _currentRefreshToken;
-      }
+      if (key == AppConstants.refreshTokenKey) return _currentRefreshToken;
       return null;
     }
-
+    if (_useSharedPrefs) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        return prefs.getString(key);
+      } catch (e) {
+        debugPrint('SharedPrefs read error: $e');
+        return null;
+      }
+    }
     try {
       return await _storage.read(key: key);
     } catch (e) {
@@ -151,17 +161,19 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<void> _safeWrite(
-    String key,
-    String value,
-  ) async {
+  Future<void> _safeWrite(String key, String value) async {
     if (_isLinuxDev) return;
-
+    if (_useSharedPrefs) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(key, value);
+      } catch (e) {
+        debugPrint('SharedPrefs write error: $e');
+      }
+      return;
+    }
     try {
-      await _storage.write(
-        key: key,
-        value: value,
-      );
+      await _storage.write(key: key, value: value);
     } catch (e) {
       debugPrint('Storage write error: $e');
     }
@@ -169,7 +181,15 @@ class AuthService extends ChangeNotifier {
 
   Future<void> _safeDelete(String key) async {
     if (_isLinuxDev) return;
-
+    if (_useSharedPrefs) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(key);
+      } catch (e) {
+        debugPrint('SharedPrefs delete error: $e');
+      }
+      return;
+    }
     try {
       await _storage.delete(key: key);
     } catch (e) {
@@ -188,8 +208,44 @@ class AuthService extends ChangeNotifier {
   }
 
   // =========================================================
-  // RESTORE SESSION
+  // RESTORE SESSION + AUTO LOGIN
   // =========================================================
+
+  /// Restore session từ storage, sau đó verify token với server.
+  /// Nếu token hết hạn → thử refresh. Nếu refresh thất bại → clear session.
+  Future<void> restoreAndVerify() async {
+    await restoreSession();
+    if (_currentUser == null) return;
+
+    final ok = await _verifyToken();
+    if (!ok) {
+      // Token hết hạn, thử refresh
+      final refreshed = await refreshToken();
+      if (!refreshed) {
+        // Refresh cũng hết hạn → logout
+        await logout();
+      }
+    }
+  }
+
+  Future<bool> _verifyToken() async {
+    if (_currentUser == null) return false;
+    try {
+      await _dio.get(
+        '/api/v1/profile',
+        options: Options(headers: _requestHeaders(includeToken: true)),
+      );
+      return true;
+    } catch (e) {
+      if (e is DioException) {
+        final status = e.response?.statusCode;
+        if (status == 401 || status == 403) return false;
+        // Network error hoặc server down → coi như token còn hợp lệ
+        return true;
+      }
+      return true;
+    }
+  }
 
   Future<void> restoreSession() async {
     final adminJson = await _safeRead(

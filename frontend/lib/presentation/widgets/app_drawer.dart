@@ -193,6 +193,39 @@ class _AppDrawerState extends State<AppDrawer> {
               ],
             ),
           ),
+          if (user != null &&
+              (user.isSystemAdmin || user.can('COMPANY_SETTING_VIEW'))) ...[
+            const Divider(height: 1, thickness: 1),
+            ListTile(
+              dense: true,
+              leading: Icon(
+                Icons.tune_outlined,
+                color: location.startsWith(AppRoutes.companySettings)
+                    ? AppTheme.primary
+                    : AppTheme.textSecondary,
+                size: 20,
+              ),
+              title: Text(
+                s.companySettings,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: location.startsWith(AppRoutes.companySettings)
+                      ? FontWeight.w600
+                      : FontWeight.w500,
+                  color: location.startsWith(AppRoutes.companySettings)
+                      ? AppTheme.primary
+                      : AppTheme.textPrimary,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                while (shellNavigatorKey.currentState?.canPop() == true) {
+                  shellNavigatorKey.currentState!.pop();
+                }
+                context.go(AppRoutes.companySettings);
+              },
+            ),
+          ],
         ],
       ),
     );
@@ -224,9 +257,6 @@ class _AppDrawerState extends State<AppDrawer> {
         ),
         _DrawerItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
-        _DrawerItem(
-            s.companySettings, Icons.tune_outlined, AppRoutes.companySettings,
-            requiredPermission: 'COMPANY_SETTING_VIEW'),
         _DrawerItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,
             requiredPermission: 'PAYROLL_VIEW'),
         _DrawerItem(s.selfPayroll, Icons.receipt_long_outlined, AppRoutes.selfPayroll,
