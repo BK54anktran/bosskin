@@ -994,6 +994,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                               child: DropdownButtonFormField<SalaryFormula>(
                                 value: entry.selectedFormula,
                                 isDense: true,
+                                isExpanded: true,
                                 decoration: const InputDecoration(
                                   labelText: 'Công thức',
                                   isDense: true,
@@ -1002,8 +1003,9 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                                 items: entry.formulas.map((f) => DropdownMenuItem(
                                   value: f,
                                   child: Text(
-                                    f.effectiveDate.toString().substring(0, 10),
+                                    '${f.name} · ${f.effectiveDate.toString().substring(0, 10)}',
                                     style: const TextStyle(fontSize: 12),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 )).toList(),
                                 onChanged: (v) => setState(() => entry.selectedFormula = v),

@@ -314,44 +314,9 @@ public class AttendanceController {
         LocalTime leaveTo   = leave != null && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getToTime()   : null;
         AttendanceRowData data = computeRowData(att, assignment, slotIndex, requests, leaveFrom, leaveTo, dayStart, dayEnd, otEnabled, policy);
 
-        // Override mode
-        boolean hasOv = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
-                         || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
-        double calcActual, calcRegDay, calcOtDay, calcRegNight, calcOtNight;
-        if (hasOv && att != null) {
-            // Override có thể chỉ sửa 1 ô, nên các field còn lại phải fallback về giá trị gốc.
-            LocalTime ovCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn() : data.checkIn();
-            LocalTime ovCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut();
-            ovCI = roundUp(ovCI, policy.roundingCheckInMinutes());
-            ovCO = roundDown(ovCO, policy.roundingCheckOutMinutes());
-            int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
-            if (ovCI != null && ovCO != null) {
-                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
-                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
-                var calc = AttendanceCalculator.calculate(
-                    data.shiftStart(), data.shiftEnd(),
-                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null,
-                    ovCI, ovCO, dayStart, dayEnd);
-                calcActual   = calc.actualHours();
-                calcRegDay   = calc.regularDayHours();
-                calcRegNight = calc.regularNightHours();
-            } else { calcActual = calcRegDay = calcRegNight = 0; }
-            calcOtDay   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
-            calcOtNight = att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
-            if (policy.roundingWorkMinutes() != null) {
-                calcRegDay = roundDownHours(calcRegDay, policy.roundingWorkMinutes());
-                calcRegNight = roundDownHours(calcRegNight, policy.roundingWorkMinutes());
-                calcOtDay = roundDownHours(calcOtDay, policy.roundingWorkMinutes());
-                calcOtNight = roundDownHours(calcOtNight, policy.roundingWorkMinutes());
-            }
-        } else {
-            boolean appv = att != null && att.isApproved();
-            calcActual   = appv && att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours();
-            calcRegDay   = appv && att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours();
-            calcOtDay    = appv && att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours();
-            calcRegNight = appv && att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours();
-            calcOtNight  = appv && att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours();
-        }
+        var h = computeHours(att, data, policy, dayStart, dayEnd, true);
+        double calcActual = h.actualHours(), calcRegDay = h.regularDayHours(),
+               calcOtDay = h.otDayHours(), calcRegNight = h.regularNightHours(), calcOtNight = h.otNightHours();
 
         String dayLabel = switch (date.getDayOfWeek()) {
             case MONDAY    -> "T2";
@@ -529,47 +494,9 @@ public class AttendanceController {
         LocalTime leaveTo   = leave != null && leave.isApplied() && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getToTime()   : null;
         AttendanceRowData data = computeRowData(att, assignment, slotIndex, requests, leaveFrom, leaveTo, dayStart, dayEnd, otEnabled, policy);
 
-        // Override mode: nếu có override fields → bỏ qua checkIn/Out thực tế, tính lại
-        boolean hasOverride = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
-                              || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
-        double actualHours, regularDayHours, otDayHours, regularNightHours, otNightHours;
-        if (hasOverride) {
-            // Override có thể chỉ sửa 1 ô, nên các field còn lại phải fallback về giá trị gốc.
-            LocalTime ovCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn() : data.checkIn();
-            LocalTime ovCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut();
-            ovCI = roundUp(ovCI, policy.roundingCheckInMinutes());
-            ovCO = roundDown(ovCO, policy.roundingCheckOutMinutes());
-            int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
-            if (ovCI != null && ovCO != null) {
-                // Compute break window from breakMinutes for calculator
-                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
-                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
-                var calc = AttendanceCalculator.calculate(
-                    data.shiftStart(), data.shiftEnd(),
-                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null,
-                    ovCI, ovCO, dayStart, dayEnd);
-                actualHours       = calc.actualHours();
-                regularDayHours   = calc.regularDayHours();
-                regularNightHours = calc.regularNightHours();
-            } else {
-                actualHours = regularDayHours = regularNightHours = 0;
-            }
-            otDayHours   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
-            otNightHours = att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
-            if (policy.roundingWorkMinutes() != null) {
-                regularDayHours = roundDownHours(regularDayHours, policy.roundingWorkMinutes());
-                regularNightHours = roundDownHours(regularNightHours, policy.roundingWorkMinutes());
-                otDayHours = roundDownHours(otDayHours, policy.roundingWorkMinutes());
-                otNightHours = roundDownHours(otNightHours, policy.roundingWorkMinutes());
-            }
-        } else {
-            boolean approved2 = att != null && att.isApproved();
-            actualHours       = approved2 && att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours();
-            regularDayHours   = approved2 && att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours();
-            otDayHours        = approved2 && att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours();
-            regularNightHours = approved2 && att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours();
-            otNightHours      = approved2 && att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours();
-        }
+        var h = computeHours(att, data, policy, dayStart, dayEnd, true);
+        double actualHours = h.actualHours(), regularDayHours = h.regularDayHours(),
+               otDayHours = h.otDayHours(), regularNightHours = h.regularNightHours(), otNightHours = h.otNightHours();
         boolean approved = att != null && att.isApproved();
 
         String dayLabel = switch (date.getDayOfWeek()) {
@@ -1047,6 +974,67 @@ public class AttendanceController {
         Integer roundingWorkMinutes
     ) {}
 
+    private record ComputedHours(
+        double actualHours,
+        double regularDayHours,
+        double otDayHours,
+        double regularNightHours,
+        double otNightHours
+    ) {}
+
+    private ComputedHours computeHours(
+        Attendance att,
+        AttendanceRowData data,
+        AttendancePolicy policy,
+        LocalTime dayStart,
+        LocalTime dayEnd,
+        boolean useSnapshot
+    ) {
+        // Đã approve → dùng snap (bất biến), bỏ qua override
+        if (useSnapshot && att != null && att.isApproved()) {
+            return new ComputedHours(
+                att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours(),
+                att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours(),
+                att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours(),
+                att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours(),
+                att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours()
+            );
+        }
+        // Chưa approve → tính live từ override nếu có, không thì từ data
+        boolean hasOverride = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
+                              || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
+        if (hasOverride) {
+            LocalTime ovCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn() : data.checkIn();
+            LocalTime ovCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut();
+            ovCI = roundUp(ovCI, policy.roundingCheckInMinutes());
+            ovCO = roundDown(ovCO, policy.roundingCheckOutMinutes());
+            int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
+            double actual, regDay, regNight;
+            if (ovCI != null && ovCO != null) {
+                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
+                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
+                var calc = AttendanceCalculator.calculate(
+                    data.shiftStart(), data.shiftEnd(),
+                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null,
+                    ovCI, ovCO, dayStart, dayEnd);
+                actual   = calc.actualHours();
+                regDay   = calc.regularDayHours();
+                regNight = calc.regularNightHours();
+            } else { actual = regDay = regNight = 0; }
+            double otDay   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
+            double otNight = att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
+            if (policy.roundingWorkMinutes() != null) {
+                regDay   = roundDownHours(regDay,   policy.roundingWorkMinutes());
+                regNight = roundDownHours(regNight, policy.roundingWorkMinutes());
+                otDay    = roundDownHours(otDay,    policy.roundingWorkMinutes());
+                otNight  = roundDownHours(otNight,  policy.roundingWorkMinutes());
+            }
+            return new ComputedHours(actual, regDay, otDay, regNight, otNight);
+        }
+        return new ComputedHours(data.actualHours(), data.regularDayHours(), data.otDayHours(), data.regularNightHours(), data.otNightHours());
+    }
+
+
     private List<Employee> resolveDayViewEmployees(User user, Company company, Long departmentId, Set<Long> scopeIds) {
         List<Employee> employees = employeeRepository.findAllByCompanyIdFetchDepartment(company.getId());
         Set<Long> selectedDeptScope = null;
@@ -1223,14 +1211,16 @@ public class AttendanceController {
         AttendancePolicy policy = resolveAttendancePolicy(att.getEmployee());
         AttendanceRowData data = computeRowData(att, sa, slotIdx, requests, leaveFrom, leaveTo, dayStart, dayEnd, otEnabled, policy);
 
+        var snap = computeHours(att, data, policy, dayStart, dayEnd, false);
+
         att.setApproved(true);
         att.setApprovedAt(LocalDateTime.now());
         att.setApprovedBy(user);
-        att.setSnapActualHours(data.actualHours());
-        att.setSnapDayHours(data.regularDayHours());
-        att.setSnapDayOt(data.otDayHours());
-        att.setSnapNightHours(data.regularNightHours());
-        att.setSnapNightOt(data.otNightHours());
+        att.setSnapActualHours(snap.actualHours());
+        att.setSnapDayHours(snap.regularDayHours());
+        att.setSnapDayOt(snap.otDayHours());
+        att.setSnapNightHours(snap.regularNightHours());
+        att.setSnapNightOt(snap.otNightHours());
 
         var workFlags = WorkFlagCalculator.calculate(
             data.shiftStart(), data.shiftEnd(),
