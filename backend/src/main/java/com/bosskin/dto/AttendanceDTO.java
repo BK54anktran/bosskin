@@ -128,6 +128,7 @@ public class AttendanceDTO {
 
         // Computed hours
         private double actualHours;
+        private double totalHours;
         private double regularDayHours;
         private double otDayHours;
         private double regularNightHours;
@@ -147,6 +148,16 @@ public class AttendanceDTO {
         private LocalTime leaveFromTime;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime leaveToTime;
+
+        // Admin override
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime overrideCheckIn;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime overrideCheckOut;
+        private Integer overrideBreakMinutes;
+        private Integer overrideOtDayMinutes;
+        private Integer overrideOtNightMinutes;
+        private String overrideNote;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -193,6 +204,7 @@ public class AttendanceDTO {
         private Long attendanceId;
 
         private double actualHours;
+        private double totalHours;
         private double regularDayHours;
         private double otDayHours;
         private double regularNightHours;
@@ -212,6 +224,16 @@ public class AttendanceDTO {
         private LocalTime leaveFromTime;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime leaveToTime;
+
+        // Admin override fields
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime overrideCheckIn;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime overrideCheckOut;
+        private Integer overrideBreakMinutes;
+        private Integer overrideOtDayMinutes;
+        private Integer overrideOtNightMinutes;
+        private String overrideNote;
 
         // Approve snapshot
         private boolean approved;
@@ -281,5 +303,17 @@ public class AttendanceDTO {
         private LocalTime checkOutFrom;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime checkOutTo;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class OverrideRequest {
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime overrideCheckIn;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime overrideCheckOut;
+        private Integer overrideBreakMinutes;
+        private Integer overrideOtDayMinutes;
+        private Integer overrideOtNightMinutes;
+        private String overrideNote;
     }
 }

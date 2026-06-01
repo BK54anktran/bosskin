@@ -48,6 +48,10 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
   bool _loadingAssigns = false;
   int _cutoffDay = 1; // loaded from company settings
 
+  // ── Quick-fill panel ────────────────────────────────────────────────────
+  bool _panelOpen = false;
+  int? _quickFill; // null = off, -1 = custom hours, >0 = shiftId
+
   final _settingRepo = CompanySettingRepository();
 
   /// Trả về danh sách ngày trong kỳ lương của _month dựa theo _cutoffDay.
@@ -202,11 +206,12 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
             .toList(),
         queryParams: {'from': from, 'to': to},
       );
-      if (mounted)
+      if (mounted) {
         setState(() {
           _assignments = list;
           _loadingAssigns = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _loadingAssigns = false);
     }
@@ -221,9 +226,32 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
         .toList();
   }
 
-  // ── Cell tap → picker ─────────────────────────────────────────────────────
+  // ── Cell tap → quick-fill or picker ──────────────────────────────────────
 
   Future<void> _onCellTap(Employee emp, DateTime date) async {
+    // Quick-fill mode: assign preset shift immediately
+    if (_quickFill != null && _quickFill != -1) {
+      final existingList = _assignsFor(emp.id, date);
+      final sameShift = existingList.where((a) => !a.isCustom && a.shiftId == _quickFill).toList();
+      if (sameShift.isNotEmpty) {
+        // Tap same shift again → remove it (with attendance check)
+        for (final a in sameShift) {
+          await _deleteById(a.id, hasAttendance: a.hasAttendance, approved: a.approved);
+        }
+        return;
+      }
+      // Otherwise assign (allow up to 2 per day, remove oldest if already 2)
+      if (existingList.length >= 2) {
+        await _deleteById(existingList.first.id,
+            hasAttendance: existingList.first.hasAttendance,
+            approved: existingList.first.approved);
+        if (!mounted) return;
+      }
+      await _save(emp.id, _quickFill, date);
+      return;
+    }
+
+    // Normal dialog mode
     final existingList = _assignsFor(emp.id, date);
 
     final result = await showInstantDialog<_AssignResult?>(
@@ -238,9 +266,9 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     if (result == null || !mounted) return;
 
     if (result.remove) {
-      await _deleteById(result.removeId!);
+      await _deleteById(result.removeId!, hasAttendance: result.removeHasAttendance, approved: result.removeApproved);
     } else {
-      // Replace mode: delete old assignment first
+      // Replace mode: delete old assignment first (replace never needs confirm)
       if (result.replaceId != null) await _deleteById(result.replaceId!);
       if (result.isCustom) {
         await _save(emp.id, null, date,
@@ -311,24 +339,33 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     return s.cannotConnectServer;
   }
 
-  Future<void> _deleteById(int id) async {
+  Future<void> _deleteById(int id, {bool hasAttendance = false, bool approved = false}) async {
     final s = AppLocalizations.of(context)!;
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.delete),
-        content: Text(s.deleteShiftAssignmentWarning),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(s.delete),
-          ),
-        ],
-      ),
-    );
-    if (confirm != true || !mounted) return;
+    if (approved) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(s.shiftAssignmentApprovedCannotDelete),
+        backgroundColor: AppTheme.error,
+      ));
+      return;
+    }
+    if (hasAttendance) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(s.delete),
+          content: Text(s.deleteShiftAssignmentWarning),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.delete),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+    }
     try {
       await ApiService.instance.delete('/shifts/assignments/$id');
       _loadAssignments();
@@ -482,6 +519,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
       _MonthNav(
         month: _month,
         loading: _loadingAssigns,
+        panelOpen: _panelOpen,
         onPrev: () {
           setState(() {
             _month = DateTime(_month.year, _month.month - 1);
@@ -497,8 +535,25 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
           _loadAssignments();
         },
         onPick: _pickMonth,
+        onTogglePanel: () => setState(() {
+          _panelOpen = !_panelOpen;
+          if (!_panelOpen) _quickFill = null;
+        }),
       ),
-      Expanded(child: _buildGrid(periodDays, emps, canManage)),
+      Expanded(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: _buildGrid(periodDays, emps, canManage)),
+            if (canManage && _panelOpen)
+              _QuickFillPanel(
+                shifts: widget.shifts,
+                selected: _quickFill,
+                onSelect: (id) => setState(() => _quickFill = _quickFill == id ? null : id),
+              ),
+          ],
+        ),
+      ),
       PaginationBar(
         total: _filteredEmployees.length,
         page: _page,
@@ -809,17 +864,21 @@ class _ShiftBadge extends StatelessWidget {
 class _MonthNav extends StatelessWidget {
   final DateTime month;
   final bool loading;
-  final VoidCallback onPrev, onNext, onPick;
-  const _MonthNav(
-      {required this.month,
-      required this.loading,
-      required this.onPrev,
-      required this.onNext,
-      required this.onPick});
+  final bool panelOpen;
+  final VoidCallback onPrev, onNext, onPick, onTogglePanel;
+  const _MonthNav({
+    required this.month,
+    required this.loading,
+    required this.panelOpen,
+    required this.onPrev,
+    required this.onNext,
+    required this.onPick,
+    required this.onTogglePanel,
+  });
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(0, 4, 12, 4),
+        padding: const EdgeInsets.fromLTRB(0, 4, 4, 4),
         child: Row(children: [
           IconButton(
             icon: const Icon(Icons.chevron_left, size: 20),
@@ -845,12 +904,237 @@ class _MonthNav extends StatelessWidget {
           ),
           const Spacer(),
           if (loading)
-            const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2)),
+            const Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+          Tooltip(
+            message: AppLocalizations.of(context).quickFillPanel,
+            child: IconButton(
+              icon: Icon(
+                Icons.dashboard_customize_outlined,
+                size: 20,
+                color: panelOpen ? AppTheme.primary : null,
+              ),
+              style: panelOpen
+                  ? IconButton.styleFrom(
+                      backgroundColor: AppTheme.primary.withValues(alpha: 0.1))
+                  : null,
+              onPressed: onTogglePanel,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+          ),
         ]),
       );
+}
+
+// ── Quick-fill panel ──────────────────────────────────────────────────────────
+
+class _QuickFillPanel extends StatelessWidget {
+  final List<WorkShift> shifts;
+  final int? selected; // null = none, >0 = shiftId
+  final void Function(int id) onSelect;
+
+  const _QuickFillPanel({
+    required this.shifts,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    return Container(
+      width: 200,
+      decoration: const BoxDecoration(
+        border: Border(left: BorderSide(color: _border, width: 1.5)),
+        color: Color(0xFFFAFBFC),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            decoration: const BoxDecoration(
+              color: _headBg,
+              border: Border(bottom: BorderSide(color: _border)),
+            ),
+            child: Row(children: [
+              const Icon(Icons.dashboard_customize_outlined,
+                  size: 14, color: AppTheme.textSecondary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(s.quickFillPanel,
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary)),
+              ),
+            ]),
+          ),
+          // Hint
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: Text(
+              s.quickFillHint,
+              style: const TextStyle(
+                  fontSize: 10,
+                  color: AppTheme.textSecondary,
+                  height: 1.4),
+            ),
+          ),
+          const Divider(height: 1, thickness: 1, color: _border),
+          // Shift list
+          Expanded(
+            child: shifts.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(s.quickFillNoShifts,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppTheme.textSecondary)),
+                  )
+                : Builder(builder: (_) {
+                    // Build grouped items list
+                    final grouped = <String, List<WorkShift>>{};
+                    for (final sh in shifts) {
+                      final key = sh.groupName?.trim().isNotEmpty == true
+                          ? sh.groupName!.trim()
+                          : '';
+                      grouped.putIfAbsent(key, () => []).add(sh);
+                    }
+                    final namedKeys = grouped.keys
+                        .where((k) => k.isNotEmpty)
+                        .toList()
+                      ..sort();
+                    final allKeys = [
+                      ...namedKeys,
+                      if (grouped.containsKey('')) ''
+                    ];
+                    final items = <Object>[];
+                    for (final key in allKeys) {
+                      if (allKeys.length > 1 || key.isNotEmpty) {
+                        items.add(_PanelGroupHeader(
+                            key.isEmpty ? s.shiftGroupUngrouped : key));
+                      }
+                      items.addAll(grouped[key]!);
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      itemCount: items.length,
+                      itemBuilder: (_, i) {
+                        final item = items[i];
+                        if (item is _PanelGroupHeader) {
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                            child: Text(item.label,
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.textSecondary,
+                                    letterSpacing: 0.4)),
+                          );
+                        }
+                        final shift = item as WorkShift;
+                        final color = _ShiftBadge._hexColor(shift.color);
+                        final isSelected = selected == shift.id;
+                        return InkWell(
+                          onTap: () => onSelect(shift.id),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? color.withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected
+                                    ? color
+                                    : color.withValues(alpha: 0.25),
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(children: [
+                              Container(
+                                width: 30,
+                                height: 26,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: color.withValues(
+                                      alpha: isSelected ? 0.25 : 0.12),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(shift.code,
+                                    style: TextStyle(
+                                        color: color,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800),
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(shift.name,
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: isSelected
+                                                ? color
+                                                : AppTheme.textPrimary),
+                                        overflow: TextOverflow.ellipsis),
+                                    Text(shift.timeLabel,
+                                        style: const TextStyle(
+                                            fontSize: 9,
+                                            color: AppTheme.textSecondary),
+                                        overflow: TextOverflow.ellipsis),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(Icons.check_circle,
+                                    size: 14, color: color),
+                            ]),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+          ),
+          // Clear button (shown when a shift is selected)
+          if (selected != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              child: OutlinedButton.icon(
+                onPressed: () => onSelect(selected!),
+                icon: const Icon(Icons.close, size: 12),
+                label: Text(s.quickFillClearSelection,
+                    style: const TextStyle(fontSize: 11)),
+                style: OutlinedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: AppTheme.textSecondary,
+                  side: const BorderSide(color: _border),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _MonthPickerDialog extends StatefulWidget {
@@ -987,6 +1271,8 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
 class _AssignResult {
   final bool remove;
   final int? removeId;
+  final bool removeHasAttendance;
+  final bool removeApproved;
   final int? replaceId; // delete this ID before saving (replace-mode)
   final bool isCustom;
   final int? shiftId;
@@ -998,6 +1284,8 @@ class _AssignResult {
   const _AssignResult._({
     required this.remove,
     this.removeId,
+    this.removeHasAttendance = false,
+    this.removeApproved = false,
     this.replaceId,
     required this.isCustom,
     this.shiftId,
@@ -1025,8 +1313,13 @@ class _AssignResult {
           customBreakEnd: breakEnd,
           replaceId: replaceId);
 
-  factory _AssignResult.deleteById(int id) =>
-      _AssignResult._(remove: true, removeId: id, isCustom: false);
+  factory _AssignResult.deleteById(int id, {bool hasAttendance = false, bool approved = false}) =>
+      _AssignResult._(
+          remove: true,
+          removeId: id,
+          removeHasAttendance: hasAttendance,
+          removeApproved: approved,
+          isCustom: false);
 }
 
 // ── Assign picker dialog ──────────────────────────────────────────────────────
@@ -1216,7 +1509,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                                 color: color.withValues(alpha: 0.25)),
                             InkWell(
                               onTap: () => Navigator.pop(
-                                  context, _AssignResult.deleteById(a.id)),
+                                  context, _AssignResult.deleteById(a.id, hasAttendance: a.hasAttendance, approved: a.approved)),
                               borderRadius: const BorderRadius.horizontal(
                                   right: Radius.circular(8)),
                               child: Padding(
@@ -1275,7 +1568,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                                             color: color))),
                                 InkWell(
                                   onTap: () => Navigator.pop(
-                                      context, _AssignResult.deleteById(a.id)),
+                                      context, _AssignResult.deleteById(a.id, hasAttendance: a.hasAttendance, approved: a.approved)),
                                   borderRadius: BorderRadius.circular(4),
                                   child: Padding(
                                     padding: const EdgeInsets.all(2),
@@ -1581,4 +1874,9 @@ class _TimeTile extends StatelessWidget {
                   fontSize: 14)),
         ),
       );
+}
+
+class _PanelGroupHeader {
+  final String label;
+  const _PanelGroupHeader(this.label);
 }

@@ -309,6 +309,37 @@ public class AttendanceController {
         LocalTime leaveTo   = leave != null && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getToTime()   : null;
         AttendanceRowData data = computeRowData(att, assignment, slotIndex, requests, leaveFrom, leaveTo, dayStart, dayEnd, otEnabled);
 
+        // Override mode
+        boolean hasOv = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
+                         || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
+        double calcActual, calcRegDay, calcOtDay, calcRegNight, calcOtNight;
+        if (hasOv && att != null) {
+            // Override có thể chỉ sửa 1 ô, nên các field còn lại phải fallback về giá trị gốc.
+            LocalTime ovCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn() : data.checkIn();
+            LocalTime ovCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut();
+            int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
+            if (ovCI != null && ovCO != null) {
+                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
+                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
+                var calc = AttendanceCalculator.calculate(
+                    data.shiftStart(), data.shiftEnd(),
+                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null,
+                    ovCI, ovCO, dayStart, dayEnd);
+                calcActual   = calc.actualHours();
+                calcRegDay   = calc.regularDayHours();
+                calcRegNight = calc.regularNightHours();
+            } else { calcActual = calcRegDay = calcRegNight = 0; }
+            calcOtDay   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
+            calcOtNight = att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
+        } else {
+            boolean appv = att != null && att.isApproved();
+            calcActual   = appv && att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours();
+            calcRegDay   = appv && att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours();
+            calcOtDay    = appv && att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours();
+            calcRegNight = appv && att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours();
+            calcOtNight  = appv && att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours();
+        }
+
         String dayLabel = switch (date.getDayOfWeek()) {
             case MONDAY    -> "T2";
             case TUESDAY   -> "T3";
@@ -341,11 +372,12 @@ public class AttendanceController {
             .requestedOvertimePeriod(data.requestedOvertimePeriod())
             .requestedOvertimeStatus(data.requestedOvertimeStatus())
             .requests(requests == null ? List.of() : requests.stream().map(AttendanceRequestDTO.Response::from).toList())
-            .actualHours(data.actualHours())
-            .regularDayHours(data.regularDayHours())
-            .otDayHours(data.otDayHours())
-            .regularNightHours(data.regularNightHours())
-            .otNightHours(data.otNightHours())
+            .actualHours(calcActual)
+            .totalHours(calcRegDay + calcRegNight + calcOtDay + calcOtNight)
+            .regularDayHours(calcRegDay)
+            .otDayHours(calcOtDay)
+            .regularNightHours(calcRegNight)
+            .otNightHours(calcOtNight)
             .leaveRequestId(leave != null ? leave.getId() : null)
             .leaveCode(leave != null ? leave.getLeaveType().getCode() : null)
             .leaveMode(leave != null ? leave.getMode().name() : null)
@@ -364,6 +396,12 @@ public class AttendanceController {
             .approvedByName(att != null && att.getApprovedBy() != null && att.getApprovedBy().getEmployee() != null
                 ? att.getApprovedBy().getEmployee().getFullName() : null)
             .workFlags(resolveWorkFlags(att, data, leave))
+            .overrideCheckIn(att != null ? att.getOverrideCheckIn() : null)
+            .overrideCheckOut(att != null ? att.getOverrideCheckOut() : null)
+            .overrideBreakMinutes(att != null ? att.getOverrideBreakMinutes() : null)
+            .overrideOtDayMinutes(att != null ? att.getOverrideOtDayMinutes() : null)
+            .overrideOtNightMinutes(att != null ? att.getOverrideOtNightMinutes() : null)
+            .overrideNote(att != null ? att.getOverrideNote() : null)
             .build();
     }
 
@@ -373,14 +411,24 @@ public class AttendanceController {
             return att.getWorkFlags();
         }
         // Chưa approve → tính live từ flagCheckIn/Out
-        if (data.flagCheckIn() == null || data.flagCheckOut() == null) return null;
-        double otDay   = data.otDayHours();
-        double otNight = data.otNightHours();
+        LocalTime flagCheckIn = att != null && att.getOverrideCheckIn() != null
+            ? att.getOverrideCheckIn()
+            : data.flagCheckIn();
+        LocalTime flagCheckOut = att != null && att.getOverrideCheckOut() != null
+            ? att.getOverrideCheckOut()
+            : data.flagCheckOut();
+        if (flagCheckIn == null || flagCheckOut == null) return null;
+        double otDay = att != null && att.getOverrideOtDayMinutes() != null
+            ? att.getOverrideOtDayMinutes() / 60.0
+            : data.otDayHours();
+        double otNight = att != null && att.getOverrideOtNightMinutes() != null
+            ? att.getOverrideOtNightMinutes() / 60.0
+            : data.otNightHours();
         var flags = WorkFlagCalculator.calculate(
             data.shiftStart(),
             data.shiftEnd(),
-            data.flagCheckIn(),
-            data.flagCheckOut(),
+            flagCheckIn,
+            flagCheckOut,
             otDay,
             otNight,
             leave != null
@@ -442,12 +490,40 @@ public class AttendanceController {
         LocalTime leaveTo   = leave != null && leave.isApplied() && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getToTime()   : null;
         AttendanceRowData data = computeRowData(att, assignment, slotIndex, requests, leaveFrom, leaveTo, dayStart, dayEnd, otEnabled);
 
+        // Override mode: nếu có override fields → bỏ qua checkIn/Out thực tế, tính lại
+        boolean hasOverride = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
+                              || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
+        double actualHours, regularDayHours, otDayHours, regularNightHours, otNightHours;
+        if (hasOverride) {
+            // Override có thể chỉ sửa 1 ô, nên các field còn lại phải fallback về giá trị gốc.
+            LocalTime ovCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn() : data.checkIn();
+            LocalTime ovCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut();
+            int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
+            if (ovCI != null && ovCO != null) {
+                // Compute break window from breakMinutes for calculator
+                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
+                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
+                var calc = AttendanceCalculator.calculate(
+                    data.shiftStart(), data.shiftEnd(),
+                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null,
+                    ovCI, ovCO, dayStart, dayEnd);
+                actualHours       = calc.actualHours();
+                regularDayHours   = calc.regularDayHours();
+                regularNightHours = calc.regularNightHours();
+            } else {
+                actualHours = regularDayHours = regularNightHours = 0;
+            }
+            otDayHours   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
+            otNightHours = att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
+        } else {
+            boolean approved2 = att != null && att.isApproved();
+            actualHours       = approved2 && att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours();
+            regularDayHours   = approved2 && att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours();
+            otDayHours        = approved2 && att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours();
+            regularNightHours = approved2 && att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours();
+            otNightHours      = approved2 && att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours();
+        }
         boolean approved = att != null && att.isApproved();
-        double actualHours      = approved && att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours();
-        double regularDayHours  = approved && att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours();
-        double otDayHours       = approved && att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours();
-        double regularNightHours= approved && att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours();
-        double otNightHours     = approved && att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours();
 
         String dayLabel = switch (date.getDayOfWeek()) {
             case MONDAY    -> "T2";
@@ -488,6 +564,7 @@ public class AttendanceController {
             .requests(requests == null ? List.of() : requests.stream().map(AttendanceRequestDTO.Response::from).toList())
             .attendanceId(data.attendanceId())
             .actualHours(actualHours)
+            .totalHours(regularDayHours + regularNightHours + otDayHours + otNightHours)
             .regularDayHours(regularDayHours)
             .otDayHours(otDayHours)
             .regularNightHours(regularNightHours)
@@ -504,6 +581,12 @@ public class AttendanceController {
             .leaveAmount(leave != null ? leave.getRequestedAmount() : null)
             .leaveFromTime(leave != null && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getFromTime() : null)
             .leaveToTime(leave != null && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getToTime() : null)
+            .overrideCheckIn(att != null ? att.getOverrideCheckIn() : null)
+            .overrideCheckOut(att != null ? att.getOverrideCheckOut() : null)
+            .overrideBreakMinutes(att != null ? att.getOverrideBreakMinutes() : null)
+            .overrideOtDayMinutes(att != null ? att.getOverrideOtDayMinutes() : null)
+            .overrideOtNightMinutes(att != null ? att.getOverrideOtNightMinutes() : null)
+            .overrideNote(att != null ? att.getOverrideNote() : null)
             .approved(approved)
             .approvedAt(att != null ? att.getApprovedAt() : null)
             .approvedByName(att != null && att.getApprovedBy() != null && att.getApprovedBy().getEmployee() != null
@@ -1026,6 +1109,65 @@ public class AttendanceController {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{attendanceId}/override")
+    @Transactional
+    public ResponseEntity<Void> override(
+        @PathVariable Long attendanceId,
+        @AuthenticationPrincipal User user,
+        @RequestBody AttendanceDTO.OverrideRequest req
+    ) {
+        requirePermission(user, "ATTENDANCE_MANAGE");
+        Attendance att = attendanceRepository.findById(attendanceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
+        requireViewScope(user, att.getEmployee().getDepartment().getId());
+
+        att.setOverrideCheckIn(req.getOverrideCheckIn());
+        att.setOverrideCheckOut(req.getOverrideCheckOut());
+        att.setOverrideBreakMinutes(req.getOverrideBreakMinutes());
+        att.setOverrideOtDayMinutes(req.getOverrideOtDayMinutes());
+        att.setOverrideOtNightMinutes(req.getOverrideOtNightMinutes());
+        att.setOverrideNote(req.getOverrideNote());
+        // Reset approve snapshot so it recalculates
+        att.setApproved(false);
+        att.setSnapActualHours(null);
+        att.setSnapDayHours(null);
+        att.setSnapDayOt(null);
+        att.setSnapNightHours(null);
+        att.setSnapNightOt(null);
+        att.setWorkFlags(null);
+        attendanceRepository.save(att);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/override")
+    @Transactional
+    public ResponseEntity<Map<String, Long>> createOverride(
+        @AuthenticationPrincipal User user,
+        @RequestBody Map<String, Object> body
+    ) {
+        requirePermission(user, "ATTENDANCE_MANAGE");
+        Long employeeId = body.get("employeeId") instanceof Number n ? n.longValue() : null;
+        String dateStr  = body.get("date") instanceof String s ? s : null;
+        if (employeeId == null || dateStr == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.missing_fields");
+
+        Employee employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        requireViewScope(user, employee.getDepartment().getId());
+
+        LocalDate date = LocalDate.parse(dateStr);
+        // Find or create attendance record for this employee + date
+        List<Attendance> existing = attendanceRepository.findByEmployeeIdAndDate(employeeId, date);
+        Attendance att = existing.isEmpty()
+            ? attendanceRepository.save(Attendance.builder()
+                .employee(employee)
+                .date(date)
+                .status(Attendance.Status.PRESENT)
+                .build())
+            : existing.get(0);
+        return ResponseEntity.ok(Map.of("attendanceId", att.getId()));
     }
 
     @PostMapping("/unapprove")

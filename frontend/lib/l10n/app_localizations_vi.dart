@@ -1962,4 +1962,59 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get disable => 'Vô hiệu hóa';
+
+  @override
+  String get quickFillPanel => 'Điền nhanh ca';
+
+  @override
+  String get quickFillHint => 'Chọn ca bên dưới rồi nhấn vào ô để gán';
+
+  @override
+  String get quickFillClearSelection => 'Bỏ chọn';
+
+  @override
+  String get quickFillCustomHours => 'Giờ tùy chỉnh';
+
+  @override
+  String get quickFillNoShifts => 'Chưa có ca nào';
+
+  @override
+  String get shiftGroup => 'Nhóm ca';
+
+  @override
+  String get shiftGroupHint => 'Ví dụ: Ca hành chính, Ca kỹ thuật...';
+
+  @override
+  String get shiftGroupUngrouped => 'Chưa phân nhóm';
+
+  @override
+  String get adminOverrideTitle => 'Chỉnh sửa toàn quyền';
+
+  @override
+  String get adminOverrideHint => 'Bỏ trống để dùng dữ liệu thực tế';
+
+  @override
+  String get adminOverrideOtDay => 'OT ngày (phút)';
+
+  @override
+  String get adminOverrideOtNight => 'OT đêm (phút)';
+
+  @override
+  String get adminOverrideBreak => 'Nghỉ giải lao (phút)';
+
+  @override
+  String get adminOverrideNote => 'Ghi chú override';
+
+  @override
+  String get adminOverrideClear => 'Xóa override';
+
+  @override
+  String get adminOverrideActive => 'Đang override';
+
+  @override
+  String get shiftAssignmentApproved => 'Ca đã được duyệt';
+
+  @override
+  String get shiftAssignmentApprovedCannotDelete =>
+      'Ca này đã được duyệt. Vui lòng bỏ duyệt trước khi xóa.';
 }

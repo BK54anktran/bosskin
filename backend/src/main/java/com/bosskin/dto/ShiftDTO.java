@@ -1,12 +1,10 @@
 package com.bosskin.dto;
 
-import com.bosskin.entity.WorkShift;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -18,12 +16,11 @@ public class ShiftDTO {
         private String name;
         @NotBlank
         private String code;
-        @NotNull
-        private WorkShift.Type type;
         private LocalTime startTime;
         private LocalTime endTime;
         private LocalTime breakStart;
         private LocalTime breakEnd;
+        private String groupName;
         private String color;
         private List<Long> departmentIds;
     }
@@ -33,12 +30,12 @@ public class ShiftDTO {
         private Long   id;
         private String name;
         private String code;
-        private String type;
         private String startTime;
         private String endTime;
         private String breakStart;
         private String breakEnd;
         private Integer workMinutes;
+        private String  groupName;
         private String  color;
         private boolean active;
         private List<DeptRef> departments;
@@ -83,7 +80,6 @@ public class ShiftDTO {
         private String shiftName;
         private String shiftCode;
         private String shiftColor;
-        private String shiftType;
         private String workDate;
         private String note;
         private String customStartTime;
@@ -91,5 +87,7 @@ public class ShiftDTO {
         private String customBreakStart;
         private String customBreakEnd;
         private boolean custom;
+        private boolean hasAttendance;
+        private boolean approved;
     }
 }

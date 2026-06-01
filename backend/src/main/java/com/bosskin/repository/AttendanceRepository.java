@@ -28,6 +28,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Param("date") LocalDate date
     );
 
+    boolean existsByShiftAssignment_Id(Long shiftAssignmentId);
+
     @Query("""
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e

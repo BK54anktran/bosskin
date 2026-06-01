@@ -3890,6 +3890,114 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Vô hiệu hóa'**
   String get disable;
+
+  /// No description provided for @quickFillPanel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điền nhanh ca'**
+  String get quickFillPanel;
+
+  /// No description provided for @quickFillHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ca bên dưới rồi nhấn vào ô để gán'**
+  String get quickFillHint;
+
+  /// No description provided for @quickFillClearSelection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ chọn'**
+  String get quickFillClearSelection;
+
+  /// No description provided for @quickFillCustomHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ tùy chỉnh'**
+  String get quickFillCustomHours;
+
+  /// No description provided for @quickFillNoShifts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ca nào'**
+  String get quickFillNoShifts;
+
+  /// No description provided for @shiftGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm ca'**
+  String get shiftGroup;
+
+  /// No description provided for @shiftGroupHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ví dụ: Ca hành chính, Ca kỹ thuật...'**
+  String get shiftGroupHint;
+
+  /// No description provided for @shiftGroupUngrouped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa phân nhóm'**
+  String get shiftGroupUngrouped;
+
+  /// No description provided for @adminOverrideTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa toàn quyền'**
+  String get adminOverrideTitle;
+
+  /// No description provided for @adminOverrideHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ trống để dùng dữ liệu thực tế'**
+  String get adminOverrideHint;
+
+  /// No description provided for @adminOverrideOtDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'OT ngày (phút)'**
+  String get adminOverrideOtDay;
+
+  /// No description provided for @adminOverrideOtNight.
+  ///
+  /// In vi, this message translates to:
+  /// **'OT đêm (phút)'**
+  String get adminOverrideOtNight;
+
+  /// No description provided for @adminOverrideBreak.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ giải lao (phút)'**
+  String get adminOverrideBreak;
+
+  /// No description provided for @adminOverrideNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú override'**
+  String get adminOverrideNote;
+
+  /// No description provided for @adminOverrideClear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa override'**
+  String get adminOverrideClear;
+
+  /// No description provided for @adminOverrideActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang override'**
+  String get adminOverrideActive;
+
+  /// No description provided for @shiftAssignmentApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca đã được duyệt'**
+  String get shiftAssignmentApproved;
+
+  /// No description provided for @shiftAssignmentApprovedCannotDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca này đã được duyệt. Vui lòng bỏ duyệt trước khi xóa.'**
+  String get shiftAssignmentApprovedCannotDelete;
 }
 
 class _AppLocalizationsDelegate

@@ -1,15 +1,20 @@
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
-import '../../../data/models/department.dart';
+import '../../../data/models/department_model.dart';
 import '../../../data/models/work_shift.dart';
 import '../../../data/services/api_service.dart';
+import '../../../data/services/department_service.dart';
+import '../../widgets/department_picker_field.dart';
 
 class ShiftFormDialog extends StatefulWidget {
   final WorkShift? shift;
-  const ShiftFormDialog({this.shift, super.key});
+  final List<String> existingGroups;
+  const ShiftFormDialog({this.shift, this.existingGroups = const [], super.key});
 
   @override
   State<ShiftFormDialog> createState() => _ShiftFormDialogState();
@@ -19,20 +24,22 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
   late final TextEditingController _code;
-  ShiftType _type = ShiftType.work;
+  late final TextEditingController _group;
   TimeOfDay? _start;
   TimeOfDay? _end;
   TimeOfDay? _breakStart;
   TimeOfDay? _breakEnd;
   String _color = '#1976D2';
-  List<Department> _allDepts = [];
+  List<DepartmentFlat> _allDepts = [];
   final Set<int> _selectedDeptIds = {};
   bool _saving = false;
   bool _loadingDepts = true;
 
   static const _colors = [
-    '#1976D2', '#388E3C', '#7B1FA2', '#F57C00',
-    '#D32F2F', '#0097A7', '#5D4037', '#455A64',
+    '#1976D2', '#1565C0', '#0288D1', '#00838F',
+    '#388E3C', '#558B2F', '#F57C00', '#E65100',
+    '#7B1FA2', '#AD1457', '#D32F2F', '#B71C1C',
+    '#0097A7', '#00695C', '#5D4037', '#455A64',
   ];
 
   @override
@@ -41,8 +48,8 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
     final s = widget.shift;
     _name = TextEditingController(text: s?.name ?? '');
     _code = TextEditingController(text: s?.code ?? '');
+    _group = TextEditingController(text: s?.groupName ?? '');
     if (s != null) {
-      _type = s.type;
       _color = s.color;
       _start = _parseTime(s.startTime);
       _end = _parseTime(s.endTime);
@@ -57,6 +64,7 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
   void dispose() {
     _name.dispose();
     _code.dispose();
+    _group.dispose();
     super.dispose();
   }
 
@@ -72,12 +80,7 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
 
   Future<void> _loadDepts() async {
     try {
-      final list = await ApiService.instance.get<List<Department>>(
-        '/departments',
-        (data) => (data as List)
-            .map((e) => Department.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+      final list = await DepartmentService.instance.getFlat();
       if (mounted) {
         setState(() {
           _allDepts = list;
@@ -102,6 +105,46 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
     if (t != null) onPick(t);
   }
 
+  Future<void> _pickCustomColor(AppLocalizations s) async {
+    Color current = Color(
+        int.parse(_color.replaceFirst('#', 'FF'), radix: 16));
+    final result = await showDialog<Color>(
+      context: context,
+      builder: (ctx) {
+        Color picking = current;
+        return StatefulBuilder(
+          builder: (ctx, setS) => AlertDialog(
+            title: Text(s.displayColor),
+            content: SingleChildScrollView(
+              child: ColorPicker(
+                pickerColor: picking,
+                onColorChanged: (c) => setS(() => picking = c),
+                enableAlpha: false,
+                labelTypes: const [],
+                pickerAreaHeightPercent: 0.7,
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(s.cancel)),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, picking),
+                  child: Text(s.apply)),
+            ],
+          ),
+        );
+      },
+    );
+    if (result != null) {
+      final r = (result.r * 255).round();
+      final g = (result.g * 255).round();
+      final b = (result.b * 255).round();
+      final hex = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+      setState(() => _color = hex);
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
@@ -109,12 +152,12 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
       final body = {
         'name': _name.text.trim(),
         'code': _code.text.trim().toUpperCase(),
-        'type': _type.apiName,
         if (_start != null) 'startTime': _formatTime(_start),
         if (_end != null) 'endTime': _formatTime(_end),
         if (_breakStart != null) 'breakStart': _formatTime(_breakStart),
         if (_breakEnd != null) 'breakEnd': _formatTime(_breakEnd),
         'color': _color,
+        if (_group.text.trim().isNotEmpty) 'groupName': _group.text.trim(),
         'departmentIds': _selectedDeptIds.toList(),
       };
       if (widget.shift == null) {
@@ -137,7 +180,6 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
     final isEdit = widget.shift != null;
-    final showTime = _type.isWorkType;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -178,20 +220,62 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
                       ),
                     ),
                   ]),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  DropdownButtonFormField<ShiftType>(
-                    value: _type,
-                    borderRadius: BorderRadius.circular(12),
-                    decoration: InputDecoration(labelText: s.shiftTypeLabel),
-                    items: ShiftType.values
-                        .map((t) => DropdownMenuItem(value: t, child: Text(t.label)))
-                        .toList(),
-                    onChanged: (t) => setState(() => _type = t!),
+                  Autocomplete<String>(
+                    initialValue: TextEditingValue(text: _group.text),
+                    optionsBuilder: (v) {
+                      final q = v.text.trim().toLowerCase();
+                      if (q.isEmpty) return widget.existingGroups;
+                      return widget.existingGroups
+                          .where((g) => g.toLowerCase().contains(q));
+                    },
+                    onSelected: (val) {
+                      _group.text = val;
+                    },
+                    fieldViewBuilder: (ctx, ctrl, focus, onSubmit) {
+                      // keep _group in sync with autocomplete's internal controller
+                      ctrl.text = _group.text;
+                      ctrl.addListener(() => _group.text = ctrl.text);
+                      return TextFormField(
+                        controller: ctrl,
+                        focusNode: focus,
+                        decoration: InputDecoration(
+                          labelText: s.shiftGroup,
+                          hintText: s.shiftGroupHint,
+                          hintStyle: const TextStyle(fontSize: 12),
+                        ),
+                      );
+                    },
+                    optionsViewBuilder: (ctx, onSelected, options) =>
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(8),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 160),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (_, i) {
+                                  final opt = options.elementAt(i);
+                                  return ListTile(
+                                    dense: true,
+                                    title: Text(opt,
+                                        style: const TextStyle(fontSize: 13)),
+                                    onTap: () => onSelected(opt),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
                   ),
                   const SizedBox(height: 16),
 
-                  if (showTime) ...[
+                  if (true) ...[
                     Row(children: [
                       Expanded(
                         child: _TimeTile(
@@ -237,56 +321,75 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    children: _colors.map((hex) {
-                      final c = Color(int.parse(hex.replaceFirst('#', 'FF'), radix: 16));
-                      final selected = _color == hex;
-                      return GestureDetector(
-                        onTap: () => setState(() => _color = hex),
+                    runSpacing: 8,
+                    children: [
+                      ..._colors.map((hex) {
+                        final c = Color(int.parse(hex.replaceFirst('#', 'FF'), radix: 16));
+                        final selected = _color == hex;
+                        return GestureDetector(
+                          onTap: () => setState(() => _color = hex),
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: c,
+                              shape: BoxShape.circle,
+                              border: selected ? Border.all(color: Colors.black, width: 2.5) : null,
+                            ),
+                            child: selected
+                                ? const Icon(Icons.check, color: Colors.white, size: 16)
+                                : null,
+                          ),
+                        );
+                      }),
+                      // Custom color swatch (shown when _color is not in preset list)
+                      if (!_colors.contains(_color)) ...[
+                        GestureDetector(
+                          onTap: () => _pickCustomColor(s),
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: Color(int.parse(_color.replaceFirst('#', 'FF'), radix: 16)),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.black, width: 2.5),
+                            ),
+                            child: const Icon(Icons.check, color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ],
+                      // "+" button to enter custom hex
+                      GestureDetector(
+                        onTap: () => _pickCustomColor(s),
                         child: Container(
                           width: 28,
                           height: 28,
                           decoration: BoxDecoration(
-                            color: c,
                             shape: BoxShape.circle,
-                            border: selected ? Border.all(color: Colors.black, width: 2.5) : null,
+                            border: Border.all(color: AppTheme.border, width: 1.5),
                           ),
-                          child: selected
-                              ? const Icon(Icons.check, color: Colors.white, size: 16)
-                              : null,
+                          child: const Icon(Icons.add, size: 16, color: AppTheme.textSecondary),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
 
-                  Text(
-                    s.applyToDepartments,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-                  ),
-                  const SizedBox(height: 6),
                   if (_loadingDepts)
                     const SizedBox(
                       height: 32,
                       child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                     )
-                  else if (_allDepts.isEmpty)
-                    Text(
-                      s.noDepartments,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-                    )
                   else
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: _allDepts.map((d) {
-                        final sel = _selectedDeptIds.contains(d.id);
-                        return FilterChip(
-                          label: Text(d.name, style: const TextStyle(fontSize: 12)),
-                          selected: sel,
-                          onSelected: (v) => setState(() =>
-                              v ? _selectedDeptIds.add(d.id) : _selectedDeptIds.remove(d.id)),
-                        );
-                      }).toList(),
+                    DepartmentMultiPickerField(
+                      departments: _allDepts,
+                      values: _selectedDeptIds,
+                      label: s.applyToDepartments,
+                      onChanged: (v) => setState(() {
+                        _selectedDeptIds
+                          ..clear()
+                          ..addAll(v);
+                      }),
                     ),
 
                   const SizedBox(height: 24),

@@ -49,6 +49,12 @@ const String _empty = '';
 const Color _gridLine = Color(0xFFD7DCE3);
 const Color _gridLineLight = Color(0xFFE1E5EA);
 
+String _formatMinutesAsTime(int minutes) {
+  final hh = (minutes ~/ 60).toString().padLeft(2, '0');
+  final mm = (minutes % 60).toString().padLeft(2, '0');
+  return '$hh:$mm';
+}
+
 Widget _deptDropdownLabel(DepartmentFlat d) {
   return Padding(
     padding: EdgeInsets.only(left: d.level > 0 ? d.level * 18.0 : 0),
@@ -767,6 +773,10 @@ class _TimesheetTabState extends State<_TimesheetTab> {
   bool _dayNightMode = false;
   bool _otEnabled = true;
 
+  // Inline row editing
+  String? _editingRow; // dateKey of row in edit mode
+  final Map<String, TextEditingController> _editCtrls = {};
+
   final _hScroll = ScrollController();
   final _vScroll = ScrollController();
   final _vScrollFixed = ScrollController();
@@ -803,7 +813,197 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     _hScroll.dispose();
     _vScroll.dispose();
     _vScrollFixed.dispose();
+    for (final c in _editCtrls.values) c.dispose();
     super.dispose();
+  }
+
+  // ── Inline row editing (timesheet) ────────────────────────────────────────
+
+  TextEditingController _ctrlFor(String dateKey, String col, String initVal) {
+    final k = '$dateKey:$col';
+    return _editCtrls.putIfAbsent(k, () => TextEditingController(text: initVal));
+  }
+
+  void _enterEditRow(String dateKey, TimesheetRow row) {
+    // Pre-populate controllers with existing override or actual values
+    _ctrlFor(dateKey, 'checkIn',  row.overrideCheckIn  ?? row.checkIn  ?? '').text = row.overrideCheckIn  ?? row.checkIn  ?? '';
+    _ctrlFor(dateKey, 'checkOut', row.overrideCheckOut ?? row.checkOut ?? '').text = row.overrideCheckOut ?? row.checkOut ?? '';
+    _ctrlFor(dateKey, 'break',
+        row.overrideBreakMinutes != null ? _formatMinutesAsTime(row.overrideBreakMinutes!) : _formatBreak(row.breakMinutes)).text =
+        row.overrideBreakMinutes != null ? _formatMinutesAsTime(row.overrideBreakMinutes!) : _formatBreak(row.breakMinutes);
+    _ctrlFor(dateKey, 'otDay',
+        row.overrideOtDayMinutes != null ? _formatMinutesAsTime(row.overrideOtDayMinutes!) : (row.otDayHours > 0 ? _formatHours(row.otDayHours) : '')).text =
+        row.overrideOtDayMinutes != null ? _formatMinutesAsTime(row.overrideOtDayMinutes!) : (row.otDayHours > 0 ? _formatHours(row.otDayHours) : '');
+    _ctrlFor(dateKey, 'otNight',
+        row.overrideOtNightMinutes != null ? _formatMinutesAsTime(row.overrideOtNightMinutes!) : (row.otNightHours > 0 ? _formatHours(row.otNightHours) : '')).text =
+        row.overrideOtNightMinutes != null ? _formatMinutesAsTime(row.overrideOtNightMinutes!) : (row.otNightHours > 0 ? _formatHours(row.otNightHours) : '');
+    setState(() => _editingRow = dateKey);
+  }
+
+  void _cancelEditRow() => setState(() => _editingRow = null);
+
+  Future<void> _saveEditRow(TimesheetRow row, String dateKey) async {
+    setState(() => _editingRow = null);
+    final ciRaw  = _editCtrls['$dateKey:checkIn']?.text.trim()  ?? '';
+    final coRaw  = _editCtrls['$dateKey:checkOut']?.text.trim() ?? '';
+    final brRaw  = _editCtrls['$dateKey:break']?.text.trim()    ?? '';
+    final odRaw  = _editCtrls['$dateKey:otDay']?.text.trim()    ?? '';
+    final onRaw  = _editCtrls['$dateKey:otNight']?.text.trim()  ?? '';
+
+    final ci = ciRaw.isEmpty ? null : _DayViewTabState._parseTimeInput(ciRaw);
+    final co = coRaw.isEmpty ? null : _DayViewTabState._parseTimeInput(coRaw);
+    final br = brRaw.isEmpty ? null : _DayViewTabState._parseDurationInput(brRaw);
+    final od = odRaw.isEmpty ? null : _DayViewTabState._parseDurationInput(odRaw);
+    final on = onRaw.isEmpty ? null : _DayViewTabState._parseDurationInput(onRaw);
+    if ((ciRaw.isNotEmpty && ci == null) ||
+        (coRaw.isNotEmpty && co == null) ||
+        (brRaw.isNotEmpty && br == null) ||
+        (odRaw.isNotEmpty && od == null) ||
+        (onRaw.isNotEmpty && on == null)) {
+      return;
+    }
+
+    String? _normalizeTime(String? v) {
+      final s = (v ?? '').trim();
+      if (s.isEmpty) return null;
+      return _DayViewTabState._parseTimeInput(s);
+    }
+
+    int? _effectiveBreak(int m) => m > 0 ? m : null;
+    int? _effectiveOtMinutes(double h) {
+      if (h <= 0) return null;
+      return (h * 60).round();
+    }
+
+    final currentCheckIn = _normalizeTime(row.checkIn);
+    final currentCheckOut = _normalizeTime(row.checkOut);
+    final currentBreak = _effectiveBreak(row.breakMinutes);
+    final currentOtDay = _effectiveOtMinutes(row.otDayHours);
+    final currentOtNight = _effectiveOtMinutes(row.otNightHours);
+
+    final ovCheckIn = _normalizeTime(row.overrideCheckIn);
+    final ovCheckOut = _normalizeTime(row.overrideCheckOut);
+    final ovBreak = row.overrideBreakMinutes;
+    final ovOtDay = row.overrideOtDayMinutes;
+    final ovOtNight = row.overrideOtNightMinutes;
+
+    final nextCheckIn = ciRaw.isEmpty
+        ? null
+        : (ovCheckIn != null
+            ? (ci == ovCheckIn ? row.overrideCheckIn : ci)
+            : (ci == currentCheckIn ? null : ci));
+    final nextCheckOut = coRaw.isEmpty
+        ? null
+        : (ovCheckOut != null
+            ? (co == ovCheckOut ? row.overrideCheckOut : co)
+            : (co == currentCheckOut ? null : co));
+    final nextBreak = brRaw.isEmpty
+        ? null
+        : (ovBreak != null
+            ? (br == ovBreak ? ovBreak : br)
+            : (br == currentBreak ? null : br));
+    final nextOtDay = odRaw.isEmpty
+        ? null
+        : (ovOtDay != null
+            ? (od == ovOtDay ? ovOtDay : od)
+            : (od == currentOtDay ? null : od));
+    final nextOtNight = onRaw.isEmpty
+        ? null
+        : (ovOtNight != null
+            ? (on == ovOtNight ? ovOtNight : on)
+            : (on == currentOtNight ? null : on));
+
+    try {
+      final int attId = row.attendanceId ??
+          await _repo.ensureAttendance(_selected!.id, row.date);
+      await _repo.saveOverride(attId,
+        checkIn: nextCheckIn, checkOut: nextCheckOut,
+        breakMinutes: nextBreak, otDayMinutes: nextOtDay, otNightMinutes: nextOtNight,
+        note: row.overrideNote,
+      );
+      await _loadTimesheet();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    }
+  }
+
+  // Cell widget: edit mode shows TextField, view mode shows value
+  Widget _inlineCellT({
+    required String dateKey,
+    required String col,
+    required String displayVal,
+    required String? overrideVal,
+    required double width,
+    required Color bg,
+    bool isTime = true,
+  }) {
+    final isEditing = _editingRow == dateKey;
+    if (isEditing) {
+      final ctrl = _editCtrls['$dateKey:$col'] ?? TextEditingController(text: overrideVal ?? displayVal);
+      return Container(
+        width: width,
+        height: _rowHeight,
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withValues(alpha: 0.05),
+          border: const Border(
+            bottom: BorderSide(color: _gridLineLight, width: 0.9),
+            right: BorderSide(color: _gridLineLight, width: 0.8),
+            top: BorderSide(color: AppTheme.primary, width: 0.5),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        alignment: Alignment.center,
+        child: TextField(
+          controller: ctrl,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 11, color: AppTheme.primary),
+          keyboardType: TextInputType.datetime,
+          maxLength: 5,
+          decoration: const InputDecoration(
+            isDense: true,
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+            counterText: '',
+            hintText: '--',
+            hintStyle: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    // View mode
+    final showActualUnderOverride = displayVal.isNotEmpty && displayVal != overrideVal;
+    return Container(
+      width: width,
+      height: _rowHeight,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg,
+        border: const Border(
+          bottom: BorderSide(color: _gridLineLight, width: 0.9),
+          right: BorderSide(color: _gridLineLight, width: 0.8),
+        ),
+      ),
+      child: overrideVal != null
+          ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(overrideVal,
+                    style: const TextStyle(
+                        fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
+                const SizedBox(width: 2),
+                const Icon(Icons.edit, size: 9, color: AppTheme.error),
+              ]),
+              if (showActualUnderOverride)
+                Text('($displayVal)',
+                    style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+            ])
+          : Text(displayVal,
+              style: TextStyle(
+                  fontSize: 12,
+                  color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+    );
   }
 
   Future<void> _init() async {
@@ -1436,36 +1636,28 @@ class _TimesheetTabState extends State<_TimesheetTab> {
       bg,
     ));
     cells.add(_shiftCell(row, cw[idx++], bg));
-    cells.add(_textCell(_formatBreak(row.breakMinutes), width: cw[idx++], bg: bg));
-    cells.add(_textCell(row.checkIn ?? _empty,
-        width: cw[idx++],
-        bg: bg,
-        color: _checkInColor(row),
-        onTap: checkInRequests.isNotEmpty
-            ? () {
-                _showRequestCardsDialog(
-                  context,
-                  title: s.checkInRequest,
-                  requests: checkInRequests,
-                  onToggleApplied: _setRequestApplied,
-                  attendanceApproved: row.approved,
-                );
-              }
-            : null));
-    cells.add(_textCell(row.checkOut ?? _empty,
-        width: cw[idx++],
-        bg: bg,
-        onTap: checkOutRequests.isNotEmpty
-            ? () {
-                _showRequestCardsDialog(
-                  context,
-                  title: s.checkOutRequest,
-                  requests: checkOutRequests,
-                  onToggleApplied: _setRequestApplied,
-                  attendanceApproved: row.approved,
-                );
-              }
-            : null));
+    final dateKey = '${row.date.year}-${row.date.month.toString().padLeft(2,'0')}-${row.date.day.toString().padLeft(2,'0')}';
+    // Break
+    cells.add(_inlineCellT(
+      dateKey: dateKey, col: 'break',
+      displayVal: _formatBreak(row.breakMinutes),
+      overrideVal: row.overrideBreakMinutes != null ? _formatMinutesAsTime(row.overrideBreakMinutes!) : null,
+      width: cw[idx++], bg: bg, isTime: false,
+    ));
+    // Check-in
+    cells.add(_inlineCellT(
+      dateKey: dateKey, col: 'checkIn',
+      displayVal: row.checkIn ?? _empty,
+      overrideVal: row.overrideCheckIn,
+      width: cw[idx++], bg: bg,
+    ));
+    // Check-out
+    cells.add(_inlineCellT(
+      dateKey: dateKey, col: 'checkOut',
+      displayVal: row.checkOut ?? _empty,
+      overrideVal: row.overrideCheckOut,
+      width: cw[idx++], bg: bg,
+    ));
     cells.add(_requestCell(
       _formatRequestTimeOrDuration(checkInRequest),
       checkInRequest?.status,
@@ -1505,7 +1697,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     final mergedDayOt = !_otEnabled
         ? (!_dayNightMode ? [...otDayRequests, ...otNightRequests] : otDayRequests)
         : <AttendanceChangeRequest>[];
-    cells.add(_numCell(row.actualHours, cw[idx++], bg));
+    cells.add(_numCell(row.totalHours, cw[idx++], bg));
     cells.add(_numCell(
       row.regularDayHours,
       cw[idx++],
@@ -1522,54 +1714,29 @@ class _TimesheetTabState extends State<_TimesheetTab> {
           : null,
     ));
     if (_otEnabled) {
-      cells.add(_numCell(
-        row.otDayHours,
-        cw[idx++],
-        bg,
-        highlight: row.otDayHours > 0,
-        onTap: otDayRequests.isNotEmpty
-            ? () => _showRequestCardsDialog(
-                  context,
-                  title: s.dayOvertime,
-                  requests: otDayRequests,
-                  onToggleApplied: _setRequestApplied,
-                  attendanceApproved: row.approved,
-                )
-            : null,
+      cells.add(_inlineCellT(
+        dateKey: dateKey, col: 'otDay',
+        displayVal: row.otDayHours > 0 ? _formatHours(row.otDayHours) : _empty,
+        overrideVal: row.overrideOtDayMinutes != null ? _formatHours(row.overrideOtDayMinutes! / 60.0) : null,
+        width: cw[idx++], bg: bg, isTime: false,
       ));
     }
     if (_dayNightMode) {
       final mergedNightOt = !_otEnabled ? otNightRequests : <AttendanceChangeRequest>[];
-      cells.add(_numCell(
-        row.regularNightHours,
-        cw[idx++],
-        bg,
+      cells.add(_numCell(row.regularNightHours, cw[idx++], bg,
         highlight: mergedNightOt.isNotEmpty,
         onTap: mergedNightOt.isNotEmpty
-            ? () => _showRequestCardsDialog(
-                  context,
-                  title: s.nightHours,
-                  requests: mergedNightOt,
-                  onToggleApplied: _setRequestApplied,
-                  attendanceApproved: row.approved,
-                )
+            ? () => _showRequestCardsDialog(context, title: s.nightHours,
+                  requests: mergedNightOt, onToggleApplied: _setRequestApplied,
+                  attendanceApproved: row.approved)
             : null,
       ));
       if (_otEnabled) {
-        cells.add(_numCell(
-          row.otNightHours,
-          cw[idx++],
-          bg,
-          highlight: row.otNightHours > 0,
-          onTap: otNightRequests.isNotEmpty
-              ? () => _showRequestCardsDialog(
-                    context,
-                    title: s.nightOvertime,
-                    requests: otNightRequests,
-                    onToggleApplied: _setRequestApplied,
-                    attendanceApproved: row.approved,
-                  )
-              : null,
+        cells.add(_inlineCellT(
+          dateKey: dateKey, col: 'otNight',
+          displayVal: row.otNightHours > 0 ? _formatHours(row.otNightHours) : _empty,
+          overrideVal: row.overrideOtNightMinutes != null ? _formatHours(row.overrideOtNightMinutes! / 60.0) : null,
+          width: cw[idx++], bg: bg, isTime: false,
         ));
       }
     }
@@ -1777,6 +1944,39 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     );
   }
 
+  // Cell hiển thị giá trị override (đỏ + bút) và giá trị thật bên dưới nhỏ
+  Widget _overrideCell({
+    required String overrideVal,
+    required String actualVal,
+    required double width,
+    required Color bg,
+  }) {
+    return Container(
+      width: width,
+      height: _rowHeight,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg,
+        border: const Border(
+          bottom: BorderSide(color: _gridLineLight, width: 0.9),
+          right: BorderSide(color: _gridLineLight, width: 0.8),
+        ),
+      ),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(overrideVal,
+              style: const TextStyle(
+                  fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
+          const SizedBox(width: 2),
+          const Icon(Icons.edit, size: 9, color: AppTheme.error),
+        ]),
+        if (actualVal.isNotEmpty)
+          Text('($actualVal)',
+              style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+      ]),
+    );
+  }
+
   Widget _numCell(double val, double width, Color bg,
       {bool highlight = false, VoidCallback? onTap}) {
     final text = val > 0 ? _formatHours(val) : _empty;
@@ -1938,31 +2138,52 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                 onPressed: () => _unapproveRow(row),
               ),
             ),
-          ] else ...[
-            SizedBox(
-              width: 24, height: 24,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                iconSize: 16,
-                icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
-                tooltip: s.edit,
-                onPressed: () => _showEditDialog(row),
-              ),
-            ),
-            if (hasRecord) ...[
-              const SizedBox(width: 2),
-              SizedBox(
-                width: 24, height: 24,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  iconSize: 16,
-                  icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
-                  tooltip: s.approve,
-                  onPressed: () => _approveRow(row),
-                ),
-              ),
-            ],
-          ],
+          ] else
+            Builder(builder: (_) {
+              final dateKey = '${row.date.year}-${row.date.month.toString().padLeft(2,'0')}-${row.date.day.toString().padLeft(2,'0')}';
+              final isEditing = _editingRow == dateKey;
+              return Row(mainAxisSize: MainAxisSize.min, children: [
+                if (isEditing) ...[
+                  SizedBox(width: 24, height: 24,
+                    child: IconButton(
+                      padding: EdgeInsets.zero, iconSize: 16,
+                      icon: const Icon(Icons.check, color: AppTheme.secondary),
+                      tooltip: s.save,
+                      onPressed: () => _saveEditRow(row, dateKey),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  SizedBox(width: 24, height: 24,
+                    child: IconButton(
+                      padding: EdgeInsets.zero, iconSize: 16,
+                      icon: const Icon(Icons.close, color: AppTheme.error),
+                      tooltip: s.cancel,
+                      onPressed: _cancelEditRow,
+                    ),
+                  ),
+                ] else ...[
+                  SizedBox(width: 24, height: 24,
+                    child: IconButton(
+                      padding: EdgeInsets.zero, iconSize: 16,
+                      icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
+                      tooltip: s.edit,
+                      onPressed: () => _enterEditRow(dateKey, row),
+                    ),
+                  ),
+                  if (hasRecord) ...[
+                    const SizedBox(width: 2),
+                    SizedBox(width: 24, height: 24,
+                      child: IconButton(
+                        padding: EdgeInsets.zero, iconSize: 16,
+                        icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
+                        tooltip: s.approve,
+                        onPressed: () => _approveRow(row),
+                      ),
+                    ),
+                  ],
+                ],
+              ]);
+            }),
         ],
       ),
     );
@@ -2025,10 +2246,6 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     }
   }
 
-  void _showEditDialog(TimesheetRow row) {
-    // TODO: open edit check-in/out dialog
-  }
-
   String _formatBreak(int minutes) {
     if (minutes == 0) return _empty;
     final hours = minutes ~/ 60;
@@ -2066,6 +2283,9 @@ class _DayViewTab extends StatefulWidget {
   State<_DayViewTab> createState() => _DayViewTabState();
 }
 
+// Key identifying an editable cell: employee+date+column type
+typedef _CellKey = ({int employeeId, String date, String col});
+
 class _DayViewTabState extends State<_DayViewTab> {
   final _repo = AttendanceRepository();
   final _leaveRepo = LeaveRepository();
@@ -2083,6 +2303,10 @@ class _DayViewTabState extends State<_DayViewTab> {
 
   bool _dayNightMode = false;
   bool _otEnabled = true;
+
+  // Inline row editing (day view), triggered from right action button like month view
+  String? _editingDaySlotKey;
+  final Map<String, TextEditingController> _dayEditCtrls = {};
 
   final _hScroll = ScrollController();
   final _vScroll = ScrollController();
@@ -2120,7 +2344,251 @@ class _DayViewTabState extends State<_DayViewTab> {
     _hScroll.dispose();
     _vScroll.dispose();
     _vScrollFixed.dispose();
+    for (final c in _dayEditCtrls.values) c.dispose();
     super.dispose();
+  }
+
+  // ── Inline cell editing ────────────────────────────────────────────────────
+
+  String _daySlotKey(DayViewRow slot) =>
+      '${slot.employeeId}_${slot.date}_${slot.shiftAssignmentId ?? 0}';
+
+  TextEditingController _dayCtrlFor(
+    String slotKey,
+    String col,
+    String initVal,
+  ) {
+    final k = '$slotKey:$col';
+    return _dayEditCtrls.putIfAbsent(k, () => TextEditingController(text: initVal));
+  }
+
+  void _enterDayEditSlot(DayViewRow slot) {
+    final slotKey = _daySlotKey(slot);
+    _dayCtrlFor(slotKey, 'checkIn', slot.overrideCheckIn ?? slot.checkIn ?? '').text =
+        slot.overrideCheckIn ?? slot.checkIn ?? '';
+    _dayCtrlFor(slotKey, 'checkOut', slot.overrideCheckOut ?? slot.checkOut ?? '').text =
+        slot.overrideCheckOut ?? slot.checkOut ?? '';
+    _dayCtrlFor(
+      slotKey,
+      'break',
+      slot.overrideBreakMinutes != null
+          ? _formatMinutesAsTime(slot.overrideBreakMinutes!)
+          : _formatBreak(slot.breakMinutes),
+    ).text = slot.overrideBreakMinutes != null
+        ? _formatMinutesAsTime(slot.overrideBreakMinutes!)
+        : _formatBreak(slot.breakMinutes);
+    _dayCtrlFor(
+      slotKey,
+      'otDay',
+      slot.overrideOtDayMinutes != null
+          ? _formatMinutesAsTime(slot.overrideOtDayMinutes!)
+          : (slot.otDayHours > 0 ? _formatHours(slot.otDayHours) : ''),
+    ).text = slot.overrideOtDayMinutes != null
+        ? _formatMinutesAsTime(slot.overrideOtDayMinutes!)
+        : (slot.otDayHours > 0 ? _formatHours(slot.otDayHours) : '');
+    _dayCtrlFor(
+      slotKey,
+      'otNight',
+      slot.overrideOtNightMinutes != null
+          ? _formatMinutesAsTime(slot.overrideOtNightMinutes!)
+          : (slot.otNightHours > 0 ? _formatHours(slot.otNightHours) : ''),
+    ).text = slot.overrideOtNightMinutes != null
+        ? _formatMinutesAsTime(slot.overrideOtNightMinutes!)
+        : (slot.otNightHours > 0 ? _formatHours(slot.otNightHours) : '');
+    setState(() => _editingDaySlotKey = slotKey);
+  }
+
+  void _cancelDayEditSlot() {
+    setState(() => _editingDaySlotKey = null);
+  }
+
+  Future<void> _saveDayEditSlot(DayViewRow slot) async {
+    final slotKey = _daySlotKey(slot);
+    setState(() => _editingDaySlotKey = null);
+    final ciRaw = _dayEditCtrls['$slotKey:checkIn']?.text.trim() ?? '';
+    final coRaw = _dayEditCtrls['$slotKey:checkOut']?.text.trim() ?? '';
+    final brRaw = _dayEditCtrls['$slotKey:break']?.text.trim() ?? '';
+    final odRaw = _dayEditCtrls['$slotKey:otDay']?.text.trim() ?? '';
+    final onRaw = _dayEditCtrls['$slotKey:otNight']?.text.trim() ?? '';
+
+    final ci = ciRaw.isEmpty ? null : _parseTimeInput(ciRaw);
+    final co = coRaw.isEmpty ? null : _parseTimeInput(coRaw);
+    final br = brRaw.isEmpty ? null : _parseDurationInput(brRaw);
+    final od = odRaw.isEmpty ? null : _parseDurationInput(odRaw);
+    final on = onRaw.isEmpty ? null : _parseDurationInput(onRaw);
+    if ((ciRaw.isNotEmpty && ci == null) ||
+        (coRaw.isNotEmpty && co == null) ||
+        (brRaw.isNotEmpty && br == null) ||
+        (odRaw.isNotEmpty && od == null) ||
+        (onRaw.isNotEmpty && on == null)) {
+      return;
+    }
+
+    String? _normalizeTime(String? v) {
+      final s = (v ?? '').trim();
+      if (s.isEmpty) return null;
+      return _parseTimeInput(s);
+    }
+
+    int? _effectiveBreak(int m) => m > 0 ? m : null;
+    int? _effectiveOtMinutes(double h) {
+      if (h <= 0) return null;
+      return (h * 60).round();
+    }
+
+    final currentCheckIn = _normalizeTime(slot.checkIn);
+    final currentCheckOut = _normalizeTime(slot.checkOut);
+    final currentBreak = _effectiveBreak(slot.breakMinutes);
+    final currentOtDay = _effectiveOtMinutes(slot.otDayHours);
+    final currentOtNight = _effectiveOtMinutes(slot.otNightHours);
+
+    final ovCheckIn = _normalizeTime(slot.overrideCheckIn);
+    final ovCheckOut = _normalizeTime(slot.overrideCheckOut);
+    final ovBreak = slot.overrideBreakMinutes;
+    final ovOtDay = slot.overrideOtDayMinutes;
+    final ovOtNight = slot.overrideOtNightMinutes;
+
+    final nextCheckIn = ciRaw.isEmpty
+        ? null
+        : (ovCheckIn != null
+            ? (ci == ovCheckIn ? slot.overrideCheckIn : ci)
+            : (ci == currentCheckIn ? null : ci));
+    final nextCheckOut = coRaw.isEmpty
+        ? null
+        : (ovCheckOut != null
+            ? (co == ovCheckOut ? slot.overrideCheckOut : co)
+            : (co == currentCheckOut ? null : co));
+    final nextBreak = brRaw.isEmpty
+        ? null
+        : (ovBreak != null
+            ? (br == ovBreak ? ovBreak : br)
+            : (br == currentBreak ? null : br));
+    final nextOtDay = odRaw.isEmpty
+        ? null
+        : (ovOtDay != null
+            ? (od == ovOtDay ? ovOtDay : od)
+            : (od == currentOtDay ? null : od));
+    final nextOtNight = onRaw.isEmpty
+        ? null
+        : (ovOtNight != null
+            ? (on == ovOtNight ? ovOtNight : on)
+            : (on == currentOtNight ? null : on));
+
+    try {
+      final int attId = slot.attendanceId ?? await _repo.ensureAttendance(slot.employeeId, slot.date);
+      await _repo.saveOverride(
+        attId,
+        checkIn: nextCheckIn,
+        checkOut: nextCheckOut,
+        breakMinutes: nextBreak,
+        otDayMinutes: nextOtDay,
+        otNightMinutes: nextOtNight,
+        note: slot.overrideNote,
+      );
+      await _loadRows();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+        );
+      }
+    }
+  }
+
+  static String? _parseTimeInput(String raw) {
+    final d = raw.replaceAll(RegExp(r'[:\s]'), '');
+    int? h, m;
+    if (d.length == 3) { h = int.tryParse(d.substring(0,1)); m = int.tryParse(d.substring(1)); }
+    else if (d.length == 4) { h = int.tryParse(d.substring(0,2)); m = int.tryParse(d.substring(2)); }
+    else { final p = raw.split(':'); if (p.length==2) { h=int.tryParse(p[0].trim()); m=int.tryParse(p[1].trim()); } }
+    if (h==null||m==null||h>23||m>59) return null;
+    return '${h.toString().padLeft(2,'0')}:${m.toString().padLeft(2,'0')}';
+  }
+
+  static int? _parseDurationInput(String raw) {
+    final t = _parseTimeInput(raw);
+    if (t == null) return null;
+    final p = t.split(':');
+    final h = int.tryParse(p[0]);
+    final m = int.tryParse(p[1]);
+    if (h == null || m == null) return null;
+    return h * 60 + m;
+  }
+
+  Widget _inlineCell({
+    required _CellKey key,
+    required String displayVal,
+    required String? overrideVal,
+    required double width,
+    required Color bg,
+    required DayViewRow slot,
+    bool isTime = true,
+  }) {
+    final slotKey = _daySlotKey(slot);
+    final isEditing = _editingDaySlotKey == slotKey;
+    if (isEditing) {
+      final ctrl = _dayEditCtrls['$slotKey:${key.col}'] ?? TextEditingController(
+        text: overrideVal ?? displayVal,
+      );
+      return Container(
+        width: width,
+        height: _dayRowHeight,
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withValues(alpha: 0.05),
+          border: const Border(
+            bottom: BorderSide(color: _gridLineLight, width: 0.9),
+            right: BorderSide(color: _gridLineLight, width: 0.8),
+            top: BorderSide(color: AppTheme.primary, width: 0.5),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        alignment: Alignment.center,
+        child: TextField(
+          controller: ctrl,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 11, color: AppTheme.primary),
+          keyboardType: TextInputType.datetime,
+          maxLength: 5,
+          decoration: const InputDecoration(
+            isDense: true,
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+            counterText: '',
+            hintText: '--',
+            hintStyle: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    final showActualUnderOverride = displayVal.isNotEmpty && displayVal != overrideVal;
+    return Container(
+      width: width,
+      height: _dayRowHeight,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg,
+        border: const Border(
+          bottom: BorderSide(color: _gridLineLight, width: 0.9),
+          right: BorderSide(color: _gridLineLight, width: 0.8),
+        ),
+      ),
+      child: overrideVal != null
+          ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(overrideVal,
+                    style: const TextStyle(fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
+                const SizedBox(width: 2),
+                const Icon(Icons.edit, size: 9, color: AppTheme.error),
+              ]),
+              if (showActualUnderOverride)
+                Text('($displayVal)',
+                    style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+            ])
+          : Text(displayVal,
+              style: TextStyle(fontSize: 12,
+                  color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+    );
   }
 
   Future<void> _init() async {
@@ -2773,10 +3241,29 @@ class _DayViewTabState extends State<_DayViewTab> {
       leaves: slot.leaves,
     ));
     final leaveNotApplied = slot.leaveCode != null && slot.leaveApplied == false;
+    final dateStr = '${slot.date.year}-${slot.date.month.toString().padLeft(2,'0')}-${slot.date.day.toString().padLeft(2,'0')}';
     cells.add(_dayShiftCellForSlot(slot, cw[idx++], bg));
-    cells.add(_dayTextCell(_formatBreak(slot.breakMinutes), width: cw[idx++], bg: bg));
-    cells.add(_dayTextCell(slot.checkIn ?? '', width: cw[idx++], bg: bg, color: _dayCheckInColor(slot), strikeThrough: leaveNotApplied));
-    cells.add(_dayTextCell(slot.checkOut ?? '', width: cw[idx++], bg: bg, strikeThrough: leaveNotApplied));
+    // Break
+    cells.add(_inlineCell(
+      key: (employeeId: slot.employeeId, date: dateStr, col: 'break'),
+      displayVal: _formatBreak(slot.breakMinutes),
+      overrideVal: slot.overrideBreakMinutes != null ? _formatMinutesAsTime(slot.overrideBreakMinutes!) : null,
+      width: cw[idx++], bg: bg, slot: slot, isTime: false,
+    ));
+    // Check-in
+    cells.add(_inlineCell(
+      key: (employeeId: slot.employeeId, date: dateStr, col: 'checkIn'),
+      displayVal: slot.checkIn ?? '',
+      overrideVal: slot.overrideCheckIn,
+      width: cw[idx++], bg: bg, slot: slot,
+    ));
+    // Check-out
+    cells.add(_inlineCell(
+      key: (employeeId: slot.employeeId, date: dateStr, col: 'checkOut'),
+      displayVal: slot.checkOut ?? '',
+      overrideVal: slot.overrideCheckOut,
+      width: cw[idx++], bg: bg, slot: slot,
+    ));
     cells.add(_dayRequestCell(
       _formatRequestTimeOrDuration(checkInRequest),
       checkInRequest?.status,
@@ -2800,7 +3287,7 @@ class _DayViewTabState extends State<_DayViewTab> {
     final mergedDayOt = !_otEnabled
         ? (!_dayNightMode ? [...otDayRequests, ...otNightRequests] : otDayRequests)
         : <AttendanceChangeRequest>[];
-    cells.add(_dayNumCell(slot.actualHours, cw[idx++], bg, strikeThrough: leaveNotApplied));
+    cells.add(_dayNumCell(slot.totalHours, cw[idx++], bg, strikeThrough: leaveNotApplied));
     cells.add(_dayNumCell(
       slot.regularDayHours,
       cw[idx++],
@@ -2812,39 +3299,28 @@ class _DayViewTabState extends State<_DayViewTab> {
           : null,
     ));
     if (_otEnabled) {
-      cells.add(_dayNumCell(
-        slot.otDayHours,
-        cw[idx++],
-        bg,
-        highlight: slot.otDayHours > 0,
-        strikeThrough: leaveNotApplied,
-        onTap: otDayRequests.isNotEmpty
-            ? () => _showRequestCardsDialog(context, title: s.dayOvertime, requests: otDayRequests, onToggleApplied: _setRequestApplied, attendanceApproved: slot.approved)
-            : null,
+      cells.add(_inlineCell(
+        key: (employeeId: slot.employeeId, date: dateStr, col: 'otDay'),
+        displayVal: slot.otDayHours > 0 ? _formatHours(slot.otDayHours) : '',
+        overrideVal: slot.overrideOtDayMinutes != null ? _formatHours(slot.overrideOtDayMinutes! / 60.0) : null,
+        width: cw[idx++], bg: bg, slot: slot, isTime: false,
       ));
     }
     if (_dayNightMode) {
       final mergedNightOt = !_otEnabled ? otNightRequests : <AttendanceChangeRequest>[];
       cells.add(_dayNumCell(
-        slot.regularNightHours,
-        cw[idx++],
-        bg,
-        highlight: mergedNightOt.isNotEmpty,
-        strikeThrough: leaveNotApplied,
+        slot.regularNightHours, cw[idx++], bg,
+        highlight: mergedNightOt.isNotEmpty, strikeThrough: leaveNotApplied,
         onTap: mergedNightOt.isNotEmpty
             ? () => _showRequestCardsDialog(context, title: s.nightHours, requests: mergedNightOt, onToggleApplied: _setRequestApplied, attendanceApproved: slot.approved)
             : null,
       ));
       if (_otEnabled) {
-        cells.add(_dayNumCell(
-          slot.otNightHours,
-          cw[idx++],
-          bg,
-          highlight: slot.otNightHours > 0,
-          strikeThrough: leaveNotApplied,
-          onTap: otNightRequests.isNotEmpty
-              ? () => _showRequestCardsDialog(context, title: s.nightOvertime, requests: otNightRequests, onToggleApplied: _setRequestApplied, attendanceApproved: slot.approved)
-              : null,
+        cells.add(_inlineCell(
+          key: (employeeId: slot.employeeId, date: dateStr, col: 'otNight'),
+          displayVal: slot.otNightHours > 0 ? _formatHours(slot.otNightHours) : '',
+          overrideVal: slot.overrideOtNightMinutes != null ? _formatHours(slot.overrideOtNightMinutes! / 60.0) : null,
+          width: cw[idx++], bg: bg, slot: slot, isTime: false,
         ));
       }
     }
@@ -3159,6 +3635,8 @@ class _DayViewTabState extends State<_DayViewTab> {
       );
     }
 
+    final slotKey = _daySlotKey(slot);
+    final isEditing = _editingDaySlotKey == slotKey;
     return _dayCell(
       width: width,
       bg: bg,
@@ -3166,18 +3644,18 @@ class _DayViewTabState extends State<_DayViewTab> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              iconSize: 16,
-              icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
-              tooltip: s.edit,
-              onPressed: () => _showEditDialog(slot),
+          if (isEditing) ...[
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                iconSize: 16,
+                icon: const Icon(Icons.check, color: AppTheme.secondary),
+                tooltip: s.save,
+                onPressed: () => _saveDayEditSlot(slot),
+              ),
             ),
-          ),
-          if (hasRecord) ...[
             const SizedBox(width: 2),
             SizedBox(
               width: 24,
@@ -3185,24 +3663,50 @@ class _DayViewTabState extends State<_DayViewTab> {
               child: IconButton(
                 padding: EdgeInsets.zero,
                 iconSize: 16,
-                icon: const Icon(Icons.delete_outline, color: AppTheme.error),
-                tooltip: s.delete,
-                onPressed: () => _confirmDelete(slot),
+                icon: const Icon(Icons.close, color: AppTheme.error),
+                tooltip: s.cancel,
+                onPressed: _cancelDayEditSlot,
+              ),
+            ),
+          ] else ...[
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                iconSize: 16,
+                icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
+                tooltip: s.edit,
+                onPressed: () => _enterDayEditSlot(slot),
+              ),
+            ),
+            if (hasRecord) ...[
+              const SizedBox(width: 2),
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  iconSize: 16,
+                  icon: const Icon(Icons.delete_outline, color: AppTheme.error),
+                  tooltip: s.delete,
+                  onPressed: () => _confirmDelete(slot),
+                ),
+              ),
+            ],
+            const SizedBox(width: 2),
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                iconSize: 16,
+                icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
+                tooltip: s.approve,
+                onPressed: () => _approveAttendance(slot),
               ),
             ),
           ],
-          const SizedBox(width: 2),
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              iconSize: 16,
-              icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
-              tooltip: s.approve,
-              onPressed: () => _approveAttendance(slot),
-            ),
-          ),
         ],
       ),
     );
@@ -3378,9 +3882,6 @@ class _DayViewTabState extends State<_DayViewTab> {
     return _daySlotActionCell(slot, width, bg);
   }
 
-  void _showEditDialog(DayViewRow row) {
-    // TODO: open edit check-in/out dialog
-  }
 
   void _confirmDelete(DayViewRow row) {
     // TODO: confirm and delete attendance record
@@ -3613,4 +4114,214 @@ class _LeaveInfoCardState extends State<_LeaveInfoCard> {
       ),
     );
   }
+}
+
+// ── Override result ───────────────────────────────────────────────────────────
+
+class _OverrideResult {
+  final bool clear;
+  final String? checkIn;
+  final String? checkOut;
+  final int? breakMinutes;
+  final int? otDayMinutes;
+  final int? otNightMinutes;
+  final String? note;
+
+  const _OverrideResult({
+    this.clear = false,
+    this.checkIn,
+    this.checkOut,
+    this.breakMinutes,
+    this.otDayMinutes,
+    this.otNightMinutes,
+    this.note,
+  });
+}
+
+// ── Override dialog ───────────────────────────────────────────────────────────
+
+class _OverrideDialog extends StatefulWidget {
+  final TimesheetRow row;
+  final AppLocalizations s;
+  const _OverrideDialog({required this.row, required this.s});
+
+  @override
+  State<_OverrideDialog> createState() => _OverrideDialogState();
+}
+
+class _OverrideDialogState extends State<_OverrideDialog> {
+  late final TextEditingController _checkIn;
+  late final TextEditingController _checkOut;
+  late final TextEditingController _break;
+  late final TextEditingController _otDay;
+  late final TextEditingController _otNight;
+  late final TextEditingController _note;
+
+  @override
+  void initState() {
+    super.initState();
+    final r = widget.row;
+    _checkIn  = TextEditingController(text: r.checkIn  ?? '');
+    _checkOut = TextEditingController(text: r.checkOut ?? '');
+    _break    = TextEditingController(text: r.breakMinutes > 0 ? r.breakMinutes.toString() : '');
+    _otDay    = TextEditingController(text: r.otDayHours   > 0 ? (r.otDayHours   * 60).round().toString() : '');
+    _otNight  = TextEditingController(text: r.otNightHours > 0 ? (r.otNightHours * 60).round().toString() : '');
+    _note     = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _checkIn.dispose(); _checkOut.dispose(); _break.dispose();
+    _otDay.dispose(); _otNight.dispose(); _note.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickTime(TextEditingController ctrl, String label) async {
+    final parts = ctrl.text.split(':');
+    final init = parts.length == 2
+        ? TimeOfDay(hour: int.tryParse(parts[0]) ?? 8, minute: int.tryParse(parts[1]) ?? 0)
+        : const TimeOfDay(hour: 8, minute: 0);
+    final t = await showTimePicker(
+      context: context,
+      initialTime: init,
+      helpText: label,
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
+    if (t != null) {
+      ctrl.text = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.s;
+    final row = widget.row;
+    final date = '${row.date.day}/${row.date.month}/${row.date.year}';
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                const Icon(Icons.edit_outlined, size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text(s.adminOverrideTitle,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                Text(date, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              ]),
+              const SizedBox(height: 4),
+              Text(s.adminOverrideHint,
+                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+              const SizedBox(height: 16),
+
+              // Check-in / Check-out
+              Row(children: [
+                Expanded(child: _TimeTile(label: s.checkIn, ctrl: _checkIn,
+                    onTap: () => _pickTime(_checkIn, s.checkIn))),
+                const SizedBox(width: 12),
+                Expanded(child: _TimeTile(label: s.checkOut, ctrl: _checkOut,
+                    onTap: () => _pickTime(_checkOut, s.checkOut))),
+              ]),
+              const SizedBox(height: 12),
+
+              // Break / OT Day / OT Night
+              Row(children: [
+                Expanded(child: _MinTile(label: s.adminOverrideBreak, ctrl: _break)),
+                const SizedBox(width: 8),
+                Expanded(child: _MinTile(label: s.adminOverrideOtDay, ctrl: _otDay)),
+                const SizedBox(width: 8),
+                Expanded(child: _MinTile(label: s.adminOverrideOtNight, ctrl: _otNight)),
+              ]),
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: _note,
+                decoration: InputDecoration(
+                    labelText: s.adminOverrideNote, isDense: true,
+                    border: const OutlineInputBorder()),
+              ),
+              const SizedBox(height: 20),
+
+              Row(children: [
+                if (row.attendanceId != null)
+                  TextButton.icon(
+                    onPressed: () => Navigator.pop(context,
+                        const _OverrideResult(clear: true)),
+                    icon: const Icon(Icons.clear, size: 14, color: AppTheme.error),
+                    label: Text(s.adminOverrideClear,
+                        style: const TextStyle(color: AppTheme.error, fontSize: 12)),
+                    style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6)),
+                  ),
+                const Spacer(),
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, _OverrideResult(
+                    checkIn:      _checkIn.text.trim().isEmpty  ? null : _checkIn.text.trim(),
+                    checkOut:     _checkOut.text.trim().isEmpty ? null : _checkOut.text.trim(),
+                    breakMinutes: int.tryParse(_break.text.trim()),
+                    otDayMinutes: int.tryParse(_otDay.text.trim()),
+                    otNightMinutes: int.tryParse(_otNight.text.trim()),
+                    note:         _note.text.trim().isEmpty ? null : _note.text.trim(),
+                  )),
+                  child: Text(s.save),
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TimeTile extends StatelessWidget {
+  final String label;
+  final TextEditingController ctrl;
+  final VoidCallback onTap;
+  const _TimeTile({required this.label, required this.ctrl, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(8),
+    child: TextField(
+      controller: ctrl,
+      readOnly: true,
+      onTap: onTap,
+      decoration: InputDecoration(
+        labelText: label,
+        isDense: true,
+        border: const OutlineInputBorder(),
+        suffixIcon: const Icon(Icons.access_time, size: 16),
+      ),
+    ),
+  );
+}
+
+class _MinTile extends StatelessWidget {
+  final String label;
+  final TextEditingController ctrl;
+  const _MinTile({required this.label, required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: ctrl,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(
+      labelText: label,
+      isDense: true,
+      border: const OutlineInputBorder(),
+    ),
+  );
 }

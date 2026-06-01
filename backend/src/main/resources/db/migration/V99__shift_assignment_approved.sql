@@ -1,0 +1,2 @@
+ALTER TABLE shift_assignments
+    ADD COLUMN approved BOOLEAN NOT NULL DEFAULT FALSE;

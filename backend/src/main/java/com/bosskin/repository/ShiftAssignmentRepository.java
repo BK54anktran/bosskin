@@ -61,7 +61,9 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
 
     @Query("""
         SELECT a FROM ShiftAssignment a
-        JOIN a.employee e
+        LEFT JOIN FETCH a.shift
+        JOIN FETCH a.employee e
+        JOIN FETCH e.department
         WHERE e.company.id = :companyId
           AND a.workDate BETWEEN :from AND :to
         ORDER BY a.workDate, e.fullName

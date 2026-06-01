@@ -245,4 +245,30 @@ class AttendanceRepository {
       {'applied': applied},
     );
   }
+
+  Future<int> ensureAttendance(int employeeId, DateTime date) async {
+    final res = await _api.dio.post('/attendances/override', data: {
+      'employeeId': employeeId,
+      'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+    });
+    return (res.data['attendanceId'] as num).toInt();
+  }
+
+  Future<void> saveOverride(int attendanceId, {
+    String? checkIn,
+    String? checkOut,
+    int? breakMinutes,
+    int? otDayMinutes,
+    int? otNightMinutes,
+    String? note,
+  }) async {
+    await _api.dio.patch('/attendances/$attendanceId/override', data: {
+      'overrideCheckIn': checkIn,
+      'overrideCheckOut': checkOut,
+      'overrideBreakMinutes': breakMinutes,
+      'overrideOtDayMinutes': otDayMinutes,
+      'overrideOtNightMinutes': otNightMinutes,
+      'overrideNote': note,
+    });
+  }
 }

@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "attendances",
@@ -78,6 +79,26 @@ public class Attendance extends BaseEntity {
 
     @Column(name = "work_flags", length = 120)
     private String workFlags;
+
+    // ── Admin override fields ─────────────────────────────────────────────────
+    @Column(name = "override_check_in")
+    private LocalTime overrideCheckIn;
+
+    @Column(name = "override_check_out")
+    private LocalTime overrideCheckOut;
+
+    @Column(name = "override_break_minutes")
+    private Integer overrideBreakMinutes;
+
+    @Column(name = "override_ot_day_minutes")
+    private Integer overrideOtDayMinutes;
+
+    @Column(name = "override_ot_night_minutes")
+    private Integer overrideOtNightMinutes;
+
+    @Column(name = "override_note", length = 255)
+    private String overrideNote;
+    // ─────────────────────────────────────────────────────────────────────────
 
     @Column(name = "check_in_latitude")
     private Double checkInLatitude;

@@ -1962,4 +1962,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get disable => 'Disable';
+
+  @override
+  String get quickFillPanel => 'Quick fill shift';
+
+  @override
+  String get quickFillHint => 'Select a shift below then tap a cell to assign';
+
+  @override
+  String get quickFillClearSelection => 'Clear selection';
+
+  @override
+  String get quickFillCustomHours => 'Custom hours';
+
+  @override
+  String get quickFillNoShifts => 'No shifts available';
+
+  @override
+  String get shiftGroup => 'Group';
+
+  @override
+  String get shiftGroupHint => 'e.g. Office shift, Technical shift...';
+
+  @override
+  String get shiftGroupUngrouped => 'Ungrouped';
+
+  @override
+  String get adminOverrideTitle => 'Admin override';
+
+  @override
+  String get adminOverrideHint => 'Leave blank to use actual data';
+
+  @override
+  String get adminOverrideOtDay => 'OT day (minutes)';
+
+  @override
+  String get adminOverrideOtNight => 'OT night (minutes)';
+
+  @override
+  String get adminOverrideBreak => 'Break (minutes)';
+
+  @override
+  String get adminOverrideNote => 'Override note';
+
+  @override
+  String get adminOverrideClear => 'Clear override';
+
+  @override
+  String get adminOverrideActive => 'Override active';
+
+  @override
+  String get shiftAssignmentApproved => 'Shift approved';
+
+  @override
+  String get shiftAssignmentApprovedCannotDelete =>
+      'This shift has been approved. Please unapprove it before deleting.';
 }

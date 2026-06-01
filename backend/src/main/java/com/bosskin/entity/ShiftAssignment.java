@@ -27,6 +27,32 @@ public class ShiftAssignment {
     @JoinColumn(name = "shift_id")
     private WorkShift shift;
 
+    // ── Snapshot fields — copied from WorkShift at assign time ───────────────
+    @Column(name = "snapshot_name", length = 100)
+    private String snapshotName;
+
+    @Column(name = "snapshot_code", length = 20)
+    private String snapshotCode;
+
+    @Column(name = "snapshot_start_time")
+    private LocalTime snapshotStartTime;
+
+    @Column(name = "snapshot_end_time")
+    private LocalTime snapshotEndTime;
+
+    @Column(name = "snapshot_break_start")
+    private LocalTime snapshotBreakStart;
+
+    @Column(name = "snapshot_break_end")
+    private LocalTime snapshotBreakEnd;
+
+    @Column(name = "snapshot_work_minutes")
+    private Integer snapshotWorkMinutes;
+
+    @Column(name = "snapshot_color", length = 7)
+    private String snapshotColor;
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
 
@@ -50,6 +76,10 @@ public class ShiftAssignment {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "approved", nullable = false)
+    @Builder.Default
+    private boolean approved = false;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default

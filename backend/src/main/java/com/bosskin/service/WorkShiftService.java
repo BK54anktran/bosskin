@@ -90,12 +90,12 @@ public class WorkShiftService {
             .company(companyRef(companyId))
             .name(req.getName())
             .code(req.getCode().toUpperCase())
-            .type(req.getType())
             .startTime(req.getStartTime())
             .endTime(req.getEndTime())
             .breakStart(req.getBreakStart())
             .breakEnd(req.getBreakEnd())
             .workMinutes(calcWorkMinutes(req))
+            .groupName(req.getGroupName() != null && !req.getGroupName().isBlank() ? req.getGroupName().trim() : null)
             .color(req.getColor() != null ? req.getColor() : "#1976D2")
             .build();
 
@@ -122,12 +122,12 @@ public class WorkShiftService {
 
         shift.setName(req.getName());
         shift.setCode(req.getCode().toUpperCase());
-        shift.setType(req.getType());
         shift.setStartTime(req.getStartTime());
         shift.setEndTime(req.getEndTime());
         shift.setBreakStart(req.getBreakStart());
         shift.setBreakEnd(req.getBreakEnd());
         shift.setWorkMinutes(calcWorkMinutes(req));
+        shift.setGroupName(req.getGroupName() != null && !req.getGroupName().isBlank() ? req.getGroupName().trim() : null);
         if (req.getColor() != null) shift.setColor(req.getColor());
 
         applyDepartments(shift, req.getDepartmentIds(), companyId);
@@ -185,6 +185,7 @@ public class WorkShiftService {
             archived.setDeleted(false);
             archived.setEmployee(employee);
             archived.setShift(shift);
+            applySnapshot(archived, shift);
             archived.setWorkDate(req.getWorkDate());
             archived.setNote(req.getNote());
             archived.setCustomStartTime(req.getCustomStartTime());
@@ -258,15 +259,19 @@ public class WorkShiftService {
             .customBreakEnd(req.getCustomBreakEnd())
             .createdBy(createdBy)
             .build();
+        applySnapshot(a, shift);
         return toAssignResponse(assignRepo.save(a));
     }
 
     @Transactional
     public void deleteAssignmentById(Long id, Long companyId) {
         ShiftAssignment a = assignRepo.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phân công"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shiftAssignment.not_found"));
         if (!a.getEmployee().getCompany().getId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        if (a.isApproved()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.approved_cannot_delete");
         }
         // Xóa attendance requests liên quan đến ca này
         List<AttendanceRequest> requests = attendanceRequestRepository.findByShiftAssignment_Id(id);
@@ -320,20 +325,24 @@ public class WorkShiftService {
                         .orElse(null);
                     if (existing != null) {
                         existing.setShift(shift);
+                        applySnapshot(existing, shift);
                         existing.setNote(req.getNote());
                         assignRepo.save(existing);
                     } else if (archived != null) {
                         archived.setDeleted(false);
                         archived.setEmployee(emp);
                         archived.setShift(shift);
+                        applySnapshot(archived, shift);
                         archived.setWorkDate(d);
                         archived.setNote(req.getNote());
                         archived.setCreatedBy(createdBy);
                         assignRepo.save(archived);
                     } else {
-                        assignRepo.save(ShiftAssignment.builder()
+                        ShiftAssignment bulk = ShiftAssignment.builder()
                             .employee(emp).shift(shift).workDate(d)
-                            .note(req.getNote()).createdBy(createdBy).build());
+                            .note(req.getNote()).createdBy(createdBy).build();
+                        applySnapshot(bulk, shift);
+                        assignRepo.save(bulk);
                     }
                     count++;
                 }
@@ -363,9 +372,6 @@ public class WorkShiftService {
     }
 
     private Integer calcWorkMinutes(ShiftDTO.ShiftRequest req) {
-        if (req.getType() != WorkShift.Type.WORK
-            && req.getType() != WorkShift.Type.HALF_AM
-            && req.getType() != WorkShift.Type.HALF_PM) return null;
         if (req.getStartTime() == null || req.getEndTime() == null) return null;
 
         int total = (int) java.time.Duration.between(req.getStartTime(), req.getEndTime()).toMinutes();
@@ -386,12 +392,12 @@ public class WorkShiftService {
             .id(s.getId())
             .name(s.getName())
             .code(s.getCode())
-            .type(s.getType().name())
             .startTime(s.getStartTime() != null ? s.getStartTime().format(TIME_FMT) : null)
             .endTime(s.getEndTime() != null ? s.getEndTime().format(TIME_FMT) : null)
             .breakStart(s.getBreakStart() != null ? s.getBreakStart().format(TIME_FMT) : null)
             .breakEnd(s.getBreakEnd() != null ? s.getBreakEnd().format(TIME_FMT) : null)
             .workMinutes(s.getWorkMinutes())
+            .groupName(s.getGroupName())
             .color(s.getColor())
             .active(s.isActive())
             .departments(s.getDepartments().stream()
@@ -399,16 +405,33 @@ public class WorkShiftService {
             .build();
     }
 
+    /** Copy shift template fields into snapshot columns at assign time. */
+    private void applySnapshot(ShiftAssignment a, WorkShift shift) {
+        if (shift == null) return;
+        a.setSnapshotName(shift.getName());
+        a.setSnapshotCode(shift.getCode());
+        a.setSnapshotStartTime(shift.getStartTime());
+        a.setSnapshotEndTime(shift.getEndTime());
+        a.setSnapshotBreakStart(shift.getBreakStart());
+        a.setSnapshotBreakEnd(shift.getBreakEnd());
+        a.setSnapshotWorkMinutes(shift.getWorkMinutes());
+        a.setSnapshotColor(shift.getColor());
+    }
+
     private ShiftDTO.AssignResponse toAssignResponse(ShiftAssignment a) {
+        // Prefer live shift data; fall back to snapshot when shift was deleted
+        WorkShift s = a.getShift();
+        String name  = s != null ? s.getName()  : a.getSnapshotName();
+        String code  = s != null ? s.getCode()  : a.getSnapshotCode();
+        String color = s != null ? s.getColor() : (a.getSnapshotColor() != null ? a.getSnapshotColor() : "#607D8B");
         return ShiftDTO.AssignResponse.builder()
             .id(a.getId())
             .employeeId(a.getEmployee().getId())
             .employeeName(a.getEmployee().getFullName())
-            .shiftId(a.getShift() != null ? a.getShift().getId() : null)
-            .shiftName(a.getShift() != null ? a.getShift().getName() : null)
-            .shiftCode(a.getShift() != null ? a.getShift().getCode() : null)
-            .shiftColor(a.getShift() != null ? a.getShift().getColor() : "#607D8B")
-            .shiftType(a.getShift() != null ? a.getShift().getType().name() : null)
+            .shiftId(s != null ? s.getId() : null)
+            .shiftName(name)
+            .shiftCode(code)
+            .shiftColor(color)
             .workDate(a.getWorkDate().toString())
             .note(a.getNote())
             .customStartTime(a.getCustomStartTime() != null ? a.getCustomStartTime().format(TIME_FMT) : null)
@@ -416,6 +439,8 @@ public class WorkShiftService {
             .customBreakStart(a.getCustomBreakStart() != null ? a.getCustomBreakStart().format(TIME_FMT) : null)
             .customBreakEnd(a.getCustomBreakEnd() != null ? a.getCustomBreakEnd().format(TIME_FMT) : null)
             .custom(a.isCustom())
+            .hasAttendance(attendanceRepository.existsByShiftAssignment_Id(a.getId()))
+            .approved(a.isApproved())
             .build();
     }
 }

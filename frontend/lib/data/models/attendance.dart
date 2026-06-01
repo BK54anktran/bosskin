@@ -90,6 +90,7 @@ class TimesheetRow {
   final List<AttendanceChangeRequest> requests;
 
   final double actualHours;
+  final double totalHours;
   final double regularDayHours;
   final double otDayHours;
   final double regularNightHours;
@@ -113,6 +114,18 @@ class TimesheetRow {
   final String? approvedByName;
   final List<String> workFlags;
 
+  // Admin override
+  final String? overrideCheckIn;
+  final String? overrideCheckOut;
+  final int? overrideBreakMinutes;
+  final int? overrideOtDayMinutes;
+  final int? overrideOtNightMinutes;
+  final String? overrideNote;
+
+  bool get hasOverride =>
+      overrideCheckIn != null || overrideCheckOut != null ||
+      overrideOtDayMinutes != null || overrideOtNightMinutes != null;
+
   const TimesheetRow({
     required this.date,
     required this.dayLabel,
@@ -134,6 +147,7 @@ class TimesheetRow {
     this.requestedOvertimeStatus,
     this.requests = const [],
     required this.actualHours,
+    required this.totalHours,
     required this.regularDayHours,
     required this.otDayHours,
     required this.regularNightHours,
@@ -154,6 +168,12 @@ class TimesheetRow {
     this.approvedAt,
     this.approvedByName,
     this.workFlags = const [],
+    this.overrideCheckIn,
+    this.overrideCheckOut,
+    this.overrideBreakMinutes,
+    this.overrideOtDayMinutes,
+    this.overrideOtNightMinutes,
+    this.overrideNote,
   });
 
   factory TimesheetRow.fromJson(Map<String, dynamic> j) => TimesheetRow(
@@ -182,6 +202,7 @@ class TimesheetRow {
                 .toList() ??
             const [],
         actualHours: (j['actualHours'] as num?)?.toDouble() ?? 0,
+        totalHours: (j['totalHours'] as num?)?.toDouble() ?? 0,
         regularDayHours: (j['regularDayHours'] as num?)?.toDouble() ?? 0,
         otDayHours: (j['otDayHours'] as num?)?.toDouble() ?? 0,
         regularNightHours: (j['regularNightHours'] as num?)?.toDouble() ?? 0,
@@ -202,6 +223,12 @@ class TimesheetRow {
         approvedAt: j['approvedAt'] != null ? DateTime.tryParse(j['approvedAt'] as String) : null,
         approvedByName: j['approvedByName'] as String?,
         workFlags: (j['workFlags'] as String?)?.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList() ?? const [],
+        overrideCheckIn: j['overrideCheckIn'] as String?,
+        overrideCheckOut: j['overrideCheckOut'] as String?,
+        overrideBreakMinutes: (j['overrideBreakMinutes'] as num?)?.toInt(),
+        overrideOtDayMinutes: (j['overrideOtDayMinutes'] as num?)?.toInt(),
+        overrideOtNightMinutes: (j['overrideOtNightMinutes'] as num?)?.toInt(),
+        overrideNote: j['overrideNote'] as String?,
       );
 }
 
@@ -239,6 +266,7 @@ class DayViewRow {
   final int? attendanceId;
 
   final double actualHours;
+  final double totalHours;
   final double regularDayHours;
   final double otDayHours;
   final double regularNightHours;
@@ -261,6 +289,18 @@ class DayViewRow {
   final String? approvedByName;
   final List<DayViewLeaveInfo> leaves;
   final List<String> workFlags;
+
+  // Admin override
+  final String? overrideCheckIn;
+  final String? overrideCheckOut;
+  final int? overrideBreakMinutes;
+  final int? overrideOtDayMinutes;
+  final int? overrideOtNightMinutes;
+  final String? overrideNote;
+
+  bool get hasOverride =>
+      overrideCheckIn != null || overrideCheckOut != null ||
+      overrideOtDayMinutes != null || overrideOtNightMinutes != null;
 
   const DayViewRow({
     required this.employeeId,
@@ -291,6 +331,7 @@ class DayViewRow {
     this.attendanceId,
     this.requests = const [],
     required this.actualHours,
+    required this.totalHours,
     required this.regularDayHours,
     required this.otDayHours,
     required this.regularNightHours,
@@ -311,6 +352,12 @@ class DayViewRow {
     this.approvedByName,
     this.leaves = const [],
     this.workFlags = const [],
+    this.overrideCheckIn,
+    this.overrideCheckOut,
+    this.overrideBreakMinutes,
+    this.overrideOtDayMinutes,
+    this.overrideOtNightMinutes,
+    this.overrideNote,
   });
 
   factory DayViewRow.fromJson(Map<String, dynamic> j) => DayViewRow(
@@ -347,6 +394,7 @@ class DayViewRow {
                 .toList() ??
             const [],
         actualHours: (j['actualHours'] as num?)?.toDouble() ?? 0,
+        totalHours: (j['totalHours'] as num?)?.toDouble() ?? 0,
         regularDayHours: (j['regularDayHours'] as num?)?.toDouble() ?? 0,
         otDayHours: (j['otDayHours'] as num?)?.toDouble() ?? 0,
         regularNightHours: (j['regularNightHours'] as num?)?.toDouble() ?? 0,
@@ -369,6 +417,12 @@ class DayViewRow {
             ?.map((e) => DayViewLeaveInfo.fromJson(e as Map<String, dynamic>))
             .toList() ?? const [],
         workFlags: (j['workFlags'] as String?)?.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList() ?? const [],
+        overrideCheckIn: j['overrideCheckIn'] as String?,
+        overrideCheckOut: j['overrideCheckOut'] as String?,
+        overrideBreakMinutes: (j['overrideBreakMinutes'] as num?)?.toInt(),
+        overrideOtDayMinutes: (j['overrideOtDayMinutes'] as num?)?.toInt(),
+        overrideOtNightMinutes: (j['overrideOtNightMinutes'] as num?)?.toInt(),
+        overrideNote: j['overrideNote'] as String?,
       );
 }
 

@@ -12,8 +12,6 @@ import java.util.List;
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class WorkShift extends BaseEntity {
 
-    public enum Type { WORK, HALF_AM, HALF_PM, DAY_OFF, HOLIDAY }
-
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -26,11 +24,6 @@ public class WorkShift extends BaseEntity {
 
     @Column(nullable = false, length = 20)
     private String code;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    @Builder.Default
-    private Type type = Type.WORK;
 
     @Column(name = "start_time")
     private LocalTime startTime;
@@ -46,6 +39,9 @@ public class WorkShift extends BaseEntity {
 
     @Column(name = "work_minutes")
     private Integer workMinutes;
+
+    @Column(name = "group_name", length = 100)
+    private String groupName;
 
     @Column(nullable = false, length = 7)
     @Builder.Default

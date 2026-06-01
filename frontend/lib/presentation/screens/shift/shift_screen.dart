@@ -121,9 +121,16 @@ class _ShiftScreenState extends State<ShiftScreen>
   }
 
   Future<void> _openForm([WorkShift? shift]) async {
+    final groups = _shifts
+        .map((s) => s.groupName?.trim())
+        .where((g) => g != null && g!.isNotEmpty)
+        .cast<String>()
+        .toSet()
+        .toList()
+      ..sort();
     final result = await showInstantDialog<bool>(
       context,
-      (_) => ShiftFormDialog(shift: shift),
+      (_) => ShiftFormDialog(shift: shift, existingGroups: groups),
     );
     if (result == true) _loadShifts();
   }
@@ -132,16 +139,16 @@ class _ShiftScreenState extends State<ShiftScreen>
     final s = AppLocalizations.of(context)!;
     final ok = await showInstantDialog<bool>(
       context,
-      (_) => AlertDialog(
+      (ctx) => AlertDialog(
         title: Text(s.deleteShiftTitle),
         content: Text(s.deleteShiftPrompt(shift.name)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: Text(s.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child:
                 Text(s.delete, style: const TextStyle(color: AppTheme.error)),
           ),
@@ -298,32 +305,72 @@ class _ShiftListTabState extends State<_ShiftListTab> {
             style: const TextStyle(color: AppTheme.textSecondary)),
       );
     }
-    final paged = widget.shifts.skip(_page * _pageSize).take(_pageSize).toList();
+    // Group shifts: named groups first (sorted), then ungrouped
+    final grouped = <String, List<WorkShift>>{};
+    for (final shift in widget.shifts) {
+      final key = shift.groupName?.trim().isNotEmpty == true
+          ? shift.groupName!.trim()
+          : '';
+      grouped.putIfAbsent(key, () => []).add(shift);
+    }
+    final namedKeys = grouped.keys.where((k) => k.isNotEmpty).toList()..sort();
+    final allKeys = [...namedKeys, if (grouped.containsKey('')) ''];
+
+    // Build flat list with section headers for pagination
+    final items = <Object>[];
+    for (final key in allKeys) {
+      if (allKeys.length > 1 || key.isNotEmpty) {
+        items.add(_GroupHeader(key.isEmpty ? s.shiftGroupUngrouped : key));
+      }
+      items.addAll(grouped[key]!);
+    }
+    final paged = items.skip(_page * _pageSize).take(_pageSize).toList();
+
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
             itemCount: paged.length,
-            itemBuilder: (_, i) => _ShiftCard(
-              shift: paged[i],
-              canManage: widget.canManage,
-              onEdit: () => widget.onEdit(paged[i]),
-              onDelete: () => widget.onDelete(paged[i]),
-            ),
+            itemBuilder: (_, i) {
+              final item = paged[i];
+              if (item is _GroupHeader) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
+                  child: Text(item.label,
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textSecondary,
+                          letterSpacing: 0.5)),
+                );
+              }
+              final shift = item as WorkShift;
+              return _ShiftCard(
+                shift: shift,
+                canManage: widget.canManage,
+                onEdit: () => widget.onEdit(shift),
+                onDelete: () => widget.onDelete(shift),
+              );
+            },
           ),
         ),
         PaginationBar(
-          total: widget.shifts.length,
+          total: items.length,
           page: _page,
           pageSize: _pageSize,
           onPageSizeChanged: (v) => setState(() { _pageSize = v; _page = 0; }),
           onPrev: _page > 0 ? () => setState(() => _page--) : null,
-          onNext: (_page + 1) * _pageSize < widget.shifts.length ? () => setState(() => _page++) : null,
+          onNext: (_page + 1) * _pageSize < items.length ? () => setState(() => _page++) : null,
         ),
       ],
     );
   }
+}
+
+class _GroupHeader {
+  final String label;
+  const _GroupHeader(this.label);
 }
 
 class _ShiftCard extends StatelessWidget {
@@ -406,7 +453,6 @@ class _ShiftCard extends StatelessWidget {
           ],
         ),
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          _TypeBadge(shift.type),
           if (canManage) ...[
             const SizedBox(width: 8),
             IconButton(
@@ -424,31 +470,6 @@ class _ShiftCard extends StatelessWidget {
           ],
         ]),
         isThreeLine: shift.departments.isNotEmpty,
-      ),
-    );
-  }
-}
-
-class _TypeBadge extends StatelessWidget {
-  final ShiftType type;
-  const _TypeBadge(this.type);
-
-  @override
-  Widget build(BuildContext context) {
-    final (bg, fg) = switch (type) {
-      ShiftType.work => (const Color(0xFFE3F2FD), const Color(0xFF1565C0)),
-      ShiftType.halfAm => (const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
-      ShiftType.halfPm => (const Color(0xFFF3E5F5), const Color(0xFF6A1B9A)),
-      ShiftType.dayOff => (const Color(0xFFFFF8E1), const Color(0xFFF57F17)),
-      ShiftType.holiday => (const Color(0xFFFFEBEE), const Color(0xFFB71C1C)),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
-      child: Text(
-        type.label,
-        style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w600),
       ),
     );
   }
