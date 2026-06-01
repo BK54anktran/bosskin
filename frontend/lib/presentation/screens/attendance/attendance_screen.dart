@@ -689,6 +689,110 @@ Future<void> _showLeaveRequestCardDialog(
   );
 }
 
+// ── Shared edit cell widget ───────────────────────────────────────────────────
+
+class _EditTimeCell extends StatefulWidget {
+  final TextEditingController ctrl;
+  final double width;
+  final double height;
+  final bool isTime;
+  final Color bg;
+
+  const _EditTimeCell({
+    required this.ctrl,
+    required this.width,
+    required this.height,
+    required this.bg,
+    this.isTime = true,
+  });
+
+  @override
+  State<_EditTimeCell> createState() => _EditTimeCellState();
+}
+
+class _EditTimeCellState extends State<_EditTimeCell> {
+  late final FocusNode _focus;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus = FocusNode();
+    _focus.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focus.removeListener(_onFocusChange);
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (_focus.hasFocus) return;
+    final raw = widget.ctrl.text.trim();
+    if (raw.isEmpty) return;
+    final formatted = _DayViewTabState._parseTimeInput(raw);
+    if (formatted != null && formatted != widget.ctrl.text) {
+      widget.ctrl.text = formatted;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: widget.bg,
+        border: const Border(
+          bottom: BorderSide(color: _gridLineLight, width: 0.9),
+          right: BorderSide(color: _gridLineLight, width: 0.8),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      alignment: Alignment.center,
+      child: ListenableBuilder(
+        listenable: widget.ctrl,
+        builder: (context, _) => TextField(
+          controller: widget.ctrl,
+          focusNode: _focus,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, color: AppTheme.primary),
+          keyboardType: TextInputType.datetime,
+          maxLength: 5,
+          decoration: InputDecoration(
+            isDense: true,
+            filled: false,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: _gridLine, width: 0.8),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: _gridLine, width: 0.8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: AppTheme.primary, width: 1),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            counterText: '',
+            hintText: 'HH:MM',
+            hintStyle: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            suffixIcon: widget.ctrl.text.isNotEmpty
+                ? GestureDetector(
+                    onTap: () => widget.ctrl.clear(),
+                    child: const Icon(Icons.close, size: 13, color: AppTheme.textSecondary),
+                  )
+                : null,
+            suffixIconConstraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // â”€â”€ Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class AttendanceScreen extends StatefulWidget {
@@ -944,34 +1048,12 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     final isEditing = _editingRow == dateKey;
     if (isEditing) {
       final ctrl = _editCtrls['$dateKey:$col'] ?? TextEditingController(text: overrideVal ?? displayVal);
-      return Container(
+      return _EditTimeCell(
+        ctrl: ctrl,
         width: width,
         height: _rowHeight,
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withValues(alpha: 0.05),
-          border: const Border(
-            bottom: BorderSide(color: _gridLineLight, width: 0.9),
-            right: BorderSide(color: _gridLineLight, width: 0.8),
-            top: BorderSide(color: AppTheme.primary, width: 0.5),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        alignment: Alignment.center,
-        child: TextField(
-          controller: ctrl,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11, color: AppTheme.primary),
-          keyboardType: TextInputType.datetime,
-          maxLength: 5,
-          decoration: const InputDecoration(
-            isDense: true,
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-            counterText: '',
-            hintText: '--',
-            hintStyle: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
-          ),
-        ),
+        bg: bg,
+        isTime: isTime,
       );
     }
 
@@ -2516,9 +2598,16 @@ class _DayViewTabState extends State<_DayViewTab> {
   static String? _parseTimeInput(String raw) {
     final d = raw.replaceAll(RegExp(r'[:\s]'), '');
     int? h, m;
-    if (d.length == 3) { h = int.tryParse(d.substring(0,1)); m = int.tryParse(d.substring(1)); }
-    else if (d.length == 4) { h = int.tryParse(d.substring(0,2)); m = int.tryParse(d.substring(2)); }
-    else { final p = raw.split(':'); if (p.length==2) { h=int.tryParse(p[0].trim()); m=int.tryParse(p[1].trim()); } }
+    if (d.length == 1 || d.length == 2) {
+      h = int.tryParse(d); m = 0;
+    } else if (d.length == 3) {
+      h = int.tryParse(d.substring(0,1)); m = int.tryParse(d.substring(1));
+    } else if (d.length == 4) {
+      h = int.tryParse(d.substring(0,2)); m = int.tryParse(d.substring(2));
+    } else {
+      final p = raw.split(':');
+      if (p.length == 2) { h = int.tryParse(p[0].trim()); m = int.tryParse(p[1].trim()); }
+    }
     if (h==null||m==null||h>23||m>59) return null;
     return '${h.toString().padLeft(2,'0')}:${m.toString().padLeft(2,'0')}';
   }
@@ -2550,34 +2639,12 @@ class _DayViewTabState extends State<_DayViewTab> {
       final ctrl = _dayEditCtrls['$slotKey:${key.col}'] ?? TextEditingController(
         text: overrideVal ?? displayVal,
       );
-      return Container(
+      return _EditTimeCell(
+        ctrl: ctrl,
         width: width,
         height: _dayRowHeight,
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withValues(alpha: 0.05),
-          border: const Border(
-            bottom: BorderSide(color: _gridLineLight, width: 0.9),
-            right: BorderSide(color: _gridLineLight, width: 0.8),
-            top: BorderSide(color: AppTheme.primary, width: 0.5),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        alignment: Alignment.center,
-        child: TextField(
-          controller: ctrl,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11, color: AppTheme.primary),
-          keyboardType: TextInputType.datetime,
-          maxLength: 5,
-          decoration: const InputDecoration(
-            isDense: true,
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-            counterText: '',
-            hintText: '--',
-            hintStyle: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
-          ),
-        ),
+        bg: bg,
+        isTime: isTime,
       );
     }
 

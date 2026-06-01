@@ -79,11 +79,11 @@ public class WorkFlagCalculator {
         boolean fullyAfterShift  = checkInMin  >= shiftEndMin   - inTol;
 
         if (!fullyBeforeShift && !fullyAfterShift) {
-            boolean inOnTime  = Math.abs(inDiff)  <= inTol;
-            boolean outOnTime = Math.abs(outDiff) <= outTol;
+            boolean inOnTime  = inDiff  <= inTol;   // sớm hoặc đúng giờ
+            boolean outOnTime = outDiff >= -outTol;  // trễ hoặc đúng giờ
             if (inDiff >  inTol)  flags.add(Flag.LATE_IN);
             if (outDiff < -outTol) flags.add(Flag.EARLY_OUT);
-            if (inOnTime && outOnTime)        flags.add(Flag.ON_TIME);
+            if (inOnTime && outOnTime) flags.add(Flag.ON_TIME);
         } else if (fullyAfterShift) {
             if (inDiff > inTol) flags.add(Flag.LATE_IN);
         }

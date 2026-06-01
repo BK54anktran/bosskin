@@ -429,13 +429,29 @@ public class AttendanceController {
         if (att != null && att.isApproved() && att.getWorkFlags() != null) {
             return att.getWorkFlags();
         }
-        // Chưa approve → tính live từ flagCheckIn/Out
-        LocalTime flagCheckIn = att != null && att.getOverrideCheckIn() != null
-            ? att.getOverrideCheckIn()
-            : data.flagCheckIn();
-        LocalTime flagCheckOut = att != null && att.getOverrideCheckOut() != null
-            ? att.getOverrideCheckOut()
-            : data.flagCheckOut();
+        // Chưa approve → tính live, ưu tiên: override > request > rounding > actual
+        // override & request: KHÔNG qua rounding (đã là giờ chính xác do người dùng nhập)
+        // actual: qua rounding (data.flagCheckIn/Out đã bao gồm request+rounding, fallback về actual+rounding)
+        LocalTime flagCheckIn;
+        if (att != null && att.getOverrideCheckIn() != null) {
+            flagCheckIn = att.getOverrideCheckIn();
+        } else if (data.flagCheckIn() != null) {
+            flagCheckIn = data.flagCheckIn(); // request nếu có, không thì actual đã rounding
+        } else {
+            flagCheckIn = data.effectiveCheckIn() != null
+                ? roundUp(data.effectiveCheckIn(), policy.roundingCheckInMinutes())
+                : null;
+        }
+        LocalTime flagCheckOut;
+        if (att != null && att.getOverrideCheckOut() != null) {
+            flagCheckOut = att.getOverrideCheckOut();
+        } else if (data.flagCheckOut() != null) {
+            flagCheckOut = data.flagCheckOut(); // request nếu có, không thì actual đã rounding
+        } else {
+            flagCheckOut = data.effectiveCheckOut() != null
+                ? roundDown(data.effectiveCheckOut(), policy.roundingCheckOutMinutes())
+                : null;
+        }
         if (flagCheckIn == null || flagCheckOut == null) return null;
         double otDay = att != null && att.getOverrideOtDayMinutes() != null
             ? att.getOverrideOtDayMinutes() / 60.0
