@@ -1344,6 +1344,26 @@ public class AttendanceController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> delete(
+        @AuthenticationPrincipal User user,
+        @PathVariable Long id
+    ) {
+        requirePermission(user, "ATTENDANCE_MANAGE");
+        var att = attendanceRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
+        if (att.isApproved())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_approved");
+        if (att.isDeleted())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_deleted");
+        att.setDeleted(true);
+        att.setDeletedAt(java.time.LocalDateTime.now());
+        att.setDeletedBy(user);
+        attendanceRepository.save(att);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/check-in")
     public ResponseEntity<AttendanceDTO.Response> checkIn(
         @AuthenticationPrincipal User user,

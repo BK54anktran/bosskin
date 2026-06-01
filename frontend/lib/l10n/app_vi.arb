@@ -150,8 +150,8 @@
   "shiftTypeLabel": "Loại ca",
   "shiftStartLabel": "Giờ bắt đầu",
   "shiftEndLabel": "Giờ kết thúc",
-  "shiftBreakStartLabel": "Nghỉ trưa từ",
-  "shiftBreakEndLabel": "Nghỉ trưa đến",
+  "shiftBreakStartLabel": "Nghỉ giải lao từ",
+  "shiftBreakEndLabel": "Nghỉ giải lao đến",
   "displayColor": "Màu hiển thị",
   "applyToDepartments": "Áp dụng cho phòng ban",
   "noDepartments": "Không có phòng ban",
@@ -160,7 +160,7 @@
   "shiftDeleteTooltip": "Xóa",
   "noShiftsYet": "Chưa có ca làm nào. Tạo ca mới để bắt đầu.",
   "shift": "Ca làm",
-  "breakTime": "Thời gian nghỉ",
+  "breakTime": "Thời gian giải lao",
   "totalTime": "Tổng thời gian",
   "dayHours": "Thời gian ngày",
   "dayOT": "Tăng ca ngày",
@@ -237,6 +237,15 @@
   "clearFilters": "Xóa lọc",
   "approve": "Duyệt",
   "unapprove": "Bỏ duyệt",
+  "selectAll": "Chọn tất cả",
+  "deselectAll": "Bỏ chọn tất cả",
+  "selectedCount": "{count} đã chọn",
+  "@selectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "bulkApprove": "Duyệt hàng loạt",
+  "bulkUnapprove": "Bỏ duyệt hàng loạt",
+  "bulkEdit": "Chỉnh sửa hàng loạt",
+  "bulkActionDone": "Hoàn thành {success}/{total}",
+  "@bulkActionDone": { "placeholders": { "success": { "type": "int" }, "total": { "type": "int" } } },
   "dayShifts": "Ca làm trong ngày",
   "otDayNight": "OT ngày / đêm",
   "otScope": "Phạm vi OT",
@@ -495,7 +504,6 @@
   ,"friday": "Thứ 6"
   ,"saturday": "Thứ 7"
   ,"sunday": "Chủ nhật"
-  ,"breakTime": "Nghỉ"
   ,"applyTimeRange": "Áp dụng {from} – {to}"
   ,"@applyTimeRange": {
     "placeholders": {

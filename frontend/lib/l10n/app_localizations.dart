@@ -1001,13 +1001,13 @@ abstract class AppLocalizations {
   /// No description provided for @shiftBreakStartLabel.
   ///
   /// In vi, this message translates to:
-  /// **'Nghỉ trưa từ'**
+  /// **'Nghỉ giải lao từ'**
   String get shiftBreakStartLabel;
 
   /// No description provided for @shiftBreakEndLabel.
   ///
   /// In vi, this message translates to:
-  /// **'Nghỉ trưa đến'**
+  /// **'Nghỉ giải lao đến'**
   String get shiftBreakEndLabel;
 
   /// No description provided for @displayColor.
@@ -1061,7 +1061,7 @@ abstract class AppLocalizations {
   /// No description provided for @breakTime.
   ///
   /// In vi, this message translates to:
-  /// **'Nghỉ'**
+  /// **'Thời gian giải lao'**
   String get breakTime;
 
   /// No description provided for @totalTime.
@@ -1514,6 +1514,48 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Bỏ duyệt'**
   String get unapprove;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tất cả'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ chọn tất cả'**
+  String get deselectAll;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} đã chọn'**
+  String selectedCount(int count);
+
+  /// No description provided for @bulkApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt hàng loạt'**
+  String get bulkApprove;
+
+  /// No description provided for @bulkUnapprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ duyệt hàng loạt'**
+  String get bulkUnapprove;
+
+  /// No description provided for @bulkEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa hàng loạt'**
+  String get bulkEdit;
+
+  /// No description provided for @bulkActionDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn thành {success}/{total}'**
+  String bulkActionDone(int success, int total);
 
   /// No description provided for @dayShifts.
   ///

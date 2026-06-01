@@ -877,8 +877,152 @@ class _TimesheetTabState extends State<_TimesheetTab> {
   bool _dayNightMode = false;
   bool _otEnabled = true;
 
+  // Bulk selection (timesheet tab)
+  final Set<String> _selectedDates = {};
+  bool _bulkLoading = false;
+  bool _selectionMode = false;
+
+  String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  void _toggleSelectDate(String key) {
+    setState(() {
+      if (_selectedDates.contains(key)) {
+        _selectedDates.remove(key);
+      } else {
+        _selectedDates.add(key);
+      }
+    });
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      final allKeys = _mergedRows.map((r) => _dateKey(r.first.date)).toSet();
+      if (_selectedDates.containsAll(allKeys)) {
+        _selectedDates.clear();
+      } else {
+        _selectedDates.addAll(allKeys);
+      }
+    });
+  }
+
+  Future<void> _bulkApprove() async {
+    final s = AppLocalizations.of(context)!;
+    final keys = Set<String>.from(_selectedDates);
+    final rows = _mergedRows.where((r) => keys.contains(_dateKey(r.first.date))).toList();
+    final unapprovedRows = rows.expand((r) => r.rows).where((r) => !r.approved).toList();
+    if (unapprovedRows.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.bulkApprove),
+        content: Text('${s.bulkApprove} ${unapprovedRows.length} ${s.checkIn.toLowerCase()}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.approve)),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _bulkLoading = true);
+    int success = 0;
+    for (final row in unapprovedRows) {
+      try {
+        await _repo.approveAttendance(
+          row.attendanceId,
+          employeeId: _selected?.id,
+          date: row.date,
+          shiftAssignmentId: row.shiftAssignmentId,
+        );
+        success++;
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() {
+        _bulkLoading = false;
+        _selectedDates.clear();
+        _selectionMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.bulkActionDone(success, unapprovedRows.length))),
+      );
+      await _loadTimesheet();
+    }
+  }
+
+  Future<void> _bulkUnapprove() async {
+    final s = AppLocalizations.of(context)!;
+    final keys = Set<String>.from(_selectedDates);
+    final rows = _mergedRows.where((r) => keys.contains(_dateKey(r.first.date))).toList();
+    final approvedRows = rows.expand((r) => r.rows).where((r) => r.approved && r.attendanceId != null).toList();
+    if (approvedRows.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.bulkUnapprove),
+        content: Text('${s.bulkUnapprove} ${approvedRows.length} ${s.checkIn.toLowerCase()}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.warning),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.unapprove),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _bulkLoading = true);
+    int success = 0;
+    for (final row in approvedRows) {
+      try {
+        await _repo.unapproveAttendance(row.attendanceId!);
+        success++;
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() {
+        _bulkLoading = false;
+        _selectedDates.clear();
+        _selectionMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.bulkActionDone(success, approvedRows.length))),
+      );
+      await _loadTimesheet();
+    }
+  }
+
+  void _bulkEnterEdit() {
+    final keys = Set<String>.from(_selectedDates);
+    final rows = _mergedRows
+        .where((r) => keys.contains(_dateKey(r.first.date)))
+        .expand((r) => r.rows)
+        .where((r) => !r.approved)
+        .toList();
+    for (final row in rows) {
+      final dateKey = _dateKey(row.date);
+      _ctrlFor(dateKey, 'checkIn',  row.overrideCheckIn  ?? row.checkIn  ?? '').text = row.overrideCheckIn  ?? row.checkIn  ?? '';
+      _ctrlFor(dateKey, 'checkOut', row.overrideCheckOut ?? row.checkOut ?? '').text = row.overrideCheckOut ?? row.checkOut ?? '';
+      _ctrlFor(dateKey, 'break',
+          row.overrideBreakMinutes != null ? _formatMinutesAsTime(row.overrideBreakMinutes!) : _formatBreak(row.breakMinutes)).text =
+          row.overrideBreakMinutes != null ? _formatMinutesAsTime(row.overrideBreakMinutes!) : _formatBreak(row.breakMinutes);
+      _ctrlFor(dateKey, 'otDay',
+          row.overrideOtDayMinutes != null ? _formatMinutesAsTime(row.overrideOtDayMinutes!) : (row.otDayHours > 0 ? _formatHours(row.otDayHours) : '')).text =
+          row.overrideOtDayMinutes != null ? _formatMinutesAsTime(row.overrideOtDayMinutes!) : (row.otDayHours > 0 ? _formatHours(row.otDayHours) : '');
+      _ctrlFor(dateKey, 'otNight',
+          row.overrideOtNightMinutes != null ? _formatMinutesAsTime(row.overrideOtNightMinutes!) : (row.otNightHours > 0 ? _formatHours(row.otNightHours) : '')).text =
+          row.overrideOtNightMinutes != null ? _formatMinutesAsTime(row.overrideOtNightMinutes!) : (row.otNightHours > 0 ? _formatHours(row.otNightHours) : '');
+      _editingRows.add(dateKey);
+    }
+    setState(() {
+      _selectionMode = false;
+      _selectedDates.clear();
+    });
+  }
+
   // Inline row editing
-  String? _editingRow; // dateKey of row in edit mode
+  final Set<String> _editingRows = {}; // dateKeys in edit mode
   final Map<String, TextEditingController> _editCtrls = {};
 
   final _hScroll = ScrollController();
@@ -941,95 +1085,111 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     _ctrlFor(dateKey, 'otNight',
         row.overrideOtNightMinutes != null ? _formatMinutesAsTime(row.overrideOtNightMinutes!) : (row.otNightHours > 0 ? _formatHours(row.otNightHours) : '')).text =
         row.overrideOtNightMinutes != null ? _formatMinutesAsTime(row.overrideOtNightMinutes!) : (row.otNightHours > 0 ? _formatHours(row.otNightHours) : '');
-    setState(() => _editingRow = dateKey);
+    setState(() => _editingRows.add(dateKey));
   }
 
-  void _cancelEditRow() => setState(() => _editingRow = null);
+  void _cancelEditRow([String? dateKey]) {
+    setState(() {
+      if (dateKey != null) _editingRows.remove(dateKey);
+      else _editingRows.clear();
+    });
+  }
 
-  Future<void> _saveEditRow(TimesheetRow row, String dateKey) async {
-    setState(() => _editingRow = null);
-    final ciRaw  = _editCtrls['$dateKey:checkIn']?.text.trim()  ?? '';
-    final coRaw  = _editCtrls['$dateKey:checkOut']?.text.trim() ?? '';
-    final brRaw  = _editCtrls['$dateKey:break']?.text.trim()    ?? '';
-    final odRaw  = _editCtrls['$dateKey:otDay']?.text.trim()    ?? '';
-    final onRaw  = _editCtrls['$dateKey:otNight']?.text.trim()  ?? '';
+  ({String? checkIn, String? checkOut, int? breakMinutes, int? otDayMinutes, int? otNightMinutes})?
+      _buildSavePayload(TimesheetRow row, String dateKey) {
+    final ciRaw = _editCtrls['$dateKey:checkIn']?.text.trim()  ?? '';
+    final coRaw = _editCtrls['$dateKey:checkOut']?.text.trim() ?? '';
+    final brRaw = _editCtrls['$dateKey:break']?.text.trim()    ?? '';
+    final odRaw = _editCtrls['$dateKey:otDay']?.text.trim()    ?? '';
+    final onRaw = _editCtrls['$dateKey:otNight']?.text.trim()  ?? '';
 
     final ci = ciRaw.isEmpty ? null : _DayViewTabState._parseTimeInput(ciRaw);
     final co = coRaw.isEmpty ? null : _DayViewTabState._parseTimeInput(coRaw);
     final br = brRaw.isEmpty ? null : _DayViewTabState._parseDurationInput(brRaw);
     final od = odRaw.isEmpty ? null : _DayViewTabState._parseDurationInput(odRaw);
     final on = onRaw.isEmpty ? null : _DayViewTabState._parseDurationInput(onRaw);
-    if ((ciRaw.isNotEmpty && ci == null) ||
-        (coRaw.isNotEmpty && co == null) ||
-        (brRaw.isNotEmpty && br == null) ||
-        (odRaw.isNotEmpty && od == null) ||
-        (onRaw.isNotEmpty && on == null)) {
-      return;
-    }
+    if ((ciRaw.isNotEmpty && ci == null) || (coRaw.isNotEmpty && co == null) ||
+        (brRaw.isNotEmpty && br == null) || (odRaw.isNotEmpty && od == null) ||
+        (onRaw.isNotEmpty && on == null)) return null;
 
-    String? _normalizeTime(String? v) {
+    String? normalizeTime(String? v) {
       final s = (v ?? '').trim();
       if (s.isEmpty) return null;
       return _DayViewTabState._parseTimeInput(s);
     }
+    int? effectiveBreak(int m) => m > 0 ? m : null;
+    int? effectiveOtMinutes(double h) => h <= 0 ? null : (h * 60).round();
 
-    int? _effectiveBreak(int m) => m > 0 ? m : null;
-    int? _effectiveOtMinutes(double h) {
-      if (h <= 0) return null;
-      return (h * 60).round();
-    }
+    final curCI = normalizeTime(row.checkIn);
+    final curCO = normalizeTime(row.checkOut);
+    final curBr = effectiveBreak(row.breakMinutes);
+    final curOD = effectiveOtMinutes(row.otDayHours);
+    final curON = effectiveOtMinutes(row.otNightHours);
+    final ovCI = normalizeTime(row.overrideCheckIn);
+    final ovCO = normalizeTime(row.overrideCheckOut);
 
-    final currentCheckIn = _normalizeTime(row.checkIn);
-    final currentCheckOut = _normalizeTime(row.checkOut);
-    final currentBreak = _effectiveBreak(row.breakMinutes);
-    final currentOtDay = _effectiveOtMinutes(row.otDayHours);
-    final currentOtNight = _effectiveOtMinutes(row.otNightHours);
+    return (
+      checkIn: ciRaw.isEmpty ? null : (ovCI != null ? (ci == ovCI ? row.overrideCheckIn : ci) : (ci == curCI ? null : ci)),
+      checkOut: coRaw.isEmpty ? null : (ovCO != null ? (co == ovCO ? row.overrideCheckOut : co) : (co == curCO ? null : co)),
+      breakMinutes: brRaw.isEmpty ? null : (row.overrideBreakMinutes != null ? (br == row.overrideBreakMinutes ? row.overrideBreakMinutes : br) : (br == curBr ? null : br)),
+      otDayMinutes: odRaw.isEmpty ? null : (row.overrideOtDayMinutes != null ? (od == row.overrideOtDayMinutes ? row.overrideOtDayMinutes : od) : (od == curOD ? null : od)),
+      otNightMinutes: onRaw.isEmpty ? null : (row.overrideOtNightMinutes != null ? (on == row.overrideOtNightMinutes ? row.overrideOtNightMinutes : on) : (on == curON ? null : on)),
+    );
+  }
 
-    final ovCheckIn = _normalizeTime(row.overrideCheckIn);
-    final ovCheckOut = _normalizeTime(row.overrideCheckOut);
-    final ovBreak = row.overrideBreakMinutes;
-    final ovOtDay = row.overrideOtDayMinutes;
-    final ovOtNight = row.overrideOtNightMinutes;
-
-    final nextCheckIn = ciRaw.isEmpty
-        ? null
-        : (ovCheckIn != null
-            ? (ci == ovCheckIn ? row.overrideCheckIn : ci)
-            : (ci == currentCheckIn ? null : ci));
-    final nextCheckOut = coRaw.isEmpty
-        ? null
-        : (ovCheckOut != null
-            ? (co == ovCheckOut ? row.overrideCheckOut : co)
-            : (co == currentCheckOut ? null : co));
-    final nextBreak = brRaw.isEmpty
-        ? null
-        : (ovBreak != null
-            ? (br == ovBreak ? ovBreak : br)
-            : (br == currentBreak ? null : br));
-    final nextOtDay = odRaw.isEmpty
-        ? null
-        : (ovOtDay != null
-            ? (od == ovOtDay ? ovOtDay : od)
-            : (od == currentOtDay ? null : od));
-    final nextOtNight = onRaw.isEmpty
-        ? null
-        : (ovOtNight != null
-            ? (on == ovOtNight ? ovOtNight : on)
-            : (on == currentOtNight ? null : on));
-
+  Future<void> _saveEditRow(TimesheetRow row, String dateKey) async {
+    setState(() => _editingRows.remove(dateKey));
+    final payload = _buildSavePayload(row, dateKey);
+    if (payload == null) return;
     try {
-      final int attId = row.attendanceId ??
-          await _repo.ensureAttendance(_selected!.id, row.date);
+      final int attId = row.attendanceId ?? await _repo.ensureAttendance(_selected!.id, row.date);
       await _repo.saveOverride(attId,
-        checkIn: nextCheckIn, checkOut: nextCheckOut,
-        breakMinutes: nextBreak, otDayMinutes: nextOtDay, otNightMinutes: nextOtNight,
-        note: row.overrideNote,
+        checkIn: payload.checkIn, checkOut: payload.checkOut,
+        breakMinutes: payload.breakMinutes, otDayMinutes: payload.otDayMinutes,
+        otNightMinutes: payload.otNightMinutes, note: row.overrideNote,
       );
       await _loadTimesheet();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+    }
+  }
+
+  Future<void> _saveAllEditRows() async {
+    final s = AppLocalizations.of(context)!;
+    // Collect all rows currently in edit mode
+    final editingKeys = Set<String>.from(_editingRows);
+    final rowMap = <String, TimesheetRow>{};
+    for (final r in _mergedRows.expand((m) => m.rows)) {
+      final k = _dateKey(r.date);
+      if (editingKeys.contains(k)) rowMap[k] = r;
+    }
+    if (rowMap.isEmpty) return;
+    setState(() => _editingRows.clear());
+    setState(() => _bulkLoading = true);
+    int success = 0;
+    for (final entry in rowMap.entries) {
+      final dateKey = entry.key;
+      final row = entry.value;
+      final payload = _buildSavePayload(row, dateKey);
+      if (payload == null) continue;
+      try {
+        final int attId = row.attendanceId ?? await _repo.ensureAttendance(_selected!.id, row.date);
+        await _repo.saveOverride(attId,
+          checkIn: payload.checkIn, checkOut: payload.checkOut,
+          breakMinutes: payload.breakMinutes, otDayMinutes: payload.otDayMinutes,
+          otNightMinutes: payload.otNightMinutes, note: row.overrideNote,
+        );
+        success++;
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() => _bulkLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.bulkActionDone(success, rowMap.length))),
+      );
+      await _loadTimesheet();
     }
   }
 
@@ -1045,7 +1205,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     bool rounded = false,
     String? roundedRawVal,
   }) {
-    final isEditing = _editingRow == dateKey;
+    final isEditing = _editingRows.contains(dateKey);
     if (isEditing) {
       final ctrl = _editCtrls['$dateKey:$col'] ?? TextEditingController(text: overrideVal ?? displayVal);
       return _EditTimeCell(
@@ -1383,61 +1543,81 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                 ),
               ),
               const SizedBox(height: 10),
-              Wrap(
-                spacing: 12,
-                runSpacing: 10,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Dept filter
-                  SizedBox(
-                    width: 220,
-                    height: 56,
-                    child: DepartmentPickerField(
-                      compact: true,
-                      departments: _depts,
-                      value: _filterDept,
-                      label: s.department,
-                      allowAll: true,
-                      onChanged: (v) {
-                        setState(() {
-                          _filterDept = v;
-                          final emps = _filteredEmps;
-                          if (emps.isNotEmpty &&
-                              (_selected == null ||
-                                  !emps.any((e) => e.id == _selected!.id))) {
-                            _selected = emps.first;
-                            _loadTimesheet();
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                  // Employee picker
-                  SizedBox(
-                    width: 320,
-                    height: 56,
-                    child: DropdownButtonFormField<int?>(
-                      value: _selected?.id,
-                      borderRadius: BorderRadius.circular(8),
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: s.employee,
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        isDense: true,
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 10,
+                    children: [
+                      // Dept filter
+                      SizedBox(
+                        width: 220,
+                        height: 56,
+                        child: DepartmentPickerField(
+                          compact: true,
+                          departments: _depts,
+                          value: _filterDept,
+                          label: s.department,
+                          allowAll: true,
+                          onChanged: (v) {
+                            setState(() {
+                              _filterDept = v;
+                              final emps = _filteredEmps;
+                              if (emps.isNotEmpty &&
+                                  (_selected == null ||
+                                      !emps.any((e) => e.id == _selected!.id))) {
+                                _selected = emps.first;
+                                _loadTimesheet();
+                              }
+                            });
+                          },
+                        ),
                       ),
-                      items: _filteredEmps
-                          .map((e) => DropdownMenuItem(
-                                value: e.id,
-                                child: Text(e.fullName,
-                                    overflow: TextOverflow.ellipsis),
-                              ))
-                          .toList(),
-                      onChanged: (v) {
-                        if (v == null) return;
-                        final emp = _employees.firstWhere((e) => e.id == v);
-                        _selectEmployee(emp);
-                      },
+                      // Employee picker
+                      SizedBox(
+                        width: 320,
+                        height: 56,
+                        child: DropdownButtonFormField<int?>(
+                          value: _selected?.id,
+                          borderRadius: BorderRadius.circular(8),
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: s.employee,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: _filteredEmps
+                              .map((e) => DropdownMenuItem(
+                                    value: e.id,
+                                    child: Text(e.fullName,
+                                        overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (v) {
+                            if (v == null) return;
+                            final emp = _employees.firstWhere((e) => e.id == v);
+                            _selectEmployee(emp);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Tooltip(
+                    message: s.bulkEdit,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.checklist_outlined,
+                        color: _selectionMode ? AppTheme.primary : AppTheme.textSecondary,
+                        size: 22,
+                      ),
+                      onPressed: () => setState(() {
+                        _selectionMode = !_selectionMode;
+                        if (!_selectionMode) _selectedDates.clear();
+                      }),
                     ),
                   ),
                 ],
@@ -1446,7 +1626,120 @@ class _TimesheetTabState extends State<_TimesheetTab> {
           ),
         ),
         const Divider(height: 1),
-        // â”€â”€ Table â”€â”€
+        // ── Bulk action bar ──
+        if (_selectionMode)
+          Container(
+            color: AppTheme.primary.withValues(alpha: 0.06),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Row(
+              children: [
+                const Icon(Icons.checklist_outlined, size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  _selectedDates.isEmpty
+                      ? s.selectAll
+                      : s.selectedCount(_selectedDates.length),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary),
+                ),
+                const Spacer(),
+                if (_bulkLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else ...[
+                  OutlinedButton.icon(
+                    onPressed: _selectedDates.isEmpty ? null : _bulkEnterEdit,
+                    icon: const Icon(Icons.edit_outlined, size: 16),
+                    label: Text(s.bulkEdit),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      side: const BorderSide(color: AppTheme.primary),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: _selectedDates.isEmpty ? null : _bulkApprove,
+                    icon: const Icon(Icons.check_circle_outline, size: 16),
+                    label: Text(s.bulkApprove),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _selectedDates.isEmpty ? null : _bulkUnapprove,
+                    icon: const Icon(Icons.lock_open_outlined, size: 16),
+                    label: Text(s.bulkUnapprove),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.warning,
+                      side: const BorderSide(color: AppTheme.warning),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  tooltip: s.cancel,
+                  onPressed: () => setState(() {
+                    _selectionMode = false;
+                    _selectedDates.clear();
+                  }),
+                ),
+              ],
+            ),
+          ),
+        // ── Bulk edit save bar ──
+        if (_editingRows.isNotEmpty)
+          Container(
+            color: AppTheme.primary.withValues(alpha: 0.08),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.edit_outlined, size: 16, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  '${_editingRows.length} hàng đang sửa',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary),
+                ),
+                const Spacer(),
+                if (_bulkLoading)
+                  const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                else ...[
+                  FilledButton.icon(
+                    onPressed: _saveAllEditRows,
+                    icon: const Icon(Icons.check, size: 16),
+                    label: Text(AppLocalizations.of(context)!.save),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _cancelEditRow(),
+                    icon: const Icon(Icons.close, size: 16),
+                    label: Text(AppLocalizations.of(context)!.cancel),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.error,
+                      side: const BorderSide(color: AppTheme.error),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        // ── Table ──
         Expanded(child: _buildTable()),
         const SizedBox(height: 25),
       ],
@@ -1477,24 +1770,61 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
+        const checkW = 40.0;
         final dateColW = isMobile ? 56.0 : _dateColW;
+        final fixedW = (_selectionMode ? checkW : 0.0) + dateColW;
         final cols = _cols(s, dayNight: _dayNightMode, otEnabled: _otEnabled);
         final totalMin = cols.fold(0.0, (sum, c) => sum + c.width);
-        final available = constraints.maxWidth - dateColW - 1;
+        final available = constraints.maxWidth - fixedW - 1;
         final scale = available > totalMin ? available / totalMin : 1.0;
         final colWidths = cols.map((c) => c.width * scale).toList();
         final scrollWidth = colWidths.fold(0.0, (s, w) => s + w);
         final merged = _mergedRows;
 
+        // Width of the fixed left block: checkbox (when selection mode) + date
+        final fixedColW = (_selectionMode ? checkW : 0) + dateColW;
+
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cột Ngày - cố định
+            // Cột cố định: [checkbox?] + Date — dùng chung _vScrollFixed
             SizedBox(
-              width: dateColW,
+              width: fixedColW,
               child: Column(
                 children: [
-                  _headCell(s.date, width: dateColW),
+                  // Header row
+                  Row(
+                    children: [
+                      if (_selectionMode)
+                        Container(
+                          width: checkW,
+                          height: _headHeight,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF5F5F5),
+                            border: Border(
+                              bottom: BorderSide(color: _gridLine, width: 1.1),
+                              right: BorderSide(color: _gridLine, width: 0.8),
+                            ),
+                          ),
+                          child: GestureDetector(
+                            onTap: _toggleSelectAll,
+                            child: Checkbox(
+                              tristate: true,
+                              value: _selectedDates.isEmpty
+                                  ? false
+                                  : _selectedDates.containsAll(
+                                          merged.map((r) => _dateKey(r.first.date)).toSet())
+                                      ? true
+                                      : null,
+                              onChanged: (_) => _toggleSelectAll(),
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                        ),
+                      _headCell(s.date, width: dateColW),
+                    ],
+                  ),
                   Expanded(
                     child: ListView.builder(
                       controller: _vScrollFixed,
@@ -1502,11 +1832,50 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                       itemCount: merged.length,
                       itemBuilder: (_, i) {
                         final row = merged[i];
-                        if (row.rows.length <= 1) {
-                          return _dateCell(row.first, width: dateColW);
-                        }
+                        final key = _dateKey(row.first.date);
+                        final isSelected = _selectionMode && _selectedDates.contains(key);
                         final height = _rowHeight * row.rows.length;
-                        return _dateCellMerged(row, height, width: dateColW);
+                        final dateWidget = row.rows.length <= 1
+                            ? _dateCell(row.first, width: dateColW, selected: isSelected,
+                                onTap: _selectionMode ? () => _toggleSelectDate(key) : null)
+                            : _dateCellMerged(row, height, width: dateColW, selected: isSelected,
+                                onTap: _selectionMode ? () => _toggleSelectDate(key) : null);
+                        if (!_selectionMode) return dateWidget;
+                        final isToday = row.first.date.year == DateTime.now().year &&
+                            row.first.date.month == DateTime.now().month &&
+                            row.first.date.day == DateTime.now().day;
+                        final bg = isSelected
+                            ? AppTheme.primary.withValues(alpha: 0.08)
+                            : row.weekend
+                                ? const Color(0xFFFFF3E0)
+                                : isToday
+                                    ? const Color(0xFFE3F2FD)
+                                    : Colors.white;
+                        return Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () => _toggleSelectDate(key),
+                              child: Container(
+                                width: checkW,
+                                height: height,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: bg,
+                                  border: const Border(
+                                    bottom: BorderSide(color: _gridLineLight, width: 0.9),
+                                    right: BorderSide(color: _gridLine, width: 0.8),
+                                  ),
+                                ),
+                                child: Checkbox(
+                                  value: isSelected,
+                                  onChanged: (_) => _toggleSelectDate(key),
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ),
+                            dateWidget,
+                          ],
+                        );
                       },
                     ),
                   ),
@@ -1533,23 +1902,31 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                           itemCount: merged.length,
                           itemBuilder: (_, i) {
                             final row = merged[i];
+                            final key = _dateKey(row.first.date);
+                            final isSelected = _selectionMode && _selectedDates.contains(key);
                             if (row.rows.length <= 1) {
-                              return SizedBox(
-                                height: _rowHeight,
-                                child: Row(children: _dataCells(row.first, colWidths)),
+                              return GestureDetector(
+                                onTap: _selectionMode ? () => _toggleSelectDate(key) : null,
+                                child: SizedBox(
+                                  height: _rowHeight,
+                                  child: Row(children: _dataCells(row.first, colWidths, selected: isSelected)),
+                                ),
                               );
                             }
                             final height = _rowHeight * row.rows.length;
-                            return SizedBox(
-                              height: height,
-                              child: Column(
-                                children: [
-                                  for (final slot in row.rows)
-                                    SizedBox(
-                                      height: _rowHeight,
-                                      child: Row(children: _dataCells(slot, colWidths)),
-                                    ),
-                                ],
+                            return GestureDetector(
+                              onTap: _selectionMode ? () => _toggleSelectDate(key) : null,
+                              child: SizedBox(
+                                height: height,
+                                child: Column(
+                                  children: [
+                                    for (final slot in row.rows)
+                                      SizedBox(
+                                        height: _rowHeight,
+                                        child: Row(children: _dataCells(slot, colWidths, selected: isSelected)),
+                                      ),
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -1593,17 +1970,19 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     );
   }
 
-  Widget _dateCell(TimesheetRow row, {double width = _dateColW}) {
+  Widget _dateCell(TimesheetRow row, {double width = _dateColW, bool selected = false, VoidCallback? onTap}) {
     final isToday = row.date.year == DateTime.now().year &&
         row.date.month == DateTime.now().month &&
         row.date.day == DateTime.now().day;
-    final color = row.weekend
-        ? const Color(0xFFFFF3E0)
-        : isToday
-            ? const Color(0xFFE3F2FD)
-            : Colors.white;
+    final color = selected
+        ? AppTheme.primary.withValues(alpha: 0.10)
+        : row.weekend
+            ? const Color(0xFFFFF3E0)
+            : isToday
+                ? const Color(0xFFE3F2FD)
+                : Colors.white;
 
-    return Container(
+    final cell = Container(
       width: width,
       height: _rowHeight,
       alignment: Alignment.center,
@@ -1637,20 +2016,24 @@ class _TimesheetTabState extends State<_TimesheetTab> {
         ],
       ),
     );
+    if (onTap == null) return cell;
+    return GestureDetector(onTap: onTap, child: cell);
   }
 
-  Widget _dateCellMerged(_MergedTimesheetRow row, double height, {double width = _dateColW}) {
+  Widget _dateCellMerged(_MergedTimesheetRow row, double height, {double width = _dateColW, bool selected = false, VoidCallback? onTap}) {
     final first = row.first;
     final isToday = first.date.year == DateTime.now().year &&
         first.date.month == DateTime.now().month &&
         first.date.day == DateTime.now().day;
-    final color = row.weekend
-        ? const Color(0xFFFFF3E0)
-        : isToday
-            ? const Color(0xFFE3F2FD)
-            : Colors.white;
+    final color = selected
+        ? AppTheme.primary.withValues(alpha: 0.10)
+        : row.weekend
+            ? const Color(0xFFFFF3E0)
+            : isToday
+                ? const Color(0xFFE3F2FD)
+                : Colors.white;
 
-    return Container(
+    final cell = Container(
       width: width,
       height: height,
       alignment: Alignment.center,
@@ -1684,18 +2067,22 @@ class _TimesheetTabState extends State<_TimesheetTab> {
         ],
       ),
     );
+    if (onTap == null) return cell;
+    return GestureDetector(onTap: onTap, child: cell);
   }
 
-  List<Widget> _dataCells(TimesheetRow row, List<double> cw) {
+  List<Widget> _dataCells(TimesheetRow row, List<double> cw, {bool selected = false}) {
     final s = AppLocalizations.of(context)!;
     final isToday = row.date.year == DateTime.now().year &&
         row.date.month == DateTime.now().month &&
         row.date.day == DateTime.now().day;
-    final bg = row.weekend
-        ? const Color(0xFFFFF3E0)
-        : isToday
-            ? const Color(0xFFE3F2FD)
-            : Colors.white;
+    final bg = selected
+        ? AppTheme.primary.withValues(alpha: 0.08)
+        : row.weekend
+            ? const Color(0xFFFFF3E0)
+            : isToday
+                ? const Color(0xFFE3F2FD)
+                : Colors.white;
     final checkInRequests =
         _matchingRequests(row, row.requests, requestType: 'CHECK_IN');
     final checkOutRequests =
@@ -2206,7 +2593,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
 
   Widget _actionCell(TimesheetRow row, double width, Color bg) {
     final s = AppLocalizations.of(context)!;
-    final hasRecord = row.checkIn != null || row.checkOut != null || row.attendanceId != null;
+    final hasRecord = row.attendanceId != null;
     return Container(
       width: width,
       height: _rowHeight,
@@ -2241,7 +2628,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
           ] else
             Builder(builder: (_) {
               final dateKey = '${row.date.year}-${row.date.month.toString().padLeft(2,'0')}-${row.date.day.toString().padLeft(2,'0')}';
-              final isEditing = _editingRow == dateKey;
+              final isEditing = _editingRows.contains(dateKey);
               return Row(mainAxisSize: MainAxisSize.min, children: [
                 if (isEditing) ...[
                   SizedBox(width: 24, height: 24,
@@ -2258,7 +2645,7 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                       padding: EdgeInsets.zero, iconSize: 16,
                       icon: const Icon(Icons.close, color: AppTheme.error),
                       tooltip: s.cancel,
-                      onPressed: _cancelEditRow,
+                      onPressed: () => _cancelEditRow(dateKey),
                     ),
                   ),
                 ] else ...[
@@ -2275,12 +2662,21 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                     SizedBox(width: 24, height: 24,
                       child: IconButton(
                         padding: EdgeInsets.zero, iconSize: 16,
-                        icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
-                        tooltip: s.approve,
-                        onPressed: () => _approveRow(row),
+                        icon: const Icon(Icons.delete_outline, color: AppTheme.error),
+                        tooltip: s.delete,
+                        onPressed: () => _deleteRow(row),
                       ),
                     ),
                   ],
+                  const SizedBox(width: 2),
+                  SizedBox(width: 24, height: 24,
+                    child: IconButton(
+                      padding: EdgeInsets.zero, iconSize: 16,
+                      icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
+                      tooltip: s.approve,
+                      onPressed: () => _approveRow(row),
+                    ),
+                  ),
                 ],
               ]);
             }),
@@ -2338,6 +2734,34 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     if (confirm != true || !mounted) return;
     try {
       await _repo.unapproveAttendance(row.attendanceId!);
+      await _loadTimesheet();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    }
+  }
+
+  Future<void> _deleteRow(TimesheetRow row) async {
+    final s = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.delete),
+        content: Text('${s.delete} ${row.date.day}/${row.date.month}/${row.date.year}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await _repo.deleteAttendance(row.attendanceId!);
       await _loadTimesheet();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
@@ -2404,8 +2828,127 @@ class _DayViewTabState extends State<_DayViewTab> {
   bool _dayNightMode = false;
   bool _otEnabled = true;
 
-  // Inline row editing (day view), triggered from right action button like month view
-  String? _editingDaySlotKey;
+  // Bulk selection (day view)
+  final Set<int> _selectedEmployeeIds = {};
+  bool _dayBulkLoading = false;
+  bool _daySelectionMode = false;
+
+  void _toggleSelectEmployee(int empId) {
+    setState(() {
+      if (_selectedEmployeeIds.contains(empId)) {
+        _selectedEmployeeIds.remove(empId);
+      } else {
+        _selectedEmployeeIds.add(empId);
+      }
+    });
+  }
+
+  void _toggleSelectAllEmployees() {
+    setState(() {
+      final allIds = _pagedRows.map((r) => r.first.employeeId).toSet();
+      if (_selectedEmployeeIds.containsAll(allIds)) {
+        _selectedEmployeeIds.removeAll(allIds);
+      } else {
+        _selectedEmployeeIds.addAll(allIds);
+      }
+    });
+  }
+
+  Future<void> _dayBulkApprove() async {
+    final s = AppLocalizations.of(context)!;
+    final ids = Set<int>.from(_selectedEmployeeIds);
+    final slots = _pagedRows
+        .where((r) => ids.contains(r.first.employeeId))
+        .expand((r) => r.slots)
+        .where((slot) => !slot.approved)
+        .toList();
+    if (slots.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.bulkApprove),
+        content: Text('${s.bulkApprove} ${slots.length} ${s.checkIn.toLowerCase()}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.approve)),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _dayBulkLoading = true);
+    int success = 0;
+    for (final slot in slots) {
+      try {
+        await _repo.approveAttendance(
+          slot.attendanceId,
+          employeeId: slot.employeeId,
+          date: slot.date,
+          shiftAssignmentId: slot.shiftAssignmentId,
+        );
+        success++;
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() {
+        _dayBulkLoading = false;
+        _selectedEmployeeIds.clear();
+        _daySelectionMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.bulkActionDone(success, slots.length))),
+      );
+      await _loadRows();
+    }
+  }
+
+  Future<void> _dayBulkUnapprove() async {
+    final s = AppLocalizations.of(context)!;
+    final ids = Set<int>.from(_selectedEmployeeIds);
+    final slots = _pagedRows
+        .where((r) => ids.contains(r.first.employeeId))
+        .expand((r) => r.slots)
+        .where((slot) => slot.approved && slot.attendanceId != null)
+        .toList();
+    if (slots.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.bulkUnapprove),
+        content: Text('${s.bulkUnapprove} ${slots.length} ${s.checkIn.toLowerCase()}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.warning),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.unapprove),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _dayBulkLoading = true);
+    int success = 0;
+    for (final slot in slots) {
+      try {
+        await _repo.unapproveAttendance(slot.attendanceId!);
+        success++;
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() {
+        _dayBulkLoading = false;
+        _selectedEmployeeIds.clear();
+        _daySelectionMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.bulkActionDone(success, slots.length))),
+      );
+      await _loadRows();
+    }
+  }
+
+  // Inline row editing (day view)
+  final Set<String> _editingDaySlotKeys = {};
   final Map<String, TextEditingController> _dayEditCtrls = {};
 
   final _hScroll = ScrollController();
@@ -2495,16 +3038,100 @@ class _DayViewTabState extends State<_DayViewTab> {
     ).text = slot.overrideOtNightMinutes != null
         ? _formatMinutesAsTime(slot.overrideOtNightMinutes!)
         : (slot.otNightHours > 0 ? _formatHours(slot.otNightHours) : '');
-    setState(() => _editingDaySlotKey = slotKey);
+    setState(() => _editingDaySlotKeys.add(slotKey));
   }
 
-  void _cancelDayEditSlot() {
-    setState(() => _editingDaySlotKey = null);
+  void _cancelDayEditSlot([String? slotKey]) {
+    setState(() {
+      if (slotKey != null) _editingDaySlotKeys.remove(slotKey);
+      else _editingDaySlotKeys.clear();
+    });
+  }
+
+  void _dayBulkEnterEdit() {
+    final ids = Set<int>.from(_selectedEmployeeIds);
+    final slots = _pagedRows
+        .where((r) => ids.contains(r.first.employeeId))
+        .expand((r) => r.slots)
+        .where((slot) => !slot.approved)
+        .toList();
+    for (final slot in slots) {
+      final slotKey = _daySlotKey(slot);
+      _dayCtrlFor(slotKey, 'checkIn', slot.overrideCheckIn ?? slot.checkIn ?? '').text =
+          slot.overrideCheckIn ?? slot.checkIn ?? '';
+      _dayCtrlFor(slotKey, 'checkOut', slot.overrideCheckOut ?? slot.checkOut ?? '').text =
+          slot.overrideCheckOut ?? slot.checkOut ?? '';
+      _dayCtrlFor(slotKey, 'break',
+          slot.overrideBreakMinutes != null ? _formatMinutesAsTime(slot.overrideBreakMinutes!) : _formatBreak(slot.breakMinutes)).text =
+          slot.overrideBreakMinutes != null ? _formatMinutesAsTime(slot.overrideBreakMinutes!) : _formatBreak(slot.breakMinutes);
+      _dayCtrlFor(slotKey, 'otDay',
+          slot.overrideOtDayMinutes != null ? _formatMinutesAsTime(slot.overrideOtDayMinutes!) : (slot.otDayHours > 0 ? _formatHours(slot.otDayHours) : '')).text =
+          slot.overrideOtDayMinutes != null ? _formatMinutesAsTime(slot.overrideOtDayMinutes!) : (slot.otDayHours > 0 ? _formatHours(slot.otDayHours) : '');
+      _dayCtrlFor(slotKey, 'otNight',
+          slot.overrideOtNightMinutes != null ? _formatMinutesAsTime(slot.overrideOtNightMinutes!) : (slot.otNightHours > 0 ? _formatHours(slot.otNightHours) : '')).text =
+          slot.overrideOtNightMinutes != null ? _formatMinutesAsTime(slot.overrideOtNightMinutes!) : (slot.otNightHours > 0 ? _formatHours(slot.otNightHours) : '');
+      _editingDaySlotKeys.add(slotKey);
+    }
+    setState(() {
+      _daySelectionMode = false;
+      _selectedEmployeeIds.clear();
+    });
+  }
+
+  Future<void> _saveDayAllEditSlots() async {
+    final s = AppLocalizations.of(context)!;
+    final editingKeys = Set<String>.from(_editingDaySlotKeys);
+    final slotMap = <String, DayViewRow>{};
+    for (final row in _rows) {
+      final k = _daySlotKey(row);
+      if (editingKeys.contains(k)) slotMap[k] = row;
+    }
+    if (slotMap.isEmpty) return;
+    setState(() => _editingDaySlotKeys.clear());
+    setState(() => _dayBulkLoading = true);
+    int success = 0;
+    for (final entry in slotMap.entries) {
+      final slotKey = entry.key;
+      final slot = entry.value;
+      final ciRaw = _dayEditCtrls['$slotKey:checkIn']?.text.trim() ?? '';
+      final coRaw = _dayEditCtrls['$slotKey:checkOut']?.text.trim() ?? '';
+      final brRaw = _dayEditCtrls['$slotKey:break']?.text.trim() ?? '';
+      final odRaw = _dayEditCtrls['$slotKey:otDay']?.text.trim() ?? '';
+      final onRaw = _dayEditCtrls['$slotKey:otNight']?.text.trim() ?? '';
+      final ci = ciRaw.isEmpty ? null : _parseTimeInput(ciRaw);
+      final co = coRaw.isEmpty ? null : _parseTimeInput(coRaw);
+      final br = brRaw.isEmpty ? null : _parseDurationInput(brRaw);
+      final od = odRaw.isEmpty ? null : _parseDurationInput(odRaw);
+      final on = onRaw.isEmpty ? null : _parseDurationInput(onRaw);
+      if ((ciRaw.isNotEmpty && ci == null) || (coRaw.isNotEmpty && co == null) ||
+          (brRaw.isNotEmpty && br == null) || (odRaw.isNotEmpty && od == null) ||
+          (onRaw.isNotEmpty && on == null)) continue;
+
+      String? norm(String? v) { final x = (v ?? '').trim(); return x.isEmpty ? null : _parseTimeInput(x); }
+      int? effBr(int m) => m > 0 ? m : null;
+      int? effOt(double h) => h <= 0 ? null : (h * 60).round();
+
+      final nextCI = ciRaw.isEmpty ? null : (norm(slot.overrideCheckIn) != null ? (ci == norm(slot.overrideCheckIn) ? slot.overrideCheckIn : ci) : (ci == norm(slot.checkIn) ? null : ci));
+      final nextCO = coRaw.isEmpty ? null : (norm(slot.overrideCheckOut) != null ? (co == norm(slot.overrideCheckOut) ? slot.overrideCheckOut : co) : (co == norm(slot.checkOut) ? null : co));
+      final nextBr = brRaw.isEmpty ? null : (slot.overrideBreakMinutes != null ? (br == slot.overrideBreakMinutes ? slot.overrideBreakMinutes : br) : (br == effBr(slot.breakMinutes) ? null : br));
+      final nextOD = odRaw.isEmpty ? null : (slot.overrideOtDayMinutes != null ? (od == slot.overrideOtDayMinutes ? slot.overrideOtDayMinutes : od) : (od == effOt(slot.otDayHours) ? null : od));
+      final nextON = onRaw.isEmpty ? null : (slot.overrideOtNightMinutes != null ? (on == slot.overrideOtNightMinutes ? slot.overrideOtNightMinutes : on) : (on == effOt(slot.otNightHours) ? null : on));
+      try {
+        final int attId = slot.attendanceId ?? await _repo.ensureAttendance(slot.employeeId, slot.date);
+        await _repo.saveOverride(attId, checkIn: nextCI, checkOut: nextCO, breakMinutes: nextBr, otDayMinutes: nextOD, otNightMinutes: nextON, note: slot.overrideNote);
+        success++;
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() => _dayBulkLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.bulkActionDone(success, slotMap.length))));
+      await _loadRows();
+    }
   }
 
   Future<void> _saveDayEditSlot(DayViewRow slot) async {
     final slotKey = _daySlotKey(slot);
-    setState(() => _editingDaySlotKey = null);
+    setState(() => _editingDaySlotKeys.remove(slotKey));
     final ciRaw = _dayEditCtrls['$slotKey:checkIn']?.text.trim() ?? '';
     final coRaw = _dayEditCtrls['$slotKey:checkOut']?.text.trim() ?? '';
     final brRaw = _dayEditCtrls['$slotKey:break']?.text.trim() ?? '';
@@ -2634,7 +3261,7 @@ class _DayViewTabState extends State<_DayViewTab> {
     String? roundedRawVal,
   }) {
     final slotKey = _daySlotKey(slot);
-    final isEditing = _editingDaySlotKey == slotKey;
+    final isEditing = _editingDaySlotKeys.contains(slotKey);
     if (isEditing) {
       final ctrl = _dayEditCtrls['$slotKey:${key.col}'] ?? TextEditingController(
         text: overrideVal ?? displayVal,
@@ -2925,11 +3552,151 @@ class _DayViewTabState extends State<_DayViewTab> {
                     icon: const Icon(Icons.refresh, size: 18),
                     label: Text(s.refresh),
                   ),
+                  const Spacer(),
+                  Tooltip(
+                    message: s.bulkEdit,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.checklist_outlined,
+                        color: _daySelectionMode ? AppTheme.primary : AppTheme.textSecondary,
+                        size: 22,
+                      ),
+                      onPressed: () => setState(() {
+                        _daySelectionMode = !_daySelectionMode;
+                        if (!_daySelectionMode) _selectedEmployeeIds.clear();
+                      }),
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
         ),
+        // ── Bulk action bar ──
+        if (_daySelectionMode)
+          Container(
+            color: AppTheme.primary.withValues(alpha: 0.06),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: _toggleSelectAllEmployees,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.checklist_outlined, size: 18, color: AppTheme.primary),
+                        const SizedBox(width: 6),
+                        Text(
+                          _selectedEmployeeIds.isEmpty
+                              ? s.selectAll
+                              : s.selectedCount(_selectedEmployeeIds.length),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                if (_dayBulkLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else ...[
+                  OutlinedButton.icon(
+                    onPressed: _selectedEmployeeIds.isEmpty ? null : _dayBulkEnterEdit,
+                    icon: const Icon(Icons.edit_outlined, size: 16),
+                    label: Text(s.bulkEdit),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      side: const BorderSide(color: AppTheme.primary),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: _selectedEmployeeIds.isEmpty ? null : _dayBulkApprove,
+                    icon: const Icon(Icons.check_circle_outline, size: 16),
+                    label: Text(s.bulkApprove),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _selectedEmployeeIds.isEmpty ? null : _dayBulkUnapprove,
+                    icon: const Icon(Icons.lock_open_outlined, size: 16),
+                    label: Text(s.bulkUnapprove),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.warning,
+                      side: const BorderSide(color: AppTheme.warning),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  tooltip: s.cancel,
+                  onPressed: () => setState(() {
+                    _daySelectionMode = false;
+                    _selectedEmployeeIds.clear();
+                  }),
+                ),
+              ],
+            ),
+          ),
+        // ── Bulk edit save bar ──
+        if (_editingDaySlotKeys.isNotEmpty)
+          Container(
+            color: AppTheme.primary.withValues(alpha: 0.08),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.edit_outlined, size: 16, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  '${_editingDaySlotKeys.length} hàng đang sửa',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary),
+                ),
+                const Spacer(),
+                if (_dayBulkLoading)
+                  const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                else ...[
+                  FilledButton.icon(
+                    onPressed: _saveDayAllEditSlots,
+                    icon: const Icon(Icons.check, size: 16),
+                    label: Text(s.save),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _cancelDayEditSlot(),
+                    icon: const Icon(Icons.close, size: 16),
+                    label: Text(s.cancel),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.error,
+                      side: const BorderSide(color: AppTheme.error),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         Expanded(
           child: _error != null
               ? Center(
@@ -2955,11 +3722,13 @@ class _DayViewTabState extends State<_DayViewTab> {
     final s = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
+        const checkW = 40.0;
         final isMobile = constraints.maxWidth < 600;
         final dayFirstColW = isMobile ? 130.0 : _dayFirstColW;
+        final fixedW = (_daySelectionMode ? checkW : 0.0) + dayFirstColW;
         final cols = _cols(s, dayNight: _dayNightMode, otEnabled: _otEnabled);
         final dataMin = cols.fold<double>(0, (sum, c) => sum + c.width);
-        final available = constraints.maxWidth - dayFirstColW - 1;
+        final available = constraints.maxWidth - fixedW - 1;
         final scale = available > dataMin ? available / dataMin : 1.0;
         final dataWidths = cols.map((c) => c.width * scale).toList();
         final scrollWidth = dataWidths.fold<double>(0, (sum, w) => sum + w);
@@ -2970,13 +3739,44 @@ class _DayViewTabState extends State<_DayViewTab> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Cột Nhân viên - cố định
+                  // Cột cố định: [checkbox?] + Nhân viên
                   SizedBox(
-                    width: dayFirstColW,
+                    width: fixedW,
                     child: Column(
                       children: [
-                        _headCell(s.employee,
-                            width: dayFirstColW, isFirst: true),
+                        // Header
+                        Row(
+                          children: [
+                            if (_daySelectionMode)
+                              Container(
+                                width: checkW,
+                                height: _headHeight,
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF5F5F5),
+                                  border: Border(
+                                    bottom: BorderSide(color: _gridLine, width: 1.1),
+                                    right: BorderSide(color: _gridLine, width: 0.8),
+                                  ),
+                                ),
+                                child: GestureDetector(
+                                  onTap: _toggleSelectAllEmployees,
+                                  child: Checkbox(
+                                    tristate: true,
+                                    value: _selectedEmployeeIds.isEmpty
+                                        ? false
+                                        : _selectedEmployeeIds.containsAll(
+                                                _pagedRows.map((r) => r.first.employeeId).toSet())
+                                            ? true
+                                            : null,
+                                    onChanged: (_) => _toggleSelectAllEmployees(),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              ),
+                            _headCell(s.employee, width: dayFirstColW, isFirst: !_daySelectionMode),
+                          ],
+                        ),
                         Expanded(
                           child: ListView.builder(
                             controller: _vScrollFixed,
@@ -2985,10 +3785,48 @@ class _DayViewTabState extends State<_DayViewTab> {
                             itemBuilder: (_, i) {
                               final row = _pagedRows[i];
                               final slots = _dayDisplaySlots(row);
-                              final rowCount =
-                                  slots.isEmpty ? 1 : slots.length;
+                              final rowCount = slots.isEmpty ? 1 : slots.length;
                               final height = _dayRowHeight * rowCount;
-                              return _dayEmployeeCell(row, dayFirstColW, height);
+                              final empId = row.first.employeeId;
+                              final isSelected = _daySelectionMode && _selectedEmployeeIds.contains(empId);
+                              final empCell = _dayEmployeeCellSelectable(
+                                row, dayFirstColW, height,
+                                selected: isSelected,
+                                onTap: _daySelectionMode ? () => _toggleSelectEmployee(empId) : null,
+                              );
+                              if (!_daySelectionMode) return empCell;
+                              final bg = isSelected
+                                  ? AppTheme.primary.withValues(alpha: 0.08)
+                                  : row.weekend
+                                      ? const Color(0xFFFFF3E0)
+                                      : _isToday
+                                          ? const Color(0xFFE3F2FD)
+                                          : Colors.white;
+                              return Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _toggleSelectEmployee(empId),
+                                    child: Container(
+                                      width: checkW,
+                                      height: height,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: bg,
+                                        border: const Border(
+                                          bottom: BorderSide(color: _gridLineLight, width: 0.9),
+                                          right: BorderSide(color: _gridLine, width: 0.8),
+                                        ),
+                                      ),
+                                      child: Checkbox(
+                                        value: isSelected,
+                                        onChanged: (_) => _toggleSelectEmployee(empId),
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
+                                  ),
+                                  empCell,
+                                ],
+                              );
                             },
                           ),
                         ),
@@ -3009,8 +3847,7 @@ class _DayViewTabState extends State<_DayViewTab> {
                             children: [
                               Row(
                                 children: List.generate(cols.length, (i) {
-                                  return _headCell(cols[i].label,
-                                      width: dataWidths[i]);
+                                  return _headCell(cols[i].label, width: dataWidths[i]);
                                 }),
                               ),
                               Expanded(
@@ -3021,34 +3858,45 @@ class _DayViewTabState extends State<_DayViewTab> {
                                   itemBuilder: (_, i) {
                                     final row = _pagedRows[i];
                                     final slots = _dayDisplaySlots(row);
-                                    final rowCount =
-                                        slots.isEmpty ? 1 : slots.length;
+                                    final rowCount = slots.isEmpty ? 1 : slots.length;
                                     final height = _dayRowHeight * rowCount;
-                                    final bg = row.weekend
-                                        ? const Color(0xFFFFF3E0)
-                                        : _isToday
-                                            ? const Color(0xFFE3F2FD)
-                                            : Colors.white;
-                                    return SizedBox(
-                                      height: height,
-                                      child: Column(
-                                        children: [
-                                          for (int si = 0;
-                                              si < rowCount;
-                                              si++)
-                                            SizedBox(
-                                              height: _dayRowHeight,
-                                              child: Row(
-                                                children: _daySlotCells(
-                                                  row,
-                                                  slots[si],
-                                                  slotIndex: si,
-                                                  cw: dataWidths,
-                                                  bg: bg,
+                                    final isSelected = _daySelectionMode &&
+                                        _selectedEmployeeIds.contains(row.first.employeeId);
+                                    final bg = isSelected
+                                        ? AppTheme.primary.withValues(alpha: 0.06)
+                                        : row.weekend
+                                            ? const Color(0xFFFFF3E0)
+                                            : _isToday
+                                                ? const Color(0xFFE3F2FD)
+                                                : Colors.white;
+                                    return GestureDetector(
+                                      onTap: _daySelectionMode
+                                          ? () => _toggleSelectEmployee(row.first.employeeId)
+                                          : null,
+                                      child: SizedBox(
+                                        height: height,
+                                        child: Column(
+                                          children: [
+                                            for (int si = 0; si < rowCount; si++)
+                                              SizedBox(
+                                                height: _dayRowHeight,
+                                                child: ColoredBox(
+                                                  color: isSelected
+                                                      ? AppTheme.primary.withValues(alpha: 0.06)
+                                                      : Colors.transparent,
+                                                  child: Row(
+                                                    children: _daySlotCells(
+                                                      row,
+                                                      slots[si],
+                                                      slotIndex: si,
+                                                      cw: dataWidths,
+                                                      bg: bg,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     );
                                   },
@@ -3191,14 +4039,22 @@ class _DayViewTabState extends State<_DayViewTab> {
     );
   }
 
-  Widget _dayEmployeeCell(_MergedDayViewRow row, double width, double height) {
+  Widget _dayEmployeeCellSelectable(
+    _MergedDayViewRow row,
+    double width,
+    double height, {
+    bool selected = false,
+    VoidCallback? onTap,
+  }) {
     final first = row.first;
-    final bg = row.weekend
-        ? const Color(0xFFFFF3E0)
-        : _isToday
-            ? const Color(0xFFE3F2FD)
-            : Colors.white;
-    return Container(
+    final bg = selected
+        ? AppTheme.primary.withValues(alpha: 0.10)
+        : row.weekend
+            ? const Color(0xFFFFF3E0)
+            : _isToday
+                ? const Color(0xFFE3F2FD)
+                : Colors.white;
+    final cell = Container(
       width: width,
       height: height,
       alignment: Alignment.centerLeft,
@@ -3240,6 +4096,8 @@ class _DayViewTabState extends State<_DayViewTab> {
         ],
       ),
     );
+    if (onTap == null) return cell;
+    return GestureDetector(onTap: onTap, child: cell);
   }
 
   List<DayViewRow?> _dayDisplaySlots(_MergedDayViewRow row) {
@@ -3703,9 +4561,7 @@ class _DayViewTabState extends State<_DayViewTab> {
       return _dayCell(width: width, bg: bg, child: const SizedBox.shrink());
     }
     final approved = slot.approved;
-    final hasRecord = slot.attendanceId != null ||
-        slot.checkIn != null ||
-        slot.checkOut != null;
+    final hasRecord = slot.attendanceId != null;
 
     if (approved) {
       return _dayCell(
@@ -3739,7 +4595,7 @@ class _DayViewTabState extends State<_DayViewTab> {
     }
 
     final slotKey = _daySlotKey(slot);
-    final isEditing = _editingDaySlotKey == slotKey;
+    final isEditing = _editingDaySlotKeys.contains(slotKey);
     return _dayCell(
       width: width,
       bg: bg,
@@ -3768,7 +4624,7 @@ class _DayViewTabState extends State<_DayViewTab> {
                 iconSize: 16,
                 icon: const Icon(Icons.close, color: AppTheme.error),
                 tooltip: s.cancel,
-                onPressed: _cancelDayEditSlot,
+                onPressed: () => _cancelDayEditSlot(slotKey),
               ),
             ),
           ] else ...[
@@ -3986,8 +4842,32 @@ class _DayViewTabState extends State<_DayViewTab> {
   }
 
 
-  void _confirmDelete(DayViewRow row) {
-    // TODO: confirm and delete attendance record
+  Future<void> _confirmDelete(DayViewRow row) async {
+    final s = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.delete),
+        content: Text('${s.delete} ${row.employeeFullName} ${row.date.day}/${row.date.month}/${row.date.year}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await _repo.deleteAttendance(row.attendanceId!);
+      await _loadRows();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    }
   }
 
   Future<void> _showRequestDetail({

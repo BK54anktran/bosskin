@@ -20,7 +20,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e
         JOIN FETCH e.department
-        WHERE e.id = :employeeId AND a.date = :date
+        WHERE e.id = :employeeId AND a.date = :date AND a.deleted = false
         ORDER BY a.id
         """)
     List<Attendance> findByEmployeeIdAndDate(
@@ -34,7 +34,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e
         JOIN FETCH e.department
-        WHERE e.id = :employeeId AND a.date = :date
+        WHERE e.id = :employeeId AND a.date = :date AND a.deleted = false
           AND (:shiftAssignmentId IS NULL AND a.shiftAssignment IS NULL
                OR a.shiftAssignment.id = :shiftAssignmentId)
         """)
@@ -49,7 +49,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE e.company.id = :companyId
-          AND a.date = :date
+          AND a.date = :date AND a.deleted = false
         ORDER BY e.fullName, a.id
         """)
     List<Attendance> findByCompanyAndDate(
@@ -62,6 +62,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
         ORDER BY a.date DESC
@@ -70,6 +71,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
         """)
@@ -86,6 +88,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
         ORDER BY a.date DESC
@@ -94,6 +97,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
         """)
@@ -111,6 +115,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH e.department
         WHERE a.employee.id = :employeeId
           AND a.date BETWEEN :from AND :to
+          AND a.deleted = false
         ORDER BY a.date, a.id
         """)
     List<Attendance> findByEmployeeAndDateRange(
@@ -125,7 +130,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH e.department
         WHERE a.employee.id = :employeeId
           AND a.date BETWEEN :from AND :to
-          AND a.approved = true
+          AND a.approved = true AND a.deleted = false
         ORDER BY a.date, a.id
         """)
     List<Attendance> findApprovedByEmployeeAndDateRange(
@@ -138,6 +143,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT a FROM Attendance a
         WHERE a.employee.id = :employeeId
           AND YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND a.deleted = false
         ORDER BY a.date, a.id
         """)
     List<Attendance> findByEmployeeAndMonth(
@@ -150,7 +156,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         WHERE a.employee.id = :employeeId
           AND YEAR(a.date) = :year AND MONTH(a.date) = :month
-          AND a.status = :status
+          AND a.status = :status AND a.deleted = false
         """)
     long countByStatusAndMonth(
         @Param("employeeId") Long employeeId,
@@ -164,7 +170,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE a.date BETWEEN :from AND :to
-          AND a.approved = true
+          AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
         ORDER BY a.date DESC
@@ -173,7 +179,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE a.date BETWEEN :from AND :to
-          AND a.approved = true
+          AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
         """)
@@ -190,7 +196,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE a.date BETWEEN :from AND :to
-          AND a.approved = true
+          AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
         ORDER BY a.date DESC
@@ -199,7 +205,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE a.date BETWEEN :from AND :to
-          AND a.approved = true
+          AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
         """)

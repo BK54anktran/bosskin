@@ -473,10 +473,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get shiftEndLabel => 'Giờ kết thúc';
 
   @override
-  String get shiftBreakStartLabel => 'Nghỉ trưa từ';
+  String get shiftBreakStartLabel => 'Nghỉ giải lao từ';
 
   @override
-  String get shiftBreakEndLabel => 'Nghỉ trưa đến';
+  String get shiftBreakEndLabel => 'Nghỉ giải lao đến';
 
   @override
   String get displayColor => 'Màu hiển thị';
@@ -503,7 +503,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get shift => 'Ca làm';
 
   @override
-  String get breakTime => 'Nghỉ';
+  String get breakTime => 'Thời gian giải lao';
 
   @override
   String get totalTime => 'Tổng thời gian';
@@ -737,6 +737,31 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get unapprove => 'Bỏ duyệt';
+
+  @override
+  String get selectAll => 'Chọn tất cả';
+
+  @override
+  String get deselectAll => 'Bỏ chọn tất cả';
+
+  @override
+  String selectedCount(int count) {
+    return '$count đã chọn';
+  }
+
+  @override
+  String get bulkApprove => 'Duyệt hàng loạt';
+
+  @override
+  String get bulkUnapprove => 'Bỏ duyệt hàng loạt';
+
+  @override
+  String get bulkEdit => 'Chỉnh sửa hàng loạt';
+
+  @override
+  String bulkActionDone(int success, int total) {
+    return 'Hoàn thành $success/$total';
+  }
 
   @override
   String get dayShifts => 'Ca làm trong ngày';

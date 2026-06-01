@@ -212,6 +212,10 @@ class AttendanceRepository {
     );
   }
 
+  Future<void> deleteAttendance(int attendanceId) async {
+    await _api.dio.delete('/attendances/$attendanceId');
+  }
+
   Future<AttendanceChangeRequest> approveRequest(int id,
       {String? adminNote}) async {
     return _api.put(

@@ -737,6 +737,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unapprove => 'Unapprove';
 
   @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get deselectAll => 'Deselect all';
+
+  @override
+  String selectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get bulkApprove => 'Bulk approve';
+
+  @override
+  String get bulkUnapprove => 'Bulk unapprove';
+
+  @override
+  String get bulkEdit => 'Bulk edit';
+
+  @override
+  String bulkActionDone(int success, int total) {
+    return 'Done $success/$total';
+  }
+
+  @override
   String get dayShifts => 'Shifts of the day';
 
   @override

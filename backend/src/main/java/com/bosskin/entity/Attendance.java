@@ -100,6 +100,18 @@ public class Attendance extends BaseEntity {
     private String overrideNote;
     // ─────────────────────────────────────────────────────────────────────────
 
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deleted_by_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private User deletedBy;
+
     @Column(name = "check_in_latitude")
     private Double checkInLatitude;
 
