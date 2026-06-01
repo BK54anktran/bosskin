@@ -4040,6 +4040,90 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Ca này đã được duyệt. Vui lòng bỏ duyệt trước khi xóa.'**
   String get shiftAssignmentApprovedCannotDelete;
+
+  /// No description provided for @exportExcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất Excel'**
+  String get exportExcel;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất file thành công'**
+  String get exportSuccess;
+
+  /// No description provided for @importExcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập Excel'**
+  String get importExcel;
+
+  /// No description provided for @importSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập dữ liệu thành công'**
+  String get importSuccess;
+
+  /// No description provided for @importPreviewTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem trước thay đổi'**
+  String get importPreviewTitle;
+
+  /// No description provided for @importPreviewCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mới'**
+  String get importPreviewCreate;
+
+  /// No description provided for @importPreviewUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get importPreviewUpdate;
+
+  /// No description provided for @importPreviewNoChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đổi'**
+  String get importPreviewNoChange;
+
+  /// No description provided for @importPreviewEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có thay đổi nào'**
+  String get importPreviewEmpty;
+
+  /// No description provided for @importConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận nhập'**
+  String get importConfirm;
+
+  /// No description provided for @importPreviewOld.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cũ'**
+  String get importPreviewOld;
+
+  /// No description provided for @importPreviewNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới'**
+  String get importPreviewNew;
+
+  /// No description provided for @importPreviewDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get importPreviewDelete;
+
+  /// No description provided for @importPreviewDeleteWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo liên đới'**
+  String get importPreviewDeleteWarning;
 }
 
 class _AppLocalizationsDelegate

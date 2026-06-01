@@ -2042,4 +2042,46 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shiftAssignmentApprovedCannotDelete =>
       'This shift has been approved. Please unapprove it before deleting.';
+
+  @override
+  String get exportExcel => 'Export Excel';
+
+  @override
+  String get exportSuccess => 'File exported successfully';
+
+  @override
+  String get importExcel => 'Import Excel';
+
+  @override
+  String get importSuccess => 'Data imported successfully';
+
+  @override
+  String get importPreviewTitle => 'Preview changes';
+
+  @override
+  String get importPreviewCreate => 'New';
+
+  @override
+  String get importPreviewUpdate => 'Update';
+
+  @override
+  String get importPreviewNoChange => 'No change';
+
+  @override
+  String get importPreviewEmpty => 'No changes detected';
+
+  @override
+  String get importConfirm => 'Confirm import';
+
+  @override
+  String get importPreviewOld => 'Old';
+
+  @override
+  String get importPreviewNew => 'New';
+
+  @override
+  String get importPreviewDelete => 'Delete';
+
+  @override
+  String get importPreviewDeleteWarning => 'Impact warning';
 }

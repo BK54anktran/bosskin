@@ -51,6 +51,67 @@ class DepartmentNode {
       );
 }
 
+class DepartmentImportDiff {
+  final String action; // "CREATE" | "UPDATE" | "NO_CHANGE" | "DELETE"
+  final String code;
+  final String name;
+  final String? parentCode;
+  final String? description;
+  final String? latitude;
+  final String? longitude;
+  final String? radiusMeters;
+  final List<DepartmentFieldChange> changes;
+  final List<String> warnings;
+
+  const DepartmentImportDiff({
+    required this.action,
+    required this.code,
+    required this.name,
+    this.parentCode,
+    this.description,
+    this.latitude,
+    this.longitude,
+    this.radiusMeters,
+    required this.changes,
+    this.warnings = const [],
+  });
+
+  factory DepartmentImportDiff.fromJson(Map<String, dynamic> j) =>
+      DepartmentImportDiff(
+        action: j['action'],
+        code: j['code'],
+        name: j['name'],
+        parentCode: j['parentCode'],
+        description: j['description'],
+        latitude: j['latitude'],
+        longitude: j['longitude'],
+        radiusMeters: j['radiusMeters'],
+        changes: (j['changes'] as List? ?? [])
+            .map((e) => DepartmentFieldChange.fromJson(e))
+            .toList(),
+        warnings: (j['warnings'] as List? ?? []).cast<String>(),
+      );
+}
+
+class DepartmentFieldChange {
+  final String field;
+  final String oldValue;
+  final String newValue;
+
+  const DepartmentFieldChange({
+    required this.field,
+    required this.oldValue,
+    required this.newValue,
+  });
+
+  factory DepartmentFieldChange.fromJson(Map<String, dynamic> j) =>
+      DepartmentFieldChange(
+        field: j['field'],
+        oldValue: j['oldValue'] ?? '',
+        newValue: j['newValue'] ?? '',
+      );
+}
+
 class DepartmentFlat {
   final int id;
   final String name;

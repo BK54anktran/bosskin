@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/file_saver_utils.dart';
+import '../../../core/utils/file_picker_excel_utils.dart';
 import '../../../data/models/department_model.dart';
 import '../../../data/services/department_service.dart';
 import '../../../data/services/position_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/location_picker_field.dart';
 import '../../widgets/permission_guard.dart';
+import '../../widgets/import_preview_dialog.dart';
 import '../../../data/services/auth_service.dart';
 
 class DepartmentScreen extends StatefulWidget {
@@ -22,12 +25,106 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
   List<DepartmentFlat> _flat = [];
   bool _allowRootCreate = true;
   bool _loading = true;
+  bool _exporting = false;
+  bool _importing = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  Future<void> _import() async {
+    final picked = await pickExcelFile();
+    if (picked == null) return;
+    setState(() => _importing = true);
+    try {
+      final diffs = await DepartmentService.instance.previewImport(
+          picked.bytes, picked.filename);
+      if (!mounted) return;
+
+      // Map DepartmentImportDiff → ImportDiffRow (generic widget)
+      final rows = diffs
+          .map((d) => ImportDiffRow(
+                action: d.action,
+                code: d.code,
+                name: d.name,
+                parentCode: d.parentCode,
+                changes: d.changes
+                    .map((c) => ImportFieldChange(
+                          field: c.field,
+                          oldValue: c.oldValue,
+                          newValue: c.newValue,
+                        ))
+                    .toList(),
+                warnings: d.warnings,
+                details: _buildDeptDetails(d),
+              ))
+          .toList();
+
+      final confirmed = await showInstantDialog<bool>(
+        context,
+        (_) => ImportPreviewDialog(
+          diffs: rows,
+          onConfirm: () async {
+            await DepartmentService.instance.importExcel(
+                picked.bytes, picked.filename);
+          },
+        ),
+      );
+      if (confirmed == true && mounted) {
+        final s = AppLocalizations.of(context);
+        await _load();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(s.importSuccess)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  Map<String, String> _buildDeptDetails(DepartmentImportDiff d) {
+    final map = <String, String>{};
+    if (d.parentCode != null && d.parentCode!.isNotEmpty) map['PB cha'] = d.parentCode!;
+    if (d.description != null && d.description!.isNotEmpty) map['Mô tả'] = d.description!;
+    if (d.latitude != null && d.latitude!.isNotEmpty) map['Vĩ độ'] = d.latitude!;
+    if (d.longitude != null && d.longitude!.isNotEmpty) map['Kinh độ'] = d.longitude!;
+    if (d.radiusMeters != null && d.radiusMeters!.isNotEmpty && d.radiusMeters != '0') {
+      map['Bán kính'] = '${d.radiusMeters} m';
+    }
+    return map;
+  }
+
+  Future<void> _export() async {
+    final s = AppLocalizations.of(context)!;
+    setState(() => _exporting = true);
+    try {
+      final result = await DepartmentService.instance.exportExcel();
+      await saveFileToDevice(result.bytes, result.filename);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.exportSuccess)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
   }
 
   Future<void> _load() async {
@@ -112,6 +209,33 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
           child: Row(
             children: [
               const Spacer(),
+              OutlinedButton.icon(
+                onPressed: _exporting ? null : _export,
+                icon: _exporting
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.upload_outlined, size: 18),
+                label: Text(s.exportExcel),
+              ),
+              const SizedBox(width: 8),
+              PermissionGuard(
+                permission: 'DEPARTMENT_MANAGE',
+                child: OutlinedButton.icon(
+                  onPressed: _importing ? null : _import,
+                  icon: _importing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.download_outlined, size: 18),
+                  label: Text(s.importExcel),
+                ),
+              ),
+              const SizedBox(width: 8),
               PermissionGuard(
                 permission: 'DEPARTMENT_MANAGE',
                 child: FilledButton.icon(

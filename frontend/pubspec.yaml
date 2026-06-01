@@ -40,9 +40,10 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: ^13.0.2
 
-  # File picker
+  # File picker & saver
   image_picker: ^1.1.2
   http_parser: ^4.0.2
+  path_provider: ^2.1.4
 
   # Color picker
   flutter_colorpicker: ^1.1.0

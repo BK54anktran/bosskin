@@ -2042,4 +2042,46 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get shiftAssignmentApprovedCannotDelete =>
       'Ca này đã được duyệt. Vui lòng bỏ duyệt trước khi xóa.';
+
+  @override
+  String get exportExcel => 'Xuất Excel';
+
+  @override
+  String get exportSuccess => 'Xuất file thành công';
+
+  @override
+  String get importExcel => 'Nhập Excel';
+
+  @override
+  String get importSuccess => 'Nhập dữ liệu thành công';
+
+  @override
+  String get importPreviewTitle => 'Xem trước thay đổi';
+
+  @override
+  String get importPreviewCreate => 'Tạo mới';
+
+  @override
+  String get importPreviewUpdate => 'Cập nhật';
+
+  @override
+  String get importPreviewNoChange => 'Không đổi';
+
+  @override
+  String get importPreviewEmpty => 'Không có thay đổi nào';
+
+  @override
+  String get importConfirm => 'Xác nhận nhập';
+
+  @override
+  String get importPreviewOld => 'Cũ';
+
+  @override
+  String get importPreviewNew => 'Mới';
+
+  @override
+  String get importPreviewDelete => 'Xóa';
+
+  @override
+  String get importPreviewDeleteWarning => 'Cảnh báo liên đới';
 }

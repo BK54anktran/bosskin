@@ -99,21 +99,181 @@ public class DepartmentService {
         byParent.values().forEach(list -> list.sort(Comparator.comparing(Department::getName)));
 
         List<DepartmentDTO.FlatItem> result = new ArrayList<>();
-        walkFlat(byParent, null, result);
+        walkFlat(byParent, null, null, null, result);
         return result;
     }
 
-    private void walkFlat(Map<Long, List<Department>> byParent, Long parentId, List<DepartmentDTO.FlatItem> result) {
+    private void walkFlat(Map<Long, List<Department>> byParent, Long parentId,
+                          String parentName, String parentCode, List<DepartmentDTO.FlatItem> result) {
         for (Department d : byParent.getOrDefault(parentId, List.of())) {
             result.add(DepartmentDTO.FlatItem.builder()
                 .id(d.getId())
                 .name(d.getName())
                 .code(d.getCode())
+                .description(d.getDescription())
                 .parentId(parentId)
+                .parentName(parentName)
+                .parentCode(parentCode)
                 .level(d.getLevel())
                 .employeeCount(d.getEmployees() == null ? 0 : d.getEmployees().size())
+                .checkInLatitude(d.getCheckInLatitude())
+                .checkInLongitude(d.getCheckInLongitude())
+                .checkInRadiusMeters(d.getCheckInRadiusMeters())
                 .build());
-            walkFlat(byParent, d.getId(), result);
+            walkFlat(byParent, d.getId(), d.getName(), d.getCode(), result);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<DepartmentDTO.ImportDiff> previewImport(Long companyId, List<DepartmentDTO.ImportRow> rows) {
+        Map<String, Department> existing = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
+            .stream().collect(Collectors.toMap(Department::getCode, d -> d));
+
+        List<DepartmentDTO.ImportDiff> result = new ArrayList<>();
+
+        for (DepartmentDTO.ImportRow row : rows) {
+            if (row.getCode() == null || row.getCode().isBlank()) continue;
+
+            String code       = row.getCode().trim().toUpperCase();
+            String parentCode = row.getParentCode() == null ? null : row.getParentCode().trim().toUpperCase();
+            String name       = row.getName() == null ? "" : row.getName().trim();
+            Department dept   = existing.get(code);
+
+            // ── DELETE ──────────────────────────────────────────────────────
+            if (row.isMarkedDelete()) {
+                if (dept == null) continue;
+                List<String> warnings = buildDeleteWarnings(dept);
+                result.add(DepartmentDTO.ImportDiff.builder()
+                    .action("DELETE").code(code).name(dept.getName())
+                    .description(dept.getDescription())
+                    .latitude(str(dept.getCheckInLatitude()))
+                    .longitude(str(dept.getCheckInLongitude()))
+                    .radiusMeters(str(dept.getCheckInRadiusMeters() == 0 ? null : dept.getCheckInRadiusMeters()))
+                    .changes(List.of()).warnings(warnings).build());
+                continue;
+            }
+
+            if (name.isBlank()) continue;
+
+            // ── CREATE ──────────────────────────────────────────────────────
+            if (dept == null) {
+                result.add(DepartmentDTO.ImportDiff.builder()
+                    .action("CREATE").code(code).name(name).parentCode(parentCode)
+                    .description(row.getDescription() == null ? null : row.getDescription().trim())
+                    .latitude(row.getCheckInLatitude())
+                    .longitude(row.getCheckInLongitude())
+                    .radiusMeters(row.getCheckInRadiusMeters())
+                    .changes(List.of()).warnings(List.of()).build());
+            } else {
+                // ── UPDATE / NO_CHANGE ───────────────────────────────────────
+                List<DepartmentDTO.FieldChange> changes = new ArrayList<>();
+                addChange(changes, "Tên",         dept.getName(),        name);
+                addChange(changes, "PB cha",      dept.getParent() == null ? null : dept.getParent().getCode(), parentCode);
+                addChange(changes, "Mô tả",       dept.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
+                addChange(changes, "Vĩ độ",       str(dept.getCheckInLatitude()),     row.getCheckInLatitude());
+                addChange(changes, "Kinh độ",     str(dept.getCheckInLongitude()),    row.getCheckInLongitude());
+                addChange(changes, "Bán kính (m)",str(dept.getCheckInRadiusMeters()), row.getCheckInRadiusMeters());
+
+                result.add(DepartmentDTO.ImportDiff.builder()
+                    .action(changes.isEmpty() ? "NO_CHANGE" : "UPDATE")
+                    .code(code).name(name).parentCode(parentCode)
+                    .changes(changes).warnings(List.of()).build());
+            }
+        }
+        return result;
+    }
+
+    private List<String> buildDeleteWarnings(Department dept) {
+        List<String> warnings = new ArrayList<>();
+        long childCount = departmentRepo.countByParentIdAndCompanyId(dept.getId(), dept.getCompany().getId());
+        if (childCount > 0)
+            warnings.add("Có " + childCount + " phòng ban con sẽ mất phòng ban cha");
+        long posCount = positionRepo.countByDepartmentIdAndDepartmentCompanyId(dept.getId(), dept.getCompany().getId());
+        if (posCount > 0)
+            warnings.add("Có " + posCount + " chức vụ thuộc phòng ban này sẽ bị xóa");
+        int empCount = dept.getEmployees() == null ? 0 : dept.getEmployees().size();
+        if (empCount > 0)
+            warnings.add("Có " + empCount + " nhân viên đang thuộc phòng ban này");
+        return warnings;
+    }
+
+    private void addChange(List<DepartmentDTO.FieldChange> list, String field, String oldVal, String newVal) {
+        String o = oldVal == null ? "" : oldVal.trim();
+        String n = newVal == null ? "" : newVal.trim();
+        if (!o.equals(n)) {
+            list.add(DepartmentDTO.FieldChange.builder().field(field).oldValue(o).newValue(n).build());
+        }
+    }
+
+    private String str(Object val) {
+        return val == null ? "" : val.toString();
+    }
+
+    @Transactional
+    public void importFromExcel(Long companyId, List<DepartmentDTO.ImportRow> rows) {
+        Company company = companyRepo.findById(companyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
+
+        // Build lookup map code → existing dept
+        Map<String, Department> existing = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
+            .stream().collect(Collectors.toMap(Department::getCode, d -> d));
+
+        // Collect all codes from file để resolve parent sau
+        Map<String, Department> saved = new java.util.LinkedHashMap<>(existing);
+
+        for (DepartmentDTO.ImportRow row : rows) {
+            if (row.getCode() == null || row.getCode().isBlank()) continue;
+
+            String code = row.getCode().trim().toUpperCase();
+
+            // ── DELETE ──────────────────────────────────────────────────────
+            if (row.isMarkedDelete()) {
+                Department dept = existing.get(code);
+                if (dept != null) {
+                    // Xử lý phòng con: tách khỏi parent trước khi xóa
+                    departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
+                        .stream()
+                        .filter(d -> dept.getId().equals(d.getParent() == null ? null : d.getParent().getId()))
+                        .forEach(child -> { child.setParent(null); child.setLevel(0); departmentRepo.save(child); });
+                    departmentRepo.delete(dept);
+                    saved.remove(code);
+                }
+                continue;
+            }
+
+            if (row.getName() == null || row.getName().isBlank()) continue;
+
+            String parentCode = row.getParentCode() == null ? null : row.getParentCode().trim().toUpperCase();
+
+            Department parent = null;
+            if (parentCode != null && !parentCode.isBlank()) {
+                parent = saved.get(parentCode);
+                if (parent == null)
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "error.department.parent_not_found");
+            }
+
+            int level = parent == null ? 0 : parent.getLevel() + 1;
+
+            Department dept = existing.getOrDefault(code, new Department());
+            dept.setCompany(company);
+            dept.setCode(code);
+            dept.setName(row.getName().trim());
+            dept.setDescription(row.getDescription() == null ? null : row.getDescription().trim());
+            dept.setParent(parent);
+            dept.setLevel(level);
+            if (row.getCheckInLatitude() != null && !row.getCheckInLatitude().isBlank()) {
+                try { dept.setCheckInLatitude(Double.parseDouble(row.getCheckInLatitude())); } catch (NumberFormatException ignored) {}
+            }
+            if (row.getCheckInLongitude() != null && !row.getCheckInLongitude().isBlank()) {
+                try { dept.setCheckInLongitude(Double.parseDouble(row.getCheckInLongitude())); } catch (NumberFormatException ignored) {}
+            }
+            if (row.getCheckInRadiusMeters() != null && !row.getCheckInRadiusMeters().isBlank()) {
+                try { dept.setCheckInRadiusMeters(Integer.parseInt(row.getCheckInRadiusMeters())); } catch (NumberFormatException ignored) {}
+            }
+
+            Department persisted = departmentRepo.save(dept);
+            saved.put(code, persisted);
         }
     }
 
