@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/file_saver_utils.dart';
+import '../../../core/utils/file_picker_excel_utils.dart';
+import '../../widgets/import_preview_dialog.dart';
 import '../../../data/models/department_model.dart';
 import '../../../data/models/employee.dart';
 import '../../../data/repositories/employee_repository.dart';
@@ -38,6 +41,8 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   bool _loading = true;
   String? _error;
   bool _syncing = false;
+  bool _exporting = false;
+  bool _importing = false;
 
   int _page = 0;
   int _pageSize = 20;
@@ -93,6 +98,77 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       });
     } catch (e) {
       setState(() { _error = serverMsg(e); _loading = false; });
+    }
+  }
+
+  Future<void> _import() async {
+    final picked = await pickExcelFile();
+    if (picked == null) return;
+    setState(() => _importing = true);
+    try {
+      final diffs = await _repo.previewImport(picked.bytes, picked.filename);
+      if (!mounted) return;
+
+      final rows = diffs.map((d) => ImportDiffRow(
+            action: d.action,
+            code: d.employeeCode ?? '',
+            name: d.fullName,
+            parentCode: d.departmentCode,
+            changes: d.changes.map((c) => ImportFieldChange(
+                  field: c.field,
+                  oldValue: c.oldValue,
+                  newValue: c.newValue,
+                )).toList(),
+            warnings: d.warnings,
+            details: {
+              if (d.email != null && d.email!.isNotEmpty) 'Email': d.email!,
+              if (d.departmentCode != null && d.departmentCode!.isNotEmpty)
+                'Phòng ban': d.departmentCode!,
+            },
+          )).toList();
+
+      final confirmed = await showInstantDialog<bool>(
+        context,
+        (_) => ImportPreviewDialog(
+          diffs: rows,
+          onConfirm: () async {
+            await _repo.importExcel(picked.bytes, picked.filename);
+          },
+        ),
+      );
+      if (confirmed == true && mounted) {
+        final s = AppLocalizations.of(context);
+        await _load(reset: true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(s.importSuccess)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  Future<void> _export() async {
+    setState(() => _exporting = true);
+    try {
+      final res = await _repo.exportExcel();
+      await saveFileToDevice(res.bytes, res.filename);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
     }
   }
 
@@ -269,6 +345,27 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 runSpacing: 8,
                 alignment: WrapAlignment.end,
                 children: [
+                  OutlinedButton.icon(
+                    onPressed: _exporting ? null : _export,
+                    icon: _exporting
+                        ? const SizedBox(
+                            width: 14, height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.upload_outlined, size: 18),
+                    label: Text(s.exportExcel),
+                  ),
+                  PermissionGuard(
+                    permission: 'EMPLOYEE_CREATE',
+                    child: OutlinedButton.icon(
+                      onPressed: _importing ? null : _import,
+                      icon: _importing
+                          ? const SizedBox(
+                              width: 14, height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.download_outlined, size: 18),
+                      label: Text(s.importExcel),
+                    ),
+                  ),
                   PermissionGuard(
                     permission: 'USER_MANAGE',
                     child: OutlinedButton.icon(

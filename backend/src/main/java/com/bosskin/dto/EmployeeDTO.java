@@ -9,6 +9,47 @@ import java.time.LocalDateTime;
 
 public class EmployeeDTO {
 
+    /** Một hàng từ file Excel (gộp sheet 1 + sheet 2 theo employeeCode). */
+    @lombok.Data
+    public static class ImportRow {
+        // Sheet 1 — cơ bản
+        private String employeeCode;
+        private String fullName;
+        private String email;
+        private String phone;
+        private String gender;        // "Nam" | "Nữ" | "Khác" | MALE | FEMALE | OTHER
+        private String dateOfBirth;   // dd/MM/yyyy
+        private String joinDate;      // dd/MM/yyyy
+        private String leaveDate;     // dd/MM/yyyy
+        private String departmentCode;
+        private String positionCode;
+        private String salaryGradeCode;
+        private String status;        // "Đang làm" | "Nghỉ việc" | ...
+        /** Mật khẩu mặc định khi tạo mới — để trống thì BE dùng password mặc định. */
+        private String defaultPassword;
+
+        // Sheet 2 — cá nhân (merge theo employeeCode)
+        private String identityCard;
+        private String address;
+        private String personalEmail;
+        private String bankAccount;
+        private String bankName;
+        private String contractSalary;
+    }
+
+    @lombok.Data
+    @lombok.Builder
+    public static class ImportDiff {
+        /** "CREATE" | "UPDATE" | "NO_CHANGE" */
+        private String action;
+        private String employeeCode;
+        private String fullName;
+        private String email;
+        private String departmentCode;
+        private java.util.List<DepartmentDTO.FieldChange> changes;
+        private java.util.List<String> warnings;
+    }
+
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Response {
         private Long id;

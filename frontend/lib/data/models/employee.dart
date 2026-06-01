@@ -94,3 +94,52 @@ class Employee {
         _ => Gender.male,
       };
 }
+
+class EmployeeImportDiff {
+  final String action; // "CREATE" | "UPDATE" | "NO_CHANGE"
+  final String? employeeCode;
+  final String fullName;
+  final String? email;
+  final String? departmentCode;
+  final List<EmployeeFieldChange> changes;
+  final List<String> warnings;
+
+  const EmployeeImportDiff({
+    required this.action,
+    this.employeeCode,
+    required this.fullName,
+    this.email,
+    this.departmentCode,
+    required this.changes,
+    this.warnings = const [],
+  });
+
+  factory EmployeeImportDiff.fromJson(Map<String, dynamic> j) =>
+      EmployeeImportDiff(
+        action: j['action'],
+        employeeCode: j['employeeCode'],
+        fullName: j['fullName'] ?? '',
+        email: j['email'],
+        departmentCode: j['departmentCode'],
+        changes: (j['changes'] as List? ?? [])
+            .map((e) => EmployeeFieldChange.fromJson(e))
+            .toList(),
+        warnings: (j['warnings'] as List? ?? []).cast<String>(),
+      );
+}
+
+class EmployeeFieldChange {
+  final String field;
+  final String oldValue;
+  final String newValue;
+
+  const EmployeeFieldChange(
+      {required this.field, required this.oldValue, required this.newValue});
+
+  factory EmployeeFieldChange.fromJson(Map<String, dynamic> j) =>
+      EmployeeFieldChange(
+        field: j['field'],
+        oldValue: j['oldValue'] ?? '',
+        newValue: j['newValue'] ?? '',
+      );
+}
