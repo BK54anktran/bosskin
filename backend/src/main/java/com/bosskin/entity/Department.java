@@ -67,4 +67,19 @@ public class Department extends BaseEntity {
     @Column(name = "check_in_radius_meters", nullable = false)
     @Builder.Default
     private int checkInRadiusMeters = 100;
+
+    @Column(name = "check_in_tolerance_minutes")
+    private Integer checkInToleranceMinutes;
+
+    @Column(name = "check_out_tolerance_minutes")
+    private Integer checkOutToleranceMinutes;
+
+    @Column(name = "rounding_check_in_minutes")
+    private Integer roundingCheckInMinutes;
+
+    @Column(name = "rounding_check_out_minutes")
+    private Integer roundingCheckOutMinutes;
+
+    @Column(name = "rounding_work_minutes")
+    private Integer roundingWorkMinutes;
 }

@@ -62,6 +62,12 @@ public class AttendanceDTO {
         private LocalTime checkIn;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime checkOut;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime checkInRaw;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime checkOutRaw;
+        private boolean checkInRounded;
+        private boolean checkOutRounded;
         private Attendance.Status status;
 
         @JsonFormat(pattern = "HH:mm")
@@ -103,6 +109,12 @@ public class AttendanceDTO {
         private LocalTime checkIn;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime checkOut;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime checkInRaw;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime checkOutRaw;
+        private boolean checkInRounded;
+        private boolean checkOutRounded;
         private Attendance.Status status;
 
         @JsonFormat(pattern = "HH:mm")
@@ -186,6 +198,12 @@ public class AttendanceDTO {
         private LocalTime checkIn;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime checkOut;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime checkInRaw;
+        @JsonFormat(pattern = "HH:mm")
+        private LocalTime checkOutRaw;
+        private boolean checkInRounded;
+        private boolean checkOutRounded;
         private Attendance.Status status;
 
         @JsonFormat(pattern = "HH:mm")

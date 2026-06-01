@@ -26,6 +26,11 @@ public class CompanySettingDTO {
         private int checkInAfterMinutes;
         private int checkOutBeforeMinutes;
         private int checkOutAfterMinutes;
+        private Integer checkInToleranceMinutes;
+        private Integer checkOutToleranceMinutes;
+        private Integer roundingCheckInMinutes;
+        private Integer roundingCheckOutMinutes;
+        private Integer roundingWorkMinutes;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -62,6 +67,11 @@ public class CompanySettingDTO {
         private Integer checkInAfterMinutes;
         private Integer checkOutBeforeMinutes;
         private Integer checkOutAfterMinutes;
+        private Integer checkInToleranceMinutes;
+        private Integer checkOutToleranceMinutes;
+        private Integer roundingCheckInMinutes;
+        private Integer roundingCheckOutMinutes;
+        private Integer roundingWorkMinutes;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

@@ -25,6 +25,11 @@ public class DepartmentDTO {
         private Double checkInLatitude;
         private Double checkInLongitude;
         private Integer checkInRadiusMeters;
+        private Integer checkInToleranceMinutes;
+        private Integer checkOutToleranceMinutes;
+        private Integer roundingCheckInMinutes;
+        private Integer roundingCheckOutMinutes;
+        private Integer roundingWorkMinutes;
     }
 
     @Data
@@ -44,6 +49,11 @@ public class DepartmentDTO {
         private Double checkInLatitude;
         private Double checkInLongitude;
         private int checkInRadiusMeters;
+        private Integer checkInToleranceMinutes;
+        private Integer checkOutToleranceMinutes;
+        private Integer roundingCheckInMinutes;
+        private Integer roundingCheckOutMinutes;
+        private Integer roundingWorkMinutes;
     }
 
     @Data

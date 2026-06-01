@@ -26,6 +26,7 @@ public class DepartmentService {
     private final EmployeeRepository   employeeRepo;
     private final PositionRepository   positionRepo;
     private final DeptScopeService     deptScopeService;
+    private static final Set<Integer> ALLOWED_ROUNDING = Set.of(1, 5, 15, 30, 60);
 
     @Transactional(readOnly = true)
     public List<DepartmentDTO.Response> getTree(Long companyId, Long userId) {
@@ -68,6 +69,11 @@ public class DepartmentService {
             .checkInLatitude(d.getCheckInLatitude())
             .checkInLongitude(d.getCheckInLongitude())
             .checkInRadiusMeters(d.getCheckInRadiusMeters())
+            .checkInToleranceMinutes(d.getCheckInToleranceMinutes())
+            .checkOutToleranceMinutes(d.getCheckOutToleranceMinutes())
+            .roundingCheckInMinutes(d.getRoundingCheckInMinutes())
+            .roundingCheckOutMinutes(d.getRoundingCheckOutMinutes())
+            .roundingWorkMinutes(d.getRoundingWorkMinutes())
             .build();
     }
 
@@ -144,6 +150,11 @@ public class DepartmentService {
             .checkInLatitude(req.getCheckInLatitude())
             .checkInLongitude(req.getCheckInLongitude())
             .checkInRadiusMeters(req.getCheckInRadiusMeters() != null ? req.getCheckInRadiusMeters() : 100)
+            .checkInToleranceMinutes(validateTolerance(req.getCheckInToleranceMinutes()))
+            .checkOutToleranceMinutes(validateTolerance(req.getCheckOutToleranceMinutes()))
+            .roundingCheckInMinutes(validateRounding(req.getRoundingCheckInMinutes()))
+            .roundingCheckOutMinutes(validateRounding(req.getRoundingCheckOutMinutes()))
+            .roundingWorkMinutes(validateRounding(req.getRoundingWorkMinutes()))
             .build();
 
         return toResponse(departmentRepo.save(dept));
@@ -182,6 +193,21 @@ public class DepartmentService {
         dept.setCheckInLatitude(req.getCheckInLatitude());
         dept.setCheckInLongitude(req.getCheckInLongitude());
         if (req.getCheckInRadiusMeters() != null) dept.setCheckInRadiusMeters(req.getCheckInRadiusMeters());
+        if (req.getCheckInToleranceMinutes() != null) {
+            dept.setCheckInToleranceMinutes(validateTolerance(req.getCheckInToleranceMinutes()));
+        }
+        if (req.getCheckOutToleranceMinutes() != null) {
+            dept.setCheckOutToleranceMinutes(validateTolerance(req.getCheckOutToleranceMinutes()));
+        }
+        if (req.getRoundingCheckInMinutes() != null) {
+            dept.setRoundingCheckInMinutes(validateRounding(req.getRoundingCheckInMinutes()));
+        }
+        if (req.getRoundingCheckOutMinutes() != null) {
+            dept.setRoundingCheckOutMinutes(validateRounding(req.getRoundingCheckOutMinutes()));
+        }
+        if (req.getRoundingWorkMinutes() != null) {
+            dept.setRoundingWorkMinutes(validateRounding(req.getRoundingWorkMinutes()));
+        }
 
         return toResponse(departmentRepo.save(dept));
     }
@@ -222,6 +248,27 @@ public class DepartmentService {
             .checkInLatitude(d.getCheckInLatitude())
             .checkInLongitude(d.getCheckInLongitude())
             .checkInRadiusMeters(d.getCheckInRadiusMeters())
+            .checkInToleranceMinutes(d.getCheckInToleranceMinutes())
+            .checkOutToleranceMinutes(d.getCheckOutToleranceMinutes())
+            .roundingCheckInMinutes(d.getRoundingCheckInMinutes())
+            .roundingCheckOutMinutes(d.getRoundingCheckOutMinutes())
+            .roundingWorkMinutes(d.getRoundingWorkMinutes())
             .build();
+    }
+
+    private Integer validateRounding(Integer value) {
+        if (value == null) return null;
+        if (!ALLOWED_ROUNDING.contains(value)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rounding phai la 1/5/15/30/60");
+        }
+        return value;
+    }
+
+    private Integer validateTolerance(Integer value) {
+        if (value == null) return null;
+        if (value < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tolerance phai >= 0");
+        }
+        return value;
     }
 }

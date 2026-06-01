@@ -36,6 +36,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   final _checkInAfterCtrl   = TextEditingController(text: '00:30');
   final _checkOutBeforeCtrl = TextEditingController(text: '00:30');
   final _checkOutAfterCtrl  = TextEditingController(text: '00:30');
+  final _checkInToleranceCtrl = TextEditingController();
+  final _checkOutToleranceCtrl = TextEditingController();
+  int? _roundCheckInMinutes;
+  int? _roundCheckOutMinutes;
+  int? _roundWorkMinutes;
 
   @override
   void initState() {
@@ -52,6 +57,8 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     _checkInAfterCtrl.dispose();
     _checkOutBeforeCtrl.dispose();
     _checkOutAfterCtrl.dispose();
+    _checkInToleranceCtrl.dispose();
+    _checkOutToleranceCtrl.dispose();
     super.dispose();
   }
 
@@ -82,6 +89,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         _checkInAfterCtrl.text   = _minutesToHhmm((attendance['checkInAfterMinutes']   as num?)?.toInt() ?? 30);
         _checkOutBeforeCtrl.text = _minutesToHhmm((attendance['checkOutBeforeMinutes'] as num?)?.toInt() ?? 30);
         _checkOutAfterCtrl.text  = _minutesToHhmm((attendance['checkOutAfterMinutes']  as num?)?.toInt() ?? 30);
+        _checkInToleranceCtrl.text = ((attendance['checkInToleranceMinutes'] as num?)?.toInt() ?? '').toString();
+        _checkOutToleranceCtrl.text = ((attendance['checkOutToleranceMinutes'] as num?)?.toInt() ?? '').toString();
+        _roundCheckInMinutes = (attendance['roundingCheckInMinutes'] as num?)?.toInt();
+        _roundCheckOutMinutes = (attendance['roundingCheckOutMinutes'] as num?)?.toInt();
+        _roundWorkMinutes = (attendance['roundingWorkMinutes'] as num?)?.toInt();
       });
     } catch (e) {
       if (!mounted) return;
@@ -156,6 +168,17 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       );
       return;
     }
+    final ciTolText = _checkInToleranceCtrl.text.trim();
+    final coTolText = _checkOutToleranceCtrl.text.trim();
+    final ciTol = ciTolText.isEmpty ? null : int.tryParse(ciTolText);
+    final coTol = coTolText.isEmpty ? null : int.tryParse(coTolText);
+    if ((ciTolText.isNotEmpty && (ciTol == null || ciTol < 0)) ||
+        (coTolText.isNotEmpty && (coTol == null || coTol < 0))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dung sai phải là số >= 0'), backgroundColor: AppTheme.error),
+      );
+      return;
+    }
 
     setState(() => _saving = true);
     try {
@@ -173,6 +196,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           'checkInAfterMinutes': ciAfter,
           'checkOutBeforeMinutes': coBefore,
           'checkOutAfterMinutes': coAfter,
+          if (ciTol != null) 'checkInToleranceMinutes': ciTol,
+          if (coTol != null) 'checkOutToleranceMinutes': coTol,
+          if (_roundCheckInMinutes != null) 'roundingCheckInMinutes': _roundCheckInMinutes,
+          if (_roundCheckOutMinutes != null) 'roundingCheckOutMinutes': _roundCheckOutMinutes,
+          if (_roundWorkMinutes != null) 'roundingWorkMinutes': _roundWorkMinutes,
         },
         'leaves': {
           'hoursPerDay': hours,
@@ -393,6 +421,70 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _checkInToleranceCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(labelText: 'Dung sai check-in (phút)'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _checkOutToleranceCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(labelText: 'Dung sai check-out (phút)'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<int?>(
+                                  value: _roundCheckInMinutes,
+                                  decoration: const InputDecoration(labelText: 'Làm tròn check-in'),
+                                  items: const [null, 1, 5, 15, 30, 60]
+                                      .map((v) => DropdownMenuItem<int?>(
+                                            value: v,
+                                            child: Text(v == null ? 'Không áp dụng' : '$v phút'),
+                                          ))
+                                      .toList(),
+                                  onChanged: (v) => setState(() => _roundCheckInMinutes = v),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: DropdownButtonFormField<int?>(
+                                  value: _roundCheckOutMinutes,
+                                  decoration: const InputDecoration(labelText: 'Làm tròn check-out'),
+                                  items: const [null, 1, 5, 15, 30, 60]
+                                      .map((v) => DropdownMenuItem<int?>(
+                                            value: v,
+                                            child: Text(v == null ? 'Không áp dụng' : '$v phút'),
+                                          ))
+                                      .toList(),
+                                  onChanged: (v) => setState(() => _roundCheckOutMinutes = v),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<int?>(
+                            value: _roundWorkMinutes,
+                            decoration: const InputDecoration(labelText: 'Làm tròn giờ ngày/đêm/OT'),
+                            items: const [null, 1, 5, 15, 30, 60]
+                                .map((v) => DropdownMenuItem<int?>(
+                                      value: v,
+                                      child: Text(v == null ? 'Không áp dụng' : '$v phút'),
+                                    ))
+                                .toList(),
+                            onChanged: (v) => setState(() => _roundWorkMinutes = v),
                           ),
                         ],
                       ),

@@ -93,6 +93,21 @@ public class Company extends BaseEntity {
     @Builder.Default
     private int checkOutAfterMinutes = 30;
 
+    @Column(name = "check_in_tolerance_minutes")
+    private Integer checkInToleranceMinutes;
+
+    @Column(name = "check_out_tolerance_minutes")
+    private Integer checkOutToleranceMinutes;
+
+    @Column(name = "rounding_check_in_minutes")
+    private Integer roundingCheckInMinutes;
+
+    @Column(name = "rounding_check_out_minutes")
+    private Integer roundingCheckOutMinutes;
+
+    @Column(name = "rounding_work_minutes")
+    private Integer roundingWorkMinutes;
+
     @Column(name = "standard_work_days", nullable = false)
     @Builder.Default
     private int standardWorkDays = 22;

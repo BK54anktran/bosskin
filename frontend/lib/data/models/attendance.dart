@@ -78,6 +78,10 @@ class TimesheetRow {
 
   final String? checkIn;
   final String? checkOut;
+  final String? checkInRaw;
+  final String? checkOutRaw;
+  final bool checkInRounded;
+  final bool checkOutRounded;
   final AttendanceStatus? status;
   final int? shiftAssignmentId;
 
@@ -137,6 +141,10 @@ class TimesheetRow {
     required this.breakMinutes,
     this.checkIn,
     this.checkOut,
+    this.checkInRaw,
+    this.checkOutRaw,
+    this.checkInRounded = false,
+    this.checkOutRounded = false,
     this.status,
     this.shiftAssignmentId,
     this.requestedCheckIn,
@@ -187,6 +195,10 @@ class TimesheetRow {
         breakMinutes: j['breakMinutes'] ?? 0,
         checkIn: j['checkIn'],
         checkOut: j['checkOut'],
+        checkInRaw: j['checkInRaw'] as String?,
+        checkOutRaw: j['checkOutRaw'] as String?,
+        checkInRounded: j['checkInRounded'] as bool? ?? false,
+        checkOutRounded: j['checkOutRounded'] as bool? ?? false,
         status: j['status'] != null ? _parseStatus(j['status']) : null,
         shiftAssignmentId: (j['shiftAssignmentId'] as num?)?.toInt(),
         requestedCheckIn: j['requestedCheckIn'],
@@ -250,6 +262,10 @@ class DayViewRow {
 
   final String? checkIn;
   final String? checkOut;
+  final String? checkInRaw;
+  final String? checkOutRaw;
+  final bool checkInRounded;
+  final bool checkOutRounded;
   final AttendanceStatus? status;
   final int? shiftAssignmentId;
 
@@ -318,6 +334,10 @@ class DayViewRow {
     required this.breakMinutes,
     this.checkIn,
     this.checkOut,
+    this.checkInRaw,
+    this.checkOutRaw,
+    this.checkInRounded = false,
+    this.checkOutRounded = false,
     this.status,
     this.shiftAssignmentId,
     this.requestedCheckIn,
@@ -376,6 +396,10 @@ class DayViewRow {
         breakMinutes: j['breakMinutes'] as int? ?? 0,
         checkIn: j['checkIn'] as String?,
         checkOut: j['checkOut'] as String?,
+        checkInRaw: j['checkInRaw'] as String?,
+        checkOutRaw: j['checkOutRaw'] as String?,
+        checkInRounded: j['checkInRounded'] as bool? ?? false,
+        checkOutRounded: j['checkOutRounded'] as bool? ?? false,
         status: j['status'] != null ? _parseStatus(j['status'] as String?) : null,
         shiftAssignmentId: (j['shiftAssignmentId'] as num?)?.toInt(),
         requestedCheckIn: j['requestedCheckIn'] as String?,

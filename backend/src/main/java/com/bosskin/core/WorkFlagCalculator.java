@@ -20,8 +20,6 @@ public class WorkFlagCalculator {
         LEAVE,      // có nghỉ phép trong ngày
     }
 
-    private static final int TOLERANCE_MINUTES = 5;
-
     public static Set<Flag> calculate(
         LocalTime shiftStart,
         LocalTime shiftEnd,
@@ -31,7 +29,23 @@ public class WorkFlagCalculator {
         double otNightHours,
         boolean hasLeave
     ) {
+        return calculate(shiftStart, shiftEnd, checkIn, checkOut, otDayHours, otNightHours, hasLeave, 5, 5);
+    }
+
+    public static Set<Flag> calculate(
+        LocalTime shiftStart,
+        LocalTime shiftEnd,
+        LocalTime checkIn,
+        LocalTime checkOut,
+        double otDayHours,
+        double otNightHours,
+        boolean hasLeave,
+        Integer inToleranceMinutes,
+        Integer outToleranceMinutes
+    ) {
         Set<Flag> flags = new LinkedHashSet<>();
+        int inTol = inToleranceMinutes != null ? Math.max(0, inToleranceMinutes) : 0;
+        int outTol = outToleranceMinutes != null ? Math.max(0, outToleranceMinutes) : 0;
 
         if (hasLeave) flags.add(Flag.LEAVE);
         if (otDayHours + otNightHours > 0) flags.add(Flag.OVERTIME);
@@ -61,17 +75,17 @@ public class WorkFlagCalculator {
         // Nếu checkin sau khi ca kết thúc → hoàn toàn ngoài ca (sau ca)
         // Các trường hợp này không có giờ trong ca nên không tính EARLY_OUT / LATE_IN tương ứng
         // Chỉ tính flags khi có giờ giao nhau với ca
-        boolean fullyBeforeShift = checkOutMin <= shiftStartMin + TOLERANCE_MINUTES;
-        boolean fullyAfterShift  = checkInMin  >= shiftEndMin   - TOLERANCE_MINUTES;
+        boolean fullyBeforeShift = checkOutMin <= shiftStartMin + outTol;
+        boolean fullyAfterShift  = checkInMin  >= shiftEndMin   - inTol;
 
         if (!fullyBeforeShift && !fullyAfterShift) {
-            boolean inOnTime  = Math.abs(inDiff)  <= TOLERANCE_MINUTES;
-            boolean outOnTime = Math.abs(outDiff) <= TOLERANCE_MINUTES;
-            if (inDiff >  TOLERANCE_MINUTES)  flags.add(Flag.LATE_IN);
-            if (outDiff < -TOLERANCE_MINUTES) flags.add(Flag.EARLY_OUT);
+            boolean inOnTime  = Math.abs(inDiff)  <= inTol;
+            boolean outOnTime = Math.abs(outDiff) <= outTol;
+            if (inDiff >  inTol)  flags.add(Flag.LATE_IN);
+            if (outDiff < -outTol) flags.add(Flag.EARLY_OUT);
             if (inOnTime && outOnTime)        flags.add(Flag.ON_TIME);
         } else if (fullyAfterShift) {
-            if (inDiff > TOLERANCE_MINUTES) flags.add(Flag.LATE_IN);
+            if (inDiff > inTol) flags.add(Flag.LATE_IN);
         }
 
         return flags;

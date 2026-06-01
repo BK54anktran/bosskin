@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 public class CompanySettingService {
 
     private final CompanyRepository companyRepository;
+    private static final java.util.Set<Integer> ALLOWED_ROUNDING = java.util.Set.of(1, 5, 15, 30, 60);
 
     public CompanySettingDTO.Response getByCompanyId(Long companyId) {
         Company c = companyRepository.findById(companyId)
@@ -75,9 +76,43 @@ public class CompanySettingService {
         if (req.getAttendance().getCheckOutAfterMinutes() != null && req.getAttendance().getCheckOutAfterMinutes() >= 0) {
             c.setCheckOutAfterMinutes(req.getAttendance().getCheckOutAfterMinutes());
         }
+        if (req.getAttendance().getCheckInToleranceMinutes() != null) {
+            validateTolerance(req.getAttendance().getCheckInToleranceMinutes(), "checkIn");
+            c.setCheckInToleranceMinutes(req.getAttendance().getCheckInToleranceMinutes());
+        }
+        if (req.getAttendance().getCheckOutToleranceMinutes() != null) {
+            validateTolerance(req.getAttendance().getCheckOutToleranceMinutes(), "checkOut");
+            c.setCheckOutToleranceMinutes(req.getAttendance().getCheckOutToleranceMinutes());
+        }
+        if (req.getAttendance().getRoundingCheckInMinutes() != null) {
+            validateRounding(req.getAttendance().getRoundingCheckInMinutes(), "checkIn");
+            c.setRoundingCheckInMinutes(req.getAttendance().getRoundingCheckInMinutes());
+        }
+        if (req.getAttendance().getRoundingCheckOutMinutes() != null) {
+            validateRounding(req.getAttendance().getRoundingCheckOutMinutes(), "checkOut");
+            c.setRoundingCheckOutMinutes(req.getAttendance().getRoundingCheckOutMinutes());
+        }
+        if (req.getAttendance().getRoundingWorkMinutes() != null) {
+            validateRounding(req.getAttendance().getRoundingWorkMinutes(), "work");
+            c.setRoundingWorkMinutes(req.getAttendance().getRoundingWorkMinutes());
+        }
 
         companyRepository.save(c);
         return toResponse(c);
+    }
+
+    private void validateRounding(Integer value, String field) {
+        if (value == null) return;
+        if (!ALLOWED_ROUNDING.contains(value)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.rounding_invalid." + field);
+        }
+    }
+
+    private void validateTolerance(Integer value, String field) {
+        if (value == null) return;
+        if (value < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.tolerance_invalid." + field);
+        }
     }
 
     private CompanySettingDTO.Response toResponse(Company c) {
@@ -95,6 +130,11 @@ public class CompanySettingService {
                 .checkInAfterMinutes(c.getCheckInAfterMinutes())
                 .checkOutBeforeMinutes(c.getCheckOutBeforeMinutes())
                 .checkOutAfterMinutes(c.getCheckOutAfterMinutes())
+                .checkInToleranceMinutes(c.getCheckInToleranceMinutes())
+                .checkOutToleranceMinutes(c.getCheckOutToleranceMinutes())
+                .roundingCheckInMinutes(c.getRoundingCheckInMinutes())
+                .roundingCheckOutMinutes(c.getRoundingCheckOutMinutes())
+                .roundingWorkMinutes(c.getRoundingWorkMinutes())
                 .build())
             .leaves(CompanySettingDTO.LeaveSetting.builder()
                 .hoursPerDay(c.getLeaveHoursPerDay())

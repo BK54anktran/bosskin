@@ -938,6 +938,8 @@ class _TimesheetTabState extends State<_TimesheetTab> {
     required double width,
     required Color bg,
     bool isTime = true,
+    bool rounded = false,
+    String? roundedRawVal,
   }) {
     final isEditing = _editingRow == dateKey;
     if (isEditing) {
@@ -994,15 +996,31 @@ class _TimesheetTabState extends State<_TimesheetTab> {
                         fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 2),
                 const Icon(Icons.edit, size: 9, color: AppTheme.error),
+                if (rounded) ...[
+                  const SizedBox(width: 2),
+                  Tooltip(
+                    message: (roundedRawVal ?? displayVal),
+                    child: const Icon(Icons.schedule, size: 9, color: AppTheme.primary),
+                  ),
+                ],
               ]),
               if (showActualUnderOverride)
                 Text('($displayVal)',
                     style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
             ])
-          : Text(displayVal,
-              style: TextStyle(
-                  fontSize: 12,
-                  color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+          : Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(displayVal,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+              if (rounded && displayVal.isNotEmpty) ...[
+                const SizedBox(width: 2),
+                Tooltip(
+                  message: (roundedRawVal ?? displayVal),
+                  child: const Icon(Icons.schedule, size: 10, color: AppTheme.primary),
+                ),
+              ],
+            ]),
     );
   }
 
@@ -1649,14 +1667,14 @@ class _TimesheetTabState extends State<_TimesheetTab> {
       dateKey: dateKey, col: 'checkIn',
       displayVal: row.checkIn ?? _empty,
       overrideVal: row.overrideCheckIn,
-      width: cw[idx++], bg: bg,
+      width: cw[idx++], bg: bg, rounded: row.checkInRounded, roundedRawVal: row.checkInRaw,
     ));
     // Check-out
     cells.add(_inlineCellT(
       dateKey: dateKey, col: 'checkOut',
       displayVal: row.checkOut ?? _empty,
       overrideVal: row.overrideCheckOut,
-      width: cw[idx++], bg: bg,
+      width: cw[idx++], bg: bg, rounded: row.checkOutRounded, roundedRawVal: row.checkOutRaw,
     ));
     cells.add(_requestCell(
       _formatRequestTimeOrDuration(checkInRequest),
@@ -2523,6 +2541,8 @@ class _DayViewTabState extends State<_DayViewTab> {
     required Color bg,
     required DayViewRow slot,
     bool isTime = true,
+    bool rounded = false,
+    String? roundedRawVal,
   }) {
     final slotKey = _daySlotKey(slot);
     final isEditing = _editingDaySlotKey == slotKey;
@@ -2580,14 +2600,30 @@ class _DayViewTabState extends State<_DayViewTab> {
                     style: const TextStyle(fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 2),
                 const Icon(Icons.edit, size: 9, color: AppTheme.error),
+                if (rounded) ...[
+                  const SizedBox(width: 2),
+                  Tooltip(
+                    message: (roundedRawVal ?? displayVal),
+                    child: const Icon(Icons.schedule, size: 9, color: AppTheme.primary),
+                  ),
+                ],
               ]),
               if (showActualUnderOverride)
                 Text('($displayVal)',
                     style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
             ])
-          : Text(displayVal,
-              style: TextStyle(fontSize: 12,
-                  color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+          : Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(displayVal,
+                  style: TextStyle(fontSize: 12,
+                      color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+              if (rounded && displayVal.isNotEmpty) ...[
+                const SizedBox(width: 2),
+                Tooltip(
+                  message: (roundedRawVal ?? displayVal),
+                  child: const Icon(Icons.schedule, size: 10, color: AppTheme.primary),
+                ),
+              ],
+            ]),
     );
   }
 
@@ -3255,14 +3291,14 @@ class _DayViewTabState extends State<_DayViewTab> {
       key: (employeeId: slot.employeeId, date: dateStr, col: 'checkIn'),
       displayVal: slot.checkIn ?? '',
       overrideVal: slot.overrideCheckIn,
-      width: cw[idx++], bg: bg, slot: slot,
+      width: cw[idx++], bg: bg, slot: slot, rounded: slot.checkInRounded, roundedRawVal: slot.checkInRaw,
     ));
     // Check-out
     cells.add(_inlineCell(
       key: (employeeId: slot.employeeId, date: dateStr, col: 'checkOut'),
       displayVal: slot.checkOut ?? '',
       overrideVal: slot.overrideCheckOut,
-      width: cw[idx++], bg: bg, slot: slot,
+      width: cw[idx++], bg: bg, slot: slot, rounded: slot.checkOutRounded, roundedRawVal: slot.checkOutRaw,
     ));
     cells.add(_dayRequestCell(
       _formatRequestTimeOrDuration(checkInRequest),
