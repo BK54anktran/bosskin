@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -127,6 +128,7 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.bosskin.app',
+                  tileProvider: CancellableNetworkTileProvider(),
                 ),
                 if (pos != null)
                   CircleLayer(circles: [
