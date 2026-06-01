@@ -1,10 +1,13 @@
 package com.bosskin.controller;
 
 import com.bosskin.dto.DepartmentDTO;
+import com.bosskin.dto.PositionDTO;
 import com.bosskin.entity.User;
 import com.bosskin.service.DepartmentService;
 import com.bosskin.service.DeptScopeService;
+import com.bosskin.service.PositionExcelService;
 import com.bosskin.util.ExcelColumn;
+import com.bosskin.util.ExcelSheet;
 import com.bosskin.util.ExcelUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +25,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DepartmentController {
 
-    private final DepartmentService departmentService;
-    private final DeptScopeService  deptScopeService;
+    private final DepartmentService    departmentService;
+    private final DeptScopeService     deptScopeService;
+    private final PositionExcelService positionExcelService;
 
     @GetMapping
     public ResponseEntity<List<DepartmentDTO.Response>> getTree(@AuthenticationPrincipal User user) {
@@ -50,17 +54,60 @@ public class DepartmentController {
             ExcelColumn.readOnly("Mô tả",               r -> r.getDescription() == null ? "" : r.getDescription()),
             ExcelColumn.readOnly("Vĩ độ (Latitude)",    r -> r.getCheckInLatitude() == null ? "" : r.getCheckInLatitude()),
             ExcelColumn.readOnly("Kinh độ (Longitude)", r -> r.getCheckInLongitude() == null ? "" : r.getCheckInLongitude()),
-            ExcelColumn.readOnly("Bán kính (m)",        r -> r.getCheckInRadiusMeters() == null ? "" : r.getCheckInRadiusMeters()),
+            ExcelColumn.readOnly("Bán kính (m)",        r -> r.getCheckInLatitude() == null ? "" : r.getCheckInRadiusMeters()),
             ExcelColumn.readOnly("Số nhân viên",        DepartmentDTO.FlatItem::getEmployeeCount),
             ExcelColumn.readOnly("Xóa (x)",             r -> "")
+    );
+
+    private static final List<ExcelColumn<PositionDTO.FlatItem>> POS_COLUMNS = List.of(
+            ExcelColumn.readOnly("Mã chức vụ (*)",   PositionDTO.FlatItem::getCode),
+            ExcelColumn.readOnly("Tên chức vụ (*)",  PositionDTO.FlatItem::getName),
+            ExcelColumn.readOnly("Mã phòng ban (*)", PositionDTO.FlatItem::getDepartmentCode),
+            ExcelColumn.readOnly("Tên phòng ban",    PositionDTO.FlatItem::getDepartmentName),
+            ExcelColumn.readOnly("Mô tả",            r -> r.getDescription() == null ? "" : r.getDescription()),
+            ExcelColumn.readOnly("Số NV",            PositionDTO.FlatItem::getEmployeeCount),
+            ExcelColumn.readOnly("Xóa (x)",          r -> "")
+    );
+
+    private static final List<ExcelColumn<PositionDTO.ImportRow>> POS_IMPORT_COLUMNS = List.of(
+            ExcelColumn.of("Mã chức vụ (*)",   r -> r.getCode(),           (r, v) -> r.setCode(v)),
+            ExcelColumn.of("Tên chức vụ (*)",  r -> r.getName(),           (r, v) -> r.setName(v)),
+            ExcelColumn.of("Mã phòng ban (*)", r -> r.getDepartmentCode(), (r, v) -> r.setDepartmentCode(v)),
+            ExcelColumn.readOnly("Tên phòng ban", r -> null),
+            ExcelColumn.of("Mô tả",            r -> r.getDescription(),    (r, v) -> r.setDescription(v)),
+            ExcelColumn.readOnly("Số NV",      r -> null),
+            ExcelColumn.of("Xóa (x)",          r -> r.getDelete(),         (r, v) -> r.setDelete(v))
     );
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> export(@AuthenticationPrincipal User user) {
         requirePermission(user, "DEPARTMENT_VIEW");
-        List<DepartmentDTO.FlatItem> rows = departmentService.getFlat(
+        List<DepartmentDTO.FlatItem> deptRows = departmentService.getFlat(
                 user.getCompany().getId(), user.getId(), "DEPARTMENT_VIEW");
-        return ExcelUtils.export("danh_sach_phong_ban", "Phòng ban", DEPT_COLUMNS, rows);
+        List<PositionDTO.FlatItem> posRows = positionExcelService.getFlat(user.getCompany().getId());
+        return ExcelUtils.exportSheets("danh_sach_phong_ban", List.of(
+                ExcelSheet.of("Phòng ban", DEPT_COLUMNS, deptRows),
+                ExcelSheet.of("Chức vụ",  POS_COLUMNS,  posRows)
+        ));
+    }
+
+    @PostMapping("/positions/preview-import")
+    public ResponseEntity<List<PositionDTO.ImportDiff>> previewImportPositions(
+            @AuthenticationPrincipal User user,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        requirePermission(user, "DEPARTMENT_MANAGE");
+        List<PositionDTO.ImportRow> rows = ExcelUtils.importRows(file, 1, POS_IMPORT_COLUMNS, PositionDTO.ImportRow::new);
+        return ResponseEntity.ok(positionExcelService.previewImport(user.getCompany().getId(), rows));
+    }
+
+    @PostMapping("/positions/import")
+    public ResponseEntity<Void> importPositions(
+            @AuthenticationPrincipal User user,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        requirePermission(user, "DEPARTMENT_MANAGE");
+        List<PositionDTO.ImportRow> rows = ExcelUtils.importRows(file, 1, POS_IMPORT_COLUMNS, PositionDTO.ImportRow::new);
+        positionExcelService.importFromExcel(user.getCompany().getId(), rows);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/preview-import")

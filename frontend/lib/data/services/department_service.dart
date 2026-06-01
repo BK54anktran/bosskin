@@ -69,4 +69,23 @@ class DepartmentService {
     });
     await _dio.post('/departments/import', data: formData);
   }
+
+  Future<List<PositionImportDiff>> previewImportPositions(
+      Uint8List bytes, String filename) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final res =
+        await _dio.post('/departments/positions/preview-import', data: formData);
+    return (res.data as List)
+        .map((e) => PositionImportDiff.fromJson(e))
+        .toList();
+  }
+
+  Future<void> importPositions(Uint8List bytes, String filename) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    await _dio.post('/departments/positions/import', data: formData);
+  }
 }

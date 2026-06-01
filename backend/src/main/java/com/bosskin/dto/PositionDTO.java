@@ -32,4 +32,44 @@ public class PositionDTO {
         private String departmentName;
         private String description;
     }
+
+    @Data
+    @Builder
+    public static class FlatItem {
+        private Long id;
+        private String code;
+        private String name;
+        private String description;
+        private String departmentCode;
+        private String departmentName;
+        private long employeeCount;
+    }
+
+    @Data
+    public static class ImportRow {
+        private String code;
+        private String name;
+        private String departmentCode;
+        private String description;
+        private String delete;
+
+        public boolean isMarkedDelete() {
+            if (delete == null) return false;
+            String v = delete.trim().toLowerCase();
+            return v.equals("x") || v.equals("delete") || v.equals("1") || v.equals("true");
+        }
+    }
+
+    @Data
+    @Builder
+    public static class ImportDiff {
+        /** "CREATE" | "UPDATE" | "NO_CHANGE" | "DELETE" */
+        private String action;
+        private String code;
+        private String name;
+        private String departmentCode;
+        private String description;
+        private java.util.List<com.bosskin.dto.DepartmentDTO.FieldChange> changes;
+        private java.util.List<String> warnings;
+    }
 }

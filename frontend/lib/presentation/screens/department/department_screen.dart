@@ -40,36 +40,50 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
     if (picked == null) return;
     setState(() => _importing = true);
     try {
-      final diffs = await DepartmentService.instance.previewImport(
-          picked.bytes, picked.filename);
+      // Preview song song cả 2 sheet
+      final results = await Future.wait([
+        DepartmentService.instance.previewImport(picked.bytes, picked.filename),
+        DepartmentService.instance.previewImportPositions(picked.bytes, picked.filename),
+      ]);
       if (!mounted) return;
 
-      // Map DepartmentImportDiff → ImportDiffRow (generic widget)
-      final rows = diffs
-          .map((d) => ImportDiffRow(
-                action: d.action,
-                code: d.code,
-                name: d.name,
-                parentCode: d.parentCode,
-                changes: d.changes
-                    .map((c) => ImportFieldChange(
-                          field: c.field,
-                          oldValue: c.oldValue,
-                          newValue: c.newValue,
-                        ))
-                    .toList(),
-                warnings: d.warnings,
-                details: _buildDeptDetails(d),
-              ))
-          .toList();
+      final deptDiffs  = results[0] as List<DepartmentImportDiff>;
+      final posDiffs   = results[1] as List<PositionImportDiff>;
+
+      final deptRows = deptDiffs.map((d) => ImportDiffRow(
+            action: d.action, code: d.code, name: d.name,
+            parentCode: d.parentCode,
+            changes: d.changes.map((c) => ImportFieldChange(
+                  field: c.field, oldValue: c.oldValue, newValue: c.newValue)).toList(),
+            warnings: d.warnings,
+            details: _buildDeptDetails(d),
+          )).toList();
+
+      final posRows = posDiffs.map((d) => ImportDiffRow(
+            action: d.action, code: d.code, name: d.name,
+            parentCode: d.departmentCode,
+            changes: d.changes.map((c) => ImportFieldChange(
+                  field: c.field, oldValue: c.oldValue, newValue: c.newValue)).toList(),
+            warnings: d.warnings,
+            details: {
+              if (d.departmentCode != null && d.departmentCode!.isNotEmpty)
+                'Phòng ban': d.departmentCode!,
+              if (d.description != null && d.description!.isNotEmpty)
+                'Mô tả': d.description!,
+            },
+          )).toList();
 
       final confirmed = await showInstantDialog<bool>(
         context,
         (_) => ImportPreviewDialog(
-          diffs: rows,
+          diffs: [...deptRows, ...posRows],
+          sectionLabels: const ['Phòng ban', 'Chức vụ'],
+          sectionCounts: [deptRows.length, posRows.length],
           onConfirm: () async {
-            await DepartmentService.instance.importExcel(
-                picked.bytes, picked.filename);
+            await Future.wait([
+              DepartmentService.instance.importExcel(picked.bytes, picked.filename),
+              DepartmentService.instance.importPositions(picked.bytes, picked.filename),
+            ]);
           },
         ),
       );

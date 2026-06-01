@@ -170,9 +170,14 @@ public class DepartmentService {
                 addChange(changes, "Tên",         dept.getName(),        name);
                 addChange(changes, "PB cha",      dept.getParent() == null ? null : dept.getParent().getCode(), parentCode);
                 addChange(changes, "Mô tả",       dept.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
-                addChange(changes, "Vĩ độ",       str(dept.getCheckInLatitude()),     row.getCheckInLatitude());
-                addChange(changes, "Kinh độ",     str(dept.getCheckInLongitude()),    row.getCheckInLongitude());
-                addChange(changes, "Bán kính (m)",str(dept.getCheckInRadiusMeters()), row.getCheckInRadiusMeters());
+                addChange(changes, "Vĩ độ",   str(dept.getCheckInLatitude()),  row.getCheckInLatitude());
+                addChange(changes, "Kinh độ", str(dept.getCheckInLongitude()), row.getCheckInLongitude());
+                // Chỉ so sánh bán kính khi ít nhất 1 phía có tọa độ thực sự (không phải empty)
+                boolean dbHasLocation  = dept.getCheckInLatitude() != null;
+                boolean rowHasLocation = row.getCheckInLatitude() != null && !row.getCheckInLatitude().isBlank();
+                if (dbHasLocation || rowHasLocation) {
+                    addChange(changes, "Bán kính (m)", str(dept.getCheckInRadiusMeters()), row.getCheckInRadiusMeters());
+                }
 
                 result.add(DepartmentDTO.ImportDiff.builder()
                     .action(changes.isEmpty() ? "NO_CHANGE" : "UPDATE")
@@ -218,28 +223,39 @@ public class DepartmentService {
         Map<String, Department> existing = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(Department::getCode, d -> d));
 
-        // Collect all codes from file để resolve parent sau
+        // Collect all codes từ file để resolve parent sau
         Map<String, Department> saved = new java.util.LinkedHashMap<>(existing);
 
+        // ── Bước 1: xử lý tất cả DELETE bằng bulk SQL ──────────────────────
+        Set<String> deletedCodes = new java.util.HashSet<>();
+        List<Long> deleteIds = new ArrayList<>();
+
+        for (DepartmentDTO.ImportRow row : rows) {
+            if (row.getCode() == null || row.getCode().isBlank()) continue;
+            if (!row.isMarkedDelete()) continue;
+            String code = row.getCode().trim().toUpperCase();
+            Department dept = existing.get(code);
+            if (dept == null) continue;
+            deletedCodes.add(code);
+            deleteIds.add(dept.getId());
+            saved.remove(code);
+        }
+
+        if (!deleteIds.isEmpty()) {
+            // 1a. Tách phòng con khỏi parent bằng 1 câu UPDATE duy nhất
+            departmentRepo.detachChildrenOfParents(deleteIds);
+            // 1b. Soft-delete tất cả cùng lúc bằng 1 câu UPDATE duy nhất
+            departmentRepo.softDeleteByIds(deleteIds);
+            departmentRepo.flush();
+        }
+
+        // ── Bước 2: upsert các hàng còn lại ────────────────────────────────
         for (DepartmentDTO.ImportRow row : rows) {
             if (row.getCode() == null || row.getCode().isBlank()) continue;
 
             String code = row.getCode().trim().toUpperCase();
 
-            // ── DELETE ──────────────────────────────────────────────────────
-            if (row.isMarkedDelete()) {
-                Department dept = existing.get(code);
-                if (dept != null) {
-                    // Xử lý phòng con: tách khỏi parent trước khi xóa
-                    departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
-                        .stream()
-                        .filter(d -> dept.getId().equals(d.getParent() == null ? null : d.getParent().getId()))
-                        .forEach(child -> { child.setParent(null); child.setLevel(0); departmentRepo.save(child); });
-                    departmentRepo.delete(dept);
-                    saved.remove(code);
-                }
-                continue;
-            }
+            if (row.isMarkedDelete() || deletedCodes.contains(code)) continue;
 
             if (row.getName() == null || row.getName().isBlank()) continue;
 
@@ -250,12 +266,12 @@ public class DepartmentService {
                 parent = saved.get(parentCode);
                 if (parent == null)
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "error.department.parent_not_found");
+                        "Mã phòng ban cha \"" + parentCode + "\" không tồn tại (dòng: " + code + ")");
             }
 
             int level = parent == null ? 0 : parent.getLevel() + 1;
 
-            Department dept = existing.getOrDefault(code, new Department());
+            Department dept = saved.containsKey(code) ? saved.get(code) : new Department();
             dept.setCompany(company);
             dept.setCode(code);
             dept.setName(row.getName().trim());

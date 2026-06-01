@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/error_utils.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Một dòng thay đổi của 1 field (field, oldValue, newValue).
@@ -53,10 +54,19 @@ class ImportPreviewDialog extends StatefulWidget {
   /// Callback async thực hiện import thật. Dialog tự đóng sau khi hoàn tất.
   final Future<void> Function() onConfirm;
 
+  /// Nếu file có nhiều sheet: tên từng section (vd: ['Phòng ban', 'Chức vụ']).
+  /// Null = 1 section duy nhất, không hiện header phân chia.
+  final List<String>? sectionLabels;
+
+  /// Số lượng diffs thuộc từng section — phải cùng độ dài với [sectionLabels].
+  final List<int>? sectionCounts;
+
   const ImportPreviewDialog({
     super.key,
     required this.diffs,
     required this.onConfirm,
+    this.sectionLabels,
+    this.sectionCounts,
   });
 
   @override
@@ -74,19 +84,84 @@ class _ImportPreviewDialogState extends State<ImportPreviewDialog> {
   bool get _hasChanges => _creates.isNotEmpty || _updates.isNotEmpty || _deletes.isNotEmpty;
   bool get _hasWarnings => widget.diffs.any((d) => d.warnings.isNotEmpty);
 
+  String? _errorMessage;
+
   Future<void> _confirm() async {
-    setState(() => _saving = true);
+    setState(() { _saving = true; _errorMessage = null; });
     try {
       await widget.onConfirm();
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
-        setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-        );
+        setState(() {
+          _saving = false;
+          _errorMessage = _extractMessage(e);
+        });
       }
     }
+  }
+
+  String _extractMessage(Object e) => serverMsg(e);
+
+  List<Widget> _buildContent(AppLocalizations s) {
+    final labels = widget.sectionLabels;
+    final counts = widget.sectionCounts;
+
+    if (labels == null || counts == null || labels.length != counts.length) {
+      // 1 section — render thẳng
+      return _buildDiffsForRange(widget.diffs, s);
+    }
+
+    // Nhiều section — render header phân chia rồi diffs của từng section
+    final items = <Widget>[];
+    int offset = 0;
+    for (int i = 0; i < labels.length; i++) {
+      final slice = widget.diffs.skip(offset).take(counts[i]).toList();
+      offset += counts[i];
+      final hasChange = slice.any((d) => d.action != 'NO_CHANGE');
+      // Header phân chia sheet
+      items.add(Padding(
+        padding: EdgeInsets.only(top: i == 0 ? 0 : 12, bottom: 4),
+        child: Row(children: [
+          const Icon(Icons.table_chart_outlined, size: 14, color: Color(0xFF3B82F6)),
+          const SizedBox(width: 6),
+          Text(labels[i],
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3B82F6))),
+          const SizedBox(width: 8),
+          Expanded(child: Divider(color: const Color(0xFF3B82F6).withValues(alpha: 0.3))),
+          if (!hasChange) ...[
+            const SizedBox(width: 8),
+            Text(s.importPreviewNoChange,
+                style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+          ],
+        ]),
+      ));
+      items.addAll(_buildDiffsForRange(slice, s));
+    }
+    return items;
+  }
+
+  List<Widget> _buildDiffsForRange(List<ImportDiffRow> diffs, AppLocalizations s) {
+    final creates   = diffs.where((d) => d.action == 'CREATE').toList();
+    final updates   = diffs.where((d) => d.action == 'UPDATE').toList();
+    final deletes   = diffs.where((d) => d.action == 'DELETE').toList();
+    final items = <Widget>[];
+    if (creates.isNotEmpty) {
+      items.add(_SectionHeader(label: s.importPreviewCreate, color: Colors.green, icon: Icons.add_circle_outline));
+      items.addAll(creates.map((d) => _CreateTile(diff: d)));
+    }
+    if (updates.isNotEmpty) {
+      items.add(_SectionHeader(label: s.importPreviewUpdate, color: Colors.orange, icon: Icons.edit_outlined));
+      items.addAll(updates.map((d) => _UpdateTile(diff: d, s: s)));
+    }
+    if (deletes.isNotEmpty) {
+      items.add(_SectionHeader(label: s.importPreviewDelete, color: Colors.red, icon: Icons.delete_outline));
+      items.addAll(deletes.map((d) => _DeleteTile(diff: d, s: s)));
+    }
+    return items;
   }
 
   @override
@@ -135,48 +210,38 @@ class _ImportPreviewDialogState extends State<ImportPreviewDialog> {
                       style: TextStyle(color: Colors.grey[600])),
                 ]),
               )
-            : ListView(children: [
-                if (_creates.isNotEmpty) ...[
-                  _SectionHeader(
-                      label: s.importPreviewCreate,
-                      color: Colors.green,
-                      icon: Icons.add_circle_outline),
-                  ..._creates.map((d) => _CreateTile(diff: d)),
-                ],
-                if (_updates.isNotEmpty) ...[
-                  _SectionHeader(
-                      label: s.importPreviewUpdate,
-                      color: Colors.orange,
-                      icon: Icons.edit_outlined),
-                  ..._updates.map((d) => _UpdateTile(diff: d, s: s)),
-                ],
-                if (_deletes.isNotEmpty) ...[
-                  _SectionHeader(
-                      label: s.importPreviewDelete,
-                      color: Colors.red,
-                      icon: Icons.delete_outline),
-                  ..._deletes.map((d) => _DeleteTile(diff: d, s: s)),
-                ],
-              ]),
+            : ListView(children: _buildContent(s)),
       ),
       actions: [
-        TextButton(
-          onPressed: _saving ? null : () => Navigator.pop(context, false),
-          child: Text(s.cancel),
-        ),
-        FilledButton.icon(
-          style: _hasWarnings
-              ? FilledButton.styleFrom(backgroundColor: Colors.orange)
-              : null,
-          onPressed: (_saving || !_hasChanges) ? null : _confirm,
-          icon: _saving
-              ? const SizedBox(
-                  width: 16, height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : Icon(_hasWarnings ? Icons.warning_amber_rounded : Icons.check,
-                  size: 16),
-          label: Text(s.importConfirm),
-        ),
+        Row(children: [
+          if (_errorMessage != null) ...[
+            const Icon(Icons.error_outline, size: 16, color: Colors.red),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(_errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12)),
+            ),
+          ] else
+            const Spacer(),
+          TextButton(
+            onPressed: _saving ? null : () => Navigator.pop(context, false),
+            child: Text(s.cancel),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            style: _hasWarnings
+                ? FilledButton.styleFrom(backgroundColor: Colors.orange)
+                : null,
+            onPressed: (_saving || !_hasChanges) ? null : _confirm,
+            icon: _saving
+                ? const SizedBox(
+                    width: 16, height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Icon(_hasWarnings ? Icons.warning_amber_rounded : Icons.check,
+                    size: 16),
+            label: Text(s.importConfirm),
+          ),
+        ]),
       ],
     );
   }

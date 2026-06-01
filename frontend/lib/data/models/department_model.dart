@@ -138,3 +138,36 @@ class DepartmentFlat {
         employeeCount: j['employeeCount'] ?? 0,
       );
 }
+
+class PositionImportDiff {
+  final String action; // "CREATE" | "UPDATE" | "NO_CHANGE" | "DELETE"
+  final String code;
+  final String name;
+  final String? departmentCode;
+  final String? description;
+  final List<DepartmentFieldChange> changes;
+  final List<String> warnings;
+
+  const PositionImportDiff({
+    required this.action,
+    required this.code,
+    required this.name,
+    this.departmentCode,
+    this.description,
+    required this.changes,
+    this.warnings = const [],
+  });
+
+  factory PositionImportDiff.fromJson(Map<String, dynamic> j) =>
+      PositionImportDiff(
+        action: j['action'],
+        code: j['code'],
+        name: j['name'],
+        departmentCode: j['departmentCode'],
+        description: j['description'],
+        changes: (j['changes'] as List? ?? [])
+            .map((e) => DepartmentFieldChange.fromJson(e))
+            .toList(),
+        warnings: (j['warnings'] as List? ?? []).cast<String>(),
+      );
+}
