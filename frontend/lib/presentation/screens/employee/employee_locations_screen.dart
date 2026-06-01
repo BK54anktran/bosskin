@@ -146,13 +146,13 @@ class _EmployeeLocationsScreenState extends State<EmployeeLocationsScreen> {
     final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(s.delete),
         content: Text('${s.deleteLocationConfirm} "${loc['name']}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(s.cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
             child: Text(s.delete),
           ),

@@ -74,16 +74,16 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
     final s = AppLocalizations.of(context)!;
     final ok = await showInstantDialog<bool>(
       context,
-      (_) => AlertDialog(
+      (ctx) => AlertDialog(
         title: Text(s.deleteDepartmentTitle),
         content: Text(s.deleteDepartmentPrompt(node.name)),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(ctx, false),
               child: Text(s.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: Text(s.delete),
           ),
         ],
@@ -708,16 +708,16 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
     final s = AppLocalizations.of(context)!;
     final ok = await showInstantDialog<bool>(
       context,
-      (_) => AlertDialog(
+      (ctx) => AlertDialog(
         title: Text(s.deletePositionTitle),
         content: Text(s.deletePositionPrompt(pos.name)),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(ctx, false),
               child: Text(s.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: Text(s.delete),
           ),
         ],

@@ -15,6 +15,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/payroll.dart';
 import '../../../data/repositories/salary_history_repository.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/repositories/salary_grade_repository.dart';
+import '../../../data/models/salary_grade.dart';
 import 'employee_form_screen.dart';
 
 class EmployeeScreen extends StatefulWidget {
@@ -26,7 +28,10 @@ class EmployeeScreen extends StatefulWidget {
 
 class _EmployeeScreenState extends State<EmployeeScreen> {
   final _repo = EmployeeRepository();
+  final _gradeRepo = SalaryGradeRepository();
   final _searchCtrl = TextEditingController();
+
+  List<SalaryGrade> _cachedGrades = [];
 
   List<Employee> _employees = [];
   List<DepartmentFlat> _departments = [];
@@ -46,6 +51,14 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     super.initState();
     _loadDepts();
     _load(reset: true);
+    _loadGrades();
+  }
+
+  Future<void> _loadGrades() async {
+    try {
+      final grades = await _gradeRepo.getAll();
+      if (mounted) setState(() => _cachedGrades = grades);
+    } catch (_) {}
   }
 
   @override
@@ -90,6 +103,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         builder: (_) => EmployeeFormScreen(
           employee: emp,
           departments: _departments,
+          initialGrades: _cachedGrades,
         ),
       ),
     );
@@ -444,6 +458,36 @@ class _EmployeeCard extends StatelessWidget {
     final canEdit = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_UPDATE'));
     final canDelete = isActive && user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DELETE'));
 
+    final desktopActions = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (canSalary)
+          Tooltip(
+            message: s.salaryHistory,
+            child: IconButton(
+              icon: const Icon(Icons.payments_outlined, size: 20),
+              onPressed: onSalaryHistory,
+            ),
+          ),
+        if (canEdit)
+          Tooltip(
+            message: s.edit,
+            child: IconButton(
+              icon: const Icon(Icons.edit_outlined, size: 20),
+              onPressed: onEdit,
+            ),
+          ),
+        if (canDelete)
+          Tooltip(
+            message: s.employeeDeleteTitle,
+            child: IconButton(
+              icon: const Icon(Icons.person_off_outlined, size: 20, color: Colors.red),
+              onPressed: onDelete,
+            ),
+          ),
+      ],
+    );
+
     final actionsMenu = PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 20),
       itemBuilder: (_) => [
@@ -536,7 +580,12 @@ class _EmployeeCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(child: info),
-            actionsMenu,
+            LayoutBuilder(
+              builder: (context, constraints) =>
+                  MediaQuery.of(context).size.width >= 600
+                      ? desktopActions
+                      : actionsMenu,
+            ),
           ],
         ),
       ),
@@ -639,11 +688,11 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog> {
   Future<void> _delete(SalaryHistory sh) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         content: const Text('Xoá mức lương này?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Huỷ')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xoá')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Xoá')),
         ],
       ),
     );

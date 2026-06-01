@@ -369,13 +369,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     controller: _personalEmailCtrl,
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  if (_isAdmin) ...[
-                    const SizedBox(height: 12),
-                    _EditableField(
-                      label: s.avatarUrl,
-                      controller: _avatarCtrl,
-                    ),
-                  ],
                   if (_hasProfileChanges()) ...[
                     const SizedBox(height: 20),
                     Row(
@@ -504,17 +497,20 @@ class _AvatarSection extends StatelessWidget {
           Positioned(
             bottom: 0,
             right: 0,
-            child: GestureDetector(
-              onTap: saving ? null : onEdit,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+            child: MouseRegion(
+              cursor: saving ? SystemMouseCursors.basic : SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: saving ? null : onEdit,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
                 ),
-                child: const Icon(Icons.edit, size: 16, color: Colors.white),
               ),
             ),
           ),

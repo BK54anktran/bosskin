@@ -15,11 +15,13 @@ import 'employee_locations_screen.dart';
 class EmployeeFormScreen extends StatefulWidget {
   final Employee? employee;
   final List<DepartmentFlat> departments;
+  final List<SalaryGrade> initialGrades;
 
   const EmployeeFormScreen({
     super.key,
     this.employee,
     required this.departments,
+    this.initialGrades = const [],
   });
 
   @override
@@ -72,6 +74,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     _contractSalary = TextEditingController(
       text: e?.contractSalary != null ? e!.contractSalary!.toStringAsFixed(0) : '',
     );
+    if (widget.initialGrades.isNotEmpty) {
+      _grades = widget.initialGrades;
+    }
     if (e != null) {
       _gender = e.gender;
       _dob = e.dateOfBirth;
@@ -81,7 +86,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       _gradeId = e.salaryGradeId;
       _loadPositions(e.departmentId);
     }
-    _loadGrades();
+    if (widget.initialGrades.isEmpty) _loadGrades();
   }
 
   Future<void> _loadGrades() async {
