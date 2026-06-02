@@ -5,6 +5,7 @@ class AppUser {
   final String email;
   final String? fullName;
   final String? avatar;
+  final int? departmentId;
   final bool enabled;
   final List<AppRole> roles;
   final List<String> directPermissions;
@@ -14,6 +15,7 @@ class AppUser {
     required this.email,
     this.fullName,
     this.avatar,
+    this.departmentId,
     required this.enabled,
     required this.roles,
     this.directPermissions = const [],
@@ -24,6 +26,7 @@ class AppUser {
         email: json['email'] as String,
         fullName: json['fullName'] as String?,
         avatar: json['avatar'] as String?,
+        departmentId: json['departmentId'] as int?,
         enabled: json['enabled'] as bool? ?? true,
         roles: (json['roles'] as List<dynamic>? ?? [])
             .map((e) => AppRole.fromJson(e as Map<String, dynamic>))

@@ -667,13 +667,18 @@ class _EmployeeCard extends StatelessWidget {
             CircleAvatar(
               radius: 24,
               backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              child: Text(
-                e.fullName.isNotEmpty ? e.fullName[0].toUpperCase() : '?',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
+              backgroundImage: e.avatar != null && e.avatar!.isNotEmpty
+                  ? NetworkImage(e.avatar!)
+                  : null,
+              child: e.avatar == null || e.avatar!.isEmpty
+                  ? Text(
+                      e.fullName.isNotEmpty ? e.fullName[0].toUpperCase() : '?',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    )
+                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(child: info),

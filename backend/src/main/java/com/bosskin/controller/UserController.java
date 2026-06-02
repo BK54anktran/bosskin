@@ -256,6 +256,9 @@ public class UserController {
         map.put("fullName", fullName);
         String avatar = user.getEmployee() != null ? user.getEmployee().getAvatar() : null;
         map.put("avatar", avatar);
+        Long departmentId = user.getEmployee() != null && user.getEmployee().getDepartment() != null
+            ? user.getEmployee().getDepartment().getId() : null;
+        map.put("departmentId", departmentId);
         map.put("enabled", user.isEnabled());
         List<Map<String, Object>> roleList = user.getRoles().stream()
             .map(r -> {

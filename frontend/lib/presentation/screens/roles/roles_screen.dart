@@ -1140,6 +1140,7 @@ class _UsersTabState extends State<_UsersTab> {
   List<DepartmentFlat> _allDepts = [];
   final TextEditingController _searchCtrl = TextEditingController();
   String _query = '';
+  int? _filterDeptId;
   bool _loading = true;
   String? _error;
   int _page = 0;
@@ -1272,15 +1273,21 @@ class _UsersTabState extends State<_UsersTab> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
-    final filtered = _query.isEmpty
-        ? _users
-        : _users.where((u) {
-            final byName = foldSearchText(u.fullName ?? '').contains(_query);
-            final byEmail = foldSearchText(u.email).contains(_query);
-            final byRole =
-                u.roles.any((r) => foldSearchText(r.name).contains(_query));
-            return byName || byEmail || byRole;
-          }).toList();
+    final deptScopeIds = _filterDeptId == null
+        ? null
+        : _expandedDepartmentScopeIds(_allDepts, _filterDeptId);
+    final filtered = _users.where((u) {
+      if (deptScopeIds != null) {
+        if (u.departmentId == null || !deptScopeIds.contains(u.departmentId)) return false;
+      }
+      if (_query.isNotEmpty) {
+        final byName = foldSearchText(u.fullName ?? '').contains(_query);
+        final byEmail = foldSearchText(u.email).contains(_query);
+        final byRole = u.roles.any((r) => foldSearchText(r.name).contains(_query));
+        if (!byName && !byEmail && !byRole) return false;
+      }
+      return true;
+    }).toList();
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return Center(
@@ -1295,10 +1302,28 @@ class _UsersTabState extends State<_UsersTab> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: SearchTextField(
-            controller: _searchCtrl,
-            onChanged: (_) => setState(() {}),
-            onClear: () => setState(() {}),
+          child: Row(
+            children: [
+              Expanded(
+                child: SearchTextField(
+                  controller: _searchCtrl,
+                  onChanged: (_) => setState(() { _page = 0; }),
+                  onClear: () => setState(() { _page = 0; }),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 220,
+                child: DepartmentPickerField(
+                  compact: true,
+                  departments: _allDepts,
+                  value: _filterDeptId,
+                  label: s.department,
+                  allowAll: true,
+                  onChanged: (v) => setState(() { _filterDeptId = v; _page = 0; }),
+                ),
+              ),
+            ],
           ),
         ),
         Expanded(

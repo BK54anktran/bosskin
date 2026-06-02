@@ -72,6 +72,9 @@ public class EmployeeDTO {
         private String salaryGradeCode;
         private String salaryGradeName;
         private String address;
+        private String identityCard;
+        private String bankAccount;
+        private String bankName;
         private java.math.BigDecimal contractSalary;
         private LocalDateTime createdAt;
     }
@@ -120,11 +123,14 @@ public class EmployeeDTO {
         private Employee.Gender gender;
         private LocalDate dateOfBirth;
         private LocalDate joinDate;
+        private LocalDate leaveDate;
         private Long departmentId;
         private Long positionId;
         private Long salaryGradeId;
         private Employee.Status status;
         private String address;
+        private String identityCard;
+        private String personalEmail;
         private String bankAccount;
         private String bankName;
         private java.math.BigDecimal contractSalary;

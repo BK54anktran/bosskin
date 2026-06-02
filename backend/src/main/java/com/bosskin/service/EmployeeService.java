@@ -189,9 +189,14 @@ public class EmployeeService {
         if (req.getPhone()      != null) e.setPhone(req.getPhone());
         if (req.getGender()     != null) e.setGender(req.getGender());
         if (req.getDateOfBirth()!= null) e.setDateOfBirth(req.getDateOfBirth());
-        if (req.getJoinDate()   != null) e.setJoinDate(req.getJoinDate());
-        if (req.getStatus()     != null) e.setStatus(req.getStatus());
-        if (req.getAddress()    != null) e.setAddress(req.getAddress());
+        if (req.getJoinDate()      != null) e.setJoinDate(req.getJoinDate());
+        if (req.getLeaveDate()     != null) e.setLeaveDate(req.getLeaveDate());
+        if (req.getStatus()        != null) e.setStatus(req.getStatus());
+        if (req.getAddress()       != null) e.setAddress(req.getAddress());
+        if (req.getIdentityCard()  != null) e.setIdentityCard(req.getIdentityCard());
+        if (req.getPersonalEmail() != null) e.setPersonalEmail(req.getPersonalEmail());
+        if (req.getBankAccount()   != null) e.setBankAccount(req.getBankAccount());
+        if (req.getBankName()      != null) e.setBankName(req.getBankName());
         if (req.getDepartmentId() != null) {
             e.setDepartment(departmentRepository.findById(req.getDepartmentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại")));
@@ -372,7 +377,9 @@ public class EmployeeService {
             .salaryGradeId(e.getSalaryGrade() != null ? e.getSalaryGrade().getId() : null)
             .salaryGradeCode(e.getSalaryGrade() != null ? e.getSalaryGrade().getCode() : null)
             .salaryGradeName(e.getSalaryGrade() != null ? e.getSalaryGrade().getName() : null)
-            .address(e.getAddress()).contractSalary(e.getContractSalary()).createdAt(e.getCreatedAt())
+            .address(e.getAddress()).identityCard(e.getIdentityCard())
+            .bankAccount(e.getBankAccount()).bankName(e.getBankName())
+            .contractSalary(e.getContractSalary()).createdAt(e.getCreatedAt())
             .build();
     }
 }
