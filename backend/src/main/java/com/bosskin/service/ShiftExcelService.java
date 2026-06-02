@@ -442,6 +442,13 @@ public class ShiftExcelService {
                 addChange(changes, "Nghỉ giải lao đến", fmt(existing.getBreakEnd()), row.breakEnd);
                 addChange(changes, "Nhóm ca", nvl(existing.getGroupName()), nvl(row.groupName));
                 addChange(changes, "Màu", nvl(existing.getColor()), nvl(row.color));
+                addChange(changes, "Phòng ban",
+                    existing.getDepartments().stream()
+                        .map(Department::getCode)
+                        .filter(Objects::nonNull)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+                        .collect(Collectors.joining(",")),
+                    normalizeDeptCodes(row.deptCodes));
                 result.add(ShiftDiff.builder()
                     .action(changes.isEmpty() ? "NO_CHANGE" : "UPDATE")
                     .code(code).name(row.name.trim())
@@ -1033,5 +1040,14 @@ public class ShiftExcelService {
             .filter(Objects::nonNull)
             .map(Department::getId)
             .collect(Collectors.toList());
+    }
+
+    private String normalizeDeptCodes(String deptCodes) {
+        if (deptCodes == null || deptCodes.isBlank()) return "";
+        return Arrays.stream(deptCodes.split(","))
+            .map(String::trim)
+            .filter(c -> !c.isBlank())
+            .sorted(String.CASE_INSENSITIVE_ORDER)
+            .collect(Collectors.joining(","));
     }
 }

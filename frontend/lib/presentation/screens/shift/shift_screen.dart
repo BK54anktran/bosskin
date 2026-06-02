@@ -352,7 +352,7 @@ class _ShiftScreenState extends State<ShiftScreen>
                       onPressed: _exporting ? null : _export,
                       icon: _exporting
                           ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.download_outlined, size: 16),
+                          : const Icon(Icons.upload_outlined, size: 16),
                       label: Text(s.exportExcel),
                     ),
                     const SizedBox(width: 8),
@@ -360,7 +360,7 @@ class _ShiftScreenState extends State<ShiftScreen>
                       onPressed: _importing ? null : _importAssignments,
                       icon: _importing
                           ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.upload_outlined, size: 16),
+                          : const Icon(Icons.download_outlined, size: 16),
                       label: Text(s.importExcel),
                     ),
                   ],
@@ -377,15 +377,15 @@ class _ShiftScreenState extends State<ShiftScreen>
                       onPressed: _exporting ? null : _export,
                       icon: _exporting
                           ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.download_outlined, size: 16),
+                          : const Icon(Icons.upload_outlined, size: 16),
                       label: Text(s.exportExcel),
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
-                      onPressed: _importing ? null : _import,
+                      onPressed: _importing ? null : _importAssignments,
                       icon: _importing
                           ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.upload_outlined, size: 16),
+                          : const Icon(Icons.download_outlined, size: 16),
                       label: Text(s.importExcel),
                     ),
                     const SizedBox(width: 8),

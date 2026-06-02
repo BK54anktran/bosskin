@@ -139,8 +139,17 @@ public class WorkShiftService {
         WorkShift shift = shiftRepo.findById(id)
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
+        shift.setCode(buildArchivedShiftCode(shift));
         shift.setActive(false);
         shiftRepo.save(shift);
+    }
+
+    private String buildArchivedShiftCode(WorkShift shift) {
+        String original = shift.getCode() != null ? shift.getCode().trim().toUpperCase() : "SHIFT";
+        String suffix = "~" + Long.toString(shift.getId(), 36).toUpperCase();
+        int maxBaseLen = Math.max(1, 20 - suffix.length());
+        String base = original.length() > maxBaseLen ? original.substring(0, maxBaseLen) : original;
+        return base + suffix;
     }
 
     // ── Assignments ─────────────────────────────────────────────────────
