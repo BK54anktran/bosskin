@@ -1,16 +1,21 @@
+import 'dart:typed_data';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/text_utils.dart';
+import '../../../core/utils/file_saver_utils.dart';
+import '../../../core/utils/file_picker_excel_utils.dart';
 import '../../../data/models/work_shift.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/department_service.dart';
 import '../../../data/models/department_model.dart';
 import '../../widgets/department_picker_field.dart';
+import '../../widgets/import_preview_dialog.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
 import 'shift_assign_tab.dart';
@@ -26,10 +31,13 @@ class ShiftScreen extends StatefulWidget {
 class _ShiftScreenState extends State<ShiftScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tab;
+  final _assignTabKey = const ShiftAssignTabKey();
   List<WorkShift> _shifts = [];
   List<DepartmentFlat> _allDepartments = [];
   bool _loading = true;
   String? _error;
+  bool _exporting = false;
+  bool _importing = false;
   final _searchCtrl = TextEditingController();
   int? _deptFilterId;
 
@@ -120,6 +128,146 @@ class _ShiftScreenState extends State<ShiftScreen>
     }
   }
 
+  Future<void> _export() async {
+    setState(() => _exporting = true);
+    try {
+      final now = DateTime.now();
+      final res = await ApiService.instance.dio.get<List<int>>(
+        '/shifts/export?year=${now.year}&month=${now.month}',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final disposition = res.headers.value('content-disposition') ?? '';
+      final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+      final filename = match?.group(1) ?? 'danh_sach_ca_lam.xlsx';
+      await saveFileToDevice(Uint8List.fromList(res.data!), filename);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _import() async {
+    final picked = await pickExcelFile();
+    if (picked == null) return;
+    setState(() => _importing = true);
+    try {
+      // Preview
+      final previewForm = FormData.fromMap({
+        'file': MultipartFile.fromBytes(picked.bytes, filename: picked.filename),
+      });
+      final previewRes = await ApiService.instance.dio.post('/shifts/preview-import', data: previewForm);
+      if (!mounted) return;
+
+      final diffs = (previewRes.data as List).map((d) {
+        final changes = (d['changes'] as List? ?? []).map((c) => ImportFieldChange(
+          field: c['field'] ?? '',
+          oldValue: c['oldValue'] ?? '',
+          newValue: c['newValue'] ?? '',
+        )).toList();
+        return ImportDiffRow(
+          action: d['action'] ?? 'CREATE',
+          code: d['code'] ?? '',
+          name: d['name'] ?? '',
+          changes: changes,
+          warnings: (d['warnings'] as List? ?? []).map((w) => w.toString()).toList(),
+        );
+      }).toList();
+
+      final confirmed = await showInstantDialog<bool>(
+        context,
+        (_) => ImportPreviewDialog(
+          diffs: diffs,
+          onConfirm: () async {
+            final importForm = FormData.fromMap({
+              'file': MultipartFile.fromBytes(picked.bytes, filename: picked.filename),
+            });
+            await ApiService.instance.dio.post('/shifts/import', data: importForm);
+          },
+        ),
+      );
+
+      if (confirmed == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.importSuccess)),
+        );
+        _loadShifts();
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  Future<void> _importAssignments() async {
+    final picked = await pickExcelFile();
+    if (picked == null) return;
+    setState(() => _importing = true);
+    try {
+      final previewForm = FormData.fromMap({
+        'file': MultipartFile.fromBytes(picked.bytes, filename: picked.filename),
+      });
+      final previewRes = await ApiService.instance.dio.post('/shifts/preview-import-assignments', data: previewForm);
+      if (!mounted) return;
+
+      final data = previewRes.data as Map<String, dynamic>;
+      final diffs = ((data['diffs'] as List?) ?? const []).map((d) {
+        final changes = (d['changes'] as List? ?? []).map((c) => ImportFieldChange(
+          field: c['field'] ?? '',
+          oldValue: c['oldValue'] ?? '',
+          newValue: c['newValue'] ?? '',
+        )).toList();
+        return ImportDiffRow(
+          action: d['action'] ?? 'CREATE',
+          code: d['code'] ?? '',
+          name: d['name'] ?? '',
+          changes: changes,
+          warnings: (d['warnings'] as List? ?? []).map((w) => w.toString()).toList(),
+        );
+      }).toList();
+      final sectionLabels = ((data['sectionLabels'] as List?) ?? const [])
+          .map((e) => e.toString())
+          .toList();
+      final sectionCounts = ((data['sectionCounts'] as List?) ?? const [])
+          .map((e) => (e as num).toInt())
+          .toList();
+
+      final confirmed = await showInstantDialog<bool>(
+        context,
+        (_) => ImportPreviewDialog(
+          diffs: diffs,
+          sectionLabels: sectionLabels,
+          sectionCounts: sectionCounts,
+          onConfirm: () async {
+            final importForm = FormData.fromMap({
+              'file': MultipartFile.fromBytes(picked.bytes, filename: picked.filename),
+            });
+            await ApiService.instance.dio.post('/shifts/import-assignments', data: importForm);
+          },
+        ),
+      );
+
+      if (confirmed == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.importSuccess)),
+        );
+        _loadShifts();
+        _assignTabKey.reload();
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
   Future<void> _openForm([WorkShift? shift]) async {
     final groups = _shifts
         .map((s) => s.groupName?.trim())
@@ -194,15 +342,62 @@ class _ShiftScreenState extends State<ShiftScreen>
                 onTap: (_) => setState(() {}),
               ),
             ),
-            if (_tab.index == 1 && canManage)
+            if (_tab.index == 0 && canManage) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: FilledButton.icon(
-                  onPressed: () => _openForm(),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text(s.createShift),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _exporting ? null : _export,
+                      icon: _exporting
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.download_outlined, size: 16),
+                      label: Text(s.exportExcel),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _importing ? null : _importAssignments,
+                      icon: _importing
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.upload_outlined, size: 16),
+                      label: Text(s.importExcel),
+                    ),
+                  ],
                 ),
               ),
+            ],
+            if (_tab.index == 1 && canManage) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _exporting ? null : _export,
+                      icon: _exporting
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.download_outlined, size: 16),
+                      label: Text(s.exportExcel),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _importing ? null : _import,
+                      icon: _importing
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.upload_outlined, size: 16),
+                      label: Text(s.importExcel),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: () => _openForm(),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(s.createShift),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ]),
         ),
         Padding(
@@ -235,6 +430,7 @@ class _ShiftScreenState extends State<ShiftScreen>
             sizing: StackFit.expand,
             children: [
               ShiftAssignTab(
+                key: _assignTabKey,
                 shifts: _shifts,
                 canManage: canManage,
                 searchQuery: _searchCtrl.text,

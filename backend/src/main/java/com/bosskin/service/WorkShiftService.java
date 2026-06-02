@@ -407,7 +407,17 @@ public class WorkShiftService {
 
     /** Copy shift template fields into snapshot columns at assign time. */
     private void applySnapshot(ShiftAssignment a, WorkShift shift) {
-        if (shift == null) return;
+        if (shift == null) {
+            a.setSnapshotName(null);
+            a.setSnapshotCode(null);
+            a.setSnapshotStartTime(null);
+            a.setSnapshotEndTime(null);
+            a.setSnapshotBreakStart(null);
+            a.setSnapshotBreakEnd(null);
+            a.setSnapshotWorkMinutes(null);
+            a.setSnapshotColor(null);
+            return;
+        }
         a.setSnapshotName(shift.getName());
         a.setSnapshotCode(shift.getCode());
         a.setSnapshotStartTime(shift.getStartTime());

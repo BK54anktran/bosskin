@@ -6,6 +6,7 @@ import com.bosskin.entity.User;
 import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.EmployeeService;
 import com.bosskin.service.WorkShiftService;
+import com.bosskin.service.ShiftExcelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +30,57 @@ public class WorkShiftController {
     private final WorkShiftService shiftService;
     private final DeptScopeService deptScopeService;
     private final EmployeeService employeeService;
+    private final ShiftExcelService shiftExcelService;
+    private final com.bosskin.service.CompanySettingService companySettingService;
+
+    // ── Export / Import Excel ────────────────────────────────────────────
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+        requireShiftView(user);
+        LocalDate now = LocalDate.now();
+        int y = year  != null ? year  : now.getYear();
+        int m = month != null ? month : now.getMonthValue();
+        int cutoffDay = companySettingService.getByCompanyId(user.getCompany().getId())
+            .getPayroll().getPayrollCutoffDay();
+        com.bosskin.core.PayrollPeriod period = com.bosskin.core.PayrollPeriod.of(y, m, cutoffDay);
+        return shiftExcelService.export(user.getCompany().getId(), period.from(), period.to());
+    }
+
+    @PostMapping("/preview-import")
+    public ResponseEntity<List<com.bosskin.service.ShiftExcelService.ShiftDiff>> previewImport(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requireShiftManage(user);
+        return ResponseEntity.ok(shiftExcelService.previewImport(user.getCompany().getId(), file));
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<Map<String, Integer>> importExcel(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requireShiftManage(user);
+        return ResponseEntity.ok(shiftExcelService.importFromExcel(user.getCompany().getId(), file));
+    }
+
+    @PostMapping("/preview-import-assignments")
+    public ResponseEntity<com.bosskin.service.ShiftExcelService.ImportPreviewBundle> previewImportAssignments(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requireShiftManage(user);
+        return ResponseEntity.ok(shiftExcelService.previewAssignments(user.getCompany().getId(), file));
+    }
+
+    @PostMapping("/import-assignments")
+    public ResponseEntity<Map<String, Integer>> importAssignments(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requireShiftManage(user);
+        return ResponseEntity.ok(shiftExcelService.importAssignments(user.getCompany().getId(), file));
+    }
 
     // ── Shift templates ─────────────────────────────────────────────────
 

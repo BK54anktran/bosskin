@@ -1,6 +1,10 @@
 package com.bosskin.util;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -86,6 +90,99 @@ public final class ExcelUtils {
                     col.applyValue(obj, readCellAsString(cell));
                 }
                 result.add(obj);
+            }
+            return result;
+
+        } catch (IOException e) {
+            throw new RuntimeException("error.excel.import_failed", e);
+        }
+    }
+
+    /** Đọc theo tên cột (header row 0) — không phụ thuộc vào thứ tự cột. */
+    public static <T> List<T> importRowsByHeader(MultipartFile file,
+                                                  int sheetIndex,
+                                                  List<ExcelColumn<T>> columns,
+                                                  Supplier<T> factory) {
+        validateExcelFile(file);
+        try (InputStream is = file.getInputStream();
+             Workbook wb = new XSSFWorkbook(is)) {
+
+            Sheet sheet = wb.getSheetAt(sheetIndex);
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null) return List.of();
+
+            // Map header name -> column index in file
+            java.util.Map<String, Integer> headerMap = new java.util.HashMap<>();
+            for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+                Cell cell = headerRow.getCell(c);
+                if (cell != null) {
+                    headerMap.put(cell.getStringCellValue().trim(), c);
+                }
+            }
+
+            List<T> result = new ArrayList<>();
+            for (int r = 1; r <= sheet.getLastRowNum(); r++) {
+                Row row = sheet.getRow(r);
+                if (row == null) continue;
+                T obj = factory.get();
+                boolean hasData = false;
+                for (ExcelColumn<T> col : columns) {
+                    if (!col.isImportable()) continue;
+                    Integer colIdx = headerMap.get(col.getHeader());
+                    if (colIdx == null) continue;
+                    Cell cell = row.getCell(colIdx, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+                    String val = readCellAsString(cell);
+                    col.applyValue(obj, val);
+                    if (!val.isBlank()) hasData = true;
+                }
+                if (hasData) result.add(obj);
+            }
+            return result;
+
+        } catch (IOException e) {
+            throw new RuntimeException("error.excel.import_failed", e);
+        }
+    }
+
+    /** Đọc theo tên cột (header row 0) từ sheet theo tên — an toàn hơn khi workbook có sheet ẩn/phụ. */
+    public static <T> List<T> importRowsByHeader(MultipartFile file,
+                                                 String sheetName,
+                                                 List<ExcelColumn<T>> columns,
+                                                 Supplier<T> factory) {
+        validateExcelFile(file);
+        try (InputStream is = file.getInputStream();
+             Workbook wb = new XSSFWorkbook(is)) {
+
+            Sheet sheet = wb.getSheet(sheetName);
+            if (sheet == null) return List.of();
+
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null) return List.of();
+
+            java.util.Map<String, Integer> headerMap = new java.util.HashMap<>();
+            for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+                Cell cell = headerRow.getCell(c);
+                if (cell != null) {
+                    headerMap.put(readCellAsString(cell).trim(), c);
+                }
+            }
+
+            List<T> result = new ArrayList<>();
+            for (int r = 1; r <= sheet.getLastRowNum(); r++) {
+                Row row = sheet.getRow(r);
+                if (row == null) continue;
+                T obj = factory.get();
+                boolean hasData = false;
+                for (ExcelColumn<T> col : columns) {
+                    if (!col.isImportable()) continue;
+                    Integer colIdx = headerMap.get(col.getHeader());
+                    if (colIdx == null) continue;
+                    Cell cell = row.getCell(colIdx, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+                    String val = readCellAsString(cell);
+                    col.applyValue(obj, val);
+                    if (!val.isBlank()) hasData = true;
+                }
+                if (hasData) result.add(obj);
             }
             return result;
 
@@ -194,13 +291,15 @@ public final class ExcelUtils {
     }
 
     private static CellStyle buildHeaderStyle(Workbook wb) {
-        CellStyle style = wb.createCellStyle();
-        Font font = wb.createFont();
+        XSSFCellStyle style = (XSSFCellStyle) wb.createCellStyle();
+        XSSFFont font = (XSSFFont) wb.createFont();
         font.setBold(true);
+        font.setColor(new XSSFColor(new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF}, null)); // trắng
         style.setFont(font);
-        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        style.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0x21, (byte)0x5C, (byte)0x98}, null)); // #215C98
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setBorderBottom(BorderStyle.THIN);
+        style.setAlignment(HorizontalAlignment.CENTER);
         return style;
     }
 

@@ -300,9 +300,18 @@ class _CreateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasWarnings = diff.warnings.isNotEmpty;
     return Card(
       margin: const EdgeInsets.only(bottom: 4),
       color: Colors.green.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: hasWarnings
+              ? Colors.orange.withValues(alpha: 0.6)
+              : Colors.green.withValues(alpha: 0.2),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -325,6 +334,10 @@ class _CreateTile extends StatelessWidget {
           if (diff.details.isNotEmpty) ...[
             const SizedBox(height: 6),
             _DetailsRow(details: diff.details),
+          ],
+          if (hasWarnings) ...[
+            const SizedBox(height: 6),
+            _WarningsBlock(warnings: diff.warnings),
           ],
         ]),
       ),
@@ -376,6 +389,11 @@ class _UpdateTileState extends State<_UpdateTile> {
             ]),
           ),
         ),
+        if (diff.warnings.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: _WarningsBlock(warnings: diff.warnings),
+          ),
         if (_expanded)
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -487,24 +505,41 @@ class _DeleteTile extends StatelessWidget {
             ],
             if (hasWarnings) ...[
               const SizedBox(height: 6),
-              ...diff.warnings.map((w) => Padding(
-                    padding: const EdgeInsets.only(left: 22, top: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.arrow_right,
-                            size: 14, color: Colors.orange),
-                        const SizedBox(width: 2),
-                        Expanded(
-                            child: Text(w,
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.orange))),
-                      ],
-                    ),
-                  )),
+              _WarningsBlock(warnings: diff.warnings),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Warnings block — hiển thị danh sách lỗi/cảnh báo ────────────────────────
+
+class _WarningsBlock extends StatelessWidget {
+  final List<String> warnings;
+  const _WarningsBlock({required this.warnings});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: warnings.map((w) => Padding(
+          padding: const EdgeInsets.only(bottom: 2),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Icon(Icons.warning_amber_rounded, size: 13, color: Colors.orange),
+            const SizedBox(width: 6),
+            Expanded(child: Text(w,
+                style: const TextStyle(fontSize: 12, color: Colors.orange))),
+          ]),
+        )).toList(),
       ),
     );
   }

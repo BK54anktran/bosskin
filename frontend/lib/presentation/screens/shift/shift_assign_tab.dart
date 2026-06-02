@@ -40,6 +40,11 @@ class ShiftAssignTab extends StatefulWidget {
   State<ShiftAssignTab> createState() => _ShiftAssignTabState();
 }
 
+class ShiftAssignTabKey extends GlobalKey<_ShiftAssignTabState> {
+  const ShiftAssignTabKey() : super.constructor();
+  void reload() => currentState?._loadAssignments();
+}
+
 class _ShiftAssignTabState extends State<ShiftAssignTab> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   List<Employee> _employees = [];
@@ -204,7 +209,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
         (d) => (d as List)
             .map((e) => ShiftAssignment.fromJson(e as Map<String, dynamic>))
             .toList(),
-        queryParams: {'from': from, 'to': to},
+        queryParams: {'from': from, 'to': to, '_t': DateTime.now().millisecondsSinceEpoch},
       );
       if (mounted) {
         setState(() {

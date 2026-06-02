@@ -113,17 +113,16 @@ class _AppDrawerState extends State<AppDrawer> {
                         other.route != item.route && location == other.route);
                     isActive = !exactMatch && location.startsWith('${item.route}/');
                   }
-                  return Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? AppTheme.primary.withValues(alpha: 0.1)
-                          : null,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  return Material(
+                    color: isActive
+                        ? AppTheme.primary.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
                     child: ListTile(
                       dense: true,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       leading: Icon(
                         item.icon,
                         color: isActive

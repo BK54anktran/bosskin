@@ -349,14 +349,14 @@ Widget _sideNavTile(
   Color? activeColor,
 }) {
   final color = activeColor ?? AppTheme.primary;
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    decoration: BoxDecoration(
-      color: isActive ? color.withValues(alpha: 0.1) : null,
-      borderRadius: BorderRadius.circular(8),
-    ),
+  return Material(
+    color: isActive ? color.withValues(alpha: 0.1) : Colors.transparent,
+    borderRadius: BorderRadius.circular(8),
     child: ListTile(
       dense: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12),
       leading: Icon(
         icon,

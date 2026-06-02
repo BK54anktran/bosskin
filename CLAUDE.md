@@ -276,8 +276,8 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V89** (`V89__payroll_pay_type.sql`)
-→ Migration tiếp theo phải là **V90**
+Cao nhất: **V105** (`V105__attendance_soft_delete.sql`)
+→ Migration tiếp theo phải là **V106**
 
 ## Màn hình Flutter
 | Screen | Path |
@@ -289,3 +289,68 @@ Cao nhất: **V89** (`V89__payroll_pay_type.sql`)
 | Attendance | `screens/attendance/` |
 | Leaves | `screens/leaves/` |
 | Roles & Permissions | `screens/roles/` |
+| Shifts | `screens/shift/` |
+
+---
+
+## Quy tắc bổ sung — đúc kết từ thực tế
+
+### Dialog & Navigator.pop
+- **BẮT BUỘC**: Trong `builder: (ctx) =>` của `showDialog`/`showInstantDialog`, dùng `Navigator.pop(ctx, value)` — **không dùng** `Navigator.pop(context, value)` (context ngoài sẽ pop màn hình cha thay vì đóng dialog).
+
+### Export/Import Excel — BẮT BUỘC TUYỆT ĐỐI
+
+**Chất lượng dữ liệu export:**
+- Export phải **đủ thông tin để import lại được** — tức là user export ra, sửa, rồi import vào phải hoạt động đúng.
+- Export phải chứa **ít nhất tất cả các cột đang hiển thị trên màn hình** — không được thiếu cột so với UI.
+- Cột dùng để định danh khi import (mã NV, mã ca, ...) phải luôn có trong file export.
+- Cột readOnly (không import được) vẫn nên export để user tham khảo (ví dụ: tên phòng ban bên cạnh mã phòng ban).
+
+**Luồng import bắt buộc — KHÔNG BAO GIỜ import thẳng:**
+  1. User chọn file
+  2. Gọi `/preview-import` → nhận diff list
+  3. Hiện `ImportPreviewDialog` (CREATE/UPDATE/NO_CHANGE/warnings)
+  4. User xác nhận → mới gọi `/import` thực sự
+
+**Quy tắc kỹ thuật:**
+- Backend **bắt buộc** có 2 endpoint riêng: `/preview-import` (readOnly) và `/import` (transactional).
+- Import đọc theo **tên cột header** (`importRowsByHeader`) — không đọc theo index cột.
+- Tên cột header export phải **khớp chính xác** tên cột trong `IMPORT_COLUMNS` để import hoạt động.
+- Tên sheet Excel **không được chứa** `/`, `\`, `?`, `*`, `[`, `]` — dùng `-` thay `/` trong ngày tháng.
+- Tên sheet tối đa **31 ký tự**.
+- Bỏ dấu tiếng Việt trong tên sheet nếu dùng ký tự đặc biệt.
+
+### Soft Delete
+- Tất cả entity quan trọng (Attendance, Employee, ...) dùng **soft delete** (`deleted = true`) — không `DELETE` cứng.
+- Repository query phải thêm `AND a.deleted = false` vào mọi query.
+
+### Bulk actions (chấm công)
+- Bulk select dùng `Set<String>` (dateKey) cho tab tháng, `Set<int>` (employeeId) cho tab ngày.
+- Header checkbox dùng `InkWell` + `IgnorePointer(child: Checkbox(...))` để tránh lỗi tristate không fire onTap.
+- Nút approve chỉ hiện khi `attendanceId != null` (đã có record).
+
+### EmployeeDTO
+- `Response` phải map đầy đủ: `identityCard`, `bankAccount`, `bankName`, `personalEmail`, `leaveDate`.
+- `UpdateRequest` phải có đủ field như `Response` để update từ form.
+- `toResponse()` trong service phải map tất cả field — kiểm tra kỹ trước khi ship.
+
+### Kỳ lương (PayrollPeriod)
+- Dùng `PayrollPeriod.of(year, month, cutoffDay)` để tính from/to — không hardcode ngày 1 đến cuối tháng.
+- `cutoffDay` lấy từ `CompanySettingService.getByCompanyId(companyId).getPayroll().getPayrollCutoffDay()`.
+
+### Hover cursor
+- Widget có `onTap`/`onPressed` trên desktop → thêm `MouseRegion(cursor: SystemMouseCursors.click)` để hiện bàn tay khi hover.
+
+### Pre-loading data
+- Dữ liệu tham chiếu nặng (grades, departments) → load song song khi mở màn hình cha, truyền vào form qua constructor (`initialGrades`) để tránh lag khi mở form.
+
+### Attendance — hasRecord logic
+- Nút duyệt/xóa hiện khi `attendanceId != null` (có record trong DB).
+- Nút duyệt luôn hiện (kể cả chưa có check-in/out) để admin có thể duyệt ca trống.
+- Nút xóa chỉ hiện khi `attendanceId != null`.
+
+### Ca làm (Shift) — Export bảng ngang
+- Sheet phân công ca: hàng = nhân viên, cột = ngày trong kỳ lương, ô = mã ca.
+- Tháng export theo `PayrollPeriod` (cutoff day), không phải tháng calendar.
+- Freeze 3 cột đầu (Mã NV, Họ tên, Phòng ban) khi export.
+- Import phân công ca đọc tên sheet để parse tháng/năm.
