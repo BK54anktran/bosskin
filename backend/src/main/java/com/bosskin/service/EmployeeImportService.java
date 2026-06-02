@@ -30,6 +30,7 @@ public class EmployeeImportService {
     private final UserRepository        userRepo;
     private final RoleRepository        roleRepo;
     private final PasswordEncoder       passwordEncoder;
+    private final DeptScopeService      deptScopeService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String DEFAULT_PASSWORD = "Bosskin@123";
@@ -37,8 +38,11 @@ public class EmployeeImportService {
     // ─── PREVIEW ─────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public List<EmployeeDTO.ImportDiff> previewImport(Long companyId,
+    public List<EmployeeDTO.ImportDiff> previewImport(Long companyId, Long userId,
                                                       List<EmployeeDTO.ImportRow> rows) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
+        Map<String, Department> deptByCode = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
+            .stream().collect(Collectors.toMap(Department::getCode, d -> d));
         Map<String, Employee> existing = employeeRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(Employee::getEmployeeCode, e -> e));
 
@@ -51,6 +55,12 @@ public class EmployeeImportService {
             String name = row.getFullName()     == null ? "" : row.getFullName().trim();
             String deptCode = row.getDepartmentCode() == null ? null
                 : row.getDepartmentCode().trim().toUpperCase();
+
+            // Scope check: bỏ qua row thuộc dept ngoài phạm vi
+            if (!scopeIds.isEmpty() && deptCode != null) {
+                Department dept = deptByCode.get(deptCode);
+                if (dept == null || !scopeIds.contains(dept.getId())) continue;
+            }
 
             Employee emp = code == null ? null : existing.get(code);
 
@@ -95,7 +105,8 @@ public class EmployeeImportService {
     // ─── IMPORT ──────────────────────────────────────────────────────────────
 
     @Transactional
-    public void importFromExcel(Long companyId, List<EmployeeDTO.ImportRow> rows) {
+    public void importFromExcel(Long companyId, Long userId, List<EmployeeDTO.ImportRow> rows) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
         Company company = companyRepo.findById(companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
 
@@ -114,6 +125,12 @@ public class EmployeeImportService {
 
         for (EmployeeDTO.ImportRow row : rows) {
             if (isBlank(row.getFullName()) && isBlank(row.getEmployeeCode())) continue;
+
+            // Scope check: bỏ qua row thuộc dept ngoài phạm vi
+            if (!scopeIds.isEmpty() && row.getDepartmentCode() != null) {
+                Department dept = deptMap.get(row.getDepartmentCode().trim().toUpperCase());
+                if (dept == null || !scopeIds.contains(dept.getId())) continue;
+            }
 
             String code = row.getEmployeeCode() == null ? null : row.getEmployeeCode().trim();
             Employee emp = code == null ? null : existing.get(code);

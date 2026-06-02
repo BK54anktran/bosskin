@@ -1407,6 +1407,36 @@ abstract class AppLocalizations {
   /// **'Nghỉ phép'**
   String get employeeStatusOnLeave;
 
+  /// No description provided for @chooseTimeRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn khoảng thời gian'**
+  String get chooseTimeRange;
+
+  /// No description provided for @viewRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem theo'**
+  String get viewRange;
+
+  /// No description provided for @viewRangePayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ lương'**
+  String get viewRangePayroll;
+
+  /// No description provided for @viewRangeWeek.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuần'**
+  String get viewRangeWeek;
+
+  /// No description provided for @viewRangeCustom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng thời gian'**
+  String get viewRangeCustom;
+
   /// No description provided for @fromDate.
   ///
   /// In vi, this message translates to:

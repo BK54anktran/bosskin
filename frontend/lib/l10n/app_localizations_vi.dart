@@ -685,6 +685,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String get employeeStatusOnLeave => 'Nghỉ phép';
 
   @override
+  String get chooseTimeRange => 'Chọn khoảng thời gian';
+
+  @override
+  String get viewRange => 'Xem theo';
+
+  @override
+  String get viewRangePayroll => 'Kỳ lương';
+
+  @override
+  String get viewRangeWeek => 'Tuần';
+
+  @override
+  String get viewRangeCustom => 'Khoảng thời gian';
+
+  @override
   String get fromDate => 'Từ ngày';
 
   @override

@@ -20,6 +20,8 @@ const double _headH = 44.0;
 const Color _border = Color(0xFFD0D5DD);
 const Color _headBg = Color(0xFFF2F4F7);
 
+enum _ViewRangeMode { payroll, week, custom }
+
 class ShiftAssignTab extends StatefulWidget {
   final List<WorkShift> shifts;
   final bool canManage;
@@ -43,10 +45,14 @@ class ShiftAssignTab extends StatefulWidget {
 class ShiftAssignTabKey extends GlobalKey<_ShiftAssignTabState> {
   const ShiftAssignTabKey() : super.constructor();
   void reload() => currentState?._loadAssignments();
+  DateTimeRange? get currentRange => currentState?._currentRange;
 }
 
 class _ShiftAssignTabState extends State<ShiftAssignTab> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime _weekFocus = DateTime.now();
+  DateTimeRange? _customRange;
+  _ViewRangeMode _rangeMode = _ViewRangeMode.payroll;
   List<Employee> _employees = [];
   List<ShiftAssignment> _assignments = [];
   bool _loadingEmps = true;
@@ -61,23 +67,56 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
 
   /// Trả về danh sách ngày trong kỳ lương của _month dựa theo _cutoffDay.
   List<DateTime> get _periodDays {
-    final DateTime from;
-    final DateTime to;
-    if (_cutoffDay <= 1) {
-      from = DateTime(_month.year, _month.month, 1);
-      to = DateTime(_month.year, _month.month + 1, 0);
-    } else {
-      final prev = DateTime(_month.year, _month.month - 1);
-      final maxPrev = DateTime(prev.year, prev.month + 1, 0).day;
-      from = DateTime(prev.year, prev.month, _cutoffDay.clamp(1, maxPrev));
-      final maxCur = DateTime(_month.year, _month.month + 1, 0).day;
-      to = DateTime(_month.year, _month.month, (_cutoffDay - 1).clamp(1, maxCur));
-    }
+    final range = _currentRange;
+    final from = range.start;
+    final to = range.end;
     final days = <DateTime>[];
     for (var d = from; !d.isAfter(to); d = DateTime(d.year, d.month, d.day + 1)) {
       days.add(d);
     }
     return days;
+  }
+
+  DateTimeRange get _currentRange {
+    switch (_rangeMode) {
+      case _ViewRangeMode.payroll:
+        final DateTime from;
+        final DateTime to;
+        if (_cutoffDay <= 1) {
+          from = DateTime(_month.year, _month.month, 1);
+          to = DateTime(_month.year, _month.month + 1, 0);
+        } else {
+          final prev = DateTime(_month.year, _month.month - 1);
+          final maxPrev = DateTime(prev.year, prev.month + 1, 0).day;
+          from = DateTime(prev.year, prev.month, _cutoffDay.clamp(1, maxPrev));
+          final maxCur = DateTime(_month.year, _month.month + 1, 0).day;
+          to = DateTime(_month.year, _month.month, (_cutoffDay - 1).clamp(1, maxCur));
+        }
+        return DateTimeRange(start: from, end: to);
+      case _ViewRangeMode.week:
+        final base = DateTime(_weekFocus.year, _weekFocus.month, _weekFocus.day);
+        final start = base.subtract(Duration(days: base.weekday - 1));
+        final end = start.add(const Duration(days: 6));
+        return DateTimeRange(start: start, end: end);
+      case _ViewRangeMode.custom:
+        return _customRange ??
+            DateTimeRange(
+              start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+              end: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+            );
+    }
+  }
+
+  String get _rangeLabel {
+    final range = _currentRange;
+    switch (_rangeMode) {
+      case _ViewRangeMode.payroll:
+        return DateFormat('MM/yyyy').format(_month);
+      case _ViewRangeMode.week:
+        return '${DateFormat('dd/MM').format(range.start)} - ${DateFormat('dd/MM/yyyy').format(range.end)}';
+      case _ViewRangeMode.custom:
+        return '${DateFormat('dd/MM/yyyy').format(range.start)} - ${DateFormat('dd/MM/yyyy').format(range.end)}';
+    }
   }
 
   // ── Pagination ───────────────────────────────────────────────────────────
@@ -220,6 +259,33 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     } catch (_) {
       if (mounted) setState(() => _loadingAssigns = false);
     }
+  }
+
+  void _shiftRange(int direction) {
+    setState(() {
+      switch (_rangeMode) {
+        case _ViewRangeMode.payroll:
+          _month = DateTime(_month.year, _month.month + direction);
+          break;
+        case _ViewRangeMode.week:
+          _weekFocus = DateTime(
+            _weekFocus.year,
+            _weekFocus.month,
+            _weekFocus.day + (7 * direction),
+          );
+          break;
+        case _ViewRangeMode.custom:
+          final current = _currentRange;
+          final span = current.end.difference(current.start).inDays + 1;
+          _customRange = DateTimeRange(
+            start: current.start.add(Duration(days: span * direction)),
+            end: current.end.add(Duration(days: span * direction)),
+          );
+          break;
+      }
+      _page = 0;
+    });
+    _loadAssignments();
   }
 
   String _fmt(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
@@ -522,24 +588,14 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _MonthNav(
-        month: _month,
+        label: _rangeLabel,
+        mode: _rangeMode,
         loading: _loadingAssigns,
         panelOpen: _panelOpen,
-        onPrev: () {
-          setState(() {
-            _month = DateTime(_month.year, _month.month - 1);
-            _page = 0;
-          });
-          _loadAssignments();
-        },
-        onNext: () {
-          setState(() {
-            _month = DateTime(_month.year, _month.month + 1);
-            _page = 0;
-          });
-          _loadAssignments();
-        },
+        onPrev: () => _shiftRange(-1),
+        onNext: () => _shiftRange(1),
         onPick: _pickMonth,
+        onModeChanged: _changeRangeMode,
         onTogglePanel: () => setState(() {
           _panelOpen = !_panelOpen;
           if (!_panelOpen) _quickFill = null;
@@ -574,14 +630,68 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
   }
 
   Future<void> _pickMonth() async {
-    final picked = await showDialog<DateTime>(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => _MonthPickerDialog(initialMonth: _month),
-    );
-    if (picked == null) return;
+    switch (_rangeMode) {
+      case _ViewRangeMode.payroll:
+        final picked = await showDialog<DateTime>(
+          context: context,
+          barrierDismissible: true,
+          builder: (_) => _MonthPickerDialog(initialMonth: _month),
+        );
+        if (picked == null) return;
+        setState(() {
+          _month = DateTime(picked.year, picked.month);
+          _page = 0;
+        });
+        _loadAssignments();
+        break;
+      case _ViewRangeMode.week:
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _weekFocus,
+          firstDate: DateTime(2020),
+          lastDate: DateTime(2100),
+        );
+        if (picked == null) return;
+        setState(() {
+          _weekFocus = picked;
+          _page = 0;
+        });
+        _loadAssignments();
+        break;
+      case _ViewRangeMode.custom:
+        final picked = await showDialog<DateTimeRange>(
+          context: context,
+          barrierDismissible: true,
+          builder: (_) => _SmallDateRangeDialog(
+            initialRange: _customRange ?? _currentRange,
+          ),
+        );
+        if (picked == null) return;
+        setState(() {
+          _customRange = DateTimeRange(
+            start: DateTime(picked.start.year, picked.start.month, picked.start.day),
+            end: DateTime(picked.end.year, picked.end.month, picked.end.day),
+          );
+          _page = 0;
+        });
+        _loadAssignments();
+        break;
+    }
+  }
+
+  void _changeRangeMode(_ViewRangeMode mode) {
+    if (_rangeMode == mode) return;
     setState(() {
-      _month = DateTime(picked.year, picked.month);
+      _rangeMode = mode;
+      final today = DateTime.now();
+      if (mode == _ViewRangeMode.week) {
+        _weekFocus = today;
+      } else if (mode == _ViewRangeMode.custom) {
+        _customRange ??= DateTimeRange(
+          start: DateTime(today.year, today.month, today.day),
+          end: DateTime(today.year, today.month, today.day + 6),
+        );
+      }
       _page = 0;
     });
     _loadAssignments();
@@ -867,24 +977,71 @@ class _ShiftBadge extends StatelessWidget {
 // ── Month navigator ───────────────────────────────────────────────────────────
 
 class _MonthNav extends StatelessWidget {
-  final DateTime month;
+  final String label;
+  final _ViewRangeMode mode;
   final bool loading;
   final bool panelOpen;
   final VoidCallback onPrev, onNext, onPick, onTogglePanel;
-  const _MonthNav({
-    required this.month,
+  final ValueChanged<_ViewRangeMode> onModeChanged;
+  _MonthNav({
+    required this.label,
+    required this.mode,
     required this.loading,
     required this.panelOpen,
     required this.onPrev,
     required this.onNext,
     required this.onPick,
+    required this.onModeChanged,
     required this.onTogglePanel,
   });
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(0, 4, 4, 4),
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
         child: Row(children: [
+          IntrinsicWidth(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 150),
+              child: PopupMenuButton<_ViewRangeMode>(
+                initialValue: mode,
+                onSelected: onModeChanged,
+                offset: const Offset(0, 48),
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: _ViewRangeMode.payroll, child: Text(AppLocalizations.of(context).viewRangePayroll)),
+                  PopupMenuItem(value: _ViewRangeMode.week, child: Text(AppLocalizations.of(context).viewRangeWeek)),
+                  PopupMenuItem(value: _ViewRangeMode.custom, child: Text(AppLocalizations.of(context).viewRangeCustom)),
+                ],
+                child: InputDecorator(
+                  isEmpty: false,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context).viewRange,
+                    isDense: true,
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          switch (mode) {
+                            _ViewRangeMode.payroll => AppLocalizations.of(context).viewRangePayroll,
+                            _ViewRangeMode.week => AppLocalizations.of(context).viewRangeWeek,
+                            _ViewRangeMode.custom => AppLocalizations.of(context).viewRangeCustom,
+                          },
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(Icons.arrow_drop_down, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.chevron_left, size: 20),
             onPressed: onPrev,
@@ -896,7 +1053,7 @@ class _MonthNav extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text(DateFormat('MM/yyyy').format(month),
+              child: Text(label,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15)),
             ),
@@ -1272,6 +1429,145 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
 }
 
 // ── Assign result ─────────────────────────────────────────────────────────────
+
+class _SmallDateRangeDialog extends StatefulWidget {
+  final DateTimeRange initialRange;
+
+  const _SmallDateRangeDialog({required this.initialRange});
+
+  @override
+  State<_SmallDateRangeDialog> createState() => _SmallDateRangeDialogState();
+}
+
+class _SmallDateRangeDialogState extends State<_SmallDateRangeDialog> {
+  late DateTime _start;
+  late DateTime _end;
+
+  @override
+  void initState() {
+    super.initState();
+    _start = DateTime(
+      widget.initialRange.start.year,
+      widget.initialRange.start.month,
+      widget.initialRange.start.day,
+    );
+    _end = DateTime(
+      widget.initialRange.end.year,
+      widget.initialRange.end.month,
+      widget.initialRange.end.day,
+    );
+  }
+
+  Future<void> _pickDate(bool isStart) async {
+    final initial = isStart ? _start : (_end.isBefore(_start) ? _start : _end);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: isStart ? DateTime(2020) : _start,
+      lastDate: DateTime(2100),
+      initialEntryMode: DatePickerEntryMode.input,
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isStart) {
+        _start = DateTime(picked.year, picked.month, picked.day);
+        if (_end.isBefore(_start)) _end = _start;
+      } else {
+        _end = DateTime(picked.year, picked.month, picked.day);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    final fmt = DateFormat('dd/MM/yyyy');
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                s.chooseTimeRange,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 14),
+              _DateRow(
+                label: s.fromDate,
+                value: fmt.format(_start),
+                onTap: () => _pickDate(true),
+              ),
+              const SizedBox(height: 8),
+              _DateRow(
+                label: s.toDate,
+                value: fmt.format(_end),
+                onTap: () => _pickDate(false),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(s.cancel),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(
+                      context,
+                      DateTimeRange(start: _start, end: _end),
+                    ),
+                    child: Text(s.apply),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DateRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+  const _DateRow({required this.label, required this.value, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: _border),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  const SizedBox(height: 2),
+                  Text(value,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+            const Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.textSecondary),
+          ]),
+        ),
+      );
+}
 
 class _AssignResult {
   final bool remove;

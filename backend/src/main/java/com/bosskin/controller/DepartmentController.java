@@ -116,7 +116,7 @@ public class DepartmentController {
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "DEPARTMENT_MANAGE");
         List<DepartmentDTO.ImportRow> rows = ExcelUtils.importRows(file, IMPORT_COLUMNS, DepartmentDTO.ImportRow::new);
-        return ResponseEntity.ok(departmentService.previewImport(user.getCompany().getId(), rows));
+        return ResponseEntity.ok(departmentService.previewImport(user.getCompany().getId(), user.getId(), rows));
     }
 
     @PostMapping("/import")
@@ -126,7 +126,7 @@ public class DepartmentController {
         requirePermission(user, "DEPARTMENT_MANAGE");
 
         List<DepartmentDTO.ImportRow> rows = ExcelUtils.importRows(file, IMPORT_COLUMNS, DepartmentDTO.ImportRow::new);
-        departmentService.importFromExcel(user.getCompany().getId(), rows);
+        departmentService.importFromExcel(user.getCompany().getId(), user.getId(), rows);
         return ResponseEntity.ok().build();
     }
 

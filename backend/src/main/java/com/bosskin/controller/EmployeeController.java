@@ -73,7 +73,7 @@ public class EmployeeController {
         List<EmployeeDTO.ImportRow> sheet1 = ExcelUtils.importRows(file, 0, BASIC_IMPORT,    EmployeeDTO.ImportRow::new);
         List<EmployeeDTO.ImportRow> sheet2 = ExcelUtils.importRows(file, 1, PERSONAL_IMPORT, EmployeeDTO.ImportRow::new);
         List<EmployeeDTO.ImportRow> merged = merge(sheet1, sheet2);
-        return ResponseEntity.ok(employeeImportService.previewImport(user.getCompany().getId(), merged));
+        return ResponseEntity.ok(employeeImportService.previewImport(user.getCompany().getId(), user.getId(), merged));
     }
 
     @PostMapping("/import")
@@ -84,7 +84,7 @@ public class EmployeeController {
         List<EmployeeDTO.ImportRow> sheet1 = ExcelUtils.importRows(file, 0, BASIC_IMPORT,    EmployeeDTO.ImportRow::new);
         List<EmployeeDTO.ImportRow> sheet2 = ExcelUtils.importRows(file, 1, PERSONAL_IMPORT, EmployeeDTO.ImportRow::new);
         List<EmployeeDTO.ImportRow> merged = merge(sheet1, sheet2);
-        employeeImportService.importFromExcel(user.getCompany().getId(), merged);
+        employeeImportService.importFromExcel(user.getCompany().getId(), user.getId(), merged);
         return ResponseEntity.ok().build();
     }
 

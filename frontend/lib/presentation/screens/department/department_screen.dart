@@ -223,16 +223,19 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
           child: Row(
             children: [
               const Spacer(),
-              OutlinedButton.icon(
-                onPressed: _exporting ? null : _export,
-                icon: _exporting
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.upload_outlined, size: 18),
-                label: Text(s.exportExcel),
+              PermissionGuard(
+                permission: 'DEPARTMENT_VIEW',
+                child: OutlinedButton.icon(
+                  onPressed: _exporting ? null : _export,
+                  icon: _exporting
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.upload_outlined, size: 18),
+                  label: Text(s.exportExcel),
+                ),
               ),
               const SizedBox(width: 8),
               PermissionGuard(

@@ -345,14 +345,17 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 runSpacing: 8,
                 alignment: WrapAlignment.end,
                 children: [
-                  OutlinedButton.icon(
-                    onPressed: _exporting ? null : _export,
-                    icon: _exporting
-                        ? const SizedBox(
-                            width: 14, height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.upload_outlined, size: 18),
-                    label: Text(s.exportExcel),
+                  PermissionGuard(
+                    permission: 'EMPLOYEE_VIEW',
+                    child: OutlinedButton.icon(
+                      onPressed: _exporting ? null : _export,
+                      icon: _exporting
+                          ? const SizedBox(
+                              width: 14, height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.upload_outlined, size: 18),
+                      label: Text(s.exportExcel),
+                    ),
                   ),
                   PermissionGuard(
                     permission: 'EMPLOYEE_CREATE',

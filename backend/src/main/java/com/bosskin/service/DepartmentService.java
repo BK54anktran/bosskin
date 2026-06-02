@@ -125,13 +125,19 @@ public class DepartmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<DepartmentDTO.ImportDiff> previewImport(Long companyId, List<DepartmentDTO.ImportRow> rows) {
+    public List<DepartmentDTO.ImportDiff> previewImport(Long companyId, Long userId, List<DepartmentDTO.ImportRow> rows) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "DEPARTMENT_VIEW");
         Map<String, Department> existing = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(Department::getCode, d -> d));
 
         List<DepartmentDTO.ImportDiff> result = new ArrayList<>();
 
         for (DepartmentDTO.ImportRow row : rows) {
+            // Scope check: bỏ qua dept ngoài phạm vi
+            if (!scopeIds.isEmpty() && row.getCode() != null) {
+                Department dept = existing.get(row.getCode().trim().toUpperCase());
+                if (dept != null && !scopeIds.contains(dept.getId())) continue;
+            }
             if (row.getCode() == null || row.getCode().isBlank()) continue;
 
             String code       = row.getCode().trim().toUpperCase();
@@ -215,13 +221,23 @@ public class DepartmentService {
     }
 
     @Transactional
-    public void importFromExcel(Long companyId, List<DepartmentDTO.ImportRow> rows) {
+    public void importFromExcel(Long companyId, Long userId, List<DepartmentDTO.ImportRow> rows) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "DEPARTMENT_VIEW");
         Company company = companyRepo.findById(companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
 
         // Build lookup map code → existing dept
         Map<String, Department> existing = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(Department::getCode, d -> d));
+
+        // Lọc rows theo scope nếu user không xem toàn công ty
+        if (!scopeIds.isEmpty()) {
+            rows = rows.stream().filter(row -> {
+                if (row.getCode() == null) return false;
+                Department dept = existing.get(row.getCode().trim().toUpperCase());
+                return dept == null || scopeIds.contains(dept.getId());
+            }).collect(Collectors.toList());
+        }
 
         // Collect all codes từ file để resolve parent sau
         Map<String, Department> saved = new java.util.LinkedHashMap<>(existing);

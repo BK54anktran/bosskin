@@ -683,6 +683,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get employeeStatusOnLeave => 'On leave';
 
   @override
+  String get chooseTimeRange => 'Choose time range';
+
+  @override
+  String get viewRange => 'View by';
+
+  @override
+  String get viewRangePayroll => 'Pay period';
+
+  @override
+  String get viewRangeWeek => 'Week';
+
+  @override
+  String get viewRangeCustom => 'Custom range';
+
+  @override
   String get fromDate => 'From date';
 
   @override

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/dialog_utils.dart';
@@ -131,14 +132,42 @@ class _ShiftScreenState extends State<ShiftScreen>
   Future<void> _export() async {
     setState(() => _exporting = true);
     try {
-      final now = DateTime.now();
+      final range = _assignTabKey.currentRange;
+      final fmt = DateFormat('yyyy-MM-dd');
+      final deptScopeIds = _expandedDepartmentScopeIds(_deptFilterId);
+      final deptQuery = deptScopeIds.isNotEmpty
+          ? '&${deptScopeIds.map((id) => 'departmentIds=$id').join('&')}'
+          : '';
+      final query = range != null
+          ? 'from=${fmt.format(range.start)}&to=${fmt.format(range.end)}$deptQuery'
+          : 'year=${DateTime.now().year}&month=${DateTime.now().month}$deptQuery';
       final res = await ApiService.instance.dio.get<List<int>>(
-        '/shifts/export?year=${now.year}&month=${now.month}',
+        '/shifts/export?$query',
         options: Options(responseType: ResponseType.bytes),
       );
       final disposition = res.headers.value('content-disposition') ?? '';
       final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
       final filename = match?.group(1) ?? 'danh_sach_ca_lam.xlsx';
+      await saveFileToDevice(Uint8List.fromList(res.data!), filename);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+      );
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _exportShiftList() async {
+    setState(() => _exporting = true);
+    try {
+      final res = await ApiService.instance.dio.get<List<int>>(
+        '/shifts/export-list',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final disposition = res.headers.value('content-disposition') ?? '';
+      final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+      final filename = match?.group(1) ?? 'danh_sach_ca.xlsx';
       await saveFileToDevice(Uint8List.fromList(res.data!), filename);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
@@ -320,8 +349,8 @@ class _ShiftScreenState extends State<ShiftScreen>
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
-    final canManage =
-        AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false;
+    final canView = AuthService.instance.currentUser?.can('SHIFT_VIEW') ?? false;
+    final canManage = AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -342,7 +371,7 @@ class _ShiftScreenState extends State<ShiftScreen>
                 onTap: (_) => setState(() {}),
               ),
             ),
-            if (_tab.index == 0 && canManage) ...[
+            if (_tab.index == 0 && (canView || canManage)) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
@@ -355,45 +384,49 @@ class _ShiftScreenState extends State<ShiftScreen>
                           : const Icon(Icons.upload_outlined, size: 16),
                       label: Text(s.exportExcel),
                     ),
-                    const SizedBox(width: 8),
-                    OutlinedButton.icon(
-                      onPressed: _importing ? null : _importAssignments,
-                      icon: _importing
-                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.download_outlined, size: 16),
-                      label: Text(s.importExcel),
-                    ),
+                    if (canManage) ...[
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: _importing ? null : _importAssignments,
+                        icon: _importing
+                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.download_outlined, size: 16),
+                        label: Text(s.importExcel),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ],
-            if (_tab.index == 1 && canManage) ...[
+            if (_tab.index == 1 && (canView || canManage)) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: _exporting ? null : _export,
+                      onPressed: _exporting ? null : _exportShiftList,
                       icon: _exporting
                           ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                           : const Icon(Icons.upload_outlined, size: 16),
                       label: Text(s.exportExcel),
                     ),
-                    const SizedBox(width: 8),
-                    OutlinedButton.icon(
-                      onPressed: _importing ? null : _importAssignments,
-                      icon: _importing
-                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.download_outlined, size: 16),
-                      label: Text(s.importExcel),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton.icon(
-                      onPressed: () => _openForm(),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: Text(s.createShift),
-                    ),
+                    if (canManage) ...[
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: _importing ? null : _import,
+                        icon: _importing
+                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.download_outlined, size: 16),
+                        label: Text(s.importExcel),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: () => _openForm(),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: Text(s.createShift),
+                      ),
+                    ],
                   ],
                 ),
               ),

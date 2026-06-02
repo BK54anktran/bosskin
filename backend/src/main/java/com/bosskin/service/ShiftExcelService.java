@@ -31,6 +31,7 @@ public class ShiftExcelService {
     private final WorkShiftService shiftService;
     private final ShiftAssignmentRepository assignRepo;
     private final com.bosskin.repository.EmployeeRepository employeeRepo;
+    private final DeptScopeService deptScopeService;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -55,7 +56,7 @@ public class ShiftExcelService {
     private static final String[] WEEKDAY_VI = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
 
     @Transactional(readOnly = true)
-    public ResponseEntity<byte[]> export(Long companyId, LocalDate from, LocalDate to) {
+    public ResponseEntity<byte[]> export(Long companyId, LocalDate from, LocalDate to, List<Long> departmentIds) {
         List<WorkShift> shifts = shiftRepo.findByCompanyIdAndActiveTrue(companyId);
         List<ShiftAssignment> assignments = assignRepo.findByCompanyAndDateRange(companyId, from, to);
 
@@ -63,10 +64,11 @@ public class ShiftExcelService {
         List<LocalDate> dates = new ArrayList<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) dates.add(d);
 
-        // All employees sorted by name
+        // All employees sorted by name, filtered by department if specified
         List<com.bosskin.entity.Employee> allEmps = employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
             .stream()
             .filter(e -> e.getStatus() == com.bosskin.entity.Employee.Status.ACTIVE)
+            .filter(e -> departmentIds == null || departmentIds.isEmpty() || departmentIds.contains(e.getDepartment() != null ? e.getDepartment().getId() : null))
             .sorted(Comparator.comparing(com.bosskin.entity.Employee::getFullName))
             .collect(Collectors.toList());
 
@@ -391,6 +393,74 @@ public class ShiftExcelService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> exportShiftListOnly(Long companyId) {
+        List<WorkShift> shifts = shiftRepo.findByCompanyIdAndActiveTrue(companyId);
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+            wb.setCellFormulaValidation(false);
+
+            org.apache.poi.xssf.usermodel.XSSFColor blue = new org.apache.poi.xssf.usermodel.XSSFColor(
+                new byte[]{(byte)0x21, (byte)0x5C, (byte)0x98}, null);
+            org.apache.poi.xssf.usermodel.XSSFFont whiteFont = wb.createFont();
+            whiteFont.setBold(true);
+            whiteFont.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(
+                new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF}, null));
+            org.apache.poi.xssf.usermodel.XSSFCellStyle hStyle = wb.createCellStyle();
+            hStyle.setFont(whiteFont);
+            hStyle.setFillForegroundColor(blue);
+            hStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+            hStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+            hStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.createSheet("Danh sach ca");
+            org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
+            String[] cols = {"Mã ca (*)", "Tên ca (*)", "Giờ bắt đầu", "Giờ kết thúc",
+                "Nghỉ giải lao từ", "Nghỉ giải lao đến", "Nhóm ca", "Màu",
+                "Phòng ban (mã, cách nhau dấu phẩy)", "Phút làm"};
+            for (int c = 0; c < cols.length; c++) {
+                org.apache.poi.ss.usermodel.Cell cell = header.createCell(c);
+                cell.setCellValue(cols[c]);
+                cell.setCellStyle(hStyle);
+                sheet.setColumnWidth(c, 20 * 256);
+            }
+
+            int si = 1;
+            for (WorkShift sh : shifts) {
+                org.apache.poi.ss.usermodel.Row row = sheet.createRow(si++);
+                row.createCell(0).setCellValue(sh.getCode());
+                row.createCell(1).setCellValue(sh.getName());
+                row.createCell(2).setCellValue(sh.getStartTime() != null ? sh.getStartTime().format(TIME_FMT) : "");
+                row.createCell(3).setCellValue(sh.getEndTime() != null ? sh.getEndTime().format(TIME_FMT) : "");
+                row.createCell(4).setCellValue(sh.getBreakStart() != null ? sh.getBreakStart().format(TIME_FMT) : "");
+                row.createCell(5).setCellValue(sh.getBreakEnd() != null ? sh.getBreakEnd().format(TIME_FMT) : "");
+                row.createCell(6).setCellValue(sh.getGroupName() != null ? sh.getGroupName() : "");
+                row.createCell(7).setCellValue(sh.getColor());
+                row.createCell(8).setCellValue(sh.getDepartments().stream().map(Department::getCode).collect(Collectors.joining(",")));
+                int workMinutes = 0;
+                if (sh.getStartTime() != null && sh.getEndTime() != null) {
+                    workMinutes = (int) java.time.Duration.between(sh.getStartTime(), sh.getEndTime()).toMinutes();
+                    if (sh.getBreakStart() != null && sh.getBreakEnd() != null)
+                        workMinutes -= (int) java.time.Duration.between(sh.getBreakStart(), sh.getBreakEnd()).toMinutes();
+                    workMinutes = Math.max(0, workMinutes);
+                }
+                row.createCell(9).setCellValue(workMinutes);
+            }
+
+            wb.setForceFormulaRecalculation(true);
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            String ts = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
+            String filename = "danh_sach_ca-" + ts + ".xlsx";
+            return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bytes);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("error.excel.export_failed", e);
+        }
+    }
+
     // ─── Preview import ca làm ───────────────────────────────────────────────
 
     @lombok.Data @lombok.Builder
@@ -580,7 +650,8 @@ public class ShiftExcelService {
     }
 
     @Transactional(readOnly = true)
-    public ImportPreviewBundle previewAssignments(Long companyId, MultipartFile file) {
+    public ImportPreviewBundle previewAssignments(Long companyId, Long userId, MultipartFile file) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "SHIFT_VIEW");
         List<ShiftDiff> shiftDiffs = new ArrayList<>();
         Map<String, ShiftRow> importedShiftRows = new LinkedHashMap<>();
         if (hasSheet(file, "Danh sach ca")) {
@@ -604,7 +675,9 @@ public class ShiftExcelService {
         Map<String, WorkShift> shiftMap = shiftRepo.findByCompanyIdAndActiveTrue(companyId)
             .stream().collect(Collectors.toMap(WorkShift::getCode, s -> s, (a, b) -> a));
         Map<String, com.bosskin.entity.Employee> empMap = employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
-            .stream().collect(Collectors.toMap(com.bosskin.entity.Employee::getEmployeeCode, e -> e, (a, b) -> a));
+            .stream()
+            .filter(e -> scopeIds.isEmpty() || (e.getDepartment() != null && scopeIds.contains(e.getDepartment().getId())))
+            .collect(Collectors.toMap(com.bosskin.entity.Employee::getEmployeeCode, e -> e, (a, b) -> a));
         // empId -> date -> Set<label> (hỗ trợ nhiều ca/ngày)
         Map<Long, Map<java.time.LocalDate, java.util.Set<String>>> existingLabelMap = new HashMap<>();
         assignRepo.findByCompanyAndDateRange(companyId,
@@ -701,7 +774,8 @@ public class ShiftExcelService {
             .build();
     }
 
-    public Map<String, Integer> importAssignments(Long companyId, MultipartFile file) {
+    public Map<String, Integer> importAssignments(Long companyId, Long userId, MultipartFile file) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "SHIFT_VIEW");
         int createdShifts = 0;
         int updatedShifts = 0;
         if (hasSheet(file, "Danh sach ca")) {
@@ -723,7 +797,9 @@ public class ShiftExcelService {
 
         Map<AssignDayKey, List<String>> grouped = groupAssignCells(cells);
         Map<String, com.bosskin.entity.Employee> empMap = employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
-            .stream().collect(Collectors.toMap(com.bosskin.entity.Employee::getEmployeeCode, e -> e, (a, b) -> a));
+            .stream()
+            .filter(e -> scopeIds.isEmpty() || (e.getDepartment() != null && scopeIds.contains(e.getDepartment().getId())))
+            .collect(Collectors.toMap(com.bosskin.entity.Employee::getEmployeeCode, e -> e, (a, b) -> a));
         Map<String, WorkShift> shiftMap = shiftRepo.findByCompanyIdAndActiveTrue(companyId)
             .stream().collect(Collectors.toMap(WorkShift::getCode, s -> s, (a, b) -> a));
 

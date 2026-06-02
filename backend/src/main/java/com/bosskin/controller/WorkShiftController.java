@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/shifts")
@@ -38,16 +40,47 @@ public class WorkShiftController {
     @GetMapping("/export")
     public ResponseEntity<byte[]> export(
             @AuthenticationPrincipal User user,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month) {
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) List<Long> departmentIds) {
         requireShiftView(user);
-        LocalDate now = LocalDate.now();
-        int y = year  != null ? year  : now.getYear();
-        int m = month != null ? month : now.getMonthValue();
-        int cutoffDay = companySettingService.getByCompanyId(user.getCompany().getId())
-            .getPayroll().getPayrollCutoffDay();
-        com.bosskin.core.PayrollPeriod period = com.bosskin.core.PayrollPeriod.of(y, m, cutoffDay);
-        return shiftExcelService.export(user.getCompany().getId(), period.from(), period.to());
+        LocalDate dateFrom, dateTo;
+        if (from != null && to != null) {
+            dateFrom = LocalDate.parse(from);
+            dateTo = LocalDate.parse(to);
+        } else {
+            LocalDate now = LocalDate.now();
+            int y = year != null ? year : now.getYear();
+            int m = month != null ? month : now.getMonthValue();
+            int cutoffDay = companySettingService.getByCompanyId(user.getCompany().getId())
+                .getPayroll().getPayrollCutoffDay();
+            com.bosskin.core.PayrollPeriod period = com.bosskin.core.PayrollPeriod.of(y, m, cutoffDay);
+            dateFrom = period.from();
+            dateTo = period.to();
+        }
+        // Áp dụng scope của user: nếu user không xem được toàn công ty → lọc theo scope
+        Set<Long> userScope = deptScopeService.resolvedScopes(user.getId(), "SHIFT_VIEW");
+        List<Long> effectiveDeptIds;
+        if (userScope.isEmpty()) {
+            // User xem toàn công ty → dùng filter từ frontend (nếu có)
+            effectiveDeptIds = (departmentIds != null && !departmentIds.isEmpty()) ? departmentIds : null;
+        } else {
+            // User chỉ xem scope nhất định → intersect với filter frontend
+            Set<Long> scopeSet = userScope.stream().filter(id -> id != null && id > 0).collect(Collectors.toSet());
+            if (departmentIds != null && !departmentIds.isEmpty()) {
+                scopeSet.retainAll(new java.util.HashSet<>(departmentIds));
+            }
+            effectiveDeptIds = new ArrayList<>(scopeSet);
+        }
+        return shiftExcelService.export(user.getCompany().getId(), dateFrom, dateTo, effectiveDeptIds);
+    }
+
+    @GetMapping("/export-list")
+    public ResponseEntity<byte[]> exportList(@AuthenticationPrincipal User user) {
+        requireShiftView(user);
+        return shiftExcelService.exportShiftListOnly(user.getCompany().getId());
     }
 
     @PostMapping("/preview-import")
@@ -71,7 +104,7 @@ public class WorkShiftController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user) {
         requireShiftManage(user);
-        return ResponseEntity.ok(shiftExcelService.previewAssignments(user.getCompany().getId(), file));
+        return ResponseEntity.ok(shiftExcelService.previewAssignments(user.getCompany().getId(), user.getId(), file));
     }
 
     @PostMapping("/import-assignments")
@@ -79,7 +112,7 @@ public class WorkShiftController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user) {
         requireShiftManage(user);
-        return ResponseEntity.ok(shiftExcelService.importAssignments(user.getCompany().getId(), file));
+        return ResponseEntity.ok(shiftExcelService.importAssignments(user.getCompany().getId(), user.getId(), file));
     }
 
     // ── Shift templates ─────────────────────────────────────────────────
