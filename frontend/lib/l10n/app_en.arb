@@ -771,4 +771,7 @@
   ,"importPreviewNew": "New"
   ,"importPreviewDelete": "Delete"
   ,"importPreviewDeleteWarning": "Impact warning"
+  ,"exportAttendance": "Export Attendance Excel"
+  ,"importAttendance": "Import Attendance Excel"
+  ,"importAttendanceSuccess": "Attendance imported successfully"
 }

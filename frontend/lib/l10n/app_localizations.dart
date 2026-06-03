@@ -4274,6 +4274,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Cảnh báo liên đới'**
   String get importPreviewDeleteWarning;
+
+  /// No description provided for @exportAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất chấm công Excel'**
+  String get exportAttendance;
+
+  /// No description provided for @importAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập chấm công Excel'**
+  String get importAttendance;
+
+  /// No description provided for @importAttendanceSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập chấm công thành công'**
+  String get importAttendanceSuccess;
 }
 
 class _AppLocalizationsDelegate

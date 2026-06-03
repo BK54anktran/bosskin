@@ -165,6 +165,21 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Param("status") Attendance.Status status
     );
 
+    @Query("""
+        SELECT a FROM Attendance a
+        JOIN FETCH a.employee e
+        JOIN FETCH e.department
+        WHERE e.company.id = :companyId
+          AND a.date BETWEEN :from AND :to
+          AND a.deleted = false
+        ORDER BY e.fullName, a.date
+        """)
+    List<Attendance> findByCompanyAndDateRange(
+        @Param("companyId") Long companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to
+    );
+
     @Query(value = """
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e

@@ -2168,4 +2168,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get importPreviewDeleteWarning => 'Cảnh báo liên đới';
+
+  @override
+  String get exportAttendance => 'Xuất chấm công Excel';
+
+  @override
+  String get importAttendance => 'Nhập chấm công Excel';
+
+  @override
+  String get importAttendanceSuccess => 'Nhập chấm công thành công';
 }

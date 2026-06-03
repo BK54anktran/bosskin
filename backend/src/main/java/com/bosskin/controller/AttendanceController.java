@@ -20,9 +20,11 @@ import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.LeaveRequestRepository;
 import com.bosskin.repository.ShiftAssignmentRepository;
 import com.bosskin.service.AttendanceCalculator;
+import com.bosskin.service.AttendanceExcelService;
 import com.bosskin.entity.Department;
 import com.bosskin.entity.EmployeeLocation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import com.bosskin.repository.EmployeeLocationRepository;
 import com.bosskin.service.DeptScopeService;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +67,7 @@ public class AttendanceController {
     private final LeaveRequestRepository leaveRequestV2Repository;
     private final DeptScopeService deptScopeService;
     private final EmployeeLocationRepository employeeLocationRepository;
+    private final AttendanceExcelService attendanceExcelService;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final Set<Integer> ALLOWED_ROUNDING = Set.of(1, 5, 15, 30, 60);
@@ -191,6 +194,56 @@ public class AttendanceController {
             }
         }
 
+        boolean otEnabled = company.isAttendanceOtEnabled();
+        AttendancePolicy policy = resolveAttendancePolicy(employee);
+        List<AttendanceDTO.TimesheetRow> rows = new ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+            rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
+        }
+        return ResponseEntity.ok(rows);
+    }
+
+    @GetMapping("/timesheet-range")
+    public ResponseEntity<List<AttendanceDTO.TimesheetRow>> getTimesheetRange(
+        @AuthenticationPrincipal User user,
+        @RequestParam Long employeeId,
+        @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        var employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
+        if (scopeIds.contains(-1L)) {
+            if (!employeeId.equals(getSelfEmployee(user).getId()))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        } else {
+            requireViewScope(user, employee.getDepartment().getId());
+        }
+        var company = employee.getCompany();
+        LocalTime dayStart, dayEnd;
+        if (company.isAttendanceDayNightMode()) {
+            dayStart = company.getDayStartTime() != null ? company.getDayStartTime() : LocalTime.of(6, 0);
+            dayEnd   = company.getDayEndTime()   != null ? company.getDayEndTime()   : LocalTime.of(22, 0);
+        } else {
+            dayStart = LocalTime.MIDNIGHT;
+            dayEnd   = LocalTime.of(23, 59);
+        }
+        Map<LocalDate, List<Attendance>> attMap = attendanceRepository
+            .findByEmployeeAndDateRange(employeeId, from, to)
+            .stream().collect(Collectors.groupingBy(Attendance::getDate));
+        Map<LocalDate, List<com.bosskin.entity.AttendanceRequest>> requestMap = attendanceRequestRepository
+            .findByEmployeeAndDateRange(employeeId, from, to)
+            .stream().collect(Collectors.groupingBy(com.bosskin.entity.AttendanceRequest::getRequestDate));
+        Map<LocalDate, List<ShiftAssignment>> shiftMap = shiftAssignmentRepository
+            .findByEmployeeAndDateRange(employeeId, from, to)
+            .stream().collect(Collectors.groupingBy(ShiftAssignment::getWorkDate));
+        Map<LocalDate, LeaveRequest> leaveMap = new java.util.HashMap<>();
+        for (LeaveRequest lr : leaveRequestV2Repository.findApprovedByEmployeeAndDateRange(employeeId, from, to)) {
+            for (LocalDate d = lr.getFromDate(); !d.isAfter(lr.getToDate()); d = d.plusDays(1)) {
+                leaveMap.putIfAbsent(d, lr);
+            }
+        }
         boolean otEnabled = company.isAttendanceOtEnabled();
         AttendancePolicy policy = resolveAttendancePolicy(employee);
         List<AttendanceDTO.TimesheetRow> rows = new ArrayList<>();
@@ -1800,7 +1853,7 @@ public class AttendanceController {
 
     private void requirePermission(User user, String perm) {
         if (user == null || !user.hasPermission(perm))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     private void requireViewScope(User user, Long deptId) {
@@ -1886,6 +1939,240 @@ public class AttendanceController {
             }
         }
         // else: không có cấu hình → tự do
+    }
+
+    // ── Excel Export / Import ────────────────────────────────────────────────
+
+    @GetMapping("/export-timesheet")
+    public ResponseEntity<byte[]> exportTimesheetExcel(
+            @AuthenticationPrincipal User user,
+            @RequestParam Long employeeId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate to) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        var employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
+        if (scopeIds.contains(-1L)) {
+            if (!employeeId.equals(getSelfEmployee(user).getId()))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        } else {
+            requireViewScope(user, employee.getDepartment().getId());
+        }
+        var company = employee.getCompany();
+        LocalTime dayStart = company.isAttendanceDayNightMode() && company.getDayStartTime() != null
+            ? company.getDayStartTime() : (company.isAttendanceDayNightMode() ? LocalTime.of(6,0) : LocalTime.MIDNIGHT);
+        LocalTime dayEnd = company.isAttendanceDayNightMode() && company.getDayEndTime() != null
+            ? company.getDayEndTime() : (company.isAttendanceDayNightMode() ? LocalTime.of(22,0) : LocalTime.of(23,59));
+        Map<LocalDate, List<Attendance>> attMap = attendanceRepository
+            .findByEmployeeAndDateRange(employeeId, from, to)
+            .stream().collect(Collectors.groupingBy(Attendance::getDate));
+        Map<LocalDate, List<com.bosskin.entity.AttendanceRequest>> requestMap = attendanceRequestRepository
+            .findByEmployeeAndDateRange(employeeId, from, to)
+            .stream().collect(Collectors.groupingBy(com.bosskin.entity.AttendanceRequest::getRequestDate));
+        Map<LocalDate, List<ShiftAssignment>> shiftMap = shiftAssignmentRepository
+            .findByEmployeeAndDateRange(employeeId, from, to)
+            .stream().collect(Collectors.groupingBy(ShiftAssignment::getWorkDate));
+        Map<LocalDate, LeaveRequest> leaveMap = new java.util.HashMap<>();
+        for (LeaveRequest lr : leaveRequestV2Repository.findApprovedByEmployeeAndDateRange(employeeId, from, to)) {
+            for (LocalDate d = lr.getFromDate(); !d.isAfter(lr.getToDate()); d = d.plusDays(1))
+                leaveMap.putIfAbsent(d, lr);
+        }
+        boolean otEnabled = company.isAttendanceOtEnabled();
+        AttendancePolicy policy = resolveAttendancePolicy(employee);
+        List<AttendanceDTO.TimesheetRow> rows = new ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1))
+            rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
+        return attendanceExcelService.exportTimesheetRange(
+            employee.getFullName(), employee.getEmployeeCode(), from, to, rows,
+            company.isAttendanceDayNightMode(), otEnabled);
+    }
+
+    @GetMapping("/export-day-view")
+    public ResponseEntity<byte[]> exportDayView(
+            @AuthenticationPrincipal User user,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long departmentId) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        Company company = getSelfCompany(user);
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
+        List<Employee> employees = resolveDayViewEmployees(user, company, departmentId, scopeIds);
+        if (employees.isEmpty()) {
+            return attendanceExcelService.exportDayView(date, List.of(),
+                company.isAttendanceDayNightMode(), company.isAttendanceOtEnabled());
+        }
+
+        LocalTime dayStart, dayEnd;
+        if (company.isAttendanceDayNightMode()) {
+            dayStart = company.getDayStartTime() != null ? company.getDayStartTime() : LocalTime.of(6, 0);
+            dayEnd   = company.getDayEndTime()   != null ? company.getDayEndTime()   : LocalTime.of(22, 0);
+        } else {
+            dayStart = LocalTime.MIDNIGHT;
+            dayEnd   = LocalTime.of(23, 59);
+        }
+
+        Map<Long, List<Attendance>> attMap = attendanceRepository.findByCompanyAndDate(company.getId(), date)
+            .stream().collect(Collectors.groupingBy(a -> a.getEmployee().getId()));
+        Map<Long, List<AttendanceRequest>> requestMap = attendanceRequestRepository
+            .findByCompanyAndRequestDate(company.getId(), date)
+            .stream().collect(Collectors.groupingBy(r -> r.getEmployee().getId()));
+        Map<Long, List<ShiftAssignment>> shiftMap = shiftAssignmentRepository
+            .findByCompanyAndDate(company.getId(), date)
+            .stream().collect(Collectors.groupingBy(sa -> sa.getEmployee().getId()));
+        Map<Long, List<LeaveRequest>> leaveMap = leaveRequestV2Repository
+            .findApprovedByCompanyAndDate(company.getId(), date)
+            .stream().collect(Collectors.groupingBy(lr -> lr.getEmployee().getId()));
+
+        boolean otEnabled = company.isAttendanceOtEnabled();
+        List<AttendanceDTO.DayViewRow> rows = employees.stream()
+            .flatMap(employee -> buildDayViewRows(
+                employee, date,
+                attMap.getOrDefault(employee.getId(), List.of()),
+                shiftMap.get(employee.getId()),
+                requestMap.get(employee.getId()),
+                leaveMap.getOrDefault(employee.getId(), List.of()),
+                dayStart, dayEnd, otEnabled,
+                resolveAttendancePolicy(employee)
+            ).stream())
+            .toList();
+
+        return attendanceExcelService.exportDayView(date, rows,
+            company.isAttendanceDayNightMode(), otEnabled);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportExcel(
+            @AuthenticationPrincipal User user,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate to,
+            @RequestParam(required = false) List<Long> departmentIds) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        return attendanceExcelService.exportAttendance(
+            user.getCompany().getId(), user.getId(), from, to, departmentIds);
+    }
+
+    @PostMapping("/preview-import")
+    public ResponseEntity<List<AttendanceExcelService.AttendanceDiff>> previewImport(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        return ResponseEntity.ok(
+            attendanceExcelService.previewImport(user.getCompany().getId(), user.getId(), file));
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<Map<String, Integer>> importExcel(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requirePermission(user, "ATTENDANCE_MANAGE");
+        return ResponseEntity.ok(
+            attendanceExcelService.importAttendance(user.getCompany().getId(), user.getId(), file));
+    }
+
+    @PostMapping("/preview-import-timesheet")
+    public ResponseEntity<List<AttendanceExcelService.AttendanceDiff>> previewImportTimesheet(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        return ResponseEntity.ok(
+            attendanceExcelService.previewImportTimesheet(user.getCompany().getId(), user.getId(), file));
+    }
+
+    @PostMapping("/import-timesheet")
+    @Transactional
+    public ResponseEntity<Map<String, Integer>> importTimesheet(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        requirePermission(user, "ATTENDANCE_MANAGE");
+        Map<String, Integer> result = new java.util.HashMap<>(
+            attendanceExcelService.importTimesheet(user.getCompany().getId(), user.getId(), file));
+
+        // Xử lý approve/unapprove cho các row có trạng thái duyệt thay đổi
+        List<AttendanceExcelService.ApproveTask> approveTasks = attendanceExcelService.getLastImportApproveTasks();
+        int approved = 0;
+        for (AttendanceExcelService.ApproveTask task : approveTasks) {
+            try {
+                Attendance att = attendanceRepository.findById(task.attendanceId()).orElse(null);
+                if (att == null) continue;
+                if (task.approve()) {
+                    doApprove(att, user);
+                } else {
+                    att.setApproved(false);
+                    att.setApprovedAt(null); att.setApprovedBy(null);
+                    att.setSnapActualHours(null); att.setSnapDayHours(null);
+                    att.setSnapDayOt(null); att.setSnapNightHours(null);
+                    att.setSnapNightOt(null); att.setWorkFlags(null);
+                    attendanceRepository.save(att);
+                }
+                approved++;
+            } catch (Exception ignored) {}
+        }
+        if (approved > 0) result.put("approved", approved);
+        return ResponseEntity.ok(result);
+    }
+
+    private void doApprove(Attendance att, User user) {
+        Long employeeId = att.getEmployee().getId();
+        LocalDate date  = att.getDate();
+        ShiftAssignment sa = att.getShiftAssignment();
+        Company company = getSelfCompany(user);
+        LocalTime dayStart = company.isAttendanceDayNightMode() && company.getDayStartTime() != null
+            ? company.getDayStartTime() : (company.isAttendanceDayNightMode() ? LocalTime.of(6,0) : LocalTime.MIDNIGHT);
+        LocalTime dayEnd = company.isAttendanceDayNightMode() && company.getDayEndTime() != null
+            ? company.getDayEndTime() : (company.isAttendanceDayNightMode() ? LocalTime.of(22,0) : LocalTime.of(23,59));
+
+        List<ShiftAssignment> allAssignments = shiftAssignmentRepository
+            .findByEmployeeIdAndWorkDateWithShift(employeeId, date)
+            .stream().sorted(this::compareAssignments).toList();
+        int slotIdx = sa != null ? allAssignments.indexOf(sa) : 0;
+        if (slotIdx < 0) slotIdx = 0;
+
+        List<AttendanceRequest> requests = attendanceRequestRepository.findByEmployeeAndDateRange(employeeId, date, date);
+        List<LeaveRequest> allLeaves = leaveRequestV2Repository.findApprovedByEmployeeAndDateRange(employeeId, date, date);
+        LeaveRequest slotLeave = resolveLeaveForSlotFromList(allLeaves, sa, Math.max(1, allAssignments.size()), slotIdx);
+        LocalTime leaveFrom = slotLeave != null && slotLeave.isApplied() && slotLeave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? slotLeave.getFromTime() : null;
+        LocalTime leaveTo   = slotLeave != null && slotLeave.isApplied() && slotLeave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? slotLeave.getToTime()   : null;
+
+        boolean otEnabled = company.isAttendanceOtEnabled();
+        AttendancePolicy policy = resolveAttendancePolicy(att.getEmployee());
+        AttendanceRowData data = computeRowData(att, sa, slotIdx, requests, leaveFrom, leaveTo, dayStart, dayEnd, otEnabled, policy);
+        var snap = computeHours(att, data, policy, dayStart, dayEnd, false);
+
+        att.setApproved(true);
+        att.setApprovedAt(LocalDateTime.now());
+        att.setApprovedBy(user);
+        att.setSnapActualHours(snap.actualHours());
+        att.setSnapDayHours(snap.regularDayHours());
+        att.setSnapDayOt(snap.otDayHours());
+        att.setSnapNightHours(snap.regularNightHours());
+        att.setSnapNightOt(snap.otNightHours());
+
+        var workFlags = WorkFlagCalculator.calculate(
+            data.shiftStart(), data.shiftEnd(),
+            data.flagCheckIn(), data.flagCheckOut(),
+            data.otDayHours(), data.otNightHours(),
+            slotLeave != null,
+            policy.checkInToleranceMinutes(), policy.checkOutToleranceMinutes()
+        );
+        att.setWorkFlags(WorkFlagCalculator.serialize(workFlags));
+        attendanceRepository.save(att);
+
+        attendanceApproveLeaveRepository.deleteByAttendanceId(att.getId());
+        if (slotLeave != null) {
+            double leaveHours;
+            if (slotLeave.getMode() == LeaveRequest.Mode.HOUR_RANGE && slotLeave.getFromTime() != null && slotLeave.getToTime() != null) {
+                int f = slotLeave.getFromTime().toSecondOfDay() / 60, t = slotLeave.getToTime().toSecondOfDay() / 60;
+                if (t <= f) t += 1440;
+                leaveHours = (t - f) / 60.0;
+            } else {
+                leaveHours = slotLeave.getRequestedAmount() != null
+                    ? slotLeave.getRequestedAmount().doubleValue() * company.getLeaveHoursPerDay().doubleValue() : 0;
+            }
+            attendanceApproveLeaveRepository.save(AttendanceApproveLeave.builder()
+                .attendance(att).leaveRequest(slotLeave)
+                .leaveTypeName(slotLeave.getLeaveType().getName())
+                .paid(slotLeave.getLeaveType().isPaid()).leaveHours(leaveHours).build());
+        }
     }
 
     /** Haversine formula — trả về khoảng cách mét giữa 2 điểm GPS. */

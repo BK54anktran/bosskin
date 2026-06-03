@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
+
 import '../models/attendance.dart';
 export '../models/attendance.dart' show DayViewRow, TimesheetRow;
 import '../services/api_service.dart';
@@ -56,6 +60,20 @@ class AttendanceRepository {
           .map((e) => TimesheetRow.fromJson(e as Map<String, dynamic>))
           .toList(),
       queryParams: {'employeeId': employeeId, 'year': year, 'month': month},
+    );
+  }
+
+  Future<List<TimesheetRow>> getTimesheetRange({
+    required int employeeId,
+    required String from,
+    required String to,
+  }) async {
+    return _api.get(
+      '/attendances/timesheet-range',
+      (data) => (data as List)
+          .map((e) => TimesheetRow.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      queryParams: {'employeeId': employeeId, 'from': from, 'to': to},
     );
   }
 
@@ -274,5 +292,100 @@ class AttendanceRepository {
       'overrideOtNightMinutes': otNightMinutes,
       'overrideNote': note,
     });
+  }
+
+  Future<({Uint8List bytes, String filename})> exportTimesheetExcel({
+    required int employeeId,
+    required String from,
+    required String to,
+  }) async {
+    final res = await _api.dio.get<List<int>>(
+      '/attendances/export-timesheet',
+      queryParameters: {'employeeId': employeeId, 'from': from, 'to': to},
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final disposition = res.headers.value('content-disposition') ?? '';
+    final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+    final filename = match?.group(1) ?? 'cham_cong_$from-$to.xlsx';
+    return (bytes: Uint8List.fromList(res.data ?? const <int>[]), filename: filename);
+  }
+
+  Future<({Uint8List bytes, String filename})> exportDayView({
+    required String date,
+    int? departmentId,
+  }) async {
+    final res = await _api.dio.get<List<int>>(
+      '/attendances/export-day-view',
+      queryParameters: {
+        'date': date,
+        if (departmentId != null) 'departmentId': departmentId,
+      },
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final disposition = res.headers.value('content-disposition') ?? '';
+    final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+    final filename = match?.group(1) ?? 'cham_cong_ngay_$date.xlsx';
+    return (bytes: Uint8List.fromList(res.data ?? const <int>[]), filename: filename);
+  }
+
+  Future<({Uint8List bytes, String filename})> exportExcel({
+    required String from,
+    required String to,
+    List<int>? departmentIds,
+  }) async {
+    final params = <String, dynamic>{
+      'from': from,
+      'to': to,
+      if (departmentIds != null && departmentIds.isNotEmpty)
+        'departmentIds': departmentIds,
+    };
+    final res = await _api.dio.get<List<int>>(
+      '/attendances/export',
+      queryParameters: params,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final disposition = res.headers.value('content-disposition') ?? '';
+    final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+    final filename = match?.group(1) ?? 'cham_cong_$from-$to.xlsx';
+    return (
+      bytes: Uint8List.fromList(res.data ?? const <int>[]),
+      filename: filename,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> previewImport(
+      Uint8List bytes, String filename) async {
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final res = await _api.dio.post('/attendances/preview-import', data: form);
+    return (res.data as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> importAttendance(
+      Uint8List bytes, String filename) async {
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final res = await _api.dio.post('/attendances/import', data: form);
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> previewImportTimesheet(
+      Uint8List bytes, String filename) async {
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final res = await _api.dio.post('/attendances/preview-import-timesheet', data: form);
+    return (res.data as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> importTimesheet(
+      Uint8List bytes, String filename) async {
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final res = await _api.dio.post('/attendances/import-timesheet', data: form);
+    return res.data as Map<String, dynamic>;
   }
 }

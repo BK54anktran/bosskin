@@ -2168,4 +2168,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importPreviewDeleteWarning => 'Impact warning';
+
+  @override
+  String get exportAttendance => 'Export Attendance Excel';
+
+  @override
+  String get importAttendance => 'Import Attendance Excel';
+
+  @override
+  String get importAttendanceSuccess => 'Attendance imported successfully';
 }

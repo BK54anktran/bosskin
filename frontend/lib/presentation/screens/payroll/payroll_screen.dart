@@ -306,11 +306,12 @@ class _PayrollScreenState extends State<PayrollScreen> {
     }
   }
 
-  void _openPayslip(Payroll p) {
-    showDialog(
+  void _openPayslip(Payroll p) async {
+    final reloaded = await showDialog<bool>(
       context: context,
       builder: (_) => _PayslipDialog(payroll: p),
     );
+    if (reloaded == true && mounted) _load();
   }
 
   List<Payroll> get _filtered {
@@ -748,9 +749,12 @@ class _PayrollCard extends StatelessWidget {
               if (p.presentDays != null) ...[
                 const SizedBox(height: 6),
                 Text(
-                  '${s.presentDays}: ${p.presentDays}/${p.standardWorkDays ?? 22}   ${s.overtimeHours}: ${(p.totalOvertimeHours ?? 0).toStringAsFixed(1)}h',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppTheme.textSecondary),
+                  '${s.presentDays}: ${p.presentDays}/${p.standardWorkDays ?? 22}'
+                  '   ${s.dayShiftHours}: ${(p.dayHours ?? 0).toStringAsFixed(1)}h'
+                  '   ${s.nightShiftHours}: ${(p.nightHours ?? 0).toStringAsFixed(1)}h'
+                  '   ${s.otDayShift}: ${(p.dayOt ?? 0).toStringAsFixed(1)}h'
+                  '   ${s.otNightShift}: ${(p.nightOt ?? 0).toStringAsFixed(1)}h',
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                 ),
               ],
               const SizedBox(height: 10),
@@ -906,9 +910,9 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
             ...widget.formulas.map((f) {
               final isDefault = f == widget.initial;
               final effectiveDate = f.effectiveDate.toString().substring(0, 10);
-              return RadioListTile<bool>(
-                value: false,
-                groupValue: _customSelected,
+              return RadioListTile<SalaryFormula?>(
+                value: f,
+                groupValue: _customSelected ? null : _selected,
                 onChanged: (v) => setState(() {
                   _customSelected = false;
                   _selected = f;
@@ -1426,7 +1430,66 @@ class _PayslipDialog extends StatefulWidget {
 
 class _PayslipDialogState extends State<_PayslipDialog> {
   final _repo = PayrollRepository();
+  final _formulaRepo = SalaryFormulaRepository();
   bool _exporting = false;
+  bool _recalculating = false;
+
+  Future<void> _recalculate() async {
+    final s = AppLocalizations.of(context)!;
+    final p = widget.payroll;
+    int? formulaId;
+    CustomFormulaSnapshot? customFormula;
+
+    if (p.salaryGradeId != null) {
+      List<SalaryFormula> formulas = [];
+      try { formulas = await _formulaRepo.getAll(gradeId: p.salaryGradeId); } catch (_) {}
+      if (!mounted) return;
+
+      final hasCustom = p.customFormula != null;
+      if (formulas.length > 1 || hasCustom) {
+        final cutoff = DateTime(p.year, p.month, 1);
+        final eligible = formulas
+            .where((f) => !f.effectiveDate.isAfter(cutoff))
+            .toList()
+          ..sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
+        final defaultFormula = eligible.isNotEmpty ? eligible.first : (formulas.isNotEmpty ? formulas.first : null);
+
+        final result = await showDialog<_FormulaPickResult>(
+          context: context,
+          builder: (ctx) => _PickFormulaDialog(
+            formulas: formulas,
+            initial: defaultFormula,
+            customFormula: p.customFormula,
+            year: p.year,
+            month: p.month,
+          ),
+        );
+        if (!mounted) return;
+        if (result == null) return;
+        if (result.isCustom) customFormula = p.customFormula;
+        else formulaId = result.formula?.id;
+      }
+    }
+
+    setState(() => _recalculating = true);
+    try {
+      if (customFormula != null) {
+        await _repo.updateDraft(p.id, customFormula: customFormula);
+      } else {
+        await _repo.recalculate(p.id, formulaId: formulaId);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(s.payrollRecalculateDone)));
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+    } finally {
+      if (mounted) setState(() => _recalculating = false);
+    }
+  }
 
   Future<void> _exportThis() async {
     final s = AppLocalizations.of(context)!;
@@ -1558,26 +1621,40 @@ class _PayslipDialogState extends State<_PayslipDialog> {
               Center(child: _StatusChip(p.status)),
               const SizedBox(height: 16),
               // Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
+                  if (p.status == PayrollStatus.draft)
+                    OutlinedButton.icon(
+                      onPressed: _recalculating ? null : _recalculate,
+                      icon: _recalculating
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.refresh, size: 16),
+                      label: Text(s.payrollRecalculateTooltip),
+                      style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          textStyle: const TextStyle(fontSize: 12)),
+                    ),
                   OutlinedButton.icon(
                     onPressed: _exporting ? null : _exportThis,
                     icon: _exporting
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.download_outlined, size: 16),
                     label: Text(s.exportPayslips),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(s.close),
+                    style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12)),
                   ),
                 ],
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(s.close),
+                ),
               ),
             ],
           ),

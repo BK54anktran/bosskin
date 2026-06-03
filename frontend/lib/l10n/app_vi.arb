@@ -774,4 +774,7 @@
   ,"importPreviewNew": "Mới"
   ,"importPreviewDelete": "Xóa"
   ,"importPreviewDeleteWarning": "Cảnh báo liên đới"
+  ,"exportAttendance": "Xuất chấm công Excel"
+  ,"importAttendance": "Nhập chấm công Excel"
+  ,"importAttendanceSuccess": "Nhập chấm công thành công"
 }
