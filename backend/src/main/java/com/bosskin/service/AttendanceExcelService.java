@@ -1221,11 +1221,28 @@ public class AttendanceExcelService {
                     }
                     created++;
                 } else {
+                    boolean wasApproved = att.isApproved();
+                    // Nếu đã approve → unapprove trước khi update để recalculate đúng
+                    if (wasApproved) {
+                        att.setApproved(false);
+                        att.setApprovedAt(null); att.setApprovedBy(null);
+                        att.setSnapActualHours(null); att.setSnapDayHours(null);
+                        att.setSnapDayOt(null); att.setSnapNightHours(null);
+                        att.setSnapNightOt(null); att.setWorkFlags(null);
+                    }
                     applyTimesheetRowToExisting(att, row);
+                    // Cập nhật status nếu chưa approve
+                    if (!wasApproved && row.checkIn != null && !row.checkIn.isBlank()
+                            && att.getStatus() == Attendance.Status.ABSENT) {
+                        att.setStatus(Attendance.Status.PRESENT);
+                    }
                     Attendance saved = attendanceRepo.save(att);
-                    // Xử lý approve/unapprove qua controller để tính đúng snapshot
-                    if (row.approved != null && row.approved != saved.isApproved()) {
-                        approveTasks.add(new ApproveTask(saved.getId(), row.approved));
+                    // Approve lại nếu trước đó đã approve, hoặc theo cột Trạng thái duyệt
+                    boolean shouldApprove = row.approved != null ? row.approved : wasApproved;
+                    if (shouldApprove) {
+                        approveTasks.add(new ApproveTask(saved.getId(), true));
+                    } else if (row.approved != null && !row.approved) {
+                        // Explicit false → giữ unapproved
                     }
                     updated++;
                 }

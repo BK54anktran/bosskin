@@ -370,9 +370,13 @@ public class PayrollService {
             .count();
         long absentDays = attendances.stream()
             .filter(a -> a.getStatus() == Attendance.Status.ABSENT)
+            .map(Attendance::getDate)
+            .distinct()
             .count();
         long leaveDays = attendances.stream()
             .filter(a -> a.getStatus() == Attendance.Status.LEAVE)
+            .map(Attendance::getDate)
+            .distinct()
             .count();
 
         // ── Work flags (đếm theo ngày duy nhất, lấy từ workFlags snapshot) ──

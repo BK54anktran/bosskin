@@ -1065,11 +1065,15 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     // Check-in
     cells.add(_inlineCellT(dateKey: dateKey, col: 'checkIn',
         displayVal: row.checkIn ?? attEmpty, overrideVal: row.overrideCheckIn,
-        width: cw[idx++], bg: bg, rounded: row.checkInRounded, roundedRawVal: row.checkInRaw));
+        width: cw[idx++], bg: bg,
+        rounded: row.overrideCheckIn == null && row.checkInRounded,
+        roundedRawVal: row.checkInRaw));
     // Check-out
     cells.add(_inlineCellT(dateKey: dateKey, col: 'checkOut',
         displayVal: row.checkOut ?? attEmpty, overrideVal: row.overrideCheckOut,
-        width: cw[idx++], bg: bg, rounded: row.checkOutRounded, roundedRawVal: row.checkOutRaw));
+        width: cw[idx++], bg: bg,
+        rounded: row.overrideCheckOut == null && row.checkOutRounded,
+        roundedRawVal: row.checkOutRaw));
     // CI request
     cells.add(_requestCell(attFormatRequestTimeOrDuration(checkInRequest), checkInRequest?.status,
         width: cw[idx++], bg: bg,
