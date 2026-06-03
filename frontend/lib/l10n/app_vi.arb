@@ -590,6 +590,7 @@
   ,"standardWorkDaysLabel": "Số ngày công tiêu chuẩn / tháng"
   ,"payrollCutoffDayLabel": "Ngày chốt lương (bắt đầu kỳ)"
   ,"daysSuffix": "ngày"
+  ,"hourSuffix": "giờ"
   ,"companySettings": "Cài đặt công ty"
   ,"companySettingAttendanceTitle": "Thiết lập chấm công"
   ,"companySettingDayNightMode": "Phân biệt ngày/đêm"
@@ -617,6 +618,43 @@
   ,"payrollList": "Danh sách bảng lương"
   ,"payrollGenerate": "Tạo phiếu lương"
   ,"payrollGenerateBtn": "Tạo phiếu lương"
+  ,"exportPayroll": "Xuất lương Excel"
+  ,"exportPayrollSuccess": "Xuất bảng lương thành công"
+  ,"exportPayslips": "Xuất phiếu lương"
+  ,"exportPayslipsSelected": "Xuất phiếu lương ({count})"
+  ,"@exportPayslipsSelected": {"placeholders": {"count": {"type": "int"}}}
+  ,"exportPayslipsSuccess": "Xuất phiếu lương thành công"
+  ,"monthLabel": "Tháng {month}"
+  ,"@monthLabel": {
+    "placeholders": {
+      "month": {"type": "int"}
+    }
+  }
+  ,"searchEmployeeHint": "Tìm nhân viên để thêm..."
+  ,"incomeSection": "Thu nhập"
+  ,"allowanceSection": "Trợ cấp"
+  ,"deductionSection": "Khấu trừ"
+  ,"payrollDeleteConfirm": "Xóa bảng lương tháng {month}/{year} của \"{employee}\"?"
+  ,"@payrollDeleteConfirm": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "year": {"type": "int"},
+      "employee": {"type": "String"}
+    }
+  }
+  ,"payrollDeleteAction": "Xóa"
+  ,"payrollRecalculateDone": "Đã tính lại bảng lương"
+  ,"payrollRecalculateTooltip": "Tính lại theo công thức"
+  ,"payrollPickFormulaTitle": "Chọn công thức tính lương"
+  ,"payrollPickFormulaCustomSubtitle": "Công thức đã chỉnh sửa · chỉ áp dụng cho bảng lương này"
+  ,"payrollPickFormulaDateSubtitle": "Hiệu lực: {date}"
+  ,"@payrollPickFormulaDateSubtitle": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
+  ,"payrollPickFormulaRecentNote": "Gần nhất với tháng được chọn"
+  ,"payrollRecalculateAction": "Tính lại"
   ,"payslip": "Phiếu lương"
   ,"payrollStatusDraft": "Nháp"
   ,"payrollStatusApproved": "Đã duyệt"

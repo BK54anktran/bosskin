@@ -17,7 +17,8 @@ class PermissionGuard extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
     if (user == null) return fallback ?? const SizedBox.shrink();
-    if (user.isSystemAdmin || user.can(permission)) return child;
+    final normalized = permission.trim().toUpperCase().replaceAll('.', '_');
+    if (user.isSystemAdmin || user.can(normalized)) return child;
     return fallback ?? const SizedBox.shrink();
   }
 }

@@ -6,6 +6,7 @@ import com.bosskin.entity.User;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.PayrollRepository;
 import com.bosskin.service.DeptScopeService;
+import com.bosskin.service.PayrollExcelService;
 import com.bosskin.service.PayrollService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,11 +25,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/payrolls")
+@RequestMapping({"/api/v1/payrolls", "/api/v1/payroll"})
 @RequiredArgsConstructor
 public class PayrollController {
 
     private final PayrollService     payrollService;
+    private final PayrollExcelService payrollExcelService;
     private final PayrollRepository  payrollRepository;
     private final EmployeeRepository employeeRepository;
     private final DeptScopeService   deptScopeService;
@@ -70,6 +72,19 @@ public class PayrollController {
             payrolls = payrollRepository.findByMonthWithFilters(year, month, departmentId, status, pageable);
         }
         return ResponseEntity.ok(payrolls.map(PayrollDTO.Response::from));
+    }
+
+    @GetMapping("/export-payslips")
+    public ResponseEntity<byte[]> exportPayslips(
+        @AuthenticationPrincipal User user,
+        @RequestParam int year,
+        @RequestParam int month,
+        @RequestParam(required = false) List<Long> ids
+    ) {
+        requirePermission(user, "PAYROLL_VIEW");
+        return payrollExcelService.exportPayslips(
+            user.getCompany().getId(), user.getId(), year, month, ids
+        );
     }
 
     @PostMapping("/generate")
@@ -184,9 +199,14 @@ public class PayrollController {
     }
 
     private void requirePermission(User user, String perm) {
-        if (!user.hasPermission(perm)) {
+        if (user == null || !user.hasPermission(normalizePermissionCode(perm))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
+    }
+
+    private String normalizePermissionCode(String perm) {
+        if (perm == null) return null;
+        return perm.trim().toUpperCase().replace('.', '_');
     }
 
     private void requireViewScope(User user, Long deptId) {

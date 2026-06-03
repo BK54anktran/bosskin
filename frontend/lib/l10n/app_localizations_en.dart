@@ -1659,6 +1659,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get daysSuffix => 'days';
 
   @override
+  String get hourSuffix => 'hours';
+
+  @override
   String get companySettings => 'Company settings';
 
   @override
@@ -1736,6 +1739,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get payrollGenerateBtn => 'Generate payroll';
+
+  @override
+  String get exportPayroll => 'Export Payroll Excel';
+
+  @override
+  String get exportPayrollSuccess => 'Payroll exported successfully';
+
+  @override
+  String get exportPayslips => 'Export Payslips';
+
+  @override
+  String exportPayslipsSelected(int count) {
+    return 'Export payslips ($count)';
+  }
+
+  @override
+  String get exportPayslipsSuccess => 'Payslips exported successfully';
+
+  @override
+  String monthLabel(int month) {
+    return 'Month $month';
+  }
+
+  @override
+  String get searchEmployeeHint => 'Search employees to add...';
+
+  @override
+  String get incomeSection => 'Income';
+
+  @override
+  String get allowanceSection => 'Allowance';
+
+  @override
+  String get deductionSection => 'Deductions';
+
+  @override
+  String payrollDeleteConfirm(int month, int year, String employee) {
+    return 'Delete payroll for $month/$year for \"$employee\"?';
+  }
+
+  @override
+  String get payrollDeleteAction => 'Delete';
+
+  @override
+  String get payrollRecalculateDone => 'Payroll recalculated';
+
+  @override
+  String get payrollRecalculateTooltip => 'Recalculate using formula';
+
+  @override
+  String get payrollPickFormulaTitle => 'Choose payroll formula';
+
+  @override
+  String get payrollPickFormulaCustomSubtitle =>
+      'Edited formula · applies only to this payroll';
+
+  @override
+  String payrollPickFormulaDateSubtitle(String date) {
+    return 'Effective: $date';
+  }
+
+  @override
+  String get payrollPickFormulaRecentNote => 'Closest to the selected month';
+
+  @override
+  String get payrollRecalculateAction => 'Recalculate';
 
   @override
   String get payslip => 'Payslip';

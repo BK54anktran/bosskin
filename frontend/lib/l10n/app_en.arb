@@ -587,6 +587,7 @@
   ,"standardWorkDaysLabel": "Standard work days / month"
   ,"payrollCutoffDayLabel": "Payroll cutoff day (period start)"
   ,"daysSuffix": "days"
+  ,"hourSuffix": "hours"
   ,"companySettings": "Company settings"
   ,"companySettingAttendanceTitle": "Attendance settings"
   ,"companySettingDayNightMode": "Enable day/night mode"
@@ -614,6 +615,43 @@
   ,"payrollList": "Payroll list"
   ,"payrollGenerate": "Generate payroll"
   ,"payrollGenerateBtn": "Generate payroll"
+  ,"exportPayroll": "Export Payroll Excel"
+  ,"exportPayrollSuccess": "Payroll exported successfully"
+  ,"exportPayslips": "Export Payslips"
+  ,"exportPayslipsSelected": "Export payslips ({count})"
+  ,"@exportPayslipsSelected": {"placeholders": {"count": {"type": "int"}}}
+  ,"exportPayslipsSuccess": "Payslips exported successfully"
+  ,"monthLabel": "Month {month}"
+  ,"@monthLabel": {
+    "placeholders": {
+      "month": {"type": "int"}
+    }
+  }
+  ,"searchEmployeeHint": "Search employees to add..."
+  ,"incomeSection": "Income"
+  ,"allowanceSection": "Allowance"
+  ,"deductionSection": "Deductions"
+  ,"payrollDeleteConfirm": "Delete payroll for {month}/{year} for \"{employee}\"?"
+  ,"@payrollDeleteConfirm": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "year": {"type": "int"},
+      "employee": {"type": "String"}
+    }
+  }
+  ,"payrollDeleteAction": "Delete"
+  ,"payrollRecalculateDone": "Payroll recalculated"
+  ,"payrollRecalculateTooltip": "Recalculate using formula"
+  ,"payrollPickFormulaTitle": "Choose payroll formula"
+  ,"payrollPickFormulaCustomSubtitle": "Edited formula · applies only to this payroll"
+  ,"payrollPickFormulaDateSubtitle": "Effective: {date}"
+  ,"@payrollPickFormulaDateSubtitle": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
+  ,"payrollPickFormulaRecentNote": "Closest to the selected month"
+  ,"payrollRecalculateAction": "Recalculate"
   ,"payslip": "Payslip"
   ,"payrollStatusDraft": "Draft"
   ,"payrollStatusApproved": "Approved"

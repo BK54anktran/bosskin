@@ -3291,6 +3291,12 @@ abstract class AppLocalizations {
   /// **'ngày'**
   String get daysSuffix;
 
+  /// No description provided for @hourSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **'giờ'**
+  String get hourSuffix;
+
   /// No description provided for @companySettings.
   ///
   /// In vi, this message translates to:
@@ -3440,6 +3446,120 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tạo phiếu lương'**
   String get payrollGenerateBtn;
+
+  /// No description provided for @exportPayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất lương Excel'**
+  String get exportPayroll;
+
+  /// No description provided for @exportPayrollSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất bảng lương thành công'**
+  String get exportPayrollSuccess;
+
+  /// No description provided for @exportPayslips.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất phiếu lương'**
+  String get exportPayslips;
+
+  /// No description provided for @exportPayslipsSelected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất phiếu lương ({count})'**
+  String exportPayslipsSelected(int count);
+
+  /// No description provided for @exportPayslipsSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất phiếu lương thành công'**
+  String get exportPayslipsSuccess;
+
+  /// No description provided for @monthLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng {month}'**
+  String monthLabel(int month);
+
+  /// No description provided for @searchEmployeeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm nhân viên để thêm...'**
+  String get searchEmployeeHint;
+
+  /// No description provided for @incomeSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu nhập'**
+  String get incomeSection;
+
+  /// No description provided for @allowanceSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trợ cấp'**
+  String get allowanceSection;
+
+  /// No description provided for @deductionSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khấu trừ'**
+  String get deductionSection;
+
+  /// No description provided for @payrollDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa bảng lương tháng {month}/{year} của \"{employee}\"?'**
+  String payrollDeleteConfirm(int month, int year, String employee);
+
+  /// No description provided for @payrollDeleteAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get payrollDeleteAction;
+
+  /// No description provided for @payrollRecalculateDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tính lại bảng lương'**
+  String get payrollRecalculateDone;
+
+  /// No description provided for @payrollRecalculateTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính lại theo công thức'**
+  String get payrollRecalculateTooltip;
+
+  /// No description provided for @payrollPickFormulaTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn công thức tính lương'**
+  String get payrollPickFormulaTitle;
+
+  /// No description provided for @payrollPickFormulaCustomSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công thức đã chỉnh sửa · chỉ áp dụng cho bảng lương này'**
+  String get payrollPickFormulaCustomSubtitle;
+
+  /// No description provided for @payrollPickFormulaDateSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu lực: {date}'**
+  String payrollPickFormulaDateSubtitle(String date);
+
+  /// No description provided for @payrollPickFormulaRecentNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gần nhất với tháng được chọn'**
+  String get payrollPickFormulaRecentNote;
+
+  /// No description provided for @payrollRecalculateAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính lại'**
+  String get payrollRecalculateAction;
 
   /// No description provided for @payslip.
   ///

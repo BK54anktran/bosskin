@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,8 +19,12 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
     Optional<Payroll> findByEmployeeIdAndYearAndMonth(Long employeeId, int year, int month);
 
     @Query("""
-        SELECT p FROM Payroll p
+        SELECT DISTINCT p FROM Payroll p
         JOIN FETCH p.employee e
+        LEFT JOIN FETCH e.company c
+        LEFT JOIN FETCH e.department d
+        LEFT JOIN FETCH e.position pos
+        LEFT JOIN FETCH e.salaryGrade sg
         WHERE p.year = :year AND p.month = :month
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
           AND (:status IS NULL OR p.status = :status)
@@ -33,8 +38,12 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
     );
 
     @Query("""
-        SELECT p FROM Payroll p
+        SELECT DISTINCT p FROM Payroll p
         JOIN FETCH p.employee e
+        LEFT JOIN FETCH e.company c
+        LEFT JOIN FETCH e.department d
+        LEFT JOIN FETCH e.position pos
+        LEFT JOIN FETCH e.salaryGrade sg
         WHERE p.year = :year AND p.month = :month
           AND e.department.id IN :deptIds
           AND (:status IS NULL OR p.status = :status)
@@ -47,11 +56,65 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         Pageable pageable
     );
 
+    @Query("""
+        SELECT p FROM Payroll p
+        JOIN FETCH p.employee e
+        LEFT JOIN FETCH e.department d
+        LEFT JOIN FETCH e.position pos
+        LEFT JOIN FETCH e.salaryGrade sg
+        WHERE p.id IN :ids
+          AND e.company.id = :companyId
+        ORDER BY e.employeeCode ASC, e.fullName ASC
+        """)
+    List<Payroll> findPayslipsByIds(
+        @Param("ids") Collection<Long> ids,
+        @Param("companyId") Long companyId
+    );
+
+    @Query("""
+        SELECT p FROM Payroll p
+        JOIN FETCH p.employee e
+        LEFT JOIN FETCH e.department d
+        LEFT JOIN FETCH e.position pos
+        LEFT JOIN FETCH e.salaryGrade sg
+        WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
+        ORDER BY e.employeeCode ASC, e.fullName ASC
+        """)
+    List<Payroll> findExportByMonth(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("month") int month
+    );
+
+    @Query("""
+        SELECT p FROM Payroll p
+        JOIN FETCH p.employee e
+        LEFT JOIN FETCH e.department d
+        LEFT JOIN FETCH e.position pos
+        LEFT JOIN FETCH e.salaryGrade sg
+        WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
+          AND d.id IN :deptIds
+        ORDER BY d.name ASC, e.employeeCode ASC, e.fullName ASC
+        """)
+    List<Payroll> findExportByMonthAndDeptScope(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("month") int month,
+        @Param("deptIds") Collection<Long> deptIds
+    );
+
     @Query("SELECT SUM(p.netSalary) FROM Payroll p WHERE p.year = :year AND p.month = :month AND p.status = 'PAID'")
     BigDecimal sumNetSalaryByMonth(@Param("year") int year, @Param("month") int month);
 
     @Query("""
-        SELECT p FROM Payroll p JOIN FETCH p.employee e
+        SELECT DISTINCT p FROM Payroll p
+        JOIN FETCH p.employee e
+        LEFT JOIN FETCH e.company c
+        LEFT JOIN FETCH e.department d
+        LEFT JOIN FETCH e.position pos
+        LEFT JOIN FETCH e.salaryGrade sg
         WHERE e.id = :employeeId
           AND (:year IS NULL OR p.year = :year)
         ORDER BY p.year DESC, p.month DESC

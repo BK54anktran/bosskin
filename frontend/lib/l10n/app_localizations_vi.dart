@@ -1658,6 +1658,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get daysSuffix => 'ngày';
 
   @override
+  String get hourSuffix => 'giờ';
+
+  @override
   String get companySettings => 'Cài đặt công ty';
 
   @override
@@ -1736,6 +1739,72 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get payrollGenerateBtn => 'Tạo phiếu lương';
+
+  @override
+  String get exportPayroll => 'Xuất lương Excel';
+
+  @override
+  String get exportPayrollSuccess => 'Xuất bảng lương thành công';
+
+  @override
+  String get exportPayslips => 'Xuất phiếu lương';
+
+  @override
+  String exportPayslipsSelected(int count) {
+    return 'Xuất phiếu lương ($count)';
+  }
+
+  @override
+  String get exportPayslipsSuccess => 'Xuất phiếu lương thành công';
+
+  @override
+  String monthLabel(int month) {
+    return 'Tháng $month';
+  }
+
+  @override
+  String get searchEmployeeHint => 'Tìm nhân viên để thêm...';
+
+  @override
+  String get incomeSection => 'Thu nhập';
+
+  @override
+  String get allowanceSection => 'Trợ cấp';
+
+  @override
+  String get deductionSection => 'Khấu trừ';
+
+  @override
+  String payrollDeleteConfirm(int month, int year, String employee) {
+    return 'Xóa bảng lương tháng $month/$year của \"$employee\"?';
+  }
+
+  @override
+  String get payrollDeleteAction => 'Xóa';
+
+  @override
+  String get payrollRecalculateDone => 'Đã tính lại bảng lương';
+
+  @override
+  String get payrollRecalculateTooltip => 'Tính lại theo công thức';
+
+  @override
+  String get payrollPickFormulaTitle => 'Chọn công thức tính lương';
+
+  @override
+  String get payrollPickFormulaCustomSubtitle =>
+      'Công thức đã chỉnh sửa · chỉ áp dụng cho bảng lương này';
+
+  @override
+  String payrollPickFormulaDateSubtitle(String date) {
+    return 'Hiệu lực: $date';
+  }
+
+  @override
+  String get payrollPickFormulaRecentNote => 'Gần nhất với tháng được chọn';
+
+  @override
+  String get payrollRecalculateAction => 'Tính lại';
 
   @override
   String get payslip => 'Phiếu lương';

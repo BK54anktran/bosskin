@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/file_saver_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/models/department_model.dart';
 import '../../../data/models/employee.dart';
@@ -15,6 +16,7 @@ import '../../../data/services/auth_service.dart';
 import '../../../data/services/department_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
+import '../../widgets/permission_guard.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'salary_formula_tab.dart' show FormulaEditorDialog;
 
@@ -34,6 +36,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   final _formulaRepo = SalaryFormulaRepository();
 
   bool _loading = true;
+  bool _exportingPayslips = false;
   String? _error;
   List<Payroll> _items = [];
   int _total = 0;
@@ -41,6 +44,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   String _search = '';
   int _pageSize = 20;
   int _localPage = 0;
+  final Set<int> _selectedIds = {};
 
   int _year = DateTime.now().year;
   int _month = DateTime.now().month;
@@ -62,24 +66,29 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   void _initPerms() {
     final user = AuthService.instance.currentUser;
-    _canCreate  = user?.can('PAYROLL_CREATE')  ?? false;
+    _canCreate = user?.can('PAYROLL_CREATE') ?? false;
     _canApprove = user?.can('PAYROLL_APPROVE') ?? false;
-    _canPay     = user?.can('PAYROLL_PAY')     ?? false;
+    _canPay = user?.can('PAYROLL_PAY') ?? false;
   }
 
   Future<void> _loadDepts() async {
     try {
-      final depts = await DepartmentService.instance.getFlat(permission: 'PAYROLL_VIEW');
+      final depts =
+          await DepartmentService.instance.getFlat(permission: 'PAYROLL_VIEW');
       if (mounted) setState(() => _depts = depts);
     } catch (_) {}
   }
 
   Future<void> _load({bool reset = false}) async {
     if (reset) _page = 0;
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final result = await _repo.getByMonth(
-        _year, _month,
+        _year,
+        _month,
         departmentId: _deptId,
         status: _status,
         page: _page,
@@ -96,13 +105,37 @@ class _PayrollScreenState extends State<PayrollScreen> {
     }
   }
 
+  Future<void> _exportPayslips({List<int>? ids}) async {
+    final s = AppLocalizations.of(context)!;
+    setState(() => _exportingPayslips = true);
+    try {
+      final result = await _repo.exportPayslips(
+        year: _year,
+        month: _month,
+        ids: ids,
+      );
+      await saveFileToDevice(result.bytes, result.filename);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.exportPayslipsSuccess)),
+        );
+        if (ids != null) setState(() => _selectedIds.clear());
+      }
+    } catch (e) {
+      if (mounted) _showError(serverMsg(e));
+    } finally {
+      if (mounted) setState(() => _exportingPayslips = false);
+    }
+  }
+
   Future<void> _approve(Payroll p) async {
     final s = AppLocalizations.of(context)!;
     final ok = await _confirm(s.payrollConfirmApprove);
     if (!ok) return;
     try {
       final updated = await _repo.approve(p.id);
-      setState(() => _items = _items.map((e) => e.id == p.id ? updated : e).toList());
+      setState(() =>
+          _items = _items.map((e) => e.id == p.id ? updated : e).toList());
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
     }
@@ -114,23 +147,27 @@ class _PayrollScreenState extends State<PayrollScreen> {
     if (!ok) return;
     try {
       final updated = await _repo.pay(p.id);
-      setState(() => _items = _items.map((e) => e.id == p.id ? updated : e).toList());
+      setState(() =>
+          _items = _items.map((e) => e.id == p.id ? updated : e).toList());
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
     }
   }
 
   Future<void> _delete(Payroll p) async {
+    final s = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: Text('Xoá bảng lương tháng ${p.month}/${p.year} của "${p.employeeName}"?'),
+        content: Text(s.payrollDeleteConfirm(p.month, p.year, p.employeeName)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xoá'),
+            child: Text(s.payrollDeleteAction),
           ),
         ],
       ),
@@ -145,6 +182,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   Future<void> _recalculate(Payroll p) async {
+    final s = AppLocalizations.of(context)!;
     int? formulaId;
     CustomFormulaSnapshot? customFormula;
 
@@ -159,9 +197,13 @@ class _PayrollScreenState extends State<PayrollScreen> {
       final hasCustom = p.customFormula != null;
       if (formulas.length > 1 || hasCustom) {
         final cutoff = DateTime(p.year, p.month, 1);
-        final eligible = formulas.where((f) => !f.effectiveDate.isAfter(cutoff)).toList()
+        final eligible = formulas
+            .where((f) => !f.effectiveDate.isAfter(cutoff))
+            .toList()
           ..sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
-        final defaultFormula = eligible.isNotEmpty ? eligible.first : (formulas.isNotEmpty ? formulas.first : null);
+        final defaultFormula = eligible.isNotEmpty
+            ? eligible.first
+            : (formulas.isNotEmpty ? formulas.first : null);
 
         final result = await showDialog<_FormulaPickResult>(
           context: context,
@@ -190,23 +232,30 @@ class _PayrollScreenState extends State<PayrollScreen> {
       } else {
         updated = await _repo.recalculate(p.id, formulaId: formulaId);
       }
-      setState(() => _items = _items.map((e) => e.id == p.id ? updated : e).toList());
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã tính lại bảng lương')),
-      );
+      setState(() =>
+          _items = _items.map((e) => e.id == p.id ? updated : e).toList());
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.payrollRecalculateDone)),
+        );
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
     }
   }
 
   Future<bool> _confirm(String msg) async {
+    final s = AppLocalizations.of(context)!;
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
             content: Text(msg),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Xác nhận')),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(s.cancel)),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(s.confirm)),
             ],
           ),
         ) ==
@@ -234,7 +283,9 @@ class _PayrollScreenState extends State<PayrollScreen> {
         final formulas = await _formulaRepo.getAll(gradeId: p.salaryGradeId);
         if (formulas.isNotEmpty) {
           final cutoff = DateTime(p.year, p.month, 1);
-          final eligible = formulas.where((f) => !f.effectiveDate.isAfter(cutoff)).toList()
+          final eligible = formulas
+              .where((f) => !f.effectiveDate.isAfter(cutoff))
+              .toList()
             ..sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
           baseFormula = eligible.isNotEmpty ? eligible.first : formulas.first;
         }
@@ -250,7 +301,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
       ),
     );
     if (updated != null) {
-      setState(() => _items = _items.map((e) => e.id == p.id ? updated : e).toList());
+      setState(() =>
+          _items = _items.map((e) => e.id == p.id ? updated : e).toList());
     }
   }
 
@@ -264,10 +316,12 @@ class _PayrollScreenState extends State<PayrollScreen> {
   List<Payroll> get _filtered {
     if (_search.isEmpty) return _items;
     final q = _search.toLowerCase();
-    return _items.where((p) =>
-        p.employeeName.toLowerCase().contains(q) ||
-        (p.departmentName?.toLowerCase().contains(q) ?? false) ||
-        (p.salaryGradeCode?.toLowerCase().contains(q) ?? false)).toList();
+    return _items
+        .where((p) =>
+            p.employeeName.toLowerCase().contains(q) ||
+            (p.departmentName?.toLowerCase().contains(q) ?? false) ||
+            (p.salaryGradeCode?.toLowerCase().contains(q) ?? false))
+        .toList();
   }
 
   List<Payroll> get _paged {
@@ -287,14 +341,27 @@ class _PayrollScreenState extends State<PayrollScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _FilterBar(
-          year: _year, month: _month,
-          depts: _depts, deptId: _deptId, status: _status,
+          year: _year,
+          month: _month,
+          depts: _depts,
+          deptId: _deptId,
+          status: _status,
           canCreate: _canCreate,
+          exportingPayslips: _exportingPayslips,
+          selectedCount: _selectedIds.length,
           onChanged: (y, m, d, st) {
-            setState(() { _year = y; _month = m; _deptId = d; _status = st; });
+            setState(() {
+              _year = y;
+              _month = m;
+              _deptId = d;
+              _status = st;
+              _selectedIds.clear();
+            });
             _load(reset: true);
           },
           onGenerate: _openGenerate,
+          onExportPayslips: () => _exportPayslips(ids: _selectedIds.toList()),
+          onClearSelection: () => setState(() => _selectedIds.clear()),
         ),
         // Search bar
         Padding(
@@ -305,9 +372,13 @@ class _PayrollScreenState extends State<PayrollScreen> {
               prefixIcon: const Icon(Icons.search, size: 18),
               isDense: true,
               border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             ),
-            onChanged: (v) => setState(() { _search = v; _localPage = 0; }),
+            onChanged: (v) => setState(() {
+              _search = v;
+              _localPage = 0;
+            }),
           ),
         ),
         if (_error != null)
@@ -328,18 +399,27 @@ class _PayrollScreenState extends State<PayrollScreen> {
                             child: ListView.separated(
                               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                               itemCount: paged.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 8),
                               itemBuilder: (_, i) => _PayrollCard(
                                 payroll: paged[i],
                                 canApprove: _canApprove,
                                 canPay: _canPay,
                                 canEdit: _canCreate,
+                                selected: _selectedIds.contains(paged[i].id),
                                 onView: () => _openPayslip(paged[i]),
                                 onEdit: () => _openEdit(paged[i]),
                                 onApprove: () => _approve(paged[i]),
                                 onPay: () => _pay(paged[i]),
                                 onDelete: () => _delete(paged[i]),
                                 onRecalculate: () => _recalculate(paged[i]),
+                                onToggleSelect: () => setState(() {
+                                  if (_selectedIds.contains(paged[i].id)) {
+                                    _selectedIds.remove(paged[i].id);
+                                  } else {
+                                    _selectedIds.add(paged[i].id);
+                                  }
+                                }),
                               ),
                             ),
                           ),
@@ -348,8 +428,13 @@ class _PayrollScreenState extends State<PayrollScreen> {
                           total: filtered.length,
                           page: _localPage,
                           pageSize: _pageSize,
-                          onPageSizeChanged: (v) => setState(() { _pageSize = v; _localPage = 0; }),
-                          onPrev: _localPage > 0 ? () => setState(() => _localPage--) : null,
+                          onPageSizeChanged: (v) => setState(() {
+                            _pageSize = v;
+                            _localPage = 0;
+                          }),
+                          onPrev: _localPage > 0
+                              ? () => setState(() => _localPage--)
+                              : null,
                           onNext: (_localPage + 1) * _pageSize < filtered.length
                               ? () => setState(() => _localPage++)
                               : null,
@@ -370,14 +455,26 @@ class _FilterBar extends StatelessWidget {
   final int? deptId;
   final String? status;
   final bool canCreate;
+  final bool exportingPayslips;
+  final int selectedCount;
   final void Function(int y, int m, int? d, String? st) onChanged;
   final VoidCallback onGenerate;
+  final VoidCallback onExportPayslips;
+  final VoidCallback onClearSelection;
 
   const _FilterBar({
-    required this.year, required this.month,
-    required this.depts, this.deptId, this.status,
+    required this.year,
+    required this.month,
+    required this.depts,
+    this.deptId,
+    this.status,
     required this.canCreate,
-    required this.onChanged, required this.onGenerate,
+    required this.exportingPayslips,
+    required this.selectedCount,
+    required this.onChanged,
+    required this.onGenerate,
+    required this.onExportPayslips,
+    required this.onClearSelection,
   });
 
   @override
@@ -390,8 +487,10 @@ class _FilterBar extends StatelessWidget {
       child: DropdownButtonFormField<int>(
         value: month,
         decoration: InputDecoration(labelText: s.month, isDense: true),
-        items: List.generate(12, (i) => DropdownMenuItem(
-            value: i + 1, child: Text('Tháng ${i + 1}'))),
+        items: List.generate(
+            12,
+            (i) => DropdownMenuItem(
+                value: i + 1, child: Text(s.monthLabel(i + 1)))),
         onChanged: (v) => onChanged(year, v ?? month, deptId, status),
       ),
     );
@@ -417,9 +516,10 @@ class _FilterBar extends StatelessWidget {
         decoration: InputDecoration(labelText: s.status, isDense: true),
         items: [
           DropdownMenuItem(value: null, child: Text(s.all)),
-          DropdownMenuItem(value: 'DRAFT',    child: Text(s.payrollStatusDraft)),
-          DropdownMenuItem(value: 'APPROVED', child: Text(s.payrollStatusApproved)),
-          DropdownMenuItem(value: 'PAID',     child: Text(s.payrollStatusPaid)),
+          DropdownMenuItem(value: 'DRAFT', child: Text(s.payrollStatusDraft)),
+          DropdownMenuItem(
+              value: 'APPROVED', child: Text(s.payrollStatusApproved)),
+          DropdownMenuItem(value: 'PAID', child: Text(s.payrollStatusPaid)),
         ],
         onChanged: (v) => onChanged(year, month, deptId, v),
       ),
@@ -447,6 +547,44 @@ class _FilterBar extends StatelessWidget {
           )
         : null;
 
+    // Nút export phiếu: khi có selection thì "Xuất phiếu (N)", không thì "Xuất phiếu"
+    final exportPayslipsBtn = PermissionGuard(
+      permission: 'payroll.view',
+      child: selectedCount > 0
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: exportingPayslips ? null : onExportPayslips,
+                  icon: exportingPayslips
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.receipt_long_outlined, size: 18),
+                  label: Text(s.exportPayslipsSelected(selectedCount)),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: onClearSelection,
+                  icon: const Icon(Icons.close, size: 16),
+                  tooltip: 'Bỏ chọn',
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            )
+          : OutlinedButton.icon(
+              onPressed: exportingPayslips ? null : onExportPayslips,
+              icon: exportingPayslips
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.receipt_long_outlined, size: 18),
+              label: Text(s.exportPayslips),
+            ),
+    );
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       color: AppTheme.background,
@@ -465,19 +603,19 @@ class _FilterBar extends StatelessWidget {
                 ),
                 if (deptField != null) ...[
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: deptField),
-                      if (generateBtn != null) ...[
-                        const SizedBox(width: 8),
-                        generateBtn,
-                      ],
-                    ],
-                  ),
-                ] else if (generateBtn != null) ...[
-                  const SizedBox(height: 8),
-                  Align(alignment: Alignment.centerRight, child: generateBtn),
+                  deptField,
                 ],
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    exportPayslipsBtn,
+                    if (generateBtn != null) ...[
+                      const SizedBox(width: 8),
+                      generateBtn,
+                    ],
+                  ],
+                ),
               ],
             )
           : Row(
@@ -492,7 +630,11 @@ class _FilterBar extends StatelessWidget {
                 const SizedBox(width: 8),
                 statusField,
                 const Spacer(),
-                if (generateBtn != null) generateBtn,
+                exportPayslipsBtn,
+                if (generateBtn != null) ...[
+                  const SizedBox(width: 8),
+                  generateBtn,
+                ],
               ],
             ),
     );
@@ -504,13 +646,23 @@ class _FilterBar extends StatelessWidget {
 class _PayrollCard extends StatelessWidget {
   final Payroll payroll;
   final bool canApprove, canPay, canEdit;
+  final bool selected;
   final VoidCallback onView, onEdit, onApprove, onPay, onDelete, onRecalculate;
+  final VoidCallback onToggleSelect;
 
   const _PayrollCard({
     required this.payroll,
-    required this.canApprove, required this.canPay, required this.canEdit,
-    required this.onView, required this.onEdit, required this.onApprove, required this.onPay,
-    required this.onDelete, required this.onRecalculate,
+    required this.canApprove,
+    required this.canPay,
+    required this.canEdit,
+    required this.selected,
+    required this.onView,
+    required this.onEdit,
+    required this.onApprove,
+    required this.onPay,
+    required this.onDelete,
+    required this.onRecalculate,
+    required this.onToggleSelect,
   });
 
   @override
@@ -534,17 +686,25 @@ class _PayrollCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(p.employeeName,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 15)),
                         Row(
                           children: [
                             if (p.departmentName != null)
                               Text(p.departmentName!,
-                                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.textSecondary)),
                             if (p.salaryGradeCode != null) ...[
                               if (p.departmentName != null)
-                                const Text(' · ', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                              Text('${p.salaryGradeCode} — ${p.salaryGradeName}',
-                                  style: const TextStyle(fontSize: 12, color: AppTheme.primary)),
+                                const Text(' · ',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.textSecondary)),
+                              Text(
+                                  '${p.salaryGradeCode} — ${p.salaryGradeName}',
+                                  style: const TextStyle(
+                                      fontSize: 12, color: AppTheme.primary)),
                             ],
                           ],
                         ),
@@ -552,6 +712,19 @@ class _PayrollCard extends StatelessWidget {
                     ),
                   ),
                   _StatusChip(p.status),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: onToggleSelect,
+                    borderRadius: BorderRadius.circular(4),
+                    child: IgnorePointer(
+                      child: Checkbox(
+                        value: selected,
+                        onChanged: (_) {},
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -562,9 +735,13 @@ class _PayrollCard extends StatelessWidget {
                   _InfoTile(label: s.grossSalary, value: _fmt(p.grossSalary)),
                   const SizedBox(width: 16),
                   _InfoTile(
-                      label: s.netSalary, value: _fmt(p.netSalary),
-                      valueStyle: TextStyle(fontWeight: FontWeight.w700,
-                          color: p.netSalary < 0 ? AppTheme.error : AppTheme.secondary,
+                      label: s.netSalary,
+                      value: _fmt(p.netSalary),
+                      valueStyle: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: p.netSalary < 0
+                              ? AppTheme.error
+                              : AppTheme.secondary,
                           fontSize: 14)),
                 ],
               ),
@@ -572,7 +749,8 @@ class _PayrollCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '${s.presentDays}: ${p.presentDays}/${p.standardWorkDays ?? 22}   ${s.overtimeHours}: ${(p.totalOvertimeHours ?? 0).toStringAsFixed(1)}h',
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  style: const TextStyle(
+                      fontSize: 12, color: AppTheme.textSecondary),
                 ),
               ],
               const SizedBox(height: 10),
@@ -586,19 +764,20 @@ class _PayrollCard extends StatelessWidget {
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline, size: 18),
                       color: AppTheme.error,
-                      tooltip: 'Xoá',
+                      tooltip: s.delete,
                       visualDensity: VisualDensity.compact,
                     ),
                     IconButton(
                       onPressed: onRecalculate,
                       icon: const Icon(Icons.refresh, size: 18),
                       color: AppTheme.primary,
-                      tooltip: 'Tính lại theo công thức',
+                      tooltip: s.payrollRecalculateTooltip,
                       visualDensity: VisualDensity.compact,
                     ),
                     TextButton(onPressed: onEdit, child: Text(s.payrollEdit)),
                     const SizedBox(width: 4),
-                    FilledButton(onPressed: canApprove ? onApprove : null,
+                    FilledButton(
+                        onPressed: canApprove ? onApprove : null,
                         child: Text(s.payrollApprove)),
                   ],
                   if (p.status == PayrollStatus.approved && canPay) ...[
@@ -624,8 +803,12 @@ class _InfoTile extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-          Text(value, style: valueStyle ?? const TextStyle(fontWeight: FontWeight.w600)),
+          Text(label,
+              style:
+                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(value,
+              style:
+                  valueStyle ?? const TextStyle(fontWeight: FontWeight.w600)),
         ],
       );
 }
@@ -639,8 +822,8 @@ class _StatusChip extends StatelessWidget {
     final s = AppLocalizations.of(context)!;
     final (label, color) = switch (status) {
       PayrollStatus.approved => (s.payrollStatusApproved, AppTheme.primary),
-      PayrollStatus.paid     => (s.payrollStatusPaid, AppTheme.secondary),
-      _                      => (s.payrollStatusDraft, AppTheme.warning),
+      PayrollStatus.paid => (s.payrollStatusPaid, AppTheme.secondary),
+      _ => (s.payrollStatusDraft, AppTheme.warning),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -649,7 +832,8 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(label,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+          style: TextStyle(
+              fontSize: 12, fontWeight: FontWeight.w600, color: color)),
     );
   }
 }
@@ -692,8 +876,9 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Chọn công thức tính lương'),
+      title: Text(s.payrollPickFormulaTitle),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -704,43 +889,52 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
               RadioListTile<bool>(
                 value: true,
                 groupValue: _customSelected,
-                onChanged: (v) => setState(() { _customSelected = true; _selected = null; }),
+                onChanged: (v) => setState(() {
+                  _customSelected = true;
+                  _selected = null;
+                }),
                 title: Text(
                   widget.customFormula!.name,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text(
-                  'Công thức đã chỉnh sửa · chỉ áp dụng cho bảng lương này',
-                  style: TextStyle(fontSize: 12, color: Colors.orange[700]),
-                ),
+                subtitle: Text(s.payrollPickFormulaCustomSubtitle,
+                    style: TextStyle(fontSize: 12, color: Colors.orange[700])),
                 dense: true,
               ),
             // Các công thức gốc
             ...widget.formulas.map((f) {
               final isDefault = f == widget.initial;
+              final effectiveDate = f.effectiveDate.toString().substring(0, 10);
               return RadioListTile<bool>(
                 value: false,
                 groupValue: _customSelected,
-                onChanged: (v) => setState(() { _customSelected = false; _selected = f; }),
+                onChanged: (v) => setState(() {
+                  _customSelected = false;
+                  _selected = f;
+                }),
                 title: Text(
                   f.name,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: _selected == f && !_customSelected ? null : AppTheme.textPrimary,
+                    color: _selected == f && !_customSelected
+                        ? null
+                        : AppTheme.textPrimary,
                   ),
                 ),
                 subtitle: Text(
                   isDefault
-                      ? 'Hiệu lực: ${f.effectiveDate.toString().substring(0, 10)} · Gần nhất với tháng được chọn'
-                      : 'Hiệu lực: ${f.effectiveDate.toString().substring(0, 10)}',
+                      ? '${s.payrollPickFormulaDateSubtitle(effectiveDate)} · ${s.payrollPickFormulaRecentNote}'
+                      : s.payrollPickFormulaDateSubtitle(effectiveDate),
                   style: TextStyle(
                     fontSize: 12,
                     color: isDefault ? Colors.blue[700] : null,
                   ),
                 ),
                 secondary: _selected == f && !_customSelected
-                    ? const Icon(Icons.check_circle, color: AppTheme.primary, size: 18)
+                    ? const Icon(Icons.check_circle,
+                        color: AppTheme.primary, size: 18)
                     : null,
                 dense: true,
               );
@@ -751,7 +945,7 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Huỷ'),
+          child: Text(s.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(
@@ -760,7 +954,7 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
                 ? const _FormulaPickResult(isCustom: true)
                 : _FormulaPickResult(formula: _selected),
           ),
-          child: const Text('Tính lại'),
+          child: Text(s.payrollRecalculateAction),
         ),
       ],
     );
@@ -783,7 +977,8 @@ class _EmpEntry {
   final Employee employee;
   List<SalaryFormula> formulas;
   SalaryFormula? selectedFormula;
-  _EmpEntry({required this.employee, this.formulas = const [], this.selectedFormula});
+  _EmpEntry(
+      {required this.employee, this.formulas = const [], this.selectedFormula});
 }
 
 class _GenerateDialogState extends State<_GenerateDialog> {
@@ -807,13 +1002,18 @@ class _GenerateDialogState extends State<_GenerateDialog> {
   }
 
   Future<void> _search(String q) async {
-    if (q.length < 2) { setState(() => _suggestions = []); return; }
+    if (q.length < 2) {
+      setState(() => _suggestions = []);
+      return;
+    }
     setState(() => _searching = true);
     try {
       final res = await widget.empRepo.getAll(search: q, size: 10);
       // Lọc bỏ nhân viên đã chọn
       final existing = _entries.map((e) => e.employee.id).toSet();
-      if (mounted) setState(() => _suggestions = res.items.where((e) => !existing.contains(e.id)).toList());
+      if (mounted)
+        setState(() => _suggestions =
+            res.items.where((e) => !existing.contains(e.id)).toList());
     } finally {
       if (mounted) setState(() => _searching = false);
     }
@@ -840,26 +1040,36 @@ class _GenerateDialogState extends State<_GenerateDialog> {
 
     // Ưu tiên công thức gần nhất (effectiveDate <= tháng được chọn)
     final cutoff = DateTime(_year, _month, 1);
-    final eligible = formulas.where((f) => !f.effectiveDate.isAfter(cutoff)).toList()
+    final eligible = formulas
+        .where((f) => !f.effectiveDate.isAfter(cutoff))
+        .toList()
       ..sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
-    final selected = eligible.isNotEmpty ? eligible.first : (formulas.isNotEmpty ? formulas.first : null);
+    final selected = eligible.isNotEmpty
+        ? eligible.first
+        : (formulas.isNotEmpty ? formulas.first : null);
 
     if (mounted) {
       setState(() {
-        _entries.add(_EmpEntry(employee: emp, formulas: formulas, selectedFormula: selected));
+        _entries.add(_EmpEntry(
+            employee: emp, formulas: formulas, selectedFormula: selected));
       });
     }
   }
 
   Future<void> _submit() async {
     if (_entries.isEmpty) return;
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     final errors = <String>[];
     final created = <Payroll>[];
     for (final entry in _entries) {
       try {
         final p = await widget.repo.generate(
-          entry.employee.id, _year, _month,
+          entry.employee.id,
+          _year,
+          _month,
           formulaId: entry.selectedFormula?.id,
         );
         created.add(p);
@@ -869,7 +1079,10 @@ class _GenerateDialogState extends State<_GenerateDialog> {
     }
     if (!mounted) return;
     if (errors.isNotEmpty) {
-      setState(() { _saving = false; _error = errors.join('\n'); });
+      setState(() {
+        _saving = false;
+        _error = errors.join('\n');
+      });
     } else {
       Navigator.pop(context, created.isNotEmpty ? created.last : null);
     }
@@ -889,16 +1102,21 @@ class _GenerateDialogState extends State<_GenerateDialog> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(_error!, style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                child: Text(_error!,
+                    style:
+                        const TextStyle(color: AppTheme.error, fontSize: 13)),
               ),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     value: _month,
-                    decoration: InputDecoration(labelText: s.month, isDense: true),
-                    items: List.generate(12, (i) => DropdownMenuItem(
-                        value: i + 1, child: Text('Tháng ${i + 1}'))),
+                    decoration:
+                        InputDecoration(labelText: s.month, isDense: true),
+                    items: List.generate(
+                        12,
+                        (i) => DropdownMenuItem(
+                            value: i + 1, child: Text(s.monthLabel(i + 1)))),
                     onChanged: (v) => setState(() => _month = v ?? _month),
                   ),
                 ),
@@ -906,7 +1124,8 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                 Expanded(
                   child: TextFormField(
                     initialValue: _year.toString(),
-                    decoration: InputDecoration(labelText: s.year, isDense: true),
+                    decoration:
+                        InputDecoration(labelText: s.year, isDense: true),
                     keyboardType: TextInputType.number,
                     onChanged: (v) {
                       final y = int.tryParse(v);
@@ -920,11 +1139,14 @@ class _GenerateDialogState extends State<_GenerateDialog> {
             TextFormField(
               controller: _searchCtrl,
               decoration: InputDecoration(
-                labelText: 'Tìm nhân viên để thêm...',
+                labelText: s.searchEmployeeHint,
                 prefixIcon: const Icon(Icons.search, size: 18),
                 suffixIcon: _searching
-                    ? const Padding(padding: EdgeInsets.all(12),
-                        child: SizedBox(width: 16, height: 16,
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                            width: 16,
+                            height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2)))
                     : null,
               ),
@@ -940,15 +1162,18 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                 ),
                 child: ListView(
                   shrinkWrap: true,
-                  children: _suggestions.map((e) => ListTile(
-                    dense: true,
-                    title: Text(e.fullName, style: const TextStyle(fontSize: 13)),
-                    subtitle: Text(
-                      '${e.employeeCode}${e.salaryGradeName != null ? ' · ${e.salaryGradeName}' : ''}',
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    onTap: () => _addEmployee(e),
-                  )).toList(),
+                  children: _suggestions
+                      .map((e) => ListTile(
+                            dense: true,
+                            title: Text(e.fullName,
+                                style: const TextStyle(fontSize: 13)),
+                            subtitle: Text(
+                              '${e.employeeCode}${e.salaryGradeName != null ? ' · ${e.salaryGradeName}' : ''}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            onTap: () => _addEmployee(e),
+                          ))
+                      .toList(),
                 ),
               ),
             if (_entries.isNotEmpty) ...[
@@ -963,14 +1188,17 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                     final entry = _entries[i];
                     final emp = entry.employee;
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 2),
                       child: Row(
                         children: [
                           // Mã NV
                           SizedBox(
                             width: 70,
                             child: Text(emp.employeeCode,
-                                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary,
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppTheme.textSecondary,
                                     fontFamily: 'monospace')),
                           ),
                           // Tên
@@ -979,10 +1207,15 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(emp.fullName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                Text(emp.fullName,
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500)),
                                 if (emp.salaryGradeName != null)
                                   Text(emp.salaryGradeName!,
-                                      style: const TextStyle(fontSize: 11, color: AppTheme.primary)),
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppTheme.primary)),
                               ],
                             ),
                           ),
@@ -995,27 +1228,33 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                                 value: entry.selectedFormula,
                                 isDense: true,
                                 isExpanded: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Công thức',
+                                decoration: InputDecoration(
+                                  labelText: s.salaryFormula,
                                   isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 6),
                                 ),
-                                items: entry.formulas.map((f) => DropdownMenuItem(
-                                  value: f,
-                                  child: Text(
-                                    '${f.name} · ${f.effectiveDate.toString().substring(0, 10)}',
-                                    style: const TextStyle(fontSize: 12),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                )).toList(),
-                                onChanged: (v) => setState(() => entry.selectedFormula = v),
+                                items: entry.formulas
+                                    .map((f) => DropdownMenuItem(
+                                          value: f,
+                                          child: Text(
+                                            '${f.name} · ${f.effectiveDate.toString().substring(0, 10)}',
+                                            style:
+                                                const TextStyle(fontSize: 12),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ))
+                                    .toList(),
+                                onChanged: (v) =>
+                                    setState(() => entry.selectedFormula = v),
                               ),
                             ),
                           ],
                           const SizedBox(width: 4),
                           IconButton(
                             icon: const Icon(Icons.close, size: 16),
-                            onPressed: () => setState(() => _entries.removeAt(i)),
+                            onPressed: () =>
+                                setState(() => _entries.removeAt(i)),
                             visualDensity: VisualDensity.compact,
                             padding: EdgeInsets.zero,
                             color: AppTheme.textSecondary,
@@ -1031,13 +1270,19 @@ class _GenerateDialogState extends State<_GenerateDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
+        TextButton(
+            onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
         FilledButton(
           onPressed: (_entries.isEmpty || _saving) ? null : _submit,
           child: _saving
-              ? const SizedBox(width: 16, height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : Text(_entries.isEmpty ? s.create : '${s.create} (${_entries.length})'),
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white))
+              : Text(_entries.isEmpty
+                  ? s.create
+                  : '${s.create} (${_entries.length})'),
         ),
       ],
     );
@@ -1066,21 +1311,28 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
   @override
   void initState() {
     super.initState();
-    _allowanceCtrl = TextEditingController(text: widget.payroll.allowance.toString());
-    _bonusCtrl     = TextEditingController(text: widget.payroll.bonus.toString());
-    _deductCtrl    = TextEditingController(text: widget.payroll.otherDeductions.toString());
-    _noteCtrl      = TextEditingController(text: widget.payroll.note ?? '');
+    _allowanceCtrl =
+        TextEditingController(text: widget.payroll.allowance.toString());
+    _bonusCtrl = TextEditingController(text: widget.payroll.bonus.toString());
+    _deductCtrl =
+        TextEditingController(text: widget.payroll.otherDeductions.toString());
+    _noteCtrl = TextEditingController(text: widget.payroll.note ?? '');
   }
 
   @override
   void dispose() {
-    _allowanceCtrl.dispose(); _bonusCtrl.dispose();
-    _deductCtrl.dispose(); _noteCtrl.dispose();
+    _allowanceCtrl.dispose();
+    _bonusCtrl.dispose();
+    _deductCtrl.dispose();
+    _noteCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     try {
       final updated = await widget.repo.updateDraft(
         widget.payroll.id,
@@ -1091,7 +1343,11 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
       );
       if (mounted) Navigator.pop(context, updated);
     } catch (e) {
-      if (mounted) setState(() { _saving = false; _error = serverMsg(e); });
+      if (mounted)
+        setState(() {
+          _saving = false;
+          _error = serverMsg(e);
+        });
     }
   }
 
@@ -1108,11 +1364,14 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(_error!, style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                child: Text(_error!,
+                    style:
+                        const TextStyle(color: AppTheme.error, fontSize: 13)),
               ),
             TextFormField(
               controller: _allowanceCtrl,
-              decoration: InputDecoration(labelText: s.allowance, suffixText: 'đ'),
+              decoration:
+                  InputDecoration(labelText: s.allowance, suffixText: 'đ'),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
@@ -1124,7 +1383,8 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _deductCtrl,
-              decoration: InputDecoration(labelText: s.otherDeductions, suffixText: 'đ'),
+              decoration: InputDecoration(
+                  labelText: s.otherDeductions, suffixText: 'đ'),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
@@ -1137,12 +1397,16 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
+        TextButton(
+            onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
         FilledButton(
           onPressed: _saving ? null : _save,
           child: _saving
-              ? const SizedBox(width: 16, height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white))
               : Text(s.save),
         ),
       ],
@@ -1152,16 +1416,53 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
 
 // ─── Payslip dialog ────────────────────────────────────────────────────────────
 
-class _PayslipDialog extends StatelessWidget {
+class _PayslipDialog extends StatefulWidget {
   final Payroll payroll;
   const _PayslipDialog({required this.payroll});
 
   @override
+  State<_PayslipDialog> createState() => _PayslipDialogState();
+}
+
+class _PayslipDialogState extends State<_PayslipDialog> {
+  final _repo = PayrollRepository();
+  bool _exporting = false;
+
+  Future<void> _exportThis() async {
+    final s = AppLocalizations.of(context)!;
+    setState(() => _exporting = true);
+    try {
+      final p = widget.payroll;
+      final result = await _repo.exportPayslips(
+        year: p.year,
+        month: p.month,
+        ids: [p.id],
+      );
+      await saveFileToDevice(result.bytes, result.filename);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.exportPayslipsSuccess)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
-    final p = payroll;
-    final totalDed = p.customDeductions.values.fold(0.0, (s, e) => s + e.amount)
-        + p.otherDeductions;
+    final p = widget.payroll;
+    final totalDed =
+        p.customDeductions.values.fold(0.0, (s, e) => s + e.amount) +
+            p.otherDeductions;
 
     return Dialog(
       child: ConstrainedBox(
@@ -1174,7 +1475,8 @@ class _PayslipDialog extends StatelessWidget {
               // Header
               Text(s.payslip,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
               Text(
                 '${p.employeeName} — ${formatPayrollPeriod(p.periodFrom, p.periodTo, p.month, p.year)}',
@@ -1185,67 +1487,97 @@ class _PayslipDialog extends StatelessWidget {
                 Text(
                   '${p.departmentName}${p.positionName != null ? ' · ${p.positionName}' : ''}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  style: const TextStyle(
+                      fontSize: 12, color: AppTheme.textSecondary),
                 ),
               const Divider(height: 24),
               // Attendance summary
-              _Row(s.presentDays, '${p.presentDays ?? '-'} / ${p.standardWorkDays ?? 22} ngày'),
-              _Row(s.dayShiftHours,  '${(p.dayHours ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.nightShiftHours,'${(p.nightHours ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.otDayShift,     '${(p.dayOt ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.otNightShift,   '${(p.nightOt ?? 0).toStringAsFixed(1)} giờ'),
+              _Row(s.presentDays,
+                  '${p.presentDays ?? '-'} / ${p.standardWorkDays ?? 22} ${s.daysSuffix}'),
+              _Row(s.dayShiftHours,
+                  '${(p.dayHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(s.nightShiftHours,
+                  '${(p.nightHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(s.otDayShift, '${(p.dayOt ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(
+                  s.otNightShift, '${(p.nightOt ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
               const Divider(height: 20),
               // ── Mức lương cơ bản ──
               if (p.payType == 'HOURLY') ...[
-                _Row(s.baseSalary, '${_fmt(p.baseSalary)}/giờ'),
+                _Row(s.baseSalary, '${_fmt(p.baseSalary)}/${s.hourSuffix}'),
               ] else ...[
                 _Row(s.baseSalaryMonthly, _fmt(p.baseSalary)),
                 _Row(s.actualWorkDays,
-                    '${p.presentDays ?? 0} / ${p.standardWorkDays ?? 22} ngày'),
+                    '${p.presentDays ?? 0} / ${p.standardWorkDays ?? 22} ${s.daysSuffix}'),
               ],
               const SizedBox(height: 4),
               // ── Thu nhập (chỉ hiện nếu có) ──
               if (p.incomeEntries.isNotEmpty) ...[
-                _PayslipSectionHeader('Thu nhập', AppTheme.primary),
-                ...(p.incomeEntries.values.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder))).map((e) => _Row(e.label, _fmt(e.amount))),
+                _PayslipSectionHeader(s.incomeSection, AppTheme.primary),
+                ...(p.incomeEntries.values.toList()
+                      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
+                    .map((e) => _Row(e.label, _fmt(e.amount))),
                 const SizedBox(height: 4),
               ],
               // ── Trợ cấp (chỉ hiện nếu có) ──
               if (p.allowanceEntries.isNotEmpty) ...[
-                _PayslipSectionHeader('Trợ cấp', const Color(0xFF9C27B0)),
-                ...(p.allowanceEntries.values.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder))).map((e) => _Row(e.label, _fmt(e.amount))),
+                _PayslipSectionHeader(s.allowanceSection, const Color(0xFF9C27B0)),
+                ...(p.allowanceEntries.values.toList()
+                      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
+                    .map((e) => _Row(e.label, _fmt(e.amount))),
                 const SizedBox(height: 4),
               ],
-              if (p.allowance > 0)   _Row(s.allowance, _fmt(p.allowance)),
-              if (p.bonus > 0)       _Row(s.bonus, _fmt(p.bonus)),
+              if (p.allowance > 0) _Row(s.allowance, _fmt(p.allowance)),
+              if (p.bonus > 0) _Row(s.bonus, _fmt(p.bonus)),
               // ── Gross riêng ──
               const Divider(height: 16),
               _Row(s.grossSalary, _fmt(p.grossSalary),
                   bold: true, color: AppTheme.primary),
               const SizedBox(height: 8),
               // ── Khấu trừ ──
-              _PayslipSectionHeader('Khấu trừ', AppTheme.error),
+              _PayslipSectionHeader(s.deductionSection, AppTheme.error),
               ...p.customDeductions.values.map((d) =>
-                _Row(d.label, '-${_fmt(d.amount)}', color: AppTheme.error)),
+                  _Row(d.label, '-${_fmt(d.amount)}', color: AppTheme.error)),
               if (p.otherDeductions > 0)
-                _Row(s.otherDeductions, '-${_fmt(p.otherDeductions)}', color: AppTheme.error),
+                _Row(s.otherDeductions, '-${_fmt(p.otherDeductions)}',
+                    color: AppTheme.error),
               _Row(s.totalDeductions, '-${_fmt(totalDed)}',
                   bold: true, color: AppTheme.error),
               const Divider(height: 20),
               // Net
               _Row(s.netSalary, _fmt(p.netSalary),
-                  bold: true, large: true,
+                  bold: true,
+                  large: true,
                   color: p.netSalary < 0 ? AppTheme.error : AppTheme.secondary),
               const SizedBox(height: 8),
               if (p.note != null && p.note!.isNotEmpty)
                 Text('${s.note}: ${p.note}',
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppTheme.textSecondary)),
               const SizedBox(height: 4),
               Center(child: _StatusChip(p.status)),
               const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(s.close),
+              // Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _exporting ? null : _exportThis,
+                    icon: _exporting
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.download_outlined, size: 16),
+                    label: Text(s.exportPayslips),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(s.close),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1264,10 +1596,14 @@ class _PayslipSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 4),
         child: Row(children: [
-          Container(width: 3, height: 14, color: color,
+          Container(
+              width: 3,
+              height: 14,
+              color: color,
               margin: const EdgeInsets.only(right: 6)),
-          Text(title, style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+          Text(title,
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w700, color: color)),
           const Expanded(child: Divider(indent: 8)),
         ]),
       );
@@ -1292,20 +1628,22 @@ class _InlineFormulaEditDialog extends StatelessWidget {
 
     // Tạo SalaryFormula giả để truyền vào FormulaEditorDialog như "existing"
     // nhưng override onSave để lưu inline thay vì update repo
-    final fakeExisting = bf != null ? SalaryFormula(
-      id: bf.id,
-      salaryGradeId: bf.salaryGradeId,
-      salaryGradeCode: bf.salaryGradeCode,
-      salaryGradeName: bf.salaryGradeName,
-      name: cf?.name ?? '${bf.name} (đã chỉnh sửa)',
-      effectiveDate: bf.effectiveDate,
-      expressionGross: cf?.expressionGross ?? bf.expressionGross,
-      expressionNet: cf?.expressionNet ?? bf.expressionNet,
-      customVars: cf?.customVars ?? bf.customVars,
-      deductionVars: cf?.deductionVars ?? bf.deductionVars,
-      incomeVars: cf?.incomeVars ?? bf.incomeVars,
-      allowanceVars: cf?.allowanceVars ?? bf.allowanceVars,
-    ) : null;
+    final fakeExisting = bf != null
+        ? SalaryFormula(
+            id: bf.id,
+            salaryGradeId: bf.salaryGradeId,
+            salaryGradeCode: bf.salaryGradeCode,
+            salaryGradeName: bf.salaryGradeName,
+            name: cf?.name ?? '${bf.name} (đã chỉnh sửa)',
+            effectiveDate: bf.effectiveDate,
+            expressionGross: cf?.expressionGross ?? bf.expressionGross,
+            expressionNet: cf?.expressionNet ?? bf.expressionNet,
+            customVars: cf?.customVars ?? bf.customVars,
+            deductionVars: cf?.deductionVars ?? bf.deductionVars,
+            incomeVars: cf?.incomeVars ?? bf.incomeVars,
+            allowanceVars: cf?.allowanceVars ?? bf.allowanceVars,
+          )
+        : null;
 
     return FormulaEditorDialog(
       grades: const [],

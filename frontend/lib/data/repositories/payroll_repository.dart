@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
+
 import '../models/payroll.dart';
 import '../services/api_service.dart';
 
@@ -50,7 +54,33 @@ class PayrollRepository {
     );
   }
 
-  Future<Payroll> generate(int employeeId, int year, int month, {int? formulaId}) async {
+  Future<({Uint8List bytes, String filename})> exportPayslips({
+    required int year,
+    required int month,
+    List<int>? ids,
+  }) async {
+    final params = <String, dynamic>{
+      'year': year,
+      'month': month,
+      if (ids != null && ids.isNotEmpty) 'ids': ids,
+    };
+    final res = await _api.dio.get<List<int>>(
+      '/payroll/export-payslips',
+      queryParameters: params,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final disposition = res.headers.value('content-disposition') ?? '';
+    final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+    final filename = match?.group(1) ??
+        'phieu_luong_thang_${month.toString().padLeft(2, '0')}-$year.xlsx';
+    return (
+      bytes: Uint8List.fromList(res.data ?? const <int>[]),
+      filename: filename,
+    );
+  }
+
+  Future<Payroll> generate(int employeeId, int year, int month,
+      {int? formulaId}) async {
     return _api.post(
       '/payrolls/generate',
       (data) => Payroll.fromJson(data as Map<String, dynamic>),

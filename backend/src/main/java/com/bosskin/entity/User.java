@@ -92,6 +92,11 @@ public class User extends BaseEntity implements UserDetails {
         return getPermissions().contains(permissionCode);
     }
 
+    public boolean can(String permissionCode) {
+        if (permissionCode == null) return false;
+        return hasPermission(permissionCode.trim().toUpperCase().replace('.', '_'));
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getPermissions().stream()
