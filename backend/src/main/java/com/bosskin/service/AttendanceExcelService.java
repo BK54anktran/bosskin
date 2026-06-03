@@ -1207,9 +1207,12 @@ public class AttendanceExcelService {
                     deleted++; continue;
                 }
                 if (att == null) {
+                    // Status: PRESENT chỉ khi có check-in hoặc check-out, còn lại là ABSENT
+                    boolean hasCheckIn = row.checkIn != null && !row.checkIn.isBlank();
+                    boolean hasCheckOut = row.checkOut != null && !row.checkOut.isBlank();
                     Attendance.AttendanceBuilder b = Attendance.builder()
                         .employee(emp).date(row.date).deleted(false).approved(false)
-                        .status(Attendance.Status.PRESENT);
+                        .status(hasCheckIn || hasCheckOut ? Attendance.Status.PRESENT : Attendance.Status.ABSENT);
                     applyTimesheetRow(b, row);
                     Attendance saved = attendanceRepo.save(b.build());
                     // Nếu muốn approve ngay sau khi tạo

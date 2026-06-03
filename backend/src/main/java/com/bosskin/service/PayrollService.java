@@ -85,6 +85,8 @@ public class PayrollService {
 
         long presentDays = attendances.stream()
             .filter(a -> a.getStatus() == Attendance.Status.PRESENT || a.getStatus() == Attendance.Status.LATE)
+            .map(Attendance::getDate)
+            .distinct()
             .count();
 
         double totalOvertimeDouble = attendances.stream()
@@ -198,6 +200,9 @@ public class PayrollService {
             .allowanceEntries(allowanceEntries)
             .netSalary(netSalary)
             .payType(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getPayType().name() : null)
+            .salaryGradeId(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getId() : null)
+            .salaryGradeCode(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getCode() : null)
+            .salaryGradeName(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getName() : null)
             .standardWorkDays(employee.getCompany().getStandardWorkDays())
             .periodFrom(period.from())
             .periodTo(period.to())
@@ -360,6 +365,8 @@ public class PayrollService {
         // ── Ngày công ─────────────────────────────────────────────────────────
         long presentDays = attendances.stream()
             .filter(a -> a.getStatus() == Attendance.Status.PRESENT || a.getStatus() == Attendance.Status.LATE)
+            .map(Attendance::getDate)
+            .distinct()
             .count();
         long absentDays = attendances.stream()
             .filter(a -> a.getStatus() == Attendance.Status.ABSENT)

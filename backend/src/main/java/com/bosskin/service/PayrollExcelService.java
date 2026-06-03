@@ -100,15 +100,21 @@ public class PayrollExcelService {
     }
 
     private static CellStyle buildHeaderStyle(Workbook wb) {
-        CellStyle style = wb.createCellStyle();
-        Font font = wb.createFont();
+        org.apache.poi.xssf.usermodel.XSSFWorkbook xwb = (org.apache.poi.xssf.usermodel.XSSFWorkbook) wb;
+        org.apache.poi.xssf.usermodel.XSSFCellStyle style = xwb.createCellStyle();
+        org.apache.poi.xssf.usermodel.XSSFFont font = xwb.createFont();
         font.setBold(true);
+        font.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(
+            new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF}, null));
         style.setFont(font);
-        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        style.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(
+            new byte[]{(byte)0x21,(byte)0x5C,(byte)0x98}, null));
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.MEDIUM);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setWrapText(true);
         return style;
     }
 
@@ -144,10 +150,10 @@ public class PayrollExcelService {
     // 1 sheet, mỗi hàng = 1 người, chỉ các giá trị cố định/tổng hợp
 
     private static final List<String> PAYSLIP_HEADERS = List.of(
-        "Ma NV", "Ho ten", "Phong ban", "Bac luong", "Loai tinh",
-        "Ngay cong", "Gio ngay", "Gio dem", "OT ngay", "OT dem",
-        "Luong co ban", "Tong tro cap", "Tong thu nhap them",
-        "Gross", "Tong khau tru", "Net", "Trang thai"
+        "Mã NV", "Họ và tên", "Phòng ban", "Bậc lương", "Loại tính",
+        "Ngày công", "Giờ ngày", "Giờ đêm", "OT ngày", "OT đêm",
+        "Lương cơ bản", "Tổng trợ cấp", "Tổng thu nhập",
+        "Gross", "Tổng khấu trừ", "Net", "Trạng thái"
     );
 
     @Transactional(readOnly = true)
@@ -239,6 +245,11 @@ public class PayrollExcelService {
 
                 writeMoney(row, c++, p.getNetSalary(), moneyStyle);
                 writeText(row, c, statusKey(p.getStatus()), textStyle);
+            }
+
+            for (int i = 0; i < PAYSLIP_HEADERS.size(); i++) {
+                sheet.autoSizeColumn(i);
+                sheet.setColumnWidth(i, Math.min(sheet.getColumnWidth(i) + 512, 65280));
             }
 
             byte[] bytes = toBytes(wb);

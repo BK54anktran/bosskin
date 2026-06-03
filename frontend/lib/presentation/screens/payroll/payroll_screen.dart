@@ -1536,10 +1536,13 @@ class _PayslipDialogState extends State<_PayslipDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Header
-              Text(s.payslip,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w700)),
+              Stack(children: [
+                Text(s.payslip,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w700)),
+                Positioned(top: 0, right: 0, child: _StatusChip(p.status)),
+              ]),
               const SizedBox(height: 4),
               Text(
                 '${p.employeeName} — ${formatPayrollPeriod(p.periodFrom, p.periodTo, p.month, p.year)}',
@@ -1618,7 +1621,6 @@ class _PayslipDialogState extends State<_PayslipDialog> {
                     style: const TextStyle(
                         fontSize: 12, color: AppTheme.textSecondary)),
               const SizedBox(height: 4),
-              Center(child: _StatusChip(p.status)),
               const SizedBox(height: 16),
               // Actions
               Wrap(

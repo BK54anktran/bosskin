@@ -83,6 +83,15 @@ public class Payroll extends BaseEntity {
     @Column(name = "pay_type", length = 10)
     private String payType; // DAILY | HOURLY
 
+    @Column(name = "salary_grade_id")
+    private Long salaryGradeId;
+
+    @Column(name = "salary_grade_code", length = 50)
+    private String salaryGradeCode;
+
+    @Column(name = "salary_grade_name", length = 255)
+    private String salaryGradeName;
+
     @Column(name = "standard_work_days")
     private Integer standardWorkDays;
 

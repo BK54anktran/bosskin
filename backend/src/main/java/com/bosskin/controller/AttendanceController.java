@@ -470,7 +470,13 @@ public class AttendanceController {
                 ? roundDown(data.effectiveCheckOut(), policy.roundingCheckOutMinutes())
                 : null;
         }
-        if (flagCheckIn == null || flagCheckOut == null) return null;
+        if (flagCheckIn == null || flagCheckOut == null) {
+            // Không có check-in/out nhưng có OT override → hiện OVERTIME
+            double otDayCheck = att != null && att.getOverrideOtDayMinutes() != null ? att.getOverrideOtDayMinutes() / 60.0 : data.otDayHours();
+            double otNightCheck = att != null && att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
+            if (otDayCheck > 0 || otNightCheck > 0) return "OVERTIME";
+            return null;
+        }
         double otDay = att != null && att.getOverrideOtDayMinutes() != null
             ? att.getOverrideOtDayMinutes() / 60.0
             : data.otDayHours();
@@ -1274,6 +1280,18 @@ public class AttendanceController {
         att.setSnapDayOt(snap.otDayHours());
         att.setSnapNightHours(snap.regularNightHours());
         att.setSnapNightOt(snap.otNightHours());
+
+        // Recompute status dựa trên giờ công thực tế
+        boolean hasActualHours = snap.actualHours() > 0
+            || snap.regularDayHours() > 0 || snap.otDayHours() > 0
+            || snap.regularNightHours() > 0 || snap.otNightHours() > 0;
+        boolean hasCheckInData = data.checkIn() != null || data.checkOut() != null
+            || (att.getOverrideCheckIn() != null) || (att.getOverrideCheckOut() != null);
+        if (!hasActualHours && !hasCheckInData && slotLeave == null) {
+            att.setStatus(Attendance.Status.ABSENT);
+        } else if (att.getStatus() == Attendance.Status.ABSENT && (hasActualHours || hasCheckInData)) {
+            att.setStatus(Attendance.Status.PRESENT);
+        }
 
         var workFlags = WorkFlagCalculator.calculate(
             data.shiftStart(), data.shiftEnd(),
@@ -2146,6 +2164,16 @@ public class AttendanceController {
         att.setSnapDayOt(snap.otDayHours());
         att.setSnapNightHours(snap.regularNightHours());
         att.setSnapNightOt(snap.otNightHours());
+
+        boolean hasActualHours2 = snap.actualHours() > 0 || snap.regularDayHours() > 0
+            || snap.otDayHours() > 0 || snap.regularNightHours() > 0 || snap.otNightHours() > 0;
+        boolean hasCheckInData2 = data.checkIn() != null || data.checkOut() != null
+            || att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null;
+        if (!hasActualHours2 && !hasCheckInData2 && slotLeave == null) {
+            att.setStatus(Attendance.Status.ABSENT);
+        } else if (att.getStatus() == Attendance.Status.ABSENT && (hasActualHours2 || hasCheckInData2)) {
+            att.setStatus(Attendance.Status.PRESENT);
+        }
 
         var workFlags = WorkFlagCalculator.calculate(
             data.shiftStart(), data.shiftEnd(),
