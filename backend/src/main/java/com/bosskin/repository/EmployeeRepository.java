@@ -19,6 +19,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByCompanyId(Long companyId);
     boolean existsByEmailAndCompanyId(String email, Long companyId);
     long countByCompanyId(Long companyId);
+    long countByCompanyIdAndDepartmentId(Long companyId, Long departmentId);
     long countByPositionIdAndCompanyId(Long positionId, Long companyId);
 
     @Query("""

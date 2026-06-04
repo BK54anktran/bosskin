@@ -118,7 +118,7 @@
   "earlyOut": "Early out",
   "lateOut": "Late out",
   "overtime": "Overtime",
-  "todayStatistics": "Today's statistics",
+  "statistics": "statistics",
   "email": "Email",
   "adminLoginTitle": "Admin sign in",
   "systemAdministrator": "SYSTEM ADMINISTRATOR",
@@ -786,4 +786,33 @@
   ,"dashboardCheckOut": "Out: {time}"
   ,"@dashboardCheckOut": {"placeholders": {"time": {"type": "String"}}}
   ,"dashboardNotCheckedIn": "Not checked in"
+  ,"dashboardFilterDepartment": "Filter by department"
+  ,"today": "Today"
+  ,"dashboardTabAnalytics": "Analytics"
+  ,"dashboardAnalyticsSalaryTrend": "Monthly payroll"
+  ,"dashboardAnalyticsAttendanceTrend": "Attendance trend (90 days)"
+  ,"dashboardAnalyticsTopLate": "Most late arrivals"
+  ,"dashboardAnalyticsOverall": "Year overview"
+  ,"dashboardAnalyticsLateDays": "late days"
+  ,"dashboardAnalyticsNoData": "No analytics data yet"
+  ,"dashboardAnalyticsDailyTimeline": "Daily hours & cost trend"
+  ,"dashboardAnalyticsDailyTimelineSubtitle": "Solid: work hours — Dashed: estimated cost"
+  ,"dashboardAnalyticsHours": "Work hours"
+  ,"dashboardTabDay": "Day"
+  ,"dashboardTabMonth": "Month"
+  ,"dashboardTabRange": "Range"
+  ,"dashboardRangeTotalWorkDays": "Total work days"
+  ,"dashboardRangeTotalLate": "Late"
+  ,"dashboardRangeTotalAbsent": "Absent"
+  ,"dashboardRangeTotalLeave": "On leave"
+  ,"dashboardRangePresent": "Present"
+  ,"dashboardRangeFrom": "From"
+  ,"dashboardRangeTo": "To"
+  ,"dashboardRangeNoData": "No data for this period"
+  ,"dashboardTooltipGrade": "Grade"
+  ,"dashboardTooltipHours": "Hours"
+  ,"dashboardTooltipAmount": "Amount"
+  ,"dashboardTooltipTotal": "Total"
+  ,"unitHour": "hour"
+  ,"unitDay": "day"
 }

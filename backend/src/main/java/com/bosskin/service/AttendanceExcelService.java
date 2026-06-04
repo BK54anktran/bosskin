@@ -5,6 +5,7 @@ import com.bosskin.entity.Department;
 import com.bosskin.entity.Employee;
 import com.bosskin.repository.AttendanceRepository;
 import com.bosskin.repository.EmployeeRepository;
+import com.bosskin.repository.ShiftAssignmentRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +36,7 @@ public class AttendanceExcelService {
     private final AttendanceRepository attendanceRepo;
     private final EmployeeRepository employeeRepo;
     private final DeptScopeService deptScopeService;
+    private final ShiftAssignmentRepository shiftAssignmentRepo;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter SHEET_DATE_FMT = DateTimeFormatter.ofPattern("MM-yyyy");
@@ -1190,6 +1192,16 @@ public class AttendanceExcelService {
             existingMap.computeIfAbsent(a.getEmployee().getId(), k -> new HashMap<>()).put(a.getDate(), a);
         }
 
+        // Load shift assignments cho toàn bộ date range — key: employeeId -> Set<date>
+        List<com.bosskin.entity.ShiftAssignment> allShiftAssignments =
+            shiftAssignmentRepo.findByCompanyAndDateRange(companyId, minDate, maxDate);
+        Map<Long, Set<LocalDate>> shiftDatesByEmployee = new HashMap<>();
+        for (com.bosskin.entity.ShiftAssignment sa : allShiftAssignments) {
+            shiftDatesByEmployee
+                .computeIfAbsent(sa.getEmployee().getId(), k -> new HashSet<>())
+                .add(sa.getWorkDate());
+        }
+
         List<ApproveTask> approveTasks = new ArrayList<>();
         approveTaskHolder.set(approveTasks);
 
@@ -1207,15 +1219,19 @@ public class AttendanceExcelService {
                     deleted++; continue;
                 }
                 if (att == null) {
-                    // Status: PRESENT chỉ khi có check-in hoặc check-out, còn lại là ABSENT
                     boolean hasCheckIn = row.checkIn != null && !row.checkIn.isBlank();
                     boolean hasCheckOut = row.checkOut != null && !row.checkOut.isBlank();
+                    boolean hasShift = shiftDatesByEmployee
+                        .getOrDefault(emp.getId(), Set.of())
+                        .contains(row.date);
+                    // Không có dữ liệu gì AND không có ca → bỏ qua
+                    if (!hasCheckIn && !hasCheckOut && !hasShift) { skipped++; continue; }
+                    // Status để null — approve mới tính PRESENT/ABSENT
                     Attendance.AttendanceBuilder b = Attendance.builder()
                         .employee(emp).date(row.date).deleted(false).approved(false)
-                        .status(hasCheckIn || hasCheckOut ? Attendance.Status.PRESENT : Attendance.Status.ABSENT);
+                        .status(null);
                     applyTimesheetRow(b, row);
                     Attendance saved = attendanceRepo.save(b.build());
-                    // Nếu muốn approve ngay sau khi tạo
                     if (row.approved != null && row.approved) {
                         approveTasks.add(new ApproveTask(saved.getId(), true));
                     }
@@ -1229,13 +1245,9 @@ public class AttendanceExcelService {
                         att.setSnapActualHours(null); att.setSnapDayHours(null);
                         att.setSnapDayOt(null); att.setSnapNightHours(null);
                         att.setSnapNightOt(null); att.setWorkFlags(null);
+                        att.setStatus(null); // reset status — approve lại mới tính
                     }
                     applyTimesheetRowToExisting(att, row);
-                    // Cập nhật status nếu chưa approve
-                    if (!wasApproved && row.checkIn != null && !row.checkIn.isBlank()
-                            && att.getStatus() == Attendance.Status.ABSENT) {
-                        att.setStatus(Attendance.Status.PRESENT);
-                    }
                     Attendance saved = attendanceRepo.save(att);
                     // Approve lại nếu trước đó đã approve, hoặc theo cột Trạng thái duyệt
                     boolean shouldApprove = row.approved != null ? row.approved : wasApproved;

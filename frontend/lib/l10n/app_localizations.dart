@@ -806,11 +806,11 @@ abstract class AppLocalizations {
   /// **'Tăng ca'**
   String get overtime;
 
-  /// No description provided for @todayStatistics.
+  /// No description provided for @statistics.
   ///
   /// In vi, this message translates to:
-  /// **'Thống kê hôm nay'**
-  String get todayStatistics;
+  /// **'Thống kê'**
+  String get statistics;
 
   /// No description provided for @email.
   ///
@@ -4352,6 +4352,180 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chưa check-in'**
   String get dashboardNotCheckedIn;
+
+  /// No description provided for @dashboardFilterDepartment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lọc theo phòng ban'**
+  String get dashboardFilterDepartment;
+
+  /// No description provided for @today.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay'**
+  String get today;
+
+  /// No description provided for @dashboardTabAnalytics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phân tích'**
+  String get dashboardTabAnalytics;
+
+  /// No description provided for @dashboardAnalyticsSalaryTrend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi lương theo tháng'**
+  String get dashboardAnalyticsSalaryTrend;
+
+  /// No description provided for @dashboardAnalyticsAttendanceTrend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xu hướng chấm công (90 ngày)'**
+  String get dashboardAnalyticsAttendanceTrend;
+
+  /// No description provided for @dashboardAnalyticsTopLate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi muộn nhiều nhất'**
+  String get dashboardAnalyticsTopLate;
+
+  /// No description provided for @dashboardAnalyticsOverall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng kết năm'**
+  String get dashboardAnalyticsOverall;
+
+  /// No description provided for @dashboardAnalyticsLateDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'ngày muộn'**
+  String get dashboardAnalyticsLateDays;
+
+  /// No description provided for @dashboardAnalyticsNoData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu phân tích'**
+  String get dashboardAnalyticsNoData;
+
+  /// No description provided for @dashboardAnalyticsDailyTimeline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xu hướng giờ công & chi phí theo ngày'**
+  String get dashboardAnalyticsDailyTimeline;
+
+  /// No description provided for @dashboardAnalyticsDailyTimelineSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đường liền: giờ công — Đường đứt: chi phí ước tính'**
+  String get dashboardAnalyticsDailyTimelineSubtitle;
+
+  /// No description provided for @dashboardAnalyticsHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ công'**
+  String get dashboardAnalyticsHours;
+
+  /// No description provided for @dashboardTabDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày'**
+  String get dashboardTabDay;
+
+  /// No description provided for @dashboardTabMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng'**
+  String get dashboardTabMonth;
+
+  /// No description provided for @dashboardTabRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng'**
+  String get dashboardTabRange;
+
+  /// No description provided for @dashboardRangeTotalWorkDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng ngày công'**
+  String get dashboardRangeTotalWorkDays;
+
+  /// No description provided for @dashboardRangeTotalLate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi muộn'**
+  String get dashboardRangeTotalLate;
+
+  /// No description provided for @dashboardRangeTotalAbsent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vắng mặt'**
+  String get dashboardRangeTotalAbsent;
+
+  /// No description provided for @dashboardRangeTotalLeave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ phép'**
+  String get dashboardRangeTotalLeave;
+
+  /// No description provided for @dashboardRangePresent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có mặt'**
+  String get dashboardRangePresent;
+
+  /// No description provided for @dashboardRangeFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ ngày'**
+  String get dashboardRangeFrom;
+
+  /// No description provided for @dashboardRangeTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến ngày'**
+  String get dashboardRangeTo;
+
+  /// No description provided for @dashboardRangeNoData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có dữ liệu trong khoảng này'**
+  String get dashboardRangeNoData;
+
+  /// No description provided for @dashboardTooltipGrade.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp'**
+  String get dashboardTooltipGrade;
+
+  /// No description provided for @dashboardTooltipHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ'**
+  String get dashboardTooltipHours;
+
+  /// No description provided for @dashboardTooltipAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền'**
+  String get dashboardTooltipAmount;
+
+  /// No description provided for @dashboardTooltipTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng'**
+  String get dashboardTooltipTotal;
+
+  /// No description provided for @unitHour.
+  ///
+  /// In vi, this message translates to:
+  /// **'giờ'**
+  String get unitHour;
+
+  /// No description provided for @unitDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'ngày'**
+  String get unitDay;
 }
 
 class _AppLocalizationsDelegate

@@ -118,7 +118,7 @@
   "earlyOut": "Về sớm",
   "lateOut": "Về muộn",
   "overtime": "Tăng ca",
-  "todayStatistics": "Thống kê hôm nay",
+  "statistics": "Thống kê",
   "email": "Email",
   "adminLoginTitle": "Đăng nhập quản trị",
   "systemAdministrator": "SYSTEM ADMINISTRATOR",
@@ -789,4 +789,33 @@
   ,"dashboardCheckOut": "Ra: {time}"
   ,"@dashboardCheckOut": {"placeholders": {"time": {"type": "String"}}}
   ,"dashboardNotCheckedIn": "Chưa check-in"
+  ,"dashboardFilterDepartment": "Lọc theo phòng ban"
+  ,"today": "Hôm nay"
+  ,"dashboardTabAnalytics": "Phân tích"
+  ,"dashboardAnalyticsSalaryTrend": "Chi lương theo tháng"
+  ,"dashboardAnalyticsAttendanceTrend": "Xu hướng chấm công (90 ngày)"
+  ,"dashboardAnalyticsTopLate": "Đi muộn nhiều nhất"
+  ,"dashboardAnalyticsOverall": "Tổng kết năm"
+  ,"dashboardAnalyticsLateDays": "ngày muộn"
+  ,"dashboardAnalyticsNoData": "Chưa có dữ liệu phân tích"
+  ,"dashboardAnalyticsDailyTimeline": "Xu hướng giờ công & chi phí theo ngày"
+  ,"dashboardAnalyticsDailyTimelineSubtitle": "Đường liền: giờ công — Đường đứt: chi phí ước tính"
+  ,"dashboardAnalyticsHours": "Giờ công"
+  ,"dashboardTabDay": "Ngày"
+  ,"dashboardTabMonth": "Tháng"
+  ,"dashboardTabRange": "Khoảng"
+  ,"dashboardRangeTotalWorkDays": "Tổng ngày công"
+  ,"dashboardRangeTotalLate": "Đi muộn"
+  ,"dashboardRangeTotalAbsent": "Vắng mặt"
+  ,"dashboardRangeTotalLeave": "Nghỉ phép"
+  ,"dashboardRangePresent": "Có mặt"
+  ,"dashboardRangeFrom": "Từ ngày"
+  ,"dashboardRangeTo": "Đến ngày"
+  ,"dashboardRangeNoData": "Không có dữ liệu trong khoảng này"
+  ,"dashboardTooltipGrade": "Cấp"
+  ,"dashboardTooltipHours": "Giờ"
+  ,"dashboardTooltipAmount": "Tiền"
+  ,"dashboardTooltipTotal": "Tổng"
+  ,"unitHour": "giờ"
+  ,"unitDay": "ngày"
 }

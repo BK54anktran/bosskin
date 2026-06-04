@@ -367,7 +367,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overtime => 'Overtime';
 
   @override
-  String get todayStatistics => 'Today\'s statistics';
+  String get statistics => 'statistics';
 
   @override
   String get email => 'Email';
@@ -2211,4 +2211,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardNotCheckedIn => 'Not checked in';
+
+  @override
+  String get dashboardFilterDepartment => 'Filter by department';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get dashboardTabAnalytics => 'Analytics';
+
+  @override
+  String get dashboardAnalyticsSalaryTrend => 'Monthly payroll';
+
+  @override
+  String get dashboardAnalyticsAttendanceTrend => 'Attendance trend (90 days)';
+
+  @override
+  String get dashboardAnalyticsTopLate => 'Most late arrivals';
+
+  @override
+  String get dashboardAnalyticsOverall => 'Year overview';
+
+  @override
+  String get dashboardAnalyticsLateDays => 'late days';
+
+  @override
+  String get dashboardAnalyticsNoData => 'No analytics data yet';
+
+  @override
+  String get dashboardAnalyticsDailyTimeline => 'Daily hours & cost trend';
+
+  @override
+  String get dashboardAnalyticsDailyTimelineSubtitle =>
+      'Solid: work hours — Dashed: estimated cost';
+
+  @override
+  String get dashboardAnalyticsHours => 'Work hours';
+
+  @override
+  String get dashboardTabDay => 'Day';
+
+  @override
+  String get dashboardTabMonth => 'Month';
+
+  @override
+  String get dashboardTabRange => 'Range';
+
+  @override
+  String get dashboardRangeTotalWorkDays => 'Total work days';
+
+  @override
+  String get dashboardRangeTotalLate => 'Late';
+
+  @override
+  String get dashboardRangeTotalAbsent => 'Absent';
+
+  @override
+  String get dashboardRangeTotalLeave => 'On leave';
+
+  @override
+  String get dashboardRangePresent => 'Present';
+
+  @override
+  String get dashboardRangeFrom => 'From';
+
+  @override
+  String get dashboardRangeTo => 'To';
+
+  @override
+  String get dashboardRangeNoData => 'No data for this period';
+
+  @override
+  String get dashboardTooltipGrade => 'Grade';
+
+  @override
+  String get dashboardTooltipHours => 'Hours';
+
+  @override
+  String get dashboardTooltipAmount => 'Amount';
+
+  @override
+  String get dashboardTooltipTotal => 'Total';
+
+  @override
+  String get unitHour => 'hour';
+
+  @override
+  String get unitDay => 'day';
 }

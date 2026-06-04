@@ -367,7 +367,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get overtime => 'Tăng ca';
 
   @override
-  String get todayStatistics => 'Thống kê hôm nay';
+  String get statistics => 'Thống kê';
 
   @override
   String get email => 'Email';
@@ -2211,4 +2211,94 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get dashboardNotCheckedIn => 'Chưa check-in';
+
+  @override
+  String get dashboardFilterDepartment => 'Lọc theo phòng ban';
+
+  @override
+  String get today => 'Hôm nay';
+
+  @override
+  String get dashboardTabAnalytics => 'Phân tích';
+
+  @override
+  String get dashboardAnalyticsSalaryTrend => 'Chi lương theo tháng';
+
+  @override
+  String get dashboardAnalyticsAttendanceTrend =>
+      'Xu hướng chấm công (90 ngày)';
+
+  @override
+  String get dashboardAnalyticsTopLate => 'Đi muộn nhiều nhất';
+
+  @override
+  String get dashboardAnalyticsOverall => 'Tổng kết năm';
+
+  @override
+  String get dashboardAnalyticsLateDays => 'ngày muộn';
+
+  @override
+  String get dashboardAnalyticsNoData => 'Chưa có dữ liệu phân tích';
+
+  @override
+  String get dashboardAnalyticsDailyTimeline =>
+      'Xu hướng giờ công & chi phí theo ngày';
+
+  @override
+  String get dashboardAnalyticsDailyTimelineSubtitle =>
+      'Đường liền: giờ công — Đường đứt: chi phí ước tính';
+
+  @override
+  String get dashboardAnalyticsHours => 'Giờ công';
+
+  @override
+  String get dashboardTabDay => 'Ngày';
+
+  @override
+  String get dashboardTabMonth => 'Tháng';
+
+  @override
+  String get dashboardTabRange => 'Khoảng';
+
+  @override
+  String get dashboardRangeTotalWorkDays => 'Tổng ngày công';
+
+  @override
+  String get dashboardRangeTotalLate => 'Đi muộn';
+
+  @override
+  String get dashboardRangeTotalAbsent => 'Vắng mặt';
+
+  @override
+  String get dashboardRangeTotalLeave => 'Nghỉ phép';
+
+  @override
+  String get dashboardRangePresent => 'Có mặt';
+
+  @override
+  String get dashboardRangeFrom => 'Từ ngày';
+
+  @override
+  String get dashboardRangeTo => 'Đến ngày';
+
+  @override
+  String get dashboardRangeNoData => 'Không có dữ liệu trong khoảng này';
+
+  @override
+  String get dashboardTooltipGrade => 'Cấp';
+
+  @override
+  String get dashboardTooltipHours => 'Giờ';
+
+  @override
+  String get dashboardTooltipAmount => 'Tiền';
+
+  @override
+  String get dashboardTooltipTotal => 'Tổng';
+
+  @override
+  String get unitHour => 'giờ';
+
+  @override
+  String get unitDay => 'ngày';
 }

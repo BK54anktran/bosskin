@@ -44,7 +44,7 @@ public class Attendance extends BaseEntity {
     private LocalDateTime checkOut;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private Status status;
 
     @Column(name = "note", columnDefinition = "TEXT")

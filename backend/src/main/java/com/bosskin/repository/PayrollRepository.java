@@ -161,4 +161,38 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         @Param("employeeId") Long employeeId,
         @Param("year") Integer year
     );
+
+    // Lương/ngày ước tính: SUM(netSalary / presentDays) theo từng tháng — dùng để tính chi phí ngày
+    @Query("""
+        SELECT p.year, p.month, SUM(p.netSalary), SUM(p.presentDays)
+        FROM Payroll p
+        JOIN p.employee e
+        WHERE e.company.id = :companyId
+          AND ((p.year = :fromYear AND p.month >= :fromMonth)
+            OR (p.year = :toYear   AND p.month <= :toMonth)
+            OR  (p.year > :fromYear AND p.year < :toYear))
+        GROUP BY p.year, p.month
+        ORDER BY p.year, p.month
+        """)
+    List<Object[]> findMonthlyPayrollSummaryInRange(
+        @Param("companyId") Long companyId,
+        @Param("fromYear") int fromYear,
+        @Param("fromMonth") int fromMonth,
+        @Param("toYear") int toYear,
+        @Param("toMonth") int toMonth
+    );
+
+    // Tổng lương theo từng tháng trong năm (cho biểu đồ trend)
+    @Query("""
+        SELECT p.month, SUM(p.netSalary), COUNT(p)
+        FROM Payroll p
+        JOIN p.employee e
+        WHERE e.company.id = :companyId AND p.year = :year
+        GROUP BY p.month
+        ORDER BY p.month
+        """)
+    List<Object[]> findMonthlySalaryTrend(
+        @Param("companyId") Long companyId,
+        @Param("year") int year
+    );
 }

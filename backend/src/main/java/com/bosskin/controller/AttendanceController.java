@@ -19,7 +19,10 @@ import com.bosskin.repository.CompanyRepository;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.LeaveRequestRepository;
 import com.bosskin.repository.ShiftAssignmentRepository;
-import com.bosskin.service.AttendanceCalculator;
+import com.bosskin.service.AttendanceCalculationService;
+import com.bosskin.service.AttendanceCalculationService.AttendancePolicy;
+import com.bosskin.service.AttendanceCalculationService.AttendanceRowData;
+import com.bosskin.service.AttendanceCalculationService.ComputedHours;
 import com.bosskin.service.AttendanceExcelService;
 import com.bosskin.entity.Department;
 import com.bosskin.entity.EmployeeLocation;
@@ -38,7 +41,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -68,9 +70,9 @@ public class AttendanceController {
     private final DeptScopeService deptScopeService;
     private final EmployeeLocationRepository employeeLocationRepository;
     private final AttendanceExcelService attendanceExcelService;
+    private final AttendanceCalculationService calc;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
-    private static final Set<Integer> ALLOWED_ROUNDING = Set.of(1, 5, 15, 30, 60);
 
     @GetMapping
     public ResponseEntity<Page<AttendanceDTO.Response>> getByMonth(
@@ -442,60 +444,6 @@ public class AttendanceController {
             .build();
     }
 
-    private String resolveWorkFlags(Attendance att, AttendanceRowData data, LeaveRequest leave, AttendancePolicy policy) {
-        // Đã approve và đã snapshot → dùng snapshot (bất biến, không bị ảnh hưởng bởi request thay đổi sau)
-        if (att != null && att.isApproved() && att.getWorkFlags() != null) {
-            return att.getWorkFlags();
-        }
-        // Chưa approve → tính live, ưu tiên: override > request > rounding > actual
-        // override & request: KHÔNG qua rounding (đã là giờ chính xác do người dùng nhập)
-        // actual: qua rounding (data.flagCheckIn/Out đã bao gồm request+rounding, fallback về actual+rounding)
-        LocalTime flagCheckIn;
-        if (att != null && att.getOverrideCheckIn() != null) {
-            flagCheckIn = att.getOverrideCheckIn();
-        } else if (data.flagCheckIn() != null) {
-            flagCheckIn = data.flagCheckIn(); // request nếu có, không thì actual đã rounding
-        } else {
-            flagCheckIn = data.effectiveCheckIn() != null
-                ? roundUp(data.effectiveCheckIn(), policy.roundingCheckInMinutes())
-                : null;
-        }
-        LocalTime flagCheckOut;
-        if (att != null && att.getOverrideCheckOut() != null) {
-            flagCheckOut = att.getOverrideCheckOut();
-        } else if (data.flagCheckOut() != null) {
-            flagCheckOut = data.flagCheckOut(); // request nếu có, không thì actual đã rounding
-        } else {
-            flagCheckOut = data.effectiveCheckOut() != null
-                ? roundDown(data.effectiveCheckOut(), policy.roundingCheckOutMinutes())
-                : null;
-        }
-        if (flagCheckIn == null || flagCheckOut == null) {
-            // Không có check-in/out nhưng có OT override → hiện OVERTIME
-            double otDayCheck = att != null && att.getOverrideOtDayMinutes() != null ? att.getOverrideOtDayMinutes() / 60.0 : data.otDayHours();
-            double otNightCheck = att != null && att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
-            if (otDayCheck > 0 || otNightCheck > 0) return "OVERTIME";
-            return null;
-        }
-        double otDay = att != null && att.getOverrideOtDayMinutes() != null
-            ? att.getOverrideOtDayMinutes() / 60.0
-            : data.otDayHours();
-        double otNight = att != null && att.getOverrideOtNightMinutes() != null
-            ? att.getOverrideOtNightMinutes() / 60.0
-            : data.otNightHours();
-        var flags = WorkFlagCalculator.calculate(
-            data.shiftStart(),
-            data.shiftEnd(),
-            flagCheckIn,
-            flagCheckOut,
-            otDay,
-            otNight,
-            leave != null,
-            policy.checkInToleranceMinutes(),
-            policy.checkOutToleranceMinutes()
-        );
-        return WorkFlagCalculator.serialize(flags);
-    }
 
     private List<AttendanceDTO.DayViewRow> buildDayViewRows(
         Employee employee,
@@ -700,215 +648,9 @@ public class AttendanceController {
         return null;
     }
 
-    private AttendanceRowData computeRowData(
-        Attendance att,
-        ShiftAssignment assignment,
-        int slotIndex,
-        List<AttendanceRequest> requests,
-        LocalTime leaveFrom,
-        LocalTime leaveTo,
-        LocalTime dayStart,
-        LocalTime dayEnd,
-        boolean otEnabled,
-        AttendancePolicy policy
-    ) {
-        ShiftAssignment sa = assignment;
+    // ── Delegated to AttendanceCalculationService ────────────────────────────
 
-        LocalTime shiftStart = null, shiftEnd = null, breakStart = null, breakEnd = null;
-        String shiftName = null, shiftColor = null;
-
-        if (sa != null) {
-            if (sa.isCustom()) {
-                shiftStart = sa.getCustomStartTime();
-                shiftEnd   = sa.getCustomEndTime();
-                breakStart = sa.getCustomBreakStart();
-                breakEnd   = sa.getCustomBreakEnd();
-                shiftName  = "Tùy chỉnh";
-            } else if (sa.getShift() != null) {
-                var s = sa.getShift();
-                shiftStart = sa.getCustomStartTime() != null ? sa.getCustomStartTime() : s.getStartTime();
-                shiftEnd   = sa.getCustomEndTime()   != null ? sa.getCustomEndTime()   : s.getEndTime();
-                breakStart = sa.getCustomBreakStart() != null ? sa.getCustomBreakStart() : s.getBreakStart();
-                breakEnd   = sa.getCustomBreakEnd()   != null ? sa.getCustomBreakEnd()   : s.getBreakEnd();
-                shiftName  = s.getName();
-                shiftColor = s.getColor();
-            }
-        }
-
-        int breakMinutes = 0;
-        if (breakStart != null && breakEnd != null) {
-            int bs = breakStart.toSecondOfDay() / 60, be = breakEnd.toSecondOfDay() / 60;
-            if (be < bs) be += 1440;
-            breakMinutes = be - bs;
-        }
-
-        LocalTime checkIn  = att != null && att.getCheckIn()  != null ? att.getCheckIn().toLocalTime()  : null;
-        LocalTime checkOut = att != null && att.getCheckOut() != null ? att.getCheckOut().toLocalTime() : null;
-        Long attendanceId  = att != null ? att.getId() : null;
-
-        AttendanceRequest requestCheckIn = null;
-        AttendanceRequest appliedRequestCheckIn = null;
-        AttendanceRequest requestCheckOut = null;
-        AttendanceRequest appliedRequestCheckOut = null;
-        List<AttendanceRequest> requestOts = new ArrayList<>();
-        List<AttendanceRequest> appliedRequestOts = new ArrayList<>();
-        List<AttendanceRequest> appliedRequestExtras = new ArrayList<>();
-        if (requests != null) {
-            for (AttendanceRequest r : requests) {
-                if (r.getStatus() != AttendanceRequest.Status.APPROVED) {
-                    continue;
-                }
-                Long requestShiftId = r.getShiftAssignment() != null ? r.getShiftAssignment().getId() : null;
-                if (assignment != null) {
-                    Long currentShiftId = assignment.getId();
-                    if (requestShiftId != null && !requestShiftId.equals(currentShiftId)) {
-                        continue;
-                    }
-                    if (requestShiftId == null && slotIndex > 0 && assignment != null) {
-                        continue;
-                    }
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.CHECK_IN) {
-                    requestCheckIn = r;
-                    if (r.isApplied()) {
-                        appliedRequestCheckIn = r;
-                    }
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.CHECK_OUT) {
-                    requestCheckOut = r;
-                    if (r.isApplied()) {
-                        appliedRequestCheckOut = r;
-                    }
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.OT) {
-                    requestOts.add(r);
-                    if (r.isApplied()) {
-                        appliedRequestOts.add(r);
-                    }
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.EXTRA) {
-                    requestOts.add(r);
-                    if (r.isApplied()) {
-                        appliedRequestExtras.add(r);
-                    }
-                }
-            }
-        }
-
-        LocalTime effectiveCheckIn = chooseEarlier(
-            checkIn,
-            appliedRequestCheckIn != null ? appliedRequestCheckIn.getRequestedCheckIn() : null,
-            shiftStart,
-            shiftEnd
-        );
-        LocalTime effectiveCheckOut = chooseLater(
-            checkOut,
-            appliedRequestCheckOut != null ? appliedRequestCheckOut.getRequestedCheckOut() : null,
-            shiftStart,
-            shiftEnd
-        );
-
-        LocalTime roundedCheckIn = roundUp(effectiveCheckIn, policy.roundingCheckInMinutes());
-        LocalTime roundedCheckOut = roundDown(effectiveCheckOut, policy.roundingCheckOutMinutes());
-        var calc = AttendanceCalculator.calculate(
-            shiftStart, shiftEnd, breakStart, breakEnd, roundedCheckIn, roundedCheckOut, dayStart, dayEnd, leaveFrom, leaveTo);
-
-        int actualMinutes = hoursToMinutes(calc.actualHours());
-        int regularDayMinutes = hoursToMinutes(calc.regularDayHours());
-        int regularNightMinutes = hoursToMinutes(calc.regularNightHours());
-        int otDayMinutes = hoursToMinutes(calc.otDayHours());
-        int otNightMinutes = hoursToMinutes(calc.otNightHours());
-
-        for (AttendanceRequest requestOt : appliedRequestOts) {
-            if (requestOt.getRequestedOvertimeMinutes() == null) {
-                continue;
-            }
-            int overtimeMinutes = Math.max(0, requestOt.getRequestedOvertimeMinutes());
-            var scope = requestOt.getRequestedOvertimeScope();
-            var period = requestOt.getRequestedOvertimePeriod();
-
-            if (scope == AttendanceRequest.OvertimeScope.IN_SHIFT) {
-                if (period == AttendanceRequest.OvertimePeriod.NIGHT) {
-                    int moved = Math.min(overtimeMinutes, regularNightMinutes);
-                    regularNightMinutes -= moved;
-                    otNightMinutes += moved;
-                } else {
-                    int moved = Math.min(overtimeMinutes, regularDayMinutes);
-                    regularDayMinutes -= moved;
-                    otDayMinutes += moved;
-                }
-            } else if (scope == AttendanceRequest.OvertimeScope.OUTSIDE_SHIFT) {
-                if (period == AttendanceRequest.OvertimePeriod.NIGHT) {
-                    actualMinutes += overtimeMinutes;
-                    otNightMinutes += overtimeMinutes;
-                } else {
-                    actualMinutes += overtimeMinutes;
-                    otDayMinutes += overtimeMinutes;
-                }
-            }
-        }
-
-        for (AttendanceRequest requestExtra : appliedRequestExtras) {
-            if (requestExtra.getRequestedOvertimeMinutes() == null) continue;
-            int extraMinutes = Math.max(0, requestExtra.getRequestedOvertimeMinutes());
-            var period = requestExtra.getRequestedOvertimePeriod();
-            actualMinutes += extraMinutes;
-            if (period == AttendanceRequest.OvertimePeriod.NIGHT) {
-                regularNightMinutes += extraMinutes;
-            } else {
-                regularDayMinutes += extraMinutes;
-            }
-        }
-
-        if (!otEnabled) {
-            regularDayMinutes += otDayMinutes;
-            regularNightMinutes += otNightMinutes;
-            otDayMinutes = 0;
-            otNightMinutes = 0;
-        }
-
-        if (policy.roundingWorkMinutes() != null) {
-            regularDayMinutes = roundDownMinutes(regularDayMinutes, policy.roundingWorkMinutes());
-            regularNightMinutes = roundDownMinutes(regularNightMinutes, policy.roundingWorkMinutes());
-            otDayMinutes = roundDownMinutes(otDayMinutes, policy.roundingWorkMinutes());
-            otNightMinutes = roundDownMinutes(otNightMinutes, policy.roundingWorkMinutes());
-        }
-
-        LocalTime flagCheckIn  = appliedRequestCheckIn  != null ? appliedRequestCheckIn.getRequestedCheckIn()   : checkIn;
-        LocalTime flagCheckOut = appliedRequestCheckOut != null ? appliedRequestCheckOut.getRequestedCheckOut() : checkOut;
-        flagCheckIn = roundUp(flagCheckIn, policy.roundingCheckInMinutes());
-        flagCheckOut = roundDown(flagCheckOut, policy.roundingCheckOutMinutes());
-
-        return new AttendanceRowData(
-            shiftName,
-            shiftColor,
-            shiftStart,
-            shiftEnd,
-            breakMinutes,
-            checkIn,
-            checkOut,
-            effectiveCheckIn,
-            effectiveCheckOut,
-            flagCheckIn,
-            flagCheckOut,
-            att != null ? att.getStatus() : null,
-            requestCheckIn != null ? requestCheckIn.getRequestedCheckIn() : null,
-            requestCheckIn != null ? requestCheckIn.getStatus() : null,
-            requestCheckOut != null ? requestCheckOut.getRequestedCheckOut() : null,
-            requestCheckOut != null ? requestCheckOut.getStatus() : null,
-            requestOts.isEmpty() ? null : requestOts.stream().mapToInt(r -> r.getRequestedOvertimeMinutes() != null ? r.getRequestedOvertimeMinutes() : 0).sum(),
-            requestOts.isEmpty() ? null : requestOts.get(0).getRequestedOvertimeScope(),
-            requestOts.isEmpty() ? null : requestOts.get(0).getRequestedOvertimePeriod(),
-            requestOts.isEmpty() ? null : requestOts.get(0).getStatus(),
-            attendanceId,
-            actualMinutes / 60.0,
-            regularDayMinutes / 60.0,
-            otDayMinutes / 60.0,
-            regularNightMinutes / 60.0,
-            otNightMinutes / 60.0
-        );
-    }
-
+    private AttendancePolicy resolveAttendancePolicy(Employee employee) { return calc.resolvePolicy(employee); }
     private LocalTime assignmentStartTime(ShiftAssignment assignment) {
         if (assignment == null) {
             return null;
@@ -942,157 +684,6 @@ public class AttendanceController {
         if (b == null) return -1;
         return a.compareTo(b);
     }
-
-    private AttendancePolicy resolveAttendancePolicy(Employee employee) {
-        Integer checkInTolerance = null;
-        Integer checkOutTolerance = null;
-        Integer roundingCheckIn = null;
-        Integer roundingCheckOut = null;
-        Integer roundingWork = null;
-
-        Department dept = employee != null ? employee.getDepartment() : null;
-        while (dept != null) {
-            if (checkInTolerance == null && dept.getCheckInToleranceMinutes() != null) {
-                checkInTolerance = dept.getCheckInToleranceMinutes();
-            }
-            if (checkOutTolerance == null && dept.getCheckOutToleranceMinutes() != null) {
-                checkOutTolerance = dept.getCheckOutToleranceMinutes();
-            }
-            if (roundingCheckIn == null && dept.getRoundingCheckInMinutes() != null) {
-                roundingCheckIn = dept.getRoundingCheckInMinutes();
-            }
-            if (roundingCheckOut == null && dept.getRoundingCheckOutMinutes() != null) {
-                roundingCheckOut = dept.getRoundingCheckOutMinutes();
-            }
-            if (roundingWork == null && dept.getRoundingWorkMinutes() != null) {
-                roundingWork = dept.getRoundingWorkMinutes();
-            }
-            dept = dept.getParent();
-        }
-
-        Company company = employee != null ? employee.getCompany() : null;
-        if (company != null) {
-            if (checkInTolerance == null) checkInTolerance = company.getCheckInToleranceMinutes();
-            if (checkOutTolerance == null) checkOutTolerance = company.getCheckOutToleranceMinutes();
-            if (roundingCheckIn == null) roundingCheckIn = company.getRoundingCheckInMinutes();
-            if (roundingCheckOut == null) roundingCheckOut = company.getRoundingCheckOutMinutes();
-            if (roundingWork == null) roundingWork = company.getRoundingWorkMinutes();
-        }
-
-        return new AttendancePolicy(
-            normalizeTolerance(checkInTolerance),
-            normalizeTolerance(checkOutTolerance),
-            normalizeRounding(roundingCheckIn),
-            normalizeRounding(roundingCheckOut),
-            normalizeRounding(roundingWork)
-        );
-    }
-
-    private Integer normalizeTolerance(Integer minutes) {
-        if (minutes == null) return null;
-        return minutes >= 0 ? minutes : null;
-    }
-
-    private Integer normalizeRounding(Integer minutes) {
-        if (minutes == null) return null;
-        return ALLOWED_ROUNDING.contains(minutes) ? minutes : null;
-    }
-
-    private LocalTime roundUp(LocalTime value, Integer stepMinutes) {
-        if (value == null || stepMinutes == null || stepMinutes <= 1) return value;
-        int total = value.getHour() * 60 + value.getMinute();
-        int rounded = ((total + stepMinutes - 1) / stepMinutes) * stepMinutes;
-        rounded = rounded % (24 * 60);
-        return LocalTime.of(rounded / 60, rounded % 60);
-    }
-
-    private LocalTime roundDown(LocalTime value, Integer stepMinutes) {
-        if (value == null || stepMinutes == null || stepMinutes <= 1) return value;
-        int total = value.getHour() * 60 + value.getMinute();
-        int rounded = (total / stepMinutes) * stepMinutes;
-        rounded = rounded % (24 * 60);
-        return LocalTime.of(rounded / 60, rounded % 60);
-    }
-
-    private int roundDownMinutes(int minutes, Integer stepMinutes) {
-        if (stepMinutes == null || stepMinutes <= 1) return Math.max(0, minutes);
-        return Math.max(0, (minutes / stepMinutes) * stepMinutes);
-    }
-
-    private double roundDownHours(double hours, Integer stepMinutes) {
-        if (stepMinutes == null || stepMinutes <= 1) return hours;
-        int mins = (int) Math.floor(hours * 60.0 + 1e-9);
-        return roundDownMinutes(mins, stepMinutes) / 60.0;
-    }
-
-    private record AttendancePolicy(
-        Integer checkInToleranceMinutes,
-        Integer checkOutToleranceMinutes,
-        Integer roundingCheckInMinutes,
-        Integer roundingCheckOutMinutes,
-        Integer roundingWorkMinutes
-    ) {}
-
-    private record ComputedHours(
-        double actualHours,
-        double regularDayHours,
-        double otDayHours,
-        double regularNightHours,
-        double otNightHours
-    ) {}
-
-    private ComputedHours computeHours(
-        Attendance att,
-        AttendanceRowData data,
-        AttendancePolicy policy,
-        LocalTime dayStart,
-        LocalTime dayEnd,
-        boolean useSnapshot
-    ) {
-        // Đã approve → dùng snap (bất biến), bỏ qua override
-        if (useSnapshot && att != null && att.isApproved()) {
-            return new ComputedHours(
-                att.getSnapActualHours() != null ? att.getSnapActualHours() : data.actualHours(),
-                att.getSnapDayHours()    != null ? att.getSnapDayHours()    : data.regularDayHours(),
-                att.getSnapDayOt()       != null ? att.getSnapDayOt()       : data.otDayHours(),
-                att.getSnapNightHours()  != null ? att.getSnapNightHours()  : data.regularNightHours(),
-                att.getSnapNightOt()     != null ? att.getSnapNightOt()     : data.otNightHours()
-            );
-        }
-        // Chưa approve → tính live từ override nếu có, không thì từ data
-        boolean hasOverride = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
-                              || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
-        if (hasOverride) {
-            LocalTime ovCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn() : data.checkIn();
-            LocalTime ovCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut();
-            ovCI = roundUp(ovCI, policy.roundingCheckInMinutes());
-            ovCO = roundDown(ovCO, policy.roundingCheckOutMinutes());
-            int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
-            double actual, regDay, regNight;
-            if (ovCI != null && ovCO != null) {
-                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
-                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
-                var calc = AttendanceCalculator.calculate(
-                    data.shiftStart(), data.shiftEnd(),
-                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null,
-                    ovCI, ovCO, dayStart, dayEnd);
-                actual   = calc.actualHours();
-                regDay   = calc.regularDayHours();
-                regNight = calc.regularNightHours();
-            } else { actual = regDay = regNight = 0; }
-            double otDay   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
-            double otNight = att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
-            if (policy.roundingWorkMinutes() != null) {
-                regDay   = roundDownHours(regDay,   policy.roundingWorkMinutes());
-                regNight = roundDownHours(regNight, policy.roundingWorkMinutes());
-                otDay    = roundDownHours(otDay,    policy.roundingWorkMinutes());
-                otNight  = roundDownHours(otNight,  policy.roundingWorkMinutes());
-            }
-            return new ComputedHours(actual, regDay, otDay, regNight, otNight);
-        }
-        return new ComputedHours(data.actualHours(), data.regularDayHours(), data.otDayHours(), data.regularNightHours(), data.otNightHours());
-    }
-
 
     private List<Employee> resolveDayViewEmployees(User user, Company company, Long departmentId, Set<Long> scopeIds) {
         List<Employee> employees = employeeRepository.findAllByCompanyIdFetchDepartment(company.getId());
@@ -1140,63 +731,17 @@ public class AttendanceController {
         return employees;
     }
 
-    private record AttendanceRowData(
-        String shiftName,
-        String shiftColor,
-        LocalTime shiftStart,
-        LocalTime shiftEnd,
-        int breakMinutes,
-        LocalTime checkIn,
-        LocalTime checkOut,
-        LocalTime effectiveCheckIn,
-        LocalTime effectiveCheckOut,
-        LocalTime flagCheckIn,   // giờ dùng để tính work flags: request nếu có, không thì thực tế
-        LocalTime flagCheckOut,
-        Attendance.Status status,
-        LocalTime requestedCheckIn,
-        AttendanceRequest.Status requestedCheckInStatus,
-        LocalTime requestedCheckOut,
-        AttendanceRequest.Status requestedCheckOutStatus,
-        Integer requestedOvertimeMinutes,
-        AttendanceRequest.OvertimeScope requestedOvertimeScope,
-        AttendanceRequest.OvertimePeriod requestedOvertimePeriod,
-        AttendanceRequest.Status requestedOvertimeStatus,
-        Long attendanceId,
-        double actualHours,
-        double regularDayHours,
-        double otDayHours,
-        double regularNightHours,
-        double otNightHours
-    ) {}
-
-    private LocalTime chooseEarlier(LocalTime actual, LocalTime requested, LocalTime shiftStart, LocalTime shiftEnd) {
-        if (actual == null) return requested;
-        if (requested == null) return actual;
-        return compareTimeline(actual, requested, shiftStart, shiftEnd) <= 0 ? actual : requested;
-    }
-
-    private LocalTime chooseLater(LocalTime actual, LocalTime requested, LocalTime shiftStart, LocalTime shiftEnd) {
-        if (actual == null) return requested;
-        if (requested == null) return actual;
-        return compareTimeline(actual, requested, shiftStart, shiftEnd) >= 0 ? actual : requested;
-    }
-
-    private int compareTimeline(LocalTime a, LocalTime b, LocalTime shiftStart, LocalTime shiftEnd) {
-        return Integer.compare(toTimelineMinutes(a, shiftStart, shiftEnd), toTimelineMinutes(b, shiftStart, shiftEnd));
-    }
-
-    private int toTimelineMinutes(LocalTime time, LocalTime shiftStart, LocalTime shiftEnd) {
-        int minutes = time.toSecondOfDay() / 60;
-        boolean overnight = shiftStart != null && shiftEnd != null && !shiftEnd.isAfter(shiftStart);
-        if (overnight && time.isBefore(shiftStart)) {
-            minutes += 1440;
-        }
-        return minutes;
-    }
-
-    private int hoursToMinutes(double hours) {
-        return (int) Math.round(hours * 60.0);
-    }
+    // ── Type aliases from AttendanceCalculationService ───────────────────────
+    private AttendanceRowData computeRowData(Attendance att, ShiftAssignment sa, int slotIdx, List<AttendanceRequest> req, LocalTime lf, LocalTime lt, LocalTime ds, LocalTime de, boolean ot, AttendancePolicy p) { return calc.computeRowData(att, sa, slotIdx, req, lf, lt, ds, de, ot, p); }
+    private ComputedHours computeHours(Attendance att, AttendanceRowData d, AttendancePolicy p, LocalTime ds, LocalTime de, boolean snap) { return calc.computeHours(att, d, p, ds, de, snap); }
+    private String resolveWorkFlags(Attendance att, AttendanceRowData d, LeaveRequest lr, AttendancePolicy p) { return calc.resolveWorkFlags(att, d, lr, p); }
+    private LocalTime roundUp(LocalTime v, Integer s) { return calc.roundUp(v, s); }
+    private LocalTime roundDown(LocalTime v, Integer s) { return calc.roundDown(v, s); }
+    private int roundDownMinutes(int m, Integer s) { return calc.roundDownMinutes(m, s); }
+    private double roundDownHours(double h, Integer s) { return calc.roundDownHours(h, s); }
+    private int hoursToMinutes(double h) { return calc.hoursToMinutes(h); }
+    private LocalTime chooseEarlier(LocalTime a, LocalTime r, LocalTime ss, LocalTime se) { return calc.chooseEarlier(a, r, ss, se); }
+    private LocalTime chooseLater(LocalTime a, LocalTime r, LocalTime ss, LocalTime se) { return calc.chooseLater(a, r, ss, se); }
 
     @PostMapping("/approve")
     @Transactional
@@ -1383,7 +928,7 @@ public class AttendanceController {
             ? attendanceRepository.save(Attendance.builder()
                 .employee(employee)
                 .date(date)
-                .status(Attendance.Status.PRESENT)
+                .status(Attendance.Status.ABSENT)
                 .build())
             : existing.get(0);
         return ResponseEntity.ok(Map.of("attendanceId", att.getId()));
@@ -1410,6 +955,7 @@ public class AttendanceController {
             att.setSnapNightHours(null);
             att.setSnapNightOt(null);
             att.setWorkFlags(null);
+            att.setStatus(null);
             attendanceRepository.save(att);
         });
         return ResponseEntity.ok().build();
@@ -2120,6 +1666,7 @@ public class AttendanceController {
                     att.setSnapActualHours(null); att.setSnapDayHours(null);
                     att.setSnapDayOt(null); att.setSnapNightHours(null);
                     att.setSnapNightOt(null); att.setWorkFlags(null);
+                    att.setStatus(null);
                     attendanceRepository.save(att);
                 }
                 approved++;

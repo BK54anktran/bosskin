@@ -57,6 +57,21 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Param("date") LocalDate date
     );
 
+    @Query("""
+        SELECT a FROM Attendance a
+        JOIN FETCH a.employee e
+        JOIN FETCH e.department
+        WHERE e.company.id = :companyId
+          AND a.date = :date AND a.deleted = false
+          AND (:departmentId IS NULL OR e.department.id = :departmentId)
+        ORDER BY e.fullName, a.id
+        """)
+    List<Attendance> findByCompanyAndDateAndDept(
+        @Param("companyId") Long companyId,
+        @Param("date") LocalDate date,
+        @Param("departmentId") Long departmentId
+    );
+
     @Query(value = """
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e
@@ -169,6 +184,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e
         JOIN FETCH e.department
+        LEFT JOIN FETCH e.salaryGrade sg
         WHERE e.company.id = :companyId
           AND a.date BETWEEN :from AND :to
           AND a.deleted = false
@@ -178,6 +194,24 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Param("companyId") Long companyId,
         @Param("from") LocalDate from,
         @Param("to") LocalDate to
+    );
+
+    @Query("""
+        SELECT a FROM Attendance a
+        JOIN FETCH a.employee e
+        JOIN FETCH e.department
+        LEFT JOIN FETCH e.salaryGrade sg
+        WHERE e.company.id = :companyId
+          AND a.date BETWEEN :from AND :to
+          AND a.deleted = false
+          AND (:departmentId IS NULL OR e.department.id = :departmentId)
+        ORDER BY e.fullName, a.date
+        """)
+    List<Attendance> findByCompanyAndDateRangeAndDept(
+        @Param("companyId") Long companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("departmentId") Long departmentId
     );
 
     @Query(value = """
@@ -230,5 +264,54 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Param("employeeId") Long employeeId,
         @Param("deptIds") Collection<Long> deptIds,
         Pageable pageable
+    );
+
+    // Top nhân viên đi muộn — trả về [employeeId, employeeCode, fullName, deptName, lateCount]
+    @Query("""
+        SELECT e.id, e.employeeCode, e.fullName,
+               COALESCE(d.name, ''),
+               COUNT(a) as lateCount
+        FROM Attendance a
+        JOIN a.employee e
+        LEFT JOIN e.department d
+        WHERE e.company.id = :companyId
+          AND a.date BETWEEN :from AND :to
+          AND a.deleted = false
+          AND a.approved = true
+          AND a.status = com.bosskin.entity.Attendance.Status.LATE
+          AND (:departmentId IS NULL OR d.id = :departmentId)
+        GROUP BY e.id, e.employeeCode, e.fullName, d.name
+        ORDER BY lateCount DESC
+        """)
+    List<Object[]> findTopLateEmployees(
+        @Param("companyId") Long companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("departmentId") Long departmentId,
+        Pageable pageable
+    );
+
+    // Thống kê chấm công theo ngày — [date, presentCount, lateCount, absentCount, totalActualHours]
+    @Query("""
+        SELECT a.date,
+               SUM(CASE WHEN a.status = com.bosskin.entity.Attendance.Status.PRESENT THEN 1 ELSE 0 END),
+               SUM(CASE WHEN a.status = com.bosskin.entity.Attendance.Status.LATE    THEN 1 ELSE 0 END),
+               SUM(CASE WHEN a.status = com.bosskin.entity.Attendance.Status.ABSENT  THEN 1 ELSE 0 END),
+               COALESCE(SUM(a.snapActualHours), 0)
+        FROM Attendance a
+        JOIN a.employee e
+        LEFT JOIN e.department d
+        WHERE e.company.id = :companyId
+          AND a.date BETWEEN :from AND :to
+          AND a.deleted = false
+          AND (:departmentId IS NULL OR d.id = :departmentId)
+        GROUP BY a.date
+        ORDER BY a.date
+        """)
+    List<Object[]> findDailyAttendanceSummary(
+        @Param("companyId") Long companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("departmentId") Long departmentId
     );
 }
