@@ -105,7 +105,204 @@ public class AttendanceCalculationService {
         );
     }
 
-    // ── Row data ──────────────────────────────────────────────────────────────
+    // ── Shift times ───────────────────────────────────────────────────────────
+
+    public record ShiftTimes(
+        String name, String color,
+        LocalTime start, LocalTime end,
+        LocalTime breakStart, LocalTime breakEnd,
+        int breakMinutes
+    ) {}
+
+    /** Lay gio ca tu ShiftAssignment (ke ca custom). */
+    public ShiftTimes resolveShiftTimes(ShiftAssignment assignment) {
+        if (assignment == null) return new ShiftTimes(null, null, null, null, null, null, 0);
+        LocalTime shiftStart, shiftEnd, breakStart = null, breakEnd = null;
+        String shiftName, shiftColor = null;
+        if (assignment.isCustom()) {
+            shiftStart = assignment.getCustomStartTime();
+            shiftEnd   = assignment.getCustomEndTime();
+            breakStart = assignment.getCustomBreakStart();
+            breakEnd   = assignment.getCustomBreakEnd();
+            shiftName  = "Tuy chinh";
+        } else if (assignment.getShift() != null) {
+            var s = assignment.getShift();
+            shiftStart = assignment.getCustomStartTime()  != null ? assignment.getCustomStartTime()  : s.getStartTime();
+            shiftEnd   = assignment.getCustomEndTime()    != null ? assignment.getCustomEndTime()    : s.getEndTime();
+            breakStart = assignment.getCustomBreakStart() != null ? assignment.getCustomBreakStart() : s.getBreakStart();
+            breakEnd   = assignment.getCustomBreakEnd()   != null ? assignment.getCustomBreakEnd()   : s.getBreakEnd();
+            shiftName  = s.getName();
+            shiftColor = s.getColor();
+        } else {
+            return new ShiftTimes(null, null, null, null, null, null, 0);
+        }
+        int breakMinutes = 0;
+        if (breakStart != null && breakEnd != null) {
+            int bs = breakStart.toSecondOfDay() / 60, be = breakEnd.toSecondOfDay() / 60;
+            if (be < bs) be += 1440;
+            breakMinutes = be - bs;
+        }
+        return new ShiftTimes(shiftName, shiftColor, shiftStart, shiftEnd, breakStart, breakEnd, breakMinutes);
+    }
+
+    // ── Requests ──────────────────────────────────────────────────────────────
+
+    public record ResolvedRequests(
+        AttendanceRequest checkInRequest,
+        AttendanceRequest appliedCheckInRequest,
+        AttendanceRequest checkOutRequest,
+        AttendanceRequest appliedCheckOutRequest,
+        List<AttendanceRequest> overtimeRequests,
+        List<AttendanceRequest> appliedOvertimeRequests,
+        List<AttendanceRequest> appliedExtraRequests
+    ) {}
+
+    /** Phan loai va loc AttendanceRequest theo slot/ca. */
+    public ResolvedRequests resolveRequests(List<AttendanceRequest> requests,
+                                            ShiftAssignment assignment, int slotIndex) {
+        AttendanceRequest checkInReq = null, appliedCheckInReq = null;
+        AttendanceRequest checkOutReq = null, appliedCheckOutReq = null;
+        List<AttendanceRequest> otReqs = new ArrayList<>(), appliedOtReqs = new ArrayList<>(), appliedExtraReqs = new ArrayList<>();
+        if (requests != null) {
+            for (AttendanceRequest r : requests) {
+                if (r.getStatus() != AttendanceRequest.Status.APPROVED) continue;
+                Long reqShiftId = r.getShiftAssignment() != null ? r.getShiftAssignment().getId() : null;
+                if (assignment != null) {
+                    if (reqShiftId != null && !reqShiftId.equals(assignment.getId())) continue;
+                    if (reqShiftId == null && slotIndex > 0) continue;
+                }
+                switch (r.getRequestType()) {
+                    case CHECK_IN  -> { checkInReq  = r; if (r.isApplied()) appliedCheckInReq  = r; }
+                    case CHECK_OUT -> { checkOutReq = r; if (r.isApplied()) appliedCheckOutReq = r; }
+                    case OT        -> { otReqs.add(r);   if (r.isApplied()) appliedOtReqs.add(r); }
+                    case EXTRA     -> { otReqs.add(r);   if (r.isApplied()) appliedExtraReqs.add(r); }
+                }
+            }
+        }
+        return new ResolvedRequests(checkInReq, appliedCheckInReq, checkOutReq, appliedCheckOutReq,
+            otReqs, appliedOtReqs, appliedExtraReqs);
+    }
+
+    // ── Effective check-in / check-out ────────────────────────────────────────
+
+    /**
+     * Check-in hieu qua: som nhat giua thuc te va request da applied.
+     */
+    public LocalTime resolveEffectiveCheckIn(Attendance att, ResolvedRequests req, ShiftTimes shift) {
+        LocalTime actualCheckIn    = att != null && att.getCheckIn()  != null ? att.getCheckIn().toLocalTime()  : null;
+        LocalTime requestedCheckIn = req.appliedCheckInRequest() != null ? req.appliedCheckInRequest().getRequestedCheckIn() : null;
+        return chooseEarlier(actualCheckIn, requestedCheckIn, shift.start(), shift.end());
+    }
+
+    /**
+     * Check-out hieu qua: tre nhat giua thuc te va request da applied.
+     */
+    public LocalTime resolveEffectiveCheckOut(Attendance att, ResolvedRequests req, ShiftTimes shift) {
+        LocalTime actualCheckOut    = att != null && att.getCheckOut() != null ? att.getCheckOut().toLocalTime() : null;
+        LocalTime requestedCheckOut = req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : null;
+        return chooseLater(actualCheckOut, requestedCheckOut, shift.start(), shift.end());
+    }
+
+    // ── Work hours ────────────────────────────────────────────────────────────
+
+    /**
+     * Tinh gio cong: thuc te, ngay thuong, OT ngay, dem thuong, OT dem.
+     * Nhan check-in/out da round va approved OT requests.
+     */
+    public ComputedHours computeWorkHours(
+        ShiftTimes shift,
+        LocalTime roundedCheckIn,
+        LocalTime roundedCheckOut,
+        LocalTime dayStart,
+        LocalTime dayEnd,
+        LocalTime leaveFrom,
+        LocalTime leaveTo,
+        ResolvedRequests req,
+        boolean otEnabled,
+        AttendancePolicy policy
+    ) {
+        var calc = AttendanceCalculator.calculate(
+            shift.start(), shift.end(), shift.breakStart(), shift.breakEnd(),
+            roundedCheckIn, roundedCheckOut, dayStart, dayEnd, leaveFrom, leaveTo);
+
+        int actualMin   = hoursToMinutes(calc.actualHours());
+        int regDayMin   = hoursToMinutes(calc.regularDayHours());
+        int regNightMin = hoursToMinutes(calc.regularNightHours());
+        int otDayMin    = hoursToMinutes(calc.otDayHours());
+        int otNightMin  = hoursToMinutes(calc.otNightHours());
+
+        for (AttendanceRequest r : req.appliedOvertimeRequests()) {
+            if (r.getRequestedOvertimeMinutes() == null) continue;
+            int overtimeMinutes = Math.max(0, r.getRequestedOvertimeMinutes());
+            if (r.getRequestedOvertimeScope() == AttendanceRequest.OvertimeScope.IN_SHIFT) {
+                if (r.getRequestedOvertimePeriod() == AttendanceRequest.OvertimePeriod.NIGHT) {
+                    int moved = Math.min(overtimeMinutes, regNightMin); regNightMin -= moved; otNightMin += moved;
+                } else {
+                    int moved = Math.min(overtimeMinutes, regDayMin);   regDayMin   -= moved; otDayMin   += moved;
+                }
+            } else if (r.getRequestedOvertimeScope() == AttendanceRequest.OvertimeScope.OUTSIDE_SHIFT) {
+                actualMin += overtimeMinutes;
+                if (r.getRequestedOvertimePeriod() == AttendanceRequest.OvertimePeriod.NIGHT) otNightMin += overtimeMinutes;
+                else otDayMin += overtimeMinutes;
+            }
+        }
+        for (AttendanceRequest r : req.appliedExtraRequests()) {
+            if (r.getRequestedOvertimeMinutes() == null) continue;
+            int extraMinutes = Math.max(0, r.getRequestedOvertimeMinutes());
+            actualMin += extraMinutes;
+            if (r.getRequestedOvertimePeriod() == AttendanceRequest.OvertimePeriod.NIGHT) regNightMin += extraMinutes;
+            else regDayMin += extraMinutes;
+        }
+        if (!otEnabled) {
+            regDayMin += otDayMin; regNightMin += otNightMin;
+            otDayMin = 0; otNightMin = 0;
+        }
+        if (policy.roundingWorkMinutes() != null) {
+            regDayMin   = roundDownMinutes(regDayMin,   policy.roundingWorkMinutes());
+            regNightMin = roundDownMinutes(regNightMin, policy.roundingWorkMinutes());
+            otDayMin    = roundDownMinutes(otDayMin,    policy.roundingWorkMinutes());
+            otNightMin  = roundDownMinutes(otNightMin,  policy.roundingWorkMinutes());
+        }
+        return new ComputedHours(actualMin / 60.0, regDayMin / 60.0, otDayMin / 60.0, regNightMin / 60.0, otNightMin / 60.0);
+    }
+
+    // ── Display status ────────────────────────────────────────────────────────
+
+    /**
+     * Suy ra trang thai hien thi tu du lieu thuc te (khong luu DB).
+     * - Approved  -> dung status da luu.
+     * - Chua approved:
+     *   + Co check-in + co ca + di tre qua tolerance -> LATE
+     *   + Co check-in -> PRESENT
+     *   + Khong check-in + co ca -> ABSENT
+     *   + Khong co ca -> null
+     */
+    public Attendance.Status deriveDisplayStatus(
+        Attendance att,
+        ShiftAssignment assignment,
+        LocalTime effectiveCheckIn,
+        LocalTime flagCheckIn,
+        LocalTime flagCheckOut,
+        ShiftTimes shift,
+        AttendancePolicy policy
+    ) {
+        if (att == null) return null;
+        if (att.isApproved()) return att.getStatus();
+        boolean hasCheckIn = effectiveCheckIn != null
+            || (att.getOverrideCheckIn() != null)
+            || (att.getCheckIn() != null);
+        if (!hasCheckIn) return assignment != null ? Attendance.Status.ABSENT : null;
+        if (shift.start() != null && shift.end() != null && flagCheckIn != null) {
+            var flags = WorkFlagCalculator.calculate(
+                shift.start(), shift.end(), flagCheckIn, flagCheckOut,
+                0, 0, false,
+                policy.checkInToleranceMinutes(), policy.checkOutToleranceMinutes());
+            if (flags.contains(WorkFlagCalculator.Flag.LATE_IN)) return Attendance.Status.LATE;
+        }
+        return Attendance.Status.PRESENT;
+    }
+
+    // ── Row data (composite — dung cac ham tren, giu nguyen cho controller) ───
 
     public AttendanceRowData computeRowData(
         Attendance att,
@@ -119,139 +316,38 @@ public class AttendanceCalculationService {
         boolean otEnabled,
         AttendancePolicy policy
     ) {
-        LocalTime shiftStart = null, shiftEnd = null, breakStart = null, breakEnd = null;
-        String shiftName = null, shiftColor = null;
+        ShiftTimes shift        = resolveShiftTimes(assignment);
+        ResolvedRequests req    = resolveRequests(requests, assignment, slotIndex);
 
-        if (assignment != null) {
-            if (assignment.isCustom()) {
-                shiftStart = assignment.getCustomStartTime();
-                shiftEnd   = assignment.getCustomEndTime();
-                breakStart = assignment.getCustomBreakStart();
-                breakEnd   = assignment.getCustomBreakEnd();
-                shiftName  = "Tùy chỉnh";
-            } else if (assignment.getShift() != null) {
-                var s = assignment.getShift();
-                shiftStart = assignment.getCustomStartTime() != null ? assignment.getCustomStartTime() : s.getStartTime();
-                shiftEnd   = assignment.getCustomEndTime()   != null ? assignment.getCustomEndTime()   : s.getEndTime();
-                breakStart = assignment.getCustomBreakStart() != null ? assignment.getCustomBreakStart() : s.getBreakStart();
-                breakEnd   = assignment.getCustomBreakEnd()   != null ? assignment.getCustomBreakEnd()   : s.getBreakEnd();
-                shiftName  = s.getName();
-                shiftColor = s.getColor();
-            }
-        }
+        LocalTime actualCheckIn  = att != null && att.getCheckIn()  != null ? att.getCheckIn().toLocalTime()  : null;
+        LocalTime actualCheckOut = att != null && att.getCheckOut() != null ? att.getCheckOut().toLocalTime() : null;
 
-        int breakMinutes = 0;
-        if (breakStart != null && breakEnd != null) {
-            int bs = breakStart.toSecondOfDay() / 60, be = breakEnd.toSecondOfDay() / 60;
-            if (be < bs) be += 1440;
-            breakMinutes = be - bs;
-        }
+        LocalTime effectiveCheckIn  = resolveEffectiveCheckIn(att, req, shift);
+        LocalTime effectiveCheckOut = resolveEffectiveCheckOut(att, req, shift);
+        LocalTime roundedCheckIn    = roundUp  (effectiveCheckIn,  policy.roundingCheckInMinutes());
+        LocalTime roundedCheckOut   = roundDown(effectiveCheckOut, policy.roundingCheckOutMinutes());
+        LocalTime flagCheckIn       = roundUp  (req.appliedCheckInRequest()  != null ? req.appliedCheckInRequest().getRequestedCheckIn()   : actualCheckIn,  policy.roundingCheckInMinutes());
+        LocalTime flagCheckOut      = roundDown(req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : actualCheckOut, policy.roundingCheckOutMinutes());
 
-        LocalTime checkIn  = att != null && att.getCheckIn()  != null ? att.getCheckIn().toLocalTime()  : null;
-        LocalTime checkOut = att != null && att.getCheckOut() != null ? att.getCheckOut().toLocalTime() : null;
-        Long attendanceId  = att != null ? att.getId() : null;
+        ComputedHours workHours = computeWorkHours(shift, roundedCheckIn, roundedCheckOut,
+            dayStart, dayEnd, leaveFrom, leaveTo, req, otEnabled, policy);
 
-        AttendanceRequest requestCheckIn = null, appliedRequestCheckIn = null;
-        AttendanceRequest requestCheckOut = null, appliedRequestCheckOut = null;
-        List<AttendanceRequest> requestOts = new ArrayList<>();
-        List<AttendanceRequest> appliedRequestOts = new ArrayList<>();
-        List<AttendanceRequest> appliedRequestExtras = new ArrayList<>();
-
-        if (requests != null) {
-            for (AttendanceRequest r : requests) {
-                if (r.getStatus() != AttendanceRequest.Status.APPROVED) continue;
-                Long requestShiftId = r.getShiftAssignment() != null ? r.getShiftAssignment().getId() : null;
-                if (assignment != null) {
-                    Long currentShiftId = assignment.getId();
-                    if (requestShiftId != null && !requestShiftId.equals(currentShiftId)) continue;
-                    if (requestShiftId == null && slotIndex > 0) continue;
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.CHECK_IN) {
-                    requestCheckIn = r;
-                    if (r.isApplied()) appliedRequestCheckIn = r;
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.CHECK_OUT) {
-                    requestCheckOut = r;
-                    if (r.isApplied()) appliedRequestCheckOut = r;
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.OT) {
-                    requestOts.add(r);
-                    if (r.isApplied()) appliedRequestOts.add(r);
-                }
-                if (r.getRequestType() == AttendanceRequest.Type.EXTRA) {
-                    requestOts.add(r);
-                    if (r.isApplied()) appliedRequestExtras.add(r);
-                }
-            }
-        }
-
-        LocalTime effectiveCheckIn  = chooseEarlier(checkIn,  appliedRequestCheckIn  != null ? appliedRequestCheckIn.getRequestedCheckIn()   : null, shiftStart, shiftEnd);
-        LocalTime effectiveCheckOut = chooseLater  (checkOut, appliedRequestCheckOut != null ? appliedRequestCheckOut.getRequestedCheckOut() : null, shiftStart, shiftEnd);
-
-        LocalTime roundedCheckIn  = roundUp  (effectiveCheckIn,  policy.roundingCheckInMinutes());
-        LocalTime roundedCheckOut = roundDown(effectiveCheckOut, policy.roundingCheckOutMinutes());
-        var calc = AttendanceCalculator.calculate(
-            shiftStart, shiftEnd, breakStart, breakEnd, roundedCheckIn, roundedCheckOut, dayStart, dayEnd, leaveFrom, leaveTo);
-
-        int actualMinutes       = hoursToMinutes(calc.actualHours());
-        int regularDayMinutes   = hoursToMinutes(calc.regularDayHours());
-        int regularNightMinutes = hoursToMinutes(calc.regularNightHours());
-        int otDayMinutes        = hoursToMinutes(calc.otDayHours());
-        int otNightMinutes      = hoursToMinutes(calc.otNightHours());
-
-        for (AttendanceRequest r : appliedRequestOts) {
-            if (r.getRequestedOvertimeMinutes() == null) continue;
-            int ot = Math.max(0, r.getRequestedOvertimeMinutes());
-            var scope = r.getRequestedOvertimeScope();
-            var period = r.getRequestedOvertimePeriod();
-            if (scope == AttendanceRequest.OvertimeScope.IN_SHIFT) {
-                if (period == AttendanceRequest.OvertimePeriod.NIGHT) { int m = Math.min(ot, regularNightMinutes); regularNightMinutes -= m; otNightMinutes += m; }
-                else { int m = Math.min(ot, regularDayMinutes); regularDayMinutes -= m; otDayMinutes += m; }
-            } else if (scope == AttendanceRequest.OvertimeScope.OUTSIDE_SHIFT) {
-                actualMinutes += ot;
-                if (period == AttendanceRequest.OvertimePeriod.NIGHT) otNightMinutes += ot;
-                else otDayMinutes += ot;
-            }
-        }
-
-        for (AttendanceRequest r : appliedRequestExtras) {
-            if (r.getRequestedOvertimeMinutes() == null) continue;
-            int extra = Math.max(0, r.getRequestedOvertimeMinutes());
-            actualMinutes += extra;
-            if (r.getRequestedOvertimePeriod() == AttendanceRequest.OvertimePeriod.NIGHT) regularNightMinutes += extra;
-            else regularDayMinutes += extra;
-        }
-
-        if (!otEnabled) {
-            regularDayMinutes += otDayMinutes; regularNightMinutes += otNightMinutes;
-            otDayMinutes = 0; otNightMinutes = 0;
-        }
-
-        if (policy.roundingWorkMinutes() != null) {
-            regularDayMinutes   = roundDownMinutes(regularDayMinutes,   policy.roundingWorkMinutes());
-            regularNightMinutes = roundDownMinutes(regularNightMinutes, policy.roundingWorkMinutes());
-            otDayMinutes        = roundDownMinutes(otDayMinutes,        policy.roundingWorkMinutes());
-            otNightMinutes      = roundDownMinutes(otNightMinutes,      policy.roundingWorkMinutes());
-        }
-
-        LocalTime flagCheckIn  = roundUp  (appliedRequestCheckIn  != null ? appliedRequestCheckIn.getRequestedCheckIn()   : checkIn,  policy.roundingCheckInMinutes());
-        LocalTime flagCheckOut = roundDown(appliedRequestCheckOut != null ? appliedRequestCheckOut.getRequestedCheckOut() : checkOut, policy.roundingCheckOutMinutes());
-
+        List<AttendanceRequest> otRequests = req.overtimeRequests();
         return new AttendanceRowData(
-            shiftName, shiftColor, shiftStart, shiftEnd, breakMinutes,
-            checkIn, checkOut, effectiveCheckIn, effectiveCheckOut, flagCheckIn, flagCheckOut,
+            shift.name(), shift.color(), shift.start(), shift.end(), shift.breakMinutes(),
+            actualCheckIn, actualCheckOut, effectiveCheckIn, effectiveCheckOut, flagCheckIn, flagCheckOut,
             att != null ? att.getStatus() : null,
-            requestCheckIn  != null ? requestCheckIn.getRequestedCheckIn()   : null,
-            requestCheckIn  != null ? requestCheckIn.getStatus()             : null,
-            requestCheckOut != null ? requestCheckOut.getRequestedCheckOut() : null,
-            requestCheckOut != null ? requestCheckOut.getStatus()            : null,
-            requestOts.isEmpty() ? null : requestOts.stream().mapToInt(r -> r.getRequestedOvertimeMinutes() != null ? r.getRequestedOvertimeMinutes() : 0).sum(),
-            requestOts.isEmpty() ? null : requestOts.get(0).getRequestedOvertimeScope(),
-            requestOts.isEmpty() ? null : requestOts.get(0).getRequestedOvertimePeriod(),
-            requestOts.isEmpty() ? null : requestOts.get(0).getStatus(),
-            attendanceId,
-            actualMinutes / 60.0, regularDayMinutes / 60.0, otDayMinutes / 60.0,
-            regularNightMinutes / 60.0, otNightMinutes / 60.0
+            req.checkInRequest()  != null ? req.checkInRequest().getRequestedCheckIn()   : null,
+            req.checkInRequest()  != null ? req.checkInRequest().getStatus()             : null,
+            req.checkOutRequest() != null ? req.checkOutRequest().getRequestedCheckOut() : null,
+            req.checkOutRequest() != null ? req.checkOutRequest().getStatus()            : null,
+            otRequests.isEmpty() ? null : otRequests.stream().mapToInt(r -> r.getRequestedOvertimeMinutes() != null ? r.getRequestedOvertimeMinutes() : 0).sum(),
+            otRequests.isEmpty() ? null : otRequests.get(0).getRequestedOvertimeScope(),
+            otRequests.isEmpty() ? null : otRequests.get(0).getRequestedOvertimePeriod(),
+            otRequests.isEmpty() ? null : otRequests.get(0).getStatus(),
+            att != null ? att.getId() : null,
+            workHours.actualHours(), workHours.regularDayHours(), workHours.otDayHours(),
+            workHours.regularNightHours(), workHours.otNightHours()
         );
     }
 
