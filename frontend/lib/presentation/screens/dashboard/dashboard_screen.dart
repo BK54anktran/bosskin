@@ -177,13 +177,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _onDeptChanged(int? id) {
+    final tab = _DashTab.values[_tabCtrl.index];
     setState(() {
       _deptId = id;
-      _monthData = null;
-      _rangeData = null;
-      _analyticsData = null;
+      _dayData = null;        _dayLoading = true;
+      _monthData = null;      _monthLoading = false;
+      _rangeData = null;      _rangeLoading = false;
+      _analyticsData = null;  _analyticsLoading = tab == _DashTab.analytics;
     });
-    final tab = _DashTab.values[_tabCtrl.index];
     if (tab == _DashTab.day) _loadDay();
     else if (tab == _DashTab.month) _loadMonth();
     else if (tab == _DashTab.range) _loadRange();
@@ -1432,10 +1433,15 @@ class _SalaryTrendChart extends StatelessWidget {
                   bottomTitles: AxisTitles(sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 24,
-                    getTitlesWidget: (v, _) => Text(
-                      DateFormat.MMM().format(DateTime(2000, v.toInt())),
-                      style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
-                    ),
+                    interval: 1,
+                    getTitlesWidget: (v, _) {
+                      final month = v.toInt();
+                      if (month < 1 || month > 12) return const SizedBox.shrink();
+                      return Text(
+                        DateFormat.MMM().format(DateTime(2000, month)),
+                        style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+                      );
+                    },
                   )),
                   leftTitles: AxisTitles(sideTitles: SideTitles(
                     showTitles: true,
@@ -1505,6 +1511,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
 
     final maxHours  = trend.map((d) => d.totalHours).fold(0.0, (a, b) => a > b ? a : b);
     final maxCost   = trend.map((d) => d.estimatedCost).fold(0.0, (a, b) => a > b ? a : b);
+    if (maxHours == 0 && maxCost == 0) return const SizedBox.shrink();
     // Hien thi toi da 30 ngay, neu nhieu hon thi lay 30 gan nhat
     final display = trend.length > 30 ? trend.sublist(trend.length - 30) : trend;
     final scale = maxCost > 0 && maxHours > 0 ? maxCost / maxHours : 1.0;

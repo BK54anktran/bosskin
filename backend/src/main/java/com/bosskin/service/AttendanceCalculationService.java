@@ -458,6 +458,16 @@ public class AttendanceCalculationService {
         return false;
     }
 
+    /**
+     * Vang mat:
+     * - Da approved -> status == ABSENT
+     * - Chua approved -> co ca (hasShift=true) ma khong co check-in/override
+     */
+    public boolean isAbsent(Attendance a, boolean hasShift) {
+        if (a.isApproved()) return Attendance.Status.ABSENT == a.getStatus();
+        return hasShift && a.getCheckIn() == null && a.getOverrideCheckIn() == null;
+    }
+
     // ── Time helpers ──────────────────────────────────────────────────────────
 
     public LocalTime roundUp(LocalTime value, Integer stepMinutes) {

@@ -14,6 +14,7 @@ import com.bosskin.repository.CompanyRepository;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.LeaveRequestRepository;
 import com.bosskin.repository.PayrollRepository;
+import com.bosskin.repository.ShiftAssignmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class DashboardService {
     private final LeaveRequestRepository leaveRequestRepository;
     private final CompanyRepository companyRepository;
     private final PayrollRepository payrollRepository;
+    private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final AttendanceCalculationService calcSvc;
 
     @Transactional(readOnly = true)
@@ -56,7 +58,7 @@ public class DashboardService {
             ? attendanceRepository.findByCompanyAndDateAndDept(companyId, today, departmentId)
             : attendanceRepository.findByCompanyAndDate(companyId, today);
 
-        // Load applied requests cho ngÃ y nÃ y â€” dÃ¹ng Ä‘á»ƒ tÃ­nh effective check-in/out
+        // Load approved requests cho ngay nay -- dung de tinh effective check-in/out
         List<AttendanceRequest> allRequests =
             attendanceRequestRepository.findByCompanyAndRequestDate(companyId, today);
         Map<Long, List<AttendanceRequest>> requestsByEmployee = allRequests.stream()
@@ -67,15 +69,15 @@ public class DashboardService {
             ? leaveRequestRepository.findApprovedByCompanyAndDateAndDept(companyId, today, departmentId).size()
             : leaveRequestRepository.findApprovedByCompanyAndDate(companyId, today).size();
 
-        // CÃ³ máº·t thá»±c sá»±: pháº£i cÃ³ checkIn, hoáº·c override, hoáº·c Ä‘Ã£ approve vá»›i snap hours > 0
+        // Co mat thuc su: phai co checkIn, hoac override, hoac da approve voi snap hours > 0
         long present = todayAttendances.stream()
-            .filter(a -> isActuallyPresent(a))
+            .filter(a -> calcSvc.isActuallyPresent(a))
             .count();
 
-        // LATE: dÃ¹ng workFlags náº¿u Ä‘Ã£ approved (nguá»“n chÃ­nh xÃ¡c nháº¥t),
-        // ngÆ°á»£c láº¡i dÃ¹ng status == LATE Ä‘Æ°á»£c set lÃºc check-in theo shift + tolerance
+        // LATE: dung workFlags neu da approved (nguon chinh xac nhat),
+        // nguoc lai dung status == LATE duoc set luc check-in theo shift + tolerance
         long late = todayAttendances.stream()
-            .filter(a -> isActuallyPresent(a) && isLate(a))
+            .filter(a -> calcSvc.isActuallyPresent(a) && calcSvc.isLate(a))
             .count();
 
         long absent = Math.max(0, totalEmployees - present - onLeave);
@@ -86,7 +88,7 @@ public class DashboardService {
                 Employee emp = a.getEmployee();
                 List<AttendanceRequest> empRequests = requestsByEmployee.getOrDefault(emp.getId(), List.of());
 
-                // Effective check-in: chá»n cÃ¡i sá»›m hÆ¡n giá»¯a actual vÃ  applied request
+                // Effective check-in: chon cai som hon giua actual va applied request
                 LocalTime actualIn  = a.getCheckIn()  != null ? a.getCheckIn().toLocalTime()  : null;
                 LocalTime actualOut = a.getCheckOut() != null ? a.getCheckOut().toLocalTime() : null;
 
@@ -104,14 +106,14 @@ public class DashboardService {
                 LocalTime effectiveIn  = earlierOf(actualIn,  reqIn);
                 LocalTime effectiveOut = laterOf(actualOut, reqOut);
 
-                // Náº¿u override, Æ°u tiÃªn override
+                // Neu override, uu tien override
                 if (a.getOverrideCheckIn()  != null) effectiveIn  = a.getOverrideCheckIn();
                 if (a.getOverrideCheckOut() != null) effectiveOut = a.getOverrideCheckOut();
 
                 LocalDateTime displayIn  = effectiveIn  != null ? today.atTime(effectiveIn)  : null;
                 LocalDateTime displayOut = effectiveOut != null ? today.atTime(effectiveOut) : null;
 
-                boolean actuallyPresent = isActuallyPresent(a);
+                boolean actuallyPresent = calcSvc.isActuallyPresent(a);
                 return DashboardDTO.AttendanceRow.builder()
                     .employeeId(emp.getId())
                     .employeeCode(emp.getEmployeeCode())
@@ -120,7 +122,7 @@ public class DashboardService {
                     .checkIn(actuallyPresent ? displayIn : null)
                     .checkOut(actuallyPresent ? displayOut : null)
                     .status(actuallyPresent ? a.getStatus().name() : Attendance.Status.ABSENT.name())
-                    .late(actuallyPresent && isLate(a))
+                    .late(actuallyPresent && calcSvc.isLate(a))
                     .build();
             })
             .collect(Collectors.toList());
@@ -147,8 +149,6 @@ public class DashboardService {
             .build();
     }
 
-    private boolean isActuallyPresent(Attendance a) { return calcSvc.isActuallyPresent(a); }
-    private boolean isLate(Attendance a) { return calcSvc.isLate(a); }
 
     private LocalTime earlierOf(LocalTime a, LocalTime b) {
         if (a == null) return b;
@@ -174,6 +174,40 @@ public class DashboardService {
             ? attendanceRepository.findByCompanyAndDateRangeAndDept(companyId, from, to, departmentId)
             : attendanceRepository.findByCompanyAndDateRange(companyId, from, to);
 
+        // Shift assignments -- key: (employeeId, date) -> ShiftAssignment
+        // Dung de lay ca tuong ung voi moi Attendance khi tinh trang thai
+        List<com.bosskin.entity.ShiftAssignment> shiftAssignments =
+            shiftAssignmentRepository.findByCompanyAndDateRange(companyId, from, to);
+        // employeeId -> date -> ShiftAssignment (lay cai dau tien neu co nhieu ca)
+        Map<Long, Map<LocalDate, com.bosskin.entity.ShiftAssignment>> shiftByEmpDate = new java.util.HashMap<>();
+        for (com.bosskin.entity.ShiftAssignment sa : shiftAssignments) {
+            shiftByEmpDate
+                .computeIfAbsent(sa.getEmployee().getId(), k -> new java.util.HashMap<>())
+                .putIfAbsent(sa.getWorkDate(), sa);
+        }
+
+        // Tien ich: tính trang thai hien thi tu Attendance va ShiftAssignment tuong ung
+        // Dashboard khong load AttendanceRequest (qua nang) nen dung empty requests
+        var emptyRequests = calcSvc.resolveRequests(List.of(), null, 0);
+
+        java.util.function.Function<Attendance, Attendance.Status> deriveStatus = att -> {
+            com.bosskin.entity.ShiftAssignment sa = shiftByEmpDate
+                .getOrDefault(att.getEmployee().getId(), Map.of())
+                .get(att.getDate());
+            var shift = calcSvc.resolveShiftTimes(sa);
+            var effectiveCheckIn = calcSvc.resolveEffectiveCheckIn(att, emptyRequests, shift);
+            var policy = calcSvc.resolvePolicy(att.getEmployee());
+            var flagCheckIn  = calcSvc.roundUp(
+                att.getOverrideCheckIn() != null ? att.getOverrideCheckIn()
+                    : (att.getCheckIn() != null ? att.getCheckIn().toLocalTime() : null),
+                policy.roundingCheckInMinutes());
+            var flagCheckOut = calcSvc.roundDown(
+                att.getOverrideCheckOut() != null ? att.getOverrideCheckOut()
+                    : (att.getCheckOut() != null ? att.getCheckOut().toLocalTime() : null),
+                policy.roundingCheckOutMinutes());
+            return calcSvc.deriveDisplayStatus(att, sa, effectiveCheckIn, flagCheckIn, flagCheckOut, shift, policy);
+        };
+
         // Group by employee
         Map<Long, List<Attendance>> byEmployee = attendances.stream()
             .collect(Collectors.groupingBy(a -> a.getEmployee().getId()));
@@ -185,16 +219,13 @@ public class DashboardService {
             List<Attendance> empAtts = entry.getValue();
             Employee emp = empAtts.get(0).getEmployee();
 
-            long present = empAtts.stream().filter(a -> isActuallyPresent(a) && !isLate(a)).count();
-            long late    = empAtts.stream().filter(a -> isActuallyPresent(a) && isLate(a)).count();
-            // absent/leave: approved â†’ dÃ¹ng status; chÆ°a approved â†’ khÃ´ng cÃ³ checkIn vÃ  khÃ´ng cÃ³ override
-            long absent  = empAtts.stream().filter(a -> a.isApproved()
-                ? Attendance.Status.ABSENT == a.getStatus()
-                : (a.getCheckIn() == null && a.getOverrideCheckIn() == null)).count();
-            long leave   = empAtts.stream().filter(a -> Attendance.Status.LEAVE == a.getStatus()).count();
+            long present = empAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.PRESENT).count();
+            long late    = empAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.LATE).count();
+            long absent  = empAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.ABSENT).count();
+            long leave   = empAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.LEAVE).count();
 
-            totalWorkDays  += present + late;
-            totalLateDays  += late;
+            totalWorkDays   += present + late;
+            totalLateDays   += late;
             totalAbsentDays += absent;
             totalLeaveDays  += leave;
 
@@ -219,12 +250,10 @@ public class DashboardService {
             .sorted(Map.Entry.comparingByKey())
             .map(e -> {
                 List<Attendance> dayAtts = e.getValue();
-                long p = dayAtts.stream().filter(a -> isActuallyPresent(a) && !isLate(a)).count();
-                long l = dayAtts.stream().filter(a -> isActuallyPresent(a) && isLate(a)).count();
-                long ab = dayAtts.stream().filter(a -> a.isApproved()
-                    ? Attendance.Status.ABSENT == a.getStatus()
-                    : (a.getCheckIn() == null && a.getOverrideCheckIn() == null)).count();
-                long lv = dayAtts.stream().filter(a -> Attendance.Status.LEAVE == a.getStatus()).count();
+                long p  = dayAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.PRESENT).count();
+                long l  = dayAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.LATE).count();
+                long ab = dayAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.ABSENT).count();
+                long lv = dayAtts.stream().filter(a -> deriveStatus.apply(a) == Attendance.Status.LEAVE).count();
                 return DashboardDTO.RangeDailyPoint.builder()
                     .date(e.getKey())
                     .present(p)
@@ -250,18 +279,24 @@ public class DashboardService {
             .build();
     }
 
+
     @Transactional(readOnly = true)
     public DashboardDTO.AnalyticsResponse getAnalytics(User user, Long departmentId, int year) {
         Long companyId = user.getCompanyId();
+        if (companyId == null) throw new org.springframework.web.server.ResponseStatusException(
+            org.springframework.http.HttpStatus.BAD_REQUEST, "error.company.not_found");
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                 org.springframework.http.HttpStatus.NOT_FOUND, "error.company.not_found"));
         LocalDate yearStart = LocalDate.of(year, 1, 1);
         LocalDate yearEnd   = LocalDate.of(year, 12, 31);
 
-        // Salary trend 12 thÃ¡ng
+        // Salary trend 12 thang
         List<DashboardDTO.MonthlySalaryStat> salaryTrend = new ArrayList<>();
-        for (Object[] row : payrollRepository.findMonthlySalaryTrend(companyId, year)) {
+        var salaryTrendRows = departmentId != null
+            ? payrollRepository.findMonthlySalaryTrendByDept(companyId, year, departmentId)
+            : payrollRepository.findMonthlySalaryTrend(companyId, year);
+        for (Object[] row : salaryTrendRows) {
             salaryTrend.add(DashboardDTO.MonthlySalaryStat.builder()
                 .month(((Number) row[0]).intValue())
                 .totalNetSalary(row[1] != null ? (BigDecimal) row[1] : BigDecimal.ZERO)
@@ -269,7 +304,7 @@ public class DashboardService {
                 .build());
         }
 
-        // Attendance trend 90 ngày g?n nh?t
+        // Attendance trend 90 ngay gan nhat
         LocalDate trendFrom = LocalDate.now().minusDays(89);
         LocalDate trendTo   = LocalDate.now();
 
@@ -278,6 +313,15 @@ public class DashboardService {
             : attendanceRepository.findByCompanyAndDateRange(companyId, trendFrom, trendTo))
             .stream()
             .collect(Collectors.groupingBy(Attendance::getDate));
+
+        // Shift assignments cho trend period -- de tinh absent dung (chi tinh khi co ca)
+        List<com.bosskin.entity.ShiftAssignment> trendShifts =
+            shiftAssignmentRepository.findByCompanyAndDateRange(companyId, trendFrom, trendTo);
+        Map<Long, java.util.Set<LocalDate>> trendShiftDates = new java.util.HashMap<>();
+        for (com.bosskin.entity.ShiftAssignment sa : trendShifts) {
+            trendShiftDates.computeIfAbsent(sa.getEmployee().getId(), k -> new java.util.HashSet<>())
+                           .add(sa.getWorkDate());
+        }
 
         List<DashboardDTO.DailyAttendanceStat> attendanceTrend = new ArrayList<>();
         List<LocalDate> dates = attendanceByDate.keySet().stream()
@@ -290,9 +334,12 @@ public class DashboardService {
                 .map(DashboardDTO.DailyAttendanceGradeBreakdown::getEstimatedCost)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(0, RoundingMode.HALF_UP);
-            long present = dayAttendances.stream().filter(a -> isActuallyPresent(a) && !isLate(a)).count();
-            long late = dayAttendances.stream().filter(a -> isActuallyPresent(a) && isLate(a)).count();
-            long absent = dayAttendances.stream().filter(a -> a.getStatus() == Attendance.Status.ABSENT).count();
+            long present = dayAttendances.stream().filter(a -> calcSvc.isActuallyPresent(a) && !calcSvc.isLate(a)).count();
+            long late    = dayAttendances.stream().filter(a -> calcSvc.isActuallyPresent(a) &&  calcSvc.isLate(a)).count();
+            long absent  = dayAttendances.stream().filter(a -> {
+                java.util.Set<LocalDate> sd = trendShiftDates.getOrDefault(a.getEmployee().getId(), java.util.Set.of());
+                return calcSvc.isAbsent(a, sd.contains(a.getDate()));
+            }).count();
             double totalHours = gradeBreakdown.stream()
                 .mapToDouble(DashboardDTO.DailyAttendanceGradeBreakdown::getTotalHours)
                 .sum();
@@ -307,7 +354,7 @@ public class DashboardService {
                 .build());
         }
 
-        // Top 10 nhÃ¢n viÃªn Ä‘i muá»™n trong nÄƒm
+        // Top 10 nhan vien di muon trong nam
         List<DashboardDTO.TopLateEmployee> topLate = new ArrayList<>();
         for (Object[] row : attendanceRepository.findTopLateEmployees(companyId, yearStart, yearEnd, departmentId, PageRequest.of(0, 10))) {
             topLate.add(DashboardDTO.TopLateEmployee.builder()
@@ -319,7 +366,7 @@ public class DashboardService {
                 .build());
         }
 
-        // Overall stats cho nÄƒm
+        // Overall stats cho nam
         List<Attendance> yearAtts = departmentId != null
             ? attendanceRepository.findByCompanyAndDateRangeAndDept(companyId, yearStart, yearEnd, departmentId)
             : attendanceRepository.findByCompanyAndDateRange(companyId, yearStart, yearEnd);
@@ -333,8 +380,8 @@ public class DashboardService {
 
         long totalWorkDays = 0, totalLate = 0, totalAbsent = 0, totalLeave = 0;
         for (List<Attendance> empAtts : byEmp.values()) {
-            totalWorkDays += empAtts.stream().filter(a -> isActuallyPresent(a)).count();
-            totalLate     += empAtts.stream().filter(a -> isActuallyPresent(a) && isLate(a)).count();
+            totalWorkDays += empAtts.stream().filter(a -> calcSvc.isActuallyPresent(a)).count();
+            totalLate     += empAtts.stream().filter(a -> calcSvc.isActuallyPresent(a) && calcSvc.isLate(a)).count();
             totalAbsent   += empAtts.stream().filter(a -> Attendance.Status.ABSENT == a.getStatus()).count();
             totalLeave    += empAtts.stream().filter(a -> Attendance.Status.LEAVE  == a.getStatus()).count();
         }
@@ -396,16 +443,6 @@ public class DashboardService {
                 .employeeCount(acc.employeeIds.size())
                 .build())
             .toList();
-    }
-
-    private BigDecimal estimateDailyCost(List<Attendance> attendances, Company company) {
-        if (attendances == null || attendances.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        return buildGradeBreakdown(attendances, company).stream()
-            .map(DashboardDTO.DailyAttendanceGradeBreakdown::getEstimatedCost)
-            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .setScale(0, RoundingMode.HALF_UP);
     }
 
     private static class GradeAcc {

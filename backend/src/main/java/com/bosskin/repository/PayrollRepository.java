@@ -195,4 +195,19 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         @Param("companyId") Long companyId,
         @Param("year") int year
     );
+
+    @Query("""
+        SELECT p.month, SUM(p.netSalary), COUNT(p)
+        FROM Payroll p
+        JOIN p.employee e
+        WHERE e.company.id = :companyId AND p.year = :year
+          AND e.department.id = :departmentId
+        GROUP BY p.month
+        ORDER BY p.month
+        """)
+    List<Object[]> findMonthlySalaryTrendByDept(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("departmentId") Long departmentId
+    );
 }
