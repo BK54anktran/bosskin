@@ -2177,4 +2177,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importAttendanceSuccess => 'Attendance imported successfully';
+
+  @override
+  String get dashboardErrorLoad => 'Failed to load dashboard data';
+
+  @override
+  String get dashboardOnLeave => 'On Leave';
+
+  @override
+  String get dashboardPayrollDraft => 'Draft';
+
+  @override
+  String get dashboardPayrollApproved => 'Approved';
+
+  @override
+  String get dashboardPayrollPaid => 'Paid';
+
+  @override
+  String get dashboardNoPayroll => 'No payroll yet';
+
+  @override
+  String get dashboardNoAttendance => 'No attendance records today';
+
+  @override
+  String dashboardCheckIn(String time) {
+    return 'In: $time';
+  }
+
+  @override
+  String dashboardCheckOut(String time) {
+    return 'Out: $time';
+  }
+
+  @override
+  String get dashboardNotCheckedIn => 'Not checked in';
 }

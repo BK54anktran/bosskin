@@ -777,4 +777,16 @@
   ,"exportAttendance": "Xuất chấm công Excel"
   ,"importAttendance": "Nhập chấm công Excel"
   ,"importAttendanceSuccess": "Nhập chấm công thành công"
+  ,"dashboardErrorLoad": "Không thể tải dữ liệu tổng quan"
+  ,"dashboardOnLeave": "Nghỉ phép"
+  ,"dashboardPayrollDraft": "Nháp"
+  ,"dashboardPayrollApproved": "Đã duyệt"
+  ,"dashboardPayrollPaid": "Đã thanh toán"
+  ,"dashboardNoPayroll": "Chưa có bảng lương"
+  ,"dashboardNoAttendance": "Chưa có dữ liệu chấm công hôm nay"
+  ,"dashboardCheckIn": "Vào: {time}"
+  ,"@dashboardCheckIn": {"placeholders": {"time": {"type": "String"}}}
+  ,"dashboardCheckOut": "Ra: {time}"
+  ,"@dashboardCheckOut": {"placeholders": {"time": {"type": "String"}}}
+  ,"dashboardNotCheckedIn": "Chưa check-in"
 }

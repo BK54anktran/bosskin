@@ -2,46 +2,143 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/dashboard.dart';
+import '../../../data/repositories/dashboard_repository.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final _repo = DashboardRepository();
+
+  DashboardData? _data;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final data = await _repo.get();
+      if (mounted) setState(() => _data = data);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SectionTitle(s.todayStatistics),
-              const SizedBox(height: 12),
-              _StatsRow(s: s),
-              const SizedBox(height: 24),
-              LayoutBuilder(builder: (context, constraints) {
-                if (constraints.maxWidth > 700) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 3, child: _AttendanceTodayCard(s: s)),
-                      SizedBox(width: 20),
-                      Expanded(flex: 2, child: _RecentPayrollCard(s: s)),
-                    ],
-                  );
-                }
-                return Column(children: [
-                  _AttendanceTodayCard(s: s),
-                  SizedBox(height: 20),
-                  _RecentPayrollCard(s: s),
-                ]);
-              }),
-            ],
+    final s = AppLocalizations.of(context);
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: _loading
+                ? const _LoadingBody()
+                : _error != null
+                    ? _ErrorBody(message: s.dashboardErrorLoad, onRetry: _load)
+                    : _Body(data: _data!, s: s, onRefresh: _load),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LoadingBody extends StatelessWidget {
+  const _LoadingBody();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+        height: 300,
+        child: Center(child: CircularProgressIndicator()),
+      );
+}
+
+class _ErrorBody extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _ErrorBody({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        height: 300,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: AppTheme.error),
+              const SizedBox(height: 12),
+              Text(message,
+                  style: const TextStyle(color: AppTheme.textSecondary)),
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: onRetry,
+                child: Text(AppLocalizations.of(context).retry),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _Body extends StatelessWidget {
+  final DashboardData data;
+  final AppLocalizations s;
+  final VoidCallback onRefresh;
+  const _Body({required this.data, required this.s, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(s.todayStatistics),
+        const SizedBox(height: 12),
+        _StatsGrid(stats: data.todayStats, s: s),
+        const SizedBox(height: 24),
+        LayoutBuilder(builder: (context, constraints) {
+          if (constraints.maxWidth > 700) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                    flex: 3,
+                    child: _AttendanceTodayCard(
+                        rows: data.todayAttendance, s: s)),
+                const SizedBox(width: 20),
+                Expanded(
+                    flex: 2,
+                    child:
+                        _RecentPayrollCard(payroll: data.recentPayroll, s: s)),
+              ],
+            );
+          }
+          return Column(children: [
+            _AttendanceTodayCard(rows: data.todayAttendance, s: s),
+            const SizedBox(height: 20),
+            _RecentPayrollCard(payroll: data.recentPayroll, s: s),
+          ]);
+        }),
+      ],
     );
   }
 }
@@ -61,18 +158,22 @@ class _SectionTitle extends StatelessWidget {
       );
 }
 
-class _StatsRow extends StatelessWidget {
+class _StatsGrid extends StatelessWidget {
+  final DashboardTodayStats stats;
   final AppLocalizations s;
-  const _StatsRow({required this.s});
+  const _StatsGrid({required this.stats, required this.s});
 
   @override
   Widget build(BuildContext context) {
-    final stats = [
-      _StatItem(s.employees, '124', Icons.people_outline, AppTheme.primary),
-      _StatItem(
-          s.present, '98', Icons.check_circle_outline, AppTheme.secondary),
-      _StatItem(s.leave, '8', Icons.beach_access_outlined, AppTheme.warning),
-      _StatItem(s.absent, '18', Icons.cancel_outlined, AppTheme.error),
+    final items = [
+      _StatItem(s.employees, stats.totalEmployees.toString(),
+          Icons.people_outline, AppTheme.primary),
+      _StatItem(s.present, stats.present.toString(),
+          Icons.check_circle_outline, AppTheme.secondary),
+      _StatItem(s.dashboardOnLeave, stats.onLeave.toString(),
+          Icons.beach_access_outlined, AppTheme.warning),
+      _StatItem(s.absent, stats.absent.toString(), Icons.cancel_outlined,
+          AppTheme.error),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -84,12 +185,12 @@ class _StatsRow extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         childAspectRatio: isNarrow ? 1.6 : 2.0,
-        children: stats.map(_buildCard).toList(),
+        children: items.map(_buildCard).toList(),
       );
     });
   }
 
-  Widget _buildCard(_StatItem s) {
+  Widget _buildCard(_StatItem item) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -99,23 +200,23 @@ class _StatsRow extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: s.color.withOpacity(0.1),
+                color: item.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(s.icon, color: s.color, size: 22),
+              child: Icon(item.icon, color: item.color, size: 22),
             ),
             const SizedBox(width: 14),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(s.value,
+                Text(item.value,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: s.color,
+                      color: item.color,
                     )),
-                Text(s.label,
+                Text(item.label,
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
@@ -130,8 +231,9 @@ class _StatsRow extends StatelessWidget {
 }
 
 class _AttendanceTodayCard extends StatelessWidget {
+  final List<DashboardAttendanceRow> rows;
   final AppLocalizations s;
-  const _AttendanceTodayCard({required this.s});
+  const _AttendanceTodayCard({required this.rows, required this.s});
 
   @override
   Widget build(BuildContext context) {
@@ -141,17 +243,20 @@ class _AttendanceTodayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(s.todayAttendance,
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                TextButton(onPressed: () {}, child: Text(s.viewAll)),
-              ],
-            ),
+            Text(s.todayAttendance,
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            ...List.generate(5, (i) => _AttendanceRow(index: i)),
+            if (rows.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: Text(s.dashboardNoAttendance,
+                      style: const TextStyle(color: AppTheme.textSecondary)),
+                ),
+              )
+            else
+              ...rows.map((r) => _AttendanceRow(row: r, s: s)),
           ],
         ),
       ),
@@ -160,16 +265,22 @@ class _AttendanceTodayCard extends StatelessWidget {
 }
 
 class _AttendanceRow extends StatelessWidget {
-  final int index;
-  const _AttendanceRow({required this.index});
+  final DashboardAttendanceRow row;
+  final AppLocalizations s;
+  const _AttendanceRow({required this.row, required this.s});
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
-    final names = List.generate(5, (i) => '${s.employeeShort} ${i + 1}');
-    final times = ['08:02', '08:15', '08:05', '08:30', '07:58'];
-    final late = [false, true, false, true, false];
-    final depts = List.generate(5, (_) => s.department);
+    final timeFmt = DateFormat('HH:mm');
+    final checkInStr = row.checkIn != null
+        ? timeFmt.format(row.checkIn!)
+        : null;
+    final checkOutStr = row.checkOut != null
+        ? timeFmt.format(row.checkOut!)
+        : null;
+
+    final nameInitial =
+        row.employeeName.isNotEmpty ? row.employeeName[0].toUpperCase() : '?';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 9),
@@ -177,8 +288,8 @@ class _AttendanceRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: AppTheme.primary.withOpacity(0.1),
-            child: Text(names[index][0],
+            backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
+            child: Text(nameInitial,
                 style: const TextStyle(
                     color: AppTheme.primary, fontWeight: FontWeight.w600)),
           ),
@@ -187,12 +298,12 @@ class _AttendanceRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(names[index],
+                Text(row.employeeName,
                     style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: AppTheme.textPrimary)),
-                Text(depts[index],
+                Text(row.departmentName ?? '',
                     style: const TextStyle(
                         fontSize: 11, color: AppTheme.textSecondary)),
               ],
@@ -201,17 +312,19 @@ class _AttendanceRow extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(times[index],
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color:
-                          late[index] ? AppTheme.error : AppTheme.secondary)),
-              Text(late[index] ? s.late : s.onTime,
-                  style: TextStyle(
-                      fontSize: 11,
-                      color:
-                          late[index] ? AppTheme.error : AppTheme.secondary)),
+              if (checkInStr != null)
+                Text(s.dashboardCheckIn(checkInStr),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: row.late ? AppTheme.error : AppTheme.secondary))
+              else
+                Text(s.dashboardNotCheckedIn,
+                    style: const TextStyle(
+                        fontSize: 12, color: AppTheme.textSecondary)),
+              if (checkOutStr != null)
+                Text(s.dashboardCheckOut(checkOutStr),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppTheme.textSecondary)),
             ],
           ),
         ],
@@ -221,11 +334,27 @@ class _AttendanceRow extends StatelessWidget {
 }
 
 class _RecentPayrollCard extends StatelessWidget {
+  final DashboardRecentPayroll? payroll;
   final AppLocalizations s;
-  const _RecentPayrollCard({required this.s});
+  const _RecentPayrollCard({required this.payroll, required this.s});
+
+  String _statusLabel(String status, AppLocalizations s) => switch (status) {
+        'PAID' => s.dashboardPayrollPaid,
+        'APPROVED' => s.dashboardPayrollApproved,
+        _ => s.dashboardPayrollDraft,
+      };
+
+  Color _statusColor(String status) => switch (status) {
+        'PAID' => AppTheme.secondary,
+        'APPROVED' => AppTheme.primary,
+        _ => AppTheme.warning,
+      };
 
   @override
   Widget build(BuildContext context) {
+    final currencyFmt =
+        NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -233,31 +362,39 @@ class _RecentPayrollCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(s.recentPayroll,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text(DateFormat.yMMMM(s.localeName).format(DateTime(2026, 5)),
-                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-            const SizedBox(height: 16),
-            _buildPayrollStat(s.totalSalary, '245,000,000 ₫', AppTheme.primary),
-            const Divider(height: 24),
-            _buildPayrollStat(s.employeeCount, '124', AppTheme.secondary),
-            const Divider(height: 24),
-            _buildPayrollStat(s.status, s.paidStatus, AppTheme.secondary),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {},
-                child: Text(s.viewDetails),
+            if (payroll != null)
+              Text(
+                DateFormat.yMMMM(s.localeName)
+                    .format(DateTime(payroll!.year, payroll!.month)),
+                style: const TextStyle(
+                    fontSize: 12, color: AppTheme.textSecondary),
               ),
-            ),
+            const SizedBox(height: 16),
+            if (payroll == null)
+              Center(
+                child: Text(s.dashboardNoPayroll,
+                    style: const TextStyle(color: AppTheme.textSecondary)),
+              )
+            else ...[
+              _buildStat(s.totalSalary,
+                  currencyFmt.format(payroll!.totalNetSalary), AppTheme.primary),
+              const Divider(height: 24),
+              _buildStat(s.employeeCount, payroll!.employeeCount.toString(),
+                  AppTheme.secondary),
+              const Divider(height: 24),
+              _buildStat(s.status, _statusLabel(payroll!.status, s),
+                  _statusColor(payroll!.status)),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPayrollStat(String label, String value, Color color) {
+  Widget _buildStat(String label, String value, Color color) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

@@ -774,4 +774,16 @@
   ,"exportAttendance": "Export Attendance Excel"
   ,"importAttendance": "Import Attendance Excel"
   ,"importAttendanceSuccess": "Attendance imported successfully"
+  ,"dashboardErrorLoad": "Failed to load dashboard data"
+  ,"dashboardOnLeave": "On Leave"
+  ,"dashboardPayrollDraft": "Draft"
+  ,"dashboardPayrollApproved": "Approved"
+  ,"dashboardPayrollPaid": "Paid"
+  ,"dashboardNoPayroll": "No payroll yet"
+  ,"dashboardNoAttendance": "No attendance records today"
+  ,"dashboardCheckIn": "In: {time}"
+  ,"@dashboardCheckIn": {"placeholders": {"time": {"type": "String"}}}
+  ,"dashboardCheckOut": "Out: {time}"
+  ,"@dashboardCheckOut": {"placeholders": {"time": {"type": "String"}}}
+  ,"dashboardNotCheckedIn": "Not checked in"
 }

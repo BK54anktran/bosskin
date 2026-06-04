@@ -4292,6 +4292,66 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhập chấm công thành công'**
   String get importAttendanceSuccess;
+
+  /// No description provided for @dashboardErrorLoad.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể tải dữ liệu tổng quan'**
+  String get dashboardErrorLoad;
+
+  /// No description provided for @dashboardOnLeave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ phép'**
+  String get dashboardOnLeave;
+
+  /// No description provided for @dashboardPayrollDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nháp'**
+  String get dashboardPayrollDraft;
+
+  /// No description provided for @dashboardPayrollApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt'**
+  String get dashboardPayrollApproved;
+
+  /// No description provided for @dashboardPayrollPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán'**
+  String get dashboardPayrollPaid;
+
+  /// No description provided for @dashboardNoPayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bảng lương'**
+  String get dashboardNoPayroll;
+
+  /// No description provided for @dashboardNoAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu chấm công hôm nay'**
+  String get dashboardNoAttendance;
+
+  /// No description provided for @dashboardCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào: {time}'**
+  String dashboardCheckIn(String time);
+
+  /// No description provided for @dashboardCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ra: {time}'**
+  String dashboardCheckOut(String time);
+
+  /// No description provided for @dashboardNotCheckedIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa check-in'**
+  String get dashboardNotCheckedIn;
 }
 
 class _AppLocalizationsDelegate

@@ -2177,4 +2177,38 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get importAttendanceSuccess => 'Nhập chấm công thành công';
+
+  @override
+  String get dashboardErrorLoad => 'Không thể tải dữ liệu tổng quan';
+
+  @override
+  String get dashboardOnLeave => 'Nghỉ phép';
+
+  @override
+  String get dashboardPayrollDraft => 'Nháp';
+
+  @override
+  String get dashboardPayrollApproved => 'Đã duyệt';
+
+  @override
+  String get dashboardPayrollPaid => 'Đã thanh toán';
+
+  @override
+  String get dashboardNoPayroll => 'Chưa có bảng lương';
+
+  @override
+  String get dashboardNoAttendance => 'Chưa có dữ liệu chấm công hôm nay';
+
+  @override
+  String dashboardCheckIn(String time) {
+    return 'Vào: $time';
+  }
+
+  @override
+  String dashboardCheckOut(String time) {
+    return 'Ra: $time';
+  }
+
+  @override
+  String get dashboardNotCheckedIn => 'Chưa check-in';
 }

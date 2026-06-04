@@ -109,6 +109,44 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
     BigDecimal sumNetSalaryByMonth(@Param("year") int year, @Param("month") int month);
 
     @Query("""
+        SELECT SUM(p.netSalary) FROM Payroll p
+        JOIN p.employee e
+        WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
+        """)
+    BigDecimal sumNetSalaryByCompanyAndMonth(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("month") int month
+    );
+
+    @Query("""
+        SELECT COUNT(p) FROM Payroll p
+        JOIN p.employee e
+        WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
+        """)
+    long countByCompanyAndMonth(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("month") int month
+    );
+
+    @Query("""
+        SELECT p.status, COUNT(p) FROM Payroll p
+        JOIN p.employee e
+        WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
+        GROUP BY p.status
+        ORDER BY COUNT(p) DESC
+        """)
+    List<Object[]> findStatusSummaryByCompanyAndMonth(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("month") int month
+    );
+
+    @Query("""
         SELECT DISTINCT p FROM Payroll p
         JOIN FETCH p.employee e
         LEFT JOIN FETCH e.company c
