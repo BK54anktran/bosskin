@@ -567,7 +567,7 @@ class AuthService extends ChangeNotifier {
     int companyId,
   ) async {
     final res = await adminDio.post(
-      '/admin/companies/$companyId/impersonate',
+      '/companies/$companyId/impersonate',
       options: Options(headers: _requestHeaders(includeToken: true)),
     );
 

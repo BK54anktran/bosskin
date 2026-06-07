@@ -2299,4 +2299,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unitDay => 'day';
+
+  @override
+  String get adminTabCompanies => 'Companies';
+
+  @override
+  String get adminTabOverview => 'Overview';
+
+  @override
+  String get adminStatsTotalCompanies => 'Total Companies';
+
+  @override
+  String get adminStatsActiveCompanies => 'Active';
+
+  @override
+  String get adminStatsInactiveCompanies => 'Inactive';
+
+  @override
+  String get adminStatsTotalEmployees => 'Total Employees';
+
+  @override
+  String get adminStatsTotalUsers => 'Total Accounts';
+
+  @override
+  String get adminStatsPayrollThisMonth => 'Payroll This Month';
+
+  @override
+  String get adminStatsCompanyGrowth => 'Company Growth';
+
+  @override
+  String get adminStatsPayrollByCompany => 'Payroll by Company';
+
+  @override
+  String get adminStatsNoPayroll => 'No payroll data this month';
+
+  @override
+  String adminStatsMonth(int month, int year) {
+    return 'Month $month/$year';
+  }
+
+  @override
+  String adminStatsEmployees(int count) {
+    return '$count employees';
+  }
+
+  @override
+  String adminStatsPayrolls(int count) {
+    return '$count payslips';
+  }
+
+  @override
+  String get adminStatsLoadError => 'Failed to load system stats';
+
+  @override
+  String adminCompanyCount(int count) {
+    return '$count companies';
+  }
 }

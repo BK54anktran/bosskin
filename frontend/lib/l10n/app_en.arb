@@ -815,4 +815,25 @@
   ,"dashboardTooltipTotal": "Total"
   ,"unitHour": "hour"
   ,"unitDay": "day"
+
+  ,"adminTabCompanies": "Companies"
+  ,"adminTabOverview": "Overview"
+  ,"adminStatsTotalCompanies": "Total Companies"
+  ,"adminStatsActiveCompanies": "Active"
+  ,"adminStatsInactiveCompanies": "Inactive"
+  ,"adminStatsTotalEmployees": "Total Employees"
+  ,"adminStatsTotalUsers": "Total Accounts"
+  ,"adminStatsPayrollThisMonth": "Payroll This Month"
+  ,"adminStatsCompanyGrowth": "Company Growth"
+  ,"adminStatsPayrollByCompany": "Payroll by Company"
+  ,"adminStatsNoPayroll": "No payroll data this month"
+  ,"adminStatsMonth": "Month {month}/{year}"
+  ,"@adminStatsMonth": {"placeholders": {"month": {"type": "int"}, "year": {"type": "int"}}}
+  ,"adminStatsEmployees": "{count} employees"
+  ,"@adminStatsEmployees": {"placeholders": {"count": {"type": "int"}}}
+  ,"adminStatsPayrolls": "{count} payslips"
+  ,"@adminStatsPayrolls": {"placeholders": {"count": {"type": "int"}}}
+  ,"adminStatsLoadError": "Failed to load system stats"
+  ,"adminCompanyCount": "{count} companies"
+  ,"@adminCompanyCount": {"placeholders": {"count": {"type": "int"}}}
 }

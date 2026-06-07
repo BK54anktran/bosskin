@@ -7,6 +7,7 @@ import com.bosskin.entity.Permission;
 import com.bosskin.entity.Role;
 import com.bosskin.entity.User;
 import com.bosskin.repository.CompanyRepository;
+import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.PermissionRepository;
 import com.bosskin.repository.RoleRepository;
 import com.bosskin.repository.UserRepository;
@@ -28,6 +29,7 @@ public class CompanyService {
 
     private final CompanyRepository    companyRepository;
     private final UserRepository       userRepository;
+    private final EmployeeRepository   employeeRepository;
     private final RoleRepository       roleRepository;
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder      passwordEncoder;
@@ -109,12 +111,14 @@ public class CompanyService {
     private CompanyResponse toResponse(Company c) {
         String adminEmail = userRepository.findFirstByCompanyId(c.getId())
             .map(User::getEmail).orElse(null);
+        long empCount = employeeRepository.countByCompanyId(c.getId());
         return CompanyResponse.builder()
             .id(c.getId()).name(c.getName()).code(c.getCode())
             .domain(c.getDomain()).address(c.getAddress())
             .phone(c.getPhone()).email(c.getEmail())
             .active(c.isActive())
             .selfAttendanceEnabled(c.isSelfAttendanceEnabled())
+            .employeeCount(empCount)
             .adminEmail(adminEmail)
             .createdAt(c.getCreatedAt())
             .build();

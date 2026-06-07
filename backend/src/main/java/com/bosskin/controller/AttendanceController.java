@@ -130,14 +130,16 @@ public class AttendanceController {
                 }
                 deptScope = intersection;
             }
+            Long companyId = user.getCompany().getId();
             com.bosskin.core.PayrollPeriod period = PayrollPeriod.of(year, month, user.getCompany().getPayrollCutoffDay());
-            result = attendanceRepository.findByPeriodWithDeptScope(period.from(), period.to(), employeeId, deptScope, pageable);
+            result = attendanceRepository.findByPeriodWithDeptScope(period.from(), period.to(), companyId, employeeId, deptScope, pageable);
         } else {
+            Long companyId = user.getCompany().getId();
             com.bosskin.core.PayrollPeriod period = PayrollPeriod.of(year, month, user.getCompany().getPayrollCutoffDay());
             if (selectedDeptScope != null) {
-                result = attendanceRepository.findByPeriodWithDeptScope(period.from(), period.to(), employeeId, selectedDeptScope, pageable);
+                result = attendanceRepository.findByPeriodWithDeptScope(period.from(), period.to(), companyId, employeeId, selectedDeptScope, pageable);
             } else {
-                result = attendanceRepository.findByPeriodWithFilters(period.from(), period.to(), employeeId, departmentId, pageable);
+                result = attendanceRepository.findByPeriodWithFilters(period.from(), period.to(), companyId, employeeId, departmentId, pageable);
             }
         }
         return ResponseEntity.ok(result.map(AttendanceDTO.Response::from));

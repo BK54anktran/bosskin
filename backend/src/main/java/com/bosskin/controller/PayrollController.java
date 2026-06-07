@@ -56,6 +56,7 @@ public class PayrollController {
         }
         Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "PAYROLL_VIEW");
         Page<Payroll> payrolls;
+        Long companyId = user.getCompany().getId();
         if (!scopeIds.isEmpty()) {
             Set<Long> deptScope = scopeIds.stream().filter(id -> id != null && id > 0).collect(Collectors.toSet());
             if (deptScope.isEmpty()) return ResponseEntity.ok(Page.empty());
@@ -65,11 +66,11 @@ public class PayrollController {
                 if (intersection.isEmpty()) return ResponseEntity.ok(Page.empty());
                 deptScope = intersection;
             }
-            payrolls = payrollRepository.findByMonthWithDeptScope(year, month, deptScope, status, pageable);
+            payrolls = payrollRepository.findByMonthWithDeptScope(year, month, companyId, deptScope, status, pageable);
         } else if (selectedDeptScope != null) {
-            payrolls = payrollRepository.findByMonthWithDeptScope(year, month, selectedDeptScope, status, pageable);
+            payrolls = payrollRepository.findByMonthWithDeptScope(year, month, companyId, selectedDeptScope, status, pageable);
         } else {
-            payrolls = payrollRepository.findByMonthWithFilters(year, month, departmentId, status, pageable);
+            payrolls = payrollRepository.findByMonthWithFilters(year, month, companyId, departmentId, status, pageable);
         }
         return ResponseEntity.ok(payrolls.map(PayrollDTO.Response::from));
     }

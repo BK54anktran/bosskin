@@ -77,6 +77,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND e.company.id = :companyId
           AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
@@ -86,6 +87,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND e.company.id = :companyId
           AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
@@ -93,6 +95,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByMonthWithFilters(
         @Param("year") int year,
         @Param("month") int month,
+        @Param("companyId") Long companyId,
         @Param("employeeId") Long employeeId,
         @Param("departmentId") Long departmentId,
         Pageable pageable
@@ -103,6 +106,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND e.company.id = :companyId
           AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
@@ -112,6 +116,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE YEAR(a.date) = :year AND MONTH(a.date) = :month
+          AND e.company.id = :companyId
           AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
@@ -119,6 +124,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByMonthWithDeptScope(
         @Param("year") int year,
         @Param("month") int month,
+        @Param("companyId") Long companyId,
         @Param("employeeId") Long employeeId,
         @Param("deptIds") Collection<Long> deptIds,
         Pageable pageable
@@ -219,6 +225,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE a.date BETWEEN :from AND :to
+          AND e.company.id = :companyId
           AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
@@ -228,6 +235,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE a.date BETWEEN :from AND :to
+          AND e.company.id = :companyId
           AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
@@ -235,6 +243,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByPeriodWithFilters(
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
+        @Param("companyId") Long companyId,
         @Param("employeeId") Long employeeId,
         @Param("departmentId") Long departmentId,
         Pageable pageable
@@ -245,6 +254,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         JOIN FETCH a.employee e
         JOIN FETCH e.department
         WHERE a.date BETWEEN :from AND :to
+          AND e.company.id = :companyId
           AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
@@ -254,6 +264,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         SELECT COUNT(a) FROM Attendance a
         JOIN a.employee e
         WHERE a.date BETWEEN :from AND :to
+          AND e.company.id = :companyId
           AND a.approved = true AND a.deleted = false
           AND (:employeeId IS NULL OR e.id = :employeeId)
           AND e.department.id IN :deptIds
@@ -261,6 +272,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByPeriodWithDeptScope(
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
+        @Param("companyId") Long companyId,
         @Param("employeeId") Long employeeId,
         @Param("deptIds") Collection<Long> deptIds,
         Pageable pageable

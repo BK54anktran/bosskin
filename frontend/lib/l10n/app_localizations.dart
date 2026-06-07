@@ -4526,6 +4526,102 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'ngày'**
   String get unitDay;
+
+  /// No description provided for @adminTabCompanies.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty'**
+  String get adminTabCompanies;
+
+  /// No description provided for @adminTabOverview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng quan'**
+  String get adminTabOverview;
+
+  /// No description provided for @adminStatsTotalCompanies.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng công ty'**
+  String get adminStatsTotalCompanies;
+
+  /// No description provided for @adminStatsActiveCompanies.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hoạt động'**
+  String get adminStatsActiveCompanies;
+
+  /// No description provided for @adminStatsInactiveCompanies.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tắt'**
+  String get adminStatsInactiveCompanies;
+
+  /// No description provided for @adminStatsTotalEmployees.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng nhân viên'**
+  String get adminStatsTotalEmployees;
+
+  /// No description provided for @adminStatsTotalUsers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng tài khoản'**
+  String get adminStatsTotalUsers;
+
+  /// No description provided for @adminStatsPayrollThisMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảng lương tháng này'**
+  String get adminStatsPayrollThisMonth;
+
+  /// No description provided for @adminStatsCompanyGrowth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tăng trưởng công ty'**
+  String get adminStatsCompanyGrowth;
+
+  /// No description provided for @adminStatsPayrollByCompany.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương theo công ty'**
+  String get adminStatsPayrollByCompany;
+
+  /// No description provided for @adminStatsNoPayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu lương tháng này'**
+  String get adminStatsNoPayroll;
+
+  /// No description provided for @adminStatsMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng {month}/{year}'**
+  String adminStatsMonth(int month, int year);
+
+  /// No description provided for @adminStatsEmployees.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} nhân viên'**
+  String adminStatsEmployees(int count);
+
+  /// No description provided for @adminStatsPayrolls.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} phiếu lương'**
+  String adminStatsPayrolls(int count);
+
+  /// No description provided for @adminStatsLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể tải thống kê hệ thống'**
+  String get adminStatsLoadError;
+
+  /// No description provided for @adminCompanyCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} công ty'**
+  String adminCompanyCount(int count);
 }
 
 class _AppLocalizationsDelegate

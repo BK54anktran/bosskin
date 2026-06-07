@@ -17,6 +17,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     List<Department> findByCompanyIdAndParentIsNullOrderByName(Long companyId);
     List<Department> findByCompanyIdOrderByLevelAscNameAsc(Long companyId);
     List<Department> findByParentIdIn(Collection<Long> parentIds);
+    List<Department> findByParentIdInAndCompanyId(Collection<Long> parentIds, Long companyId);
     Optional<Department> findByIdAndCompanyId(Long id, Long companyId);
     boolean existsByCodeAndCompanyId(String code, Long companyId);
     boolean existsByCodeAndCompanyIdAndIdNot(String code, Long companyId, Long id);

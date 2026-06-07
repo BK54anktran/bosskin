@@ -1805,60 +1805,68 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                ...day.gradeBreakdown.map((item) {
-                  final title = [
-                    if ((item.salaryGradeCode ?? '').isNotEmpty) item.salaryGradeCode,
-                    if ((item.salaryGradeName ?? '').isNotEmpty) item.salaryGradeName,
-                  ].join(' - ');
-                  final unit = item.payType == 'HOURLY' ? s.unitHour : s.unitDay;
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title.isNotEmpty ? title : 'N/A',
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w500,
-                              height: 1.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: day.gradeBreakdown.map((item) {
+                        final title = [
+                          if ((item.salaryGradeCode ?? '').isNotEmpty) item.salaryGradeCode,
+                          if ((item.salaryGradeName ?? '').isNotEmpty) item.salaryGradeName,
+                        ].join(' - ');
+                        final unit = item.payType == 'HOURLY' ? s.unitHour : s.unitDay;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title.isNotEmpty ? title : 'N/A',
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 56,
+                                child: Text(
+                                  '${item.totalHours.toStringAsFixed(1)}h / $unit',
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 92,
+                                child: Text(
+                                  fmtCurrency.format(item.estimatedCost),
+                                  style: const TextStyle(
+                                    color: Color(0xFF111827),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.2,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        SizedBox(
-                          width: 56,
-                          child: Text(
-                            '${item.totalHours.toStringAsFixed(1)}h / $unit',
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w500,
-                              height: 1.2,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 92,
-                          child: Text(
-                            fmtCurrency.format(item.estimatedCost),
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w600,
-                              height: 1.2,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
-                  );
-                }),
+                  ),
+                ),
               ],
               const SizedBox(height: 4),
               Row(

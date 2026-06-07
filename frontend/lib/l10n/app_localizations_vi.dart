@@ -2301,4 +2301,60 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get unitDay => 'ngày';
+
+  @override
+  String get adminTabCompanies => 'Công ty';
+
+  @override
+  String get adminTabOverview => 'Tổng quan';
+
+  @override
+  String get adminStatsTotalCompanies => 'Tổng công ty';
+
+  @override
+  String get adminStatsActiveCompanies => 'Đang hoạt động';
+
+  @override
+  String get adminStatsInactiveCompanies => 'Đã tắt';
+
+  @override
+  String get adminStatsTotalEmployees => 'Tổng nhân viên';
+
+  @override
+  String get adminStatsTotalUsers => 'Tổng tài khoản';
+
+  @override
+  String get adminStatsPayrollThisMonth => 'Bảng lương tháng này';
+
+  @override
+  String get adminStatsCompanyGrowth => 'Tăng trưởng công ty';
+
+  @override
+  String get adminStatsPayrollByCompany => 'Lương theo công ty';
+
+  @override
+  String get adminStatsNoPayroll => 'Chưa có dữ liệu lương tháng này';
+
+  @override
+  String adminStatsMonth(int month, int year) {
+    return 'Tháng $month/$year';
+  }
+
+  @override
+  String adminStatsEmployees(int count) {
+    return '$count nhân viên';
+  }
+
+  @override
+  String adminStatsPayrolls(int count) {
+    return '$count phiếu lương';
+  }
+
+  @override
+  String get adminStatsLoadError => 'Không thể tải thống kê hệ thống';
+
+  @override
+  String adminCompanyCount(int count) {
+    return '$count công ty';
+  }
 }

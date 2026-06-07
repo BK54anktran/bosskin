@@ -33,9 +33,10 @@ public class SalaryGradeController {
             @RequestParam(required = false) Long departmentId
     ) {
         requirePermission(user, "PAYROLL_VIEW");
+        Long companyId = user.getCompany().getId();
         List<SalaryGrade> grades = departmentId != null
-                ? gradeRepo.findByDepartmentIdInOrDepartmentIsNull(collectSubtree(departmentId))
-                : gradeRepo.findByCompanyId(user.getCompany().getId());
+                ? gradeRepo.findByDepartmentIdInOrDepartmentIsNull(collectSubtree(departmentId, companyId))
+                : gradeRepo.findByCompanyId(companyId);
         return ResponseEntity.ok(grades.stream().map(SalaryGradeDTO::from).toList());
     }
 
@@ -111,14 +112,14 @@ public class SalaryGradeController {
         return ResponseEntity.noContent().build();
     }
 
-    /** BFS: collect departmentId + tất cả con cháu */
-    private List<Long> collectSubtree(Long rootId) {
+    /** BFS: collect departmentId + tất cả con cháu, chỉ trong phạm vi company */
+    private List<Long> collectSubtree(Long rootId, Long companyId) {
         List<Long> result = new ArrayList<>();
         List<Long> frontier = new ArrayList<>();
         frontier.add(rootId);
         while (!frontier.isEmpty()) {
             result.addAll(frontier);
-            List<Department> children = departmentRepo.findByParentIdIn(frontier);
+            List<Department> children = departmentRepo.findByParentIdInAndCompanyId(frontier, companyId);
             frontier = children.stream().map(Department::getId).collect(Collectors.toList());
         }
         return result;

@@ -1,7 +1,7 @@
 class AppConstants {
   static const String appName = 'BossKin';
-  static const String baseUrl = 'http://192.168.0.12:8080/api/v1';
-  static const String adminBaseUrl = 'http://192.168.0.12:8080/admin';
+  static const String baseUrl = 'http://localhost:8080/api/v1';
+  static const String adminBaseUrl = 'http://localhost:8080/admin';
 
   static const String tokenKey = 'access_token';
   static const String adminTokenKey = 'admin_access_token';

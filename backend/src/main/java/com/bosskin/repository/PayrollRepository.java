@@ -26,12 +26,14 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         LEFT JOIN FETCH e.position pos
         LEFT JOIN FETCH e.salaryGrade sg
         WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
           AND (:departmentId IS NULL OR e.department.id = :departmentId)
           AND (:status IS NULL OR p.status = :status)
         """)
     Page<Payroll> findByMonthWithFilters(
         @Param("year") int year,
         @Param("month") int month,
+        @Param("companyId") Long companyId,
         @Param("departmentId") Long departmentId,
         @Param("status") Payroll.Status status,
         Pageable pageable
@@ -45,12 +47,14 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         LEFT JOIN FETCH e.position pos
         LEFT JOIN FETCH e.salaryGrade sg
         WHERE p.year = :year AND p.month = :month
+          AND e.company.id = :companyId
           AND e.department.id IN :deptIds
           AND (:status IS NULL OR p.status = :status)
         """)
     Page<Payroll> findByMonthWithDeptScope(
         @Param("year") int year,
         @Param("month") int month,
+        @Param("companyId") Long companyId,
         @Param("deptIds") Collection<Long> deptIds,
         @Param("status") Payroll.Status status,
         Pageable pageable
@@ -105,8 +109,8 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         @Param("deptIds") Collection<Long> deptIds
     );
 
-    @Query("SELECT SUM(p.netSalary) FROM Payroll p WHERE p.year = :year AND p.month = :month AND p.status = 'PAID'")
-    BigDecimal sumNetSalaryByMonth(@Param("year") int year, @Param("month") int month);
+    @Query("SELECT SUM(p.netSalary) FROM Payroll p JOIN p.employee e WHERE p.year = :year AND p.month = :month AND p.status = 'PAID' AND e.company.id = :companyId")
+    BigDecimal sumNetSalaryByMonth(@Param("companyId") Long companyId, @Param("year") int year, @Param("month") int month);
 
     @Query("""
         SELECT SUM(p.netSalary) FROM Payroll p

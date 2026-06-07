@@ -818,4 +818,25 @@
   ,"dashboardTooltipTotal": "Tổng"
   ,"unitHour": "giờ"
   ,"unitDay": "ngày"
+
+  ,"adminTabCompanies": "Công ty"
+  ,"adminTabOverview": "Tổng quan"
+  ,"adminStatsTotalCompanies": "Tổng công ty"
+  ,"adminStatsActiveCompanies": "Đang hoạt động"
+  ,"adminStatsInactiveCompanies": "Đã tắt"
+  ,"adminStatsTotalEmployees": "Tổng nhân viên"
+  ,"adminStatsTotalUsers": "Tổng tài khoản"
+  ,"adminStatsPayrollThisMonth": "Bảng lương tháng này"
+  ,"adminStatsCompanyGrowth": "Tăng trưởng công ty"
+  ,"adminStatsPayrollByCompany": "Lương theo công ty"
+  ,"adminStatsNoPayroll": "Chưa có dữ liệu lương tháng này"
+  ,"adminStatsMonth": "Tháng {month}/{year}"
+  ,"@adminStatsMonth": {"placeholders": {"month": {"type": "int"}, "year": {"type": "int"}}}
+  ,"adminStatsEmployees": "{count} nhân viên"
+  ,"@adminStatsEmployees": {"placeholders": {"count": {"type": "int"}}}
+  ,"adminStatsPayrolls": "{count} phiếu lương"
+  ,"@adminStatsPayrolls": {"placeholders": {"count": {"type": "int"}}}
+  ,"adminStatsLoadError": "Không thể tải thống kê hệ thống"
+  ,"adminCompanyCount": "{count} công ty"
+  ,"@adminCompanyCount": {"placeholders": {"count": {"type": "int"}}}
 }
