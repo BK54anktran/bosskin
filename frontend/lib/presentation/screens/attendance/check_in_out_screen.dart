@@ -13,6 +13,7 @@ import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/attendance_message_utils.dart';
 import '../../../data/models/attendance.dart';
 import '../../../data/repositories/attendance_repository.dart';
+import '../../../data/services/auth_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
 class CheckInOutScreen extends StatefulWidget {
@@ -158,6 +159,20 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
+    if (AuthService.instance.isImpersonating) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.admin_panel_settings_outlined, size: 64, color: AppTheme.primary),
+            const SizedBox(height: 16),
+            Text(s.impersonatingCompanyNotice,
+                style: const TextStyle(color: AppTheme.textSecondary),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      );
+    }
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return Center(

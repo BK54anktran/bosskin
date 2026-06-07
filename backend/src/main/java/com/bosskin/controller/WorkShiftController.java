@@ -3,6 +3,7 @@ package com.bosskin.controller;
 import com.bosskin.dto.ShiftDTO;
 import com.bosskin.dto.EmployeeDTO;
 import com.bosskin.entity.User;
+import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.EmployeeService;
 import com.bosskin.service.WorkShiftService;
@@ -34,6 +35,7 @@ public class WorkShiftController {
     private final EmployeeService employeeService;
     private final ShiftExcelService shiftExcelService;
     private final com.bosskin.service.CompanySettingService companySettingService;
+    private final DepartmentRepository departmentRepository;
 
     // ── Export / Import Excel ────────────────────────────────────────────
 
@@ -152,6 +154,8 @@ public class WorkShiftController {
             @PathVariable Long deptId,
             @AuthenticationPrincipal User user) {
         requireShiftView(user);
+        departmentRepository.findByIdAndCompanyId(deptId, user.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         Set<Long> selectedDeptScope = deptScopeService.expandDepartmentsWithDescendants(Set.of(deptId));
         if (selectedDeptScope.isEmpty()) {
             return List.of();

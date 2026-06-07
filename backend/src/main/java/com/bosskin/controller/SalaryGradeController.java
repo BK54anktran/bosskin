@@ -1,5 +1,6 @@
 package com.bosskin.controller;
 
+import com.bosskin.entity.Company;
 import com.bosskin.entity.Department;
 import com.bosskin.entity.SalaryGrade;
 import com.bosskin.entity.User;
@@ -35,7 +36,7 @@ public class SalaryGradeController {
         requirePermission(user, "PAYROLL_VIEW");
         Long companyId = user.getCompany().getId();
         List<SalaryGrade> grades = departmentId != null
-                ? gradeRepo.findByDepartmentIdInOrDepartmentIsNull(collectSubtree(departmentId, companyId))
+                ? gradeRepo.findByDepartmentIdInOrDepartmentIsNull(collectSubtree(departmentId, companyId), companyId)
                 : gradeRepo.findByCompanyId(companyId);
         return ResponseEntity.ok(grades.stream().map(SalaryGradeDTO::from).toList());
     }
@@ -46,28 +47,29 @@ public class SalaryGradeController {
             @RequestBody SalaryGradeRequest body
     ) {
         requirePermission(user, "PAYROLL_CREATE");
+        Long companyId = user.getCompany().getId();
+        Company company = user.getCompany();
 
         Department department = null;
         if (body.getDepartmentId() != null) {
-            department = departmentRepo.findByIdAndCompanyId(body.getDepartmentId(), user.getCompany().getId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban"));
+            department = departmentRepo.findByIdAndCompanyId(body.getDepartmentId(), companyId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         }
 
         SalaryGrade.PayType payType;
         try {
             payType = SalaryGrade.PayType.valueOf(body.getPayType());
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pay_type không hợp lệ: " + body.getPayType());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.salary_grade.invalid_pay_type");
         }
 
-        // Check duplicate code trong cùng scope (dept hoặc toàn công ty)
         boolean duplicate = body.getDepartmentId() != null
                 ? gradeRepo.findByDepartmentIdAndCode(body.getDepartmentId(), body.getCode()).isPresent()
-                : gradeRepo.findByDepartmentIsNullAndCode(body.getCode()).isPresent();
-        if (duplicate) throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "Mã bậc lương '" + body.getCode() + "' đã tồn tại trong phạm vi này");
+                : gradeRepo.findByCompanyIdAndDepartmentIsNullAndCode(companyId, body.getCode()).isPresent();
+        if (duplicate) throw new ResponseStatusException(HttpStatus.CONFLICT, "error.salary_grade.duplicate_code");
 
         SalaryGrade grade = SalaryGrade.builder()
+                .company(company)
                 .department(department)
                 .code(body.getCode())
                 .name(body.getName())
@@ -85,7 +87,7 @@ public class SalaryGradeController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryGrade grade = gradeRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bậc lương"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_grade.not_found"));
         requireSameCompany(grade, user);
         if (body.getName() != null) grade.setName(body.getName());
         if (body.getBaseRate() != null) grade.setBaseRate(body.getBaseRate());
@@ -93,7 +95,7 @@ public class SalaryGradeController {
             try {
                 grade.setPayType(SalaryGrade.PayType.valueOf(body.getPayType()));
             } catch (Exception e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pay_type không hợp lệ");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.salary_grade.invalid_pay_type");
             }
         }
         return ResponseEntity.ok(SalaryGradeDTO.from(gradeRepo.save(grade)));
@@ -106,7 +108,7 @@ public class SalaryGradeController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryGrade grade = gradeRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bậc lương"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_grade.not_found"));
         requireSameCompany(grade, user);
         gradeRepo.delete(grade);
         return ResponseEntity.noContent().build();
@@ -132,15 +134,16 @@ public class SalaryGradeController {
     }
 
     private void requireSameCompany(SalaryGrade grade, User user) {
-        if (grade.getDepartment() != null &&
-                !grade.getDepartment().getCompany().getId().equals(user.getCompany().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
+        Long gradeCompanyId = grade.getCompany() != null ? grade.getCompany().getId()
+                : (grade.getDepartment() != null ? grade.getDepartment().getCompany().getId() : null);
+        if (gradeCompanyId != null && !gradeCompanyId.equals(user.getCompany().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class SalaryGradeRequest {
-        private Long departmentId; // null = toàn công ty
+        private Long departmentId;
         private String code;
         private String name;
         private String payType;
@@ -150,6 +153,7 @@ public class SalaryGradeController {
     @Getter @Builder
     public static class SalaryGradeDTO {
         private Long id;
+        private Long companyId;
         private Long departmentId;
         private String departmentName;
         private String code;
@@ -162,6 +166,7 @@ public class SalaryGradeController {
         public static SalaryGradeDTO from(SalaryGrade g) {
             return SalaryGradeDTO.builder()
                     .id(g.getId())
+                    .companyId(g.getCompany() != null ? g.getCompany().getId() : null)
                     .departmentId(g.getDepartment() != null ? g.getDepartment().getId() : null)
                     .departmentName(g.getDepartment() != null ? g.getDepartment().getName() : null)
                     .code(g.getCode())

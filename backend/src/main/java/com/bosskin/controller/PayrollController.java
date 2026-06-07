@@ -5,6 +5,7 @@ import com.bosskin.entity.Payroll;
 import com.bosskin.entity.User;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.PayrollRepository;
+import com.bosskin.repository.SalaryFormulaRepository;
 import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.PayrollExcelService;
 import com.bosskin.service.PayrollService;
@@ -29,11 +30,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PayrollController {
 
-    private final PayrollService     payrollService;
-    private final PayrollExcelService payrollExcelService;
-    private final PayrollRepository  payrollRepository;
-    private final EmployeeRepository employeeRepository;
-    private final DeptScopeService   deptScopeService;
+    private final PayrollService          payrollService;
+    private final PayrollExcelService     payrollExcelService;
+    private final PayrollRepository       payrollRepository;
+    private final EmployeeRepository      employeeRepository;
+    private final DeptScopeService        deptScopeService;
+    private final SalaryFormulaRepository salaryFormulaRepository;
 
     @GetMapping
     public ResponseEntity<Page<PayrollDTO.Response>> getByMonth(
@@ -102,6 +104,7 @@ public class PayrollController {
         int month = Integer.parseInt(body.get("month").toString());
         Long formulaId = body.containsKey("formulaId") && body.get("formulaId") != null
             ? Long.valueOf(body.get("formulaId").toString()) : null;
+        requireFormulaCompany(formulaId, user.getCompany().getId());
         Payroll p = payrollService.generatePayroll(employeeId, year, month, formulaId);
         return ResponseEntity.status(HttpStatus.CREATED).body(PayrollDTO.Response.from(p));
     }
@@ -113,7 +116,7 @@ public class PayrollController {
         @RequestBody PayrollDTO.PatchRequest body
     ) {
         requirePermission(user, "PAYROLL_CREATE");
-        Payroll p = payrollRepository.findById(id)
+        Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
         return ResponseEntity.ok(PayrollDTO.Response.from(
@@ -127,7 +130,7 @@ public class PayrollController {
         @AuthenticationPrincipal User user
     ) {
         requirePermission(user, "PAYROLL_APPROVE");
-        Payroll p = payrollRepository.findById(id)
+        Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
         return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.approve(id)));
@@ -139,7 +142,7 @@ public class PayrollController {
         @AuthenticationPrincipal User user
     ) {
         requirePermission(user, "PAYROLL_PAY");
-        Payroll p = payrollRepository.findById(id)
+        Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
         return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.markAsPaid(id)));
@@ -151,7 +154,7 @@ public class PayrollController {
         @AuthenticationPrincipal User user
     ) {
         requirePermission(user, "PAYROLL_CREATE");
-        Payroll p = payrollRepository.findById(id)
+        Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
         if (p.getStatus() != Payroll.Status.DRAFT) {
@@ -168,7 +171,7 @@ public class PayrollController {
         @AuthenticationPrincipal User user
     ) {
         requirePermission(user, "PAYROLL_CREATE");
-        Payroll p = payrollRepository.findById(id)
+        Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
         if (p.getStatus() != Payroll.Status.DRAFT) {
@@ -176,10 +179,26 @@ public class PayrollController {
         }
         Long formulaId = (body != null && body.containsKey("formulaId") && body.get("formulaId") != null)
             ? Long.valueOf(body.get("formulaId").toString()) : null;
+        requireFormulaCompany(formulaId, user.getCompany().getId());
         payrollRepository.delete(p);
         Payroll recalculated = payrollService.generatePayroll(
             p.getEmployee().getId(), p.getYear(), p.getMonth(), formulaId);
         return ResponseEntity.ok(PayrollDTO.Response.from(recalculated));
+    }
+
+    @GetMapping("/by-employee/{employeeId}")
+    public ResponseEntity<List<PayrollDTO.Response>> getByEmployee(
+        @AuthenticationPrincipal User user,
+        @PathVariable Long employeeId,
+        @RequestParam(required = false) Integer year
+    ) {
+        requirePermission(user, "PAYROLL_VIEW");
+        var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        requireViewScope(user, employee.getDepartment() != null ? employee.getDepartment().getId() : null);
+        List<PayrollDTO.Response> result = payrollRepository.findSelfPayrolls(employeeId, year)
+            .stream().map(PayrollDTO.Response::from).toList();
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/self")
@@ -214,5 +233,16 @@ public class PayrollController {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "PAYROLL_VIEW");
         if (!scope.isEmpty() && !scope.contains(deptId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
+    }
+
+    private void requireFormulaCompany(Long formulaId, Long companyId) {
+        if (formulaId == null) return;
+        var formula = salaryFormulaRepository.findById(formulaId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_formula.not_found"));
+        var grade = formula.getSalaryGrade();
+        Long gradeCompanyId = grade.getCompany() != null ? grade.getCompany().getId()
+            : (grade.getDepartment() != null ? grade.getDepartment().getCompany().getId() : null);
+        if (gradeCompanyId == null || !gradeCompanyId.equals(companyId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 }

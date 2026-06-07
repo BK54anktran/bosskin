@@ -142,6 +142,19 @@ class PayrollRepository {
     );
   }
 
+  Future<List<Payroll>> getByEmployee(int employeeId, {int? year}) async {
+    final params = <String, dynamic>{
+      if (year != null) 'year': year,
+    };
+    return _api.get(
+      '/payrolls/by-employee/$employeeId',
+      (data) => (data as List)
+          .map((e) => Payroll.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      queryParams: params,
+    );
+  }
+
   Future<List<Payroll>> getSelf({int? year}) async {
     final params = <String, dynamic>{
       if (year != null) 'year': year,

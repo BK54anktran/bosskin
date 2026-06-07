@@ -3765,6 +3765,18 @@ abstract class AppLocalizations {
   /// **'Ngày hiệu lực'**
   String get effectiveDate;
 
+  /// No description provided for @payrollMonthlyHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử bảng lương'**
+  String get payrollMonthlyHistory;
+
+  /// No description provided for @salaryGradeHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử bậc lương'**
+  String get salaryGradeHistory;
+
   /// No description provided for @actualSalary.
   ///
   /// In vi, this message translates to:

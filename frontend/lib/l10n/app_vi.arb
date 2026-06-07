@@ -689,6 +689,8 @@
   ,"salaryHistory": "Lịch sử lương"
   ,"salaryHistoryAdd": "Thêm mức lương"
   ,"effectiveDate": "Ngày hiệu lực"
+  ,"payrollMonthlyHistory": "Lịch sử bảng lương"
+  ,"salaryGradeHistory": "Lịch sử bậc lương"
   ,"actualSalary": "Lương thực tế"
   ,"totalDeductions": "Tổng khấu trừ"
   ,"payrollNoSalaryConfig": "Chưa cấu hình lương cho nhân viên này"

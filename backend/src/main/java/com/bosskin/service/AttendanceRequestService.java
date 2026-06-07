@@ -191,7 +191,7 @@ public class AttendanceRequestService {
     private Employee getEmployeeOrThrow(User user) {
         return employeeRepository.findByUserIdFetch(user.getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "Tài khoản chưa được liên kết với nhân viên nào"));
+                "error.user.employee_not_linked"));
     }
 
     private AttendanceRequest getRequestOrThrow(Long id, Long companyId) {

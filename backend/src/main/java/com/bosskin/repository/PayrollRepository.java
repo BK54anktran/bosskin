@@ -18,6 +18,10 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
 
     Optional<Payroll> findByEmployeeIdAndYearAndMonth(Long employeeId, int year, int month);
 
+    @Query("SELECT p FROM Payroll p JOIN p.employee e WHERE p.id = :id AND e.company.id = :companyId")
+    Optional<Payroll> findByIdAndCompanyId(@org.springframework.data.repository.query.Param("id") Long id,
+                                           @org.springframework.data.repository.query.Param("companyId") Long companyId);
+
     @Query("""
         SELECT DISTINCT p FROM Payroll p
         JOIN FETCH p.employee e

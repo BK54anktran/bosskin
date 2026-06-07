@@ -102,7 +102,11 @@ public class JwtUtil {
     @SuppressWarnings("unchecked")
     public Set<String> extractPermissions(String token) {
         Object v = extractAllClaims(token).get("permissions");
-        return v instanceof Set ? (Set<String>) v : Set.of();
+        if (v instanceof Set) return (Set<String>) v;
+        if (v instanceof java.util.Collection<?> col) {
+            return col.stream().map(Object::toString).collect(java.util.stream.Collectors.toSet());
+        }
+        return Set.of();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

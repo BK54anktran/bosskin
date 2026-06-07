@@ -142,11 +142,11 @@ public class EmployeeService {
         }
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
-        Department dept = departmentRepository.findById(req.getDepartmentId())
+        Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại"));
         Position pos = null;
         if (req.getPositionId() != null) {
-            pos = positionRepository.findById(req.getPositionId())
+            pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chức vụ không tồn tại"));
             if (!pos.getDepartment().getId().equals(req.getDepartmentId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chức vụ không thuộc phòng ban đã chọn");
@@ -198,14 +198,14 @@ public class EmployeeService {
         if (req.getBankAccount()   != null) e.setBankAccount(req.getBankAccount());
         if (req.getBankName()      != null) e.setBankName(req.getBankName());
         if (req.getDepartmentId() != null) {
-            e.setDepartment(departmentRepository.findById(req.getDepartmentId())
+            e.setDepartment(departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại")));
             if (e.getPosition() != null && !e.getPosition().getDepartment().getId().equals(e.getDepartment().getId())) {
                 e.setPosition(null);
             }
         }
         if (req.getPositionId() != null) {
-            Position pos = positionRepository.findById(req.getPositionId())
+            Position pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chức vụ không tồn tại"));
             if (!pos.getDepartment().getId().equals(e.getDepartment().getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chức vụ không thuộc phòng ban đã chọn");
@@ -216,6 +216,7 @@ public class EmployeeService {
         }
         if (req.getSalaryGradeId() != null) {
             SalaryGrade grade = salaryGradeRepository.findById(req.getSalaryGradeId())
+                .filter(g -> g.getCompany() != null && g.getCompany().getId().equals(companyId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bậc lương không tồn tại"));
             e.setSalaryGrade(grade);
         } else {

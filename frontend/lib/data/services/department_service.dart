@@ -10,7 +10,8 @@ class DepartmentService {
   DepartmentService._();
 
   Dio get _dio {
-    final token = AuthService.instance.currentUser?.token ?? '';
+    final auth = AuthService.instance;
+    final token = (auth.impersonatingUser ?? auth.currentUser)?.token ?? '';
     return Dio(BaseOptions(
       baseUrl: ServerConfig.baseUrl,
       headers: {

@@ -1911,6 +1911,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get effectiveDate => 'Ngày hiệu lực';
 
   @override
+  String get payrollMonthlyHistory => 'Lịch sử bảng lương';
+
+  @override
+  String get salaryGradeHistory => 'Lịch sử bậc lương';
+
+  @override
   String get actualSalary => 'Lương thực tế';
 
   @override

@@ -686,6 +686,8 @@
   ,"salaryHistory": "Salary history"
   ,"salaryHistoryAdd": "Add salary level"
   ,"effectiveDate": "Effective date"
+  ,"payrollMonthlyHistory": "Payroll history"
+  ,"salaryGradeHistory": "Salary grade history"
   ,"actualSalary": "Actual salary"
   ,"totalDeductions": "Total deductions"
   ,"payrollNoSalaryConfig": "No salary configured for this employee"

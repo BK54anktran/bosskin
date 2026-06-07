@@ -17,6 +17,7 @@ import '../../widgets/permission_guard.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/payroll.dart';
 import '../../../data/repositories/salary_history_repository.dart';
+import '../../../data/repositories/payroll_repository.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/repositories/salary_grade_repository.dart';
 import '../../../data/models/salary_grade.dart';
@@ -750,44 +751,72 @@ class _SalaryHistoryDialog extends StatefulWidget {
   State<_SalaryHistoryDialog> createState() => _SalaryHistoryDialogState();
 }
 
-class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog> {
-  final _repo = SalaryHistoryRepository();
-  bool _loading = true;
-  List<SalaryHistory> _items = [];
-  String? _error;
+class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
+    with SingleTickerProviderStateMixin {
+  final _shRepo = SalaryHistoryRepository();
+  final _payrollRepo = PayrollRepository();
+  late final TabController _tab;
+
+  bool _loadingSh = true;
+  List<SalaryHistory> _shItems = [];
+  String? _shError;
+
+  bool _loadingPayroll = true;
+  List<Payroll> _payrollItems = [];
+  String? _payrollError;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _tab = TabController(length: 2, vsync: this);
+    _loadSh();
+    _loadPayroll();
   }
 
-  Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSh() async {
+    setState(() { _loadingSh = true; _shError = null; });
     try {
-      final items = await _repo.getByEmployee(widget.employee.id);
-      if (mounted) setState(() => _items = items);
+      final items = await _shRepo.getByEmployee(widget.employee.id);
+      if (mounted) setState(() => _shItems = items);
     } catch (e) {
-      if (mounted) setState(() => _error = serverMsg(e));
+      if (mounted) setState(() => _shError = serverMsg(e));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _loadingSh = false);
+    }
+  }
+
+  Future<void> _loadPayroll() async {
+    setState(() { _loadingPayroll = true; _payrollError = null; });
+    try {
+      final items = await _payrollRepo.getByEmployee(widget.employee.id);
+      if (mounted) setState(() => _payrollItems = items);
+    } catch (e) {
+      if (mounted) setState(() => _payrollError = serverMsg(e));
+    } finally {
+      if (mounted) setState(() => _loadingPayroll = false);
     }
   }
 
   void _openAdd() async {
     final created = await showDialog<SalaryHistory>(
       context: context,
-      builder: (_) => _SalaryHistoryFormDialog(employeeId: widget.employee.id, repo: _repo),
+      builder: (_) => _SalaryHistoryFormDialog(employeeId: widget.employee.id, repo: _shRepo),
     );
-    if (created != null) _load();
+    if (created != null) _loadSh();
   }
 
   void _openEdit(SalaryHistory sh) async {
     final updated = await showDialog<SalaryHistory>(
       context: context,
-      builder: (_) => _SalaryHistoryFormDialog(employeeId: widget.employee.id, repo: _repo, existing: sh),
+      builder: (_) => _SalaryHistoryFormDialog(employeeId: widget.employee.id, repo: _shRepo, existing: sh),
     );
-    if (updated != null) _load();
+    if (updated != null) _loadSh();
   }
 
   Future<void> _delete(SalaryHistory sh) async {
@@ -803,8 +832,8 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog> {
     );
     if (ok != true) return;
     try {
-      await _repo.delete(sh.id);
-      _load();
+      await _shRepo.delete(sh.id);
+      _loadSh();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
@@ -814,70 +843,36 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
-    final dateFmt = DateFormat('dd/MM/yyyy');
     final currFmt = NumberFormat('#,###', 'vi_VN');
     return Dialog(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480, maxHeight: 560),
+        constraints: const BoxConstraints(maxWidth: 520, maxHeight: 600),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${s.salaryHistory} — ${widget.employee.fullName}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    tooltip: s.salaryHistoryAdd,
-                    onPressed: _openAdd,
-                  ),
+              Text(
+                '${s.salaryHistory} — ${widget.employee.fullName}',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              ),
+              const SizedBox(height: 8),
+              TabBar(
+                controller: _tab,
+                tabs: [
+                  Tab(text: s.payrollMonthlyHistory),
+                  Tab(text: s.salaryGradeHistory),
                 ],
               ),
-              const Divider(height: 16),
-              if (_error != null)
-                Text(_error!, style: const TextStyle(color: AppTheme.error)),
+              const SizedBox(height: 8),
               Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _items.isEmpty
-                        ? Center(child: Text(s.noResults))
-                        : ListView.separated(
-                            itemCount: _items.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
-                            itemBuilder: (_, i) {
-                              final sh = _items[i];
-                              return ListTile(
-                                dense: true,
-                                title: Text(
-                                  '${currFmt.format(sh.baseSalary)}đ',
-                                  style: const TextStyle(fontWeight: FontWeight.w700),
-                                ),
-                                subtitle: Text(
-                                  '${s.effectiveDate}: ${dateFmt.format(sh.effectiveDate)}'
-                                  '${sh.note != null ? '\n${sh.note}' : ''}',
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_outlined, size: 16),
-                                      onPressed: () => _openEdit(sh),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.error),
-                                      onPressed: () => _delete(sh),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                child: TabBarView(
+                  controller: _tab,
+                  children: [
+                    _buildPayrollTab(s, currFmt),
+                    _buildSalaryHistoryTab(s, currFmt),
+                  ],
+                ),
               ),
               const SizedBox(height: 8),
               TextButton(onPressed: () => Navigator.pop(context), child: Text(s.close)),
@@ -885,6 +880,101 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPayrollTab(AppLocalizations s, NumberFormat currFmt) {
+    if (_loadingPayroll) return const Center(child: CircularProgressIndicator());
+    if (_payrollError != null) return Center(child: Text(_payrollError!, style: const TextStyle(color: AppTheme.error)));
+    if (_payrollItems.isEmpty) return Center(child: Text(s.noResults));
+    return ListView.separated(
+      itemCount: _payrollItems.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (_, i) {
+        final p = _payrollItems[i];
+        final statusColor = p.status == PayrollStatus.paid
+            ? Colors.green
+            : p.status == PayrollStatus.approved
+                ? Colors.blue
+                : Colors.grey;
+        return ListTile(
+          dense: true,
+          title: Text(
+            'Tháng ${p.month}/${p.year}',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            '${s.baseSalary}: ${currFmt.format(p.baseSalary)}đ'
+            '  •  Net: ${currFmt.format(p.netSalary)}đ',
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              p.status.name.toUpperCase(),
+              style: TextStyle(fontSize: 11, color: statusColor, fontWeight: FontWeight.w600),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSalaryHistoryTab(AppLocalizations s, NumberFormat currFmt) {
+    final dateFmt = DateFormat('dd/MM/yyyy');
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            icon: const Icon(Icons.add, size: 16),
+            label: Text(s.salaryHistoryAdd),
+            onPressed: _openAdd,
+          ),
+        ),
+        if (_shError != null)
+          Text(_shError!, style: const TextStyle(color: AppTheme.error)),
+        Expanded(
+          child: _loadingSh
+              ? const Center(child: CircularProgressIndicator())
+              : _shItems.isEmpty
+                  ? Center(child: Text(s.noResults))
+                  : ListView.separated(
+                      itemCount: _shItems.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (_, i) {
+                        final sh = _shItems[i];
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            '${currFmt.format(sh.baseSalary)}đ',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          subtitle: Text(
+                            '${s.effectiveDate}: ${dateFmt.format(sh.effectiveDate)}'
+                            '${sh.note != null ? '\n${sh.note}' : ''}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 16),
+                                onPressed: () => _openEdit(sh),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.error),
+                                onPressed: () => _delete(sh),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
     );
   }
 }

@@ -74,7 +74,8 @@ public class UserController {
         Object empIdObj = body.get("employeeId");
         if (empIdObj != null) {
             Long empId = ((Number) empIdObj).longValue();
-            employee = employeeRepository.findById(empId).orElse(null);
+            employee = employeeRepository.findByIdAndCompanyId(empId, caller.getCompany().getId()).orElse(null);
+            if (employee == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found");
         }
         Set<Long> manageScope = deptScopeService.resolvedScopes(caller.getId(), "USER_MANAGE");
         if (!canManageTarget(caller, employee, manageScope)) {

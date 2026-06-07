@@ -40,9 +40,18 @@ public class SalaryFormulaController {
             @RequestParam(required = false) Long gradeId
     ) {
         requirePermission(user, "PAYROLL_VIEW");
-        List<SalaryFormula> formulas = gradeId != null
-                ? formulaRepo.findBySalaryGradeIdOrderByEffectiveDateDesc(gradeId)
-                : formulaRepo.findByCompanyId(user.getCompany().getId());
+        Long companyId = user.getCompany().getId();
+        List<SalaryFormula> formulas;
+        if (gradeId != null) {
+            SalaryGrade grade = gradeRepo.findById(gradeId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_grade.not_found"));
+            if (grade.getCompany() == null || !grade.getCompany().getId().equals(companyId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+            }
+            formulas = formulaRepo.findBySalaryGradeIdOrderByEffectiveDateDesc(gradeId);
+        } else {
+            formulas = formulaRepo.findByCompanyId(companyId);
+        }
         return ResponseEntity.ok(formulas.stream().map(SalaryFormulaDTO::from).toList());
     }
 
@@ -228,9 +237,10 @@ public class SalaryFormulaController {
     }
 
     private void requireSameCompany(SalaryGrade grade, User user) {
-        if (grade.getDepartment() != null &&
-                !grade.getDepartment().getCompany().getId().equals(user.getCompany().getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
+        Long gradeCompanyId = grade.getCompany() != null ? grade.getCompany().getId()
+                : (grade.getDepartment() != null ? grade.getDepartment().getCompany().getId() : null);
+        if (gradeCompanyId == null || !gradeCompanyId.equals(user.getCompany().getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     // ─── DTOs ─────────────────────────────────────────────────────────────────

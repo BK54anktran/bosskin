@@ -17,8 +17,7 @@ public interface SalaryFormulaRepository extends JpaRepository<SalaryFormula, Lo
     @Query(value = """
         SELECT f.* FROM salary_formulas f
         JOIN salary_grades g ON f.salary_grade_id = g.id
-        LEFT JOIN departments d ON g.department_id = d.id
-        WHERE g.department_id IS NULL OR d.company_id = :companyId
+        WHERE g.company_id = :companyId
         ORDER BY f.effective_date DESC
         """, nativeQuery = true)
     List<SalaryFormula> findByCompanyId(Long companyId);
@@ -31,9 +30,8 @@ public interface SalaryFormulaRepository extends JpaRepository<SalaryFormula, Lo
     @Query(value = """
         SELECT COUNT(*) FROM salary_formulas f
         JOIN salary_grades g ON f.salary_grade_id = g.id
-        LEFT JOIN departments d ON g.department_id = d.id
         WHERE f.name = :name
-          AND (g.department_id IS NULL OR d.company_id = :companyId)
+          AND g.company_id = :companyId
           AND f.id != :excludeId
         """, nativeQuery = true)
     long countByNameAndCompanyIdAndIdNot(

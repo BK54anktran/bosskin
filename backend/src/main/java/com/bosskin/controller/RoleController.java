@@ -5,6 +5,7 @@ import com.bosskin.entity.Role;
 import com.bosskin.entity.User;
 import com.bosskin.repository.PermissionRepository;
 import com.bosskin.repository.RolePermDeptScopeRepository;
+import com.bosskin.repository.RoleRepository;
 import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.PermissionConsistencyService;
 import com.bosskin.service.RoleService;
@@ -25,6 +26,7 @@ import java.util.Set;
 public class RoleController {
 
     private final RoleService roleService;
+    private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final RolePermDeptScopeRepository rolePermDeptScopeRepo;
     private final PermissionConsistencyService permissionConsistencyService;
@@ -59,6 +61,10 @@ public class RoleController {
         @AuthenticationPrincipal User user
     ) {
         requirePermission(user, "ROLE_MANAGE");
+        Role role = roleRepository.findById(id)
+            .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "error.role.not_found"));
+        if (!role.getCompany().getId().equals(user.getCompany().getId()))
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         return ResponseEntity.ok(rolePermDeptScopeRepo.findScopesMap(id));
     }
 

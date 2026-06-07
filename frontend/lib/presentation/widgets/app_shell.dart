@@ -73,7 +73,9 @@ class _AppShellState extends State<AppShell>
 
     final bottomItems = _bottomNavItems(s);
     final user = AuthService.instance.currentUser;
+    final isImpersonatingBottom = AuthService.instance.isImpersonating;
     final visibleBottomItems = bottomItems.where((item) {
+      if (isImpersonatingBottom && _selfOnlyRoutes.contains(item.route)) return false;
       if (user == null) return false;
       if (item.requiredPermission == null) return true;
       if (item.route == AppRoutes.attendanceRequests) {
@@ -241,6 +243,12 @@ class _AppShellState extends State<AppShell>
   }
 }
 
+const _selfOnlyRoutes = {
+  AppRoutes.checkInOut,
+  AppRoutes.selfPayroll,
+  AppRoutes.profile,
+};
+
 class _SideNav extends StatelessWidget {
   final List<_NavItem> items;
   final String location;
@@ -251,6 +259,7 @@ class _SideNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
     final isAdmin = user?.isAdmin ?? false;
+    final isImpersonating = AuthService.instance.isImpersonating;
 
     final s = AppLocalizations.of(context)!;
     final canSeeCompanySettings = user != null &&
@@ -266,6 +275,8 @@ class _SideNav extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               children: [
                 ...items.where((item) {
+                  // Ẩn các route self-service khi sysadmin đang impersonate
+                  if (isImpersonating && _selfOnlyRoutes.contains(item.route)) return false;
                   if (item.requiredPermission == null) return true;
                   if (user == null) return false;
                   if (item.route == AppRoutes.attendanceRequests) {
@@ -301,14 +312,15 @@ class _SideNav extends StatelessWidget {
                   );
                 }),
                 const Divider(height: 16, indent: 8, endIndent: 8),
-                _sideNavTile(
-                  context,
-                  s.profile,
-                  Icons.person_outline,
-                  AppRoutes.profile,
-                  location.startsWith(AppRoutes.profile) &&
-                      !location.startsWith(AppRoutes.editRequests),
-                ),
+                if (!isImpersonating)
+                  _sideNavTile(
+                    context,
+                    s.profile,
+                    Icons.person_outline,
+                    AppRoutes.profile,
+                    location.startsWith(AppRoutes.profile) &&
+                        !location.startsWith(AppRoutes.editRequests),
+                  ),
                 if (isAdmin)
                   _sideNavTile(
                     context,

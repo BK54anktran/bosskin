@@ -153,8 +153,8 @@ public class AttendanceController {
         @RequestParam int month
     ) {
         requirePermission(user, "ATTENDANCE_VIEW");
-        var employee = employeeRepository.findById(employeeId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+        var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         if (scopeIds.contains(-1L)) {
             Long selfEmployeeId = getSelfEmployee(user).getId();
@@ -215,7 +215,7 @@ public class AttendanceController {
         @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate to
     ) {
         requirePermission(user, "ATTENDANCE_VIEW");
-        var employee = employeeRepository.findById(employeeId)
+        var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         if (scopeIds.contains(-1L)) {
@@ -760,7 +760,7 @@ public class AttendanceController {
         ShiftAssignment sa;
 
         if (attendanceId != null) {
-            att = attendanceRepository.findById(attendanceId)
+            att = attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bản ghi chấm công"));
             employeeId = att.getEmployee().getId();
             date = att.getDate();
@@ -772,8 +772,8 @@ public class AttendanceController {
             if (employeeId == null || dateStr == null)
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu attendanceId hoặc employeeId+date");
             date = LocalDate.parse(dateStr);
-            Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
             sa = shiftAssignmentId != null
                 ? shiftAssignmentRepository.findById(shiftAssignmentId).orElse(null)
                 : null;
@@ -885,7 +885,7 @@ public class AttendanceController {
         @RequestBody AttendanceDTO.OverrideRequest req
     ) {
         requirePermission(user, "ATTENDANCE_MANAGE");
-        Attendance att = attendanceRepository.findById(attendanceId)
+        Attendance att = attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
         requireViewScope(user, att.getEmployee().getDepartment().getId());
 
@@ -919,7 +919,7 @@ public class AttendanceController {
         if (employeeId == null || dateStr == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.missing_fields");
 
-        Employee employee = employeeRepository.findById(employeeId)
+        Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
 
@@ -947,7 +947,7 @@ public class AttendanceController {
         if (attendanceId == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu attendanceId");
 
-        attendanceRepository.findById(attendanceId).ifPresent(att -> {
+        attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId()).ifPresent(att -> {
             att.setApproved(false);
             att.setApprovedAt(null);
             att.setApprovedBy(null);
@@ -970,7 +970,7 @@ public class AttendanceController {
         @PathVariable Long id
     ) {
         requirePermission(user, "ATTENDANCE_MANAGE");
-        var att = attendanceRepository.findById(id)
+        var att = attendanceRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
         if (att.isApproved())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_approved");
@@ -991,8 +991,8 @@ public class AttendanceController {
         Long employeeId = body.get("employeeId");
         LocalDate today = LocalDate.now(ATTENDANCE_ZONE);
 
-        var employee = employeeRepository.findById(employeeId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+        var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
 
         List<ShiftWindow> shifts = getShiftWindows(employeeId, today);
@@ -1102,8 +1102,8 @@ public class AttendanceController {
         Long employeeId = body.get("employeeId");
         LocalDate today = LocalDate.now(ATTENDANCE_ZONE);
 
-        var employee = employeeRepository.findById(employeeId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+        var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
 
         List<ShiftWindow> shifts = getShiftWindows(employeeId, today);
@@ -1516,7 +1516,7 @@ public class AttendanceController {
             @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate to) {
         requirePermission(user, "ATTENDANCE_VIEW");
-        var employee = employeeRepository.findById(employeeId)
+        var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         if (scopeIds.contains(-1L)) {

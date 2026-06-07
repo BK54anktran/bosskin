@@ -275,6 +275,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
+    final isImpersonating = AuthService.instance.isImpersonating;
     final pending = _applyFilters(_pending);
     final resolved = _applyFilters(_resolved);
     final currentEmployeeId = AuthService.instance.currentUser?.employeeId;
@@ -283,20 +284,21 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // ── Header ──
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 12, 0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: _openCreateRequestDialog,
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(s.createRequest),
-              ),
-            ],
+        if (!isImpersonating)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 12, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: _openCreateRequestDialog,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(s.createRequest),
+                ),
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: 8),
         // ── Body ──
         if (_error != null)

@@ -16,6 +16,12 @@ import java.util.Optional;
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
+    @Query("SELECT a FROM Attendance a JOIN a.employee e WHERE a.id = :id AND e.company.id = :companyId AND a.deleted = false")
+    java.util.Optional<Attendance> findByIdAndCompanyId(
+        @org.springframework.data.repository.query.Param("id") Long id,
+        @org.springframework.data.repository.query.Param("companyId") Long companyId
+    );
+
     @Query("""
         SELECT a FROM Attendance a
         JOIN FETCH a.employee e

@@ -6,6 +6,7 @@ import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/models/payroll.dart';
 import '../../../data/repositories/payroll_repository.dart';
+import '../../../data/services/auth_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
 final _currFmt2 = NumberFormat('#,###', 'vi_VN');
@@ -50,6 +51,20 @@ class _SelfPayrollScreenState extends State<SelfPayrollScreen> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
+    if (AuthService.instance.isImpersonating) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.admin_panel_settings_outlined, size: 64, color: AppTheme.primary),
+            const SizedBox(height: 16),
+            Text(s.impersonatingCompanyNotice,
+                style: const TextStyle(color: AppTheme.textSecondary),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      );
+    }
     return Column(
       children: [
         // Year picker

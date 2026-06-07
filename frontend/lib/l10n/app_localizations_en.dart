@@ -1911,6 +1911,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get effectiveDate => 'Effective date';
 
   @override
+  String get payrollMonthlyHistory => 'Payroll history';
+
+  @override
+  String get salaryGradeHistory => 'Salary grade history';
+
+  @override
   String get actualSalary => 'Actual salary';
 
   @override
