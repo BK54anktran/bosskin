@@ -466,19 +466,18 @@ def generate(company_idx, off):
         e("")
 
     # ── 12. Payrolls ───────────────────────────────────────────────────────
-    e("-- 12. Payrolls (Jan 2025 → May 2026)")
+    e("-- 12. Payrolls (Jan 2025 -> Jun 2026)")
     prv = []
     prc = 0
     payroll_months = []
     cur2 = date(2025,1,1)
-    while cur2 <= date(2026,5,1):
+    while cur2 <= date(2026,6,1):
         payroll_months.append((cur2.year,cur2.month))
         cur2=(cur2.replace(day=28)+timedelta(days=4)).replace(day=1)
 
     for (yr,mo) in payroll_months:
         pf = date(yr,mo,1)
         pt = (pf.replace(day=28)+timedelta(days=4)).replace(day=1)-timedelta(days=1)
-        recent = yr==2026 and mo>=4
         for emp in emp_rows:
             if emp["join_date"] > pt: continue
             prid = PRB+prc+1; prc+=1
@@ -503,8 +502,14 @@ def generate(company_idx, off):
             else:               pit=18150000+(txbl-80e6)*0.35
             pit=round(pit,0)
             net=round(gross-si-hi-ui-pit,0)
-            if recent:     st="DRAFT"; app_at="NULL"; paid_at="NULL"
-            elif yr==2026 and mo==3: st="APPROVED"; nxt_mo=4;nxt_yr=2026; app_at=qdt(datetime(nxt_yr,nxt_mo,5,9,0)); paid_at="NULL"
+            if yr==2026 and mo==6:
+                st="DRAFT"; app_at="NULL"; paid_at="NULL"
+            elif yr==2026 and mo==5:
+                st="APPROVED"; app_at=qdt(datetime(2026,6,5,9,0)); paid_at="NULL"
+            elif yr==2026 and mo==4:
+                st="PAID"; app_at=qdt(datetime(2026,5,5,9,0)); paid_at=qdt(datetime(2026,5,10,14,0))
+            elif yr==2026 and mo==3:
+                st="APPROVED"; app_at=qdt(datetime(2026,4,5,9,0)); paid_at="NULL"
             else:
                 nxt_mo=mo+1 if mo<12 else 1; nxt_yr=yr if mo<12 else yr+1
                 st="PAID"; app_at=qdt(datetime(nxt_yr,nxt_mo,5,9,0)); paid_at=qdt(datetime(nxt_yr,nxt_mo,10,14,0))
