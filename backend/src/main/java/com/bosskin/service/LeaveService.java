@@ -692,11 +692,11 @@ public class LeaveService {
 
     private void requireLeaveViewScope(User user, Employee employee) {
         if (employee == null || employee.getDepartment() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "LEAVE_VIEW");
         if (!scope.isEmpty() && !scope.contains(employee.getDepartment().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 
@@ -706,7 +706,7 @@ public class LeaveService {
 
     private void requirePermission(User user, String perm) {
         if (user == null || !user.hasPermission(perm)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 

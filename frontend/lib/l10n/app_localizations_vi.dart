@@ -314,6 +314,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Công ty đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.';
 
   @override
+  String get impersonatingCompanyNotice =>
+      'Bạn đang đăng nhập với vai trò quản trị viên hệ thống.\nMàn hình này chỉ dành cho nhân viên của công ty.';
+
+  @override
   String get passwordMinLength => 'Mật khẩu ít nhất 6 ký tự';
 
   @override

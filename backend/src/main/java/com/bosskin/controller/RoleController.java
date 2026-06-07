@@ -170,9 +170,9 @@ public class RoleController {
     }
 
     private void requirePermission(User user, String perm) {
-        if (!user.hasPermission(perm)) {
+        if (user == null || !user.hasPermission(perm)) {
             throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+                org.springframework.http.HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 

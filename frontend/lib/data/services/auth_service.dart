@@ -121,9 +121,16 @@ class AuthService extends ChangeNotifier {
   );
 
   AuthUser? _currentUser;
+  AuthUser? _adminUser; // giữ sysadmin khi đang impersonate
   String? _currentRefreshToken;
 
-  AuthUser? get currentUser => _currentUser;
+  /// User hiển thị trên UI — luôn là sysadmin nếu đang impersonate
+  AuthUser? get currentUser => _adminUser ?? _currentUser;
+
+  /// Company user đang impersonate (null nếu không impersonate)
+  AuthUser? get impersonatingUser => _adminUser != null ? _currentUser : null;
+
+  bool get isImpersonating => _adminUser != null;
 
   bool get _isLinuxDev =>
       !kIsWeb && Platform.isLinux;
@@ -248,58 +255,40 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> restoreSession() async {
-    final adminJson = await _safeRead(
-      AppConstants.adminUserKey,
-    );
-
-    final adminToken = await _safeRead(
-      AppConstants.adminTokenKey,
-    );
-
+    // Load admin session
+    final adminJson = await _safeRead(AppConstants.adminUserKey);
+    final adminToken = await _safeRead(AppConstants.adminTokenKey);
+    AuthUser? adminUser;
     if (adminJson != null && adminToken != null) {
       try {
-        final map =
-            jsonDecode(adminJson) as Map<String, dynamic>;
-
-        _currentUser = AuthUser.fromJson(map);
-
-        return;
+        adminUser = AuthUser.fromJson(jsonDecode(adminJson) as Map<String, dynamic>);
       } catch (_) {
-        await _safeDelete(
-          AppConstants.adminUserKey,
-        );
-
-        await _safeDelete(
-          AppConstants.adminTokenKey,
-        );
+        await _safeDelete(AppConstants.adminUserKey);
+        await _safeDelete(AppConstants.adminTokenKey);
       }
     }
 
-    final userJson = await _safeRead(
-      AppConstants.userKey,
-    );
-
-    final token = await _safeRead(
-      AppConstants.tokenKey,
-    );
-
-    if (userJson == null || token == null) {
-      return;
+    // Load company session (impersonate)
+    final userJson = await _safeRead(AppConstants.userKey);
+    final token = await _safeRead(AppConstants.tokenKey);
+    AuthUser? companyUser;
+    if (userJson != null && token != null) {
+      try {
+        companyUser = AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+      } catch (_) {
+        await _safeDelete(AppConstants.userKey);
+        await _safeDelete(AppConstants.tokenKey);
+      }
     }
 
-    try {
-      final map =
-          jsonDecode(userJson) as Map<String, dynamic>;
-
-      _currentUser = AuthUser.fromJson(map);
-    } catch (_) {
-      await _safeDelete(
-        AppConstants.userKey,
-      );
-
-      await _safeDelete(
-        AppConstants.tokenKey,
-      );
+    if (companyUser != null && adminUser != null) {
+      // Đang impersonate: admin là _adminUser, company là _currentUser
+      _adminUser = adminUser;
+      _currentUser = companyUser;
+    } else if (companyUser != null) {
+      _currentUser = companyUser;
+    } else if (adminUser != null) {
+      _currentUser = adminUser;
     }
   }
 
@@ -544,14 +533,13 @@ class AuthService extends ChangeNotifier {
     );
 
     await Future.wait([
-      _safeWrite(
-        AppConstants.adminTokenKey,
-        token,
-      ),
-        _safeWrite(
-          AppConstants.adminUserKey,
-          jsonEncode(_currentUser!.toJson()),
-        ),
+      _safeDelete(AppConstants.tokenKey),
+      _safeDelete(AppConstants.userKey),
+      _safeDelete(AppConstants.refreshTokenKey),
+    ]);
+    await Future.wait([
+      _safeWrite(AppConstants.adminTokenKey, token),
+      _safeWrite(AppConstants.adminUserKey, jsonEncode(_currentUser!.toJson())),
     ]);
     _currentRefreshToken = null;
 
@@ -585,6 +573,9 @@ class AuthService extends ChangeNotifier {
             .toSet()
         : <String>{};
 
+    // Giữ lại sysadmin trước khi ghi đè
+    _adminUser = _currentUser;
+
     _currentUser = AuthUser(
       email: userMap['email'] as String,
       fullName: userMap['fullName'] as String?,
@@ -592,25 +583,18 @@ class AuthService extends ChangeNotifier {
       token: token,
       type: UserType.company,
       companyId: userMap['companyId'] as int?,
-      companyName:
-          userMap['companyName'] as String?,
-      employeeId:
-          userMap['employeeId'] as int?,
+      companyName: userMap['companyName'] as String?,
+      employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
 
     await Future.wait([
-      _safeWrite(
-        AppConstants.tokenKey,
-        token,
-      ),
-        _safeWrite(
-          AppConstants.userKey,
-          jsonEncode(_currentUser!.toJson()),
-        ),
+      _safeWrite(AppConstants.tokenKey, token),
+      _safeWrite(AppConstants.userKey, jsonEncode(_currentUser!.toJson())),
     ]);
     _currentRefreshToken = null;
 
+    notifyListeners();
     return _currentUser!;
   }
 
@@ -663,6 +647,21 @@ class AuthService extends ChangeNotifier {
       _safeDelete(AppConstants.userKey),
       _safeDelete(AppConstants.adminUserKey),
     ]);
+  }
+
+  /// Logout khỏi company session (khi đang impersonate), restore lại admin session.
+  Future<void> logoutCompany() async {
+    _currentUser = _adminUser; // restore sysadmin
+    _adminUser = null;
+    _currentRefreshToken = null;
+
+    await Future.wait([
+      _safeDelete(AppConstants.tokenKey),
+      _safeDelete(AppConstants.refreshTokenKey),
+      _safeDelete(AppConstants.userKey),
+    ]);
+
+    notifyListeners();
   }
 
   // =========================================================

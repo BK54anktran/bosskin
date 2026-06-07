@@ -3,8 +3,9 @@ package com.bosskin.controller;
 import com.bosskin.dto.AuthDTO;
 import com.bosskin.dto.CompanyResponse;
 import com.bosskin.dto.CreateCompanyRequest;
-import com.bosskin.entity.User;
-import com.bosskin.repository.UserRepository;
+import com.bosskin.entity.Permission;
+import com.bosskin.entity.SystemAdmin;
+import com.bosskin.repository.PermissionRepository;
 import com.bosskin.security.JwtUtil;
 import com.bosskin.service.CompanyService;
 import jakarta.validation.Valid;
@@ -12,19 +13,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/companies")
 @RequiredArgsConstructor
 public class CompanyController {
 
-    private final CompanyService companyService;
-    private final UserRepository userRepository;
-    private final JwtUtil        jwtUtil;
+    private final CompanyService      companyService;
+    private final PermissionRepository permissionRepository;
+    private final JwtUtil             jwtUtil;
 
     @GetMapping
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
@@ -60,26 +64,33 @@ public class CompanyController {
 
     @PostMapping("/{id}/impersonate")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<AuthDTO.LoginResponse> impersonate(@PathVariable Long id) {
+    public ResponseEntity<AuthDTO.LoginResponse> impersonate(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SystemAdmin sysAdmin) {
         CompanyResponse company = companyService.findById(id);
         if (!company.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive"); // frontend translates key
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive");
         }
-        User admin = userRepository.findFirstByCompanyId(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty chưa có user nào"));
-        String token = jwtUtil.generateImpersonateToken(
-            admin.getEmail(), id, admin.getPermissions());
+
+        // Lấy toàn bộ permission codes của hệ thống → sysadmin có toàn quyền
+        Set<String> allPermissions = permissionRepository.findAll().stream()
+                .map(Permission::getCode)
+                .collect(Collectors.toSet());
+
+        // Token mang email sysadmin + companyId + toàn quyền
+        String token = jwtUtil.generateImpersonateToken(sysAdmin.getEmail(), id, allPermissions);
+
         return ResponseEntity.ok(AuthDTO.LoginResponse.builder()
-            .accessToken(token)
-            .tokenType("Bearer")
-            .expiresIn(jwtUtil.getExpiration())
-            .user(AuthDTO.UserInfo.builder()
-                .email(admin.getEmail())
-                .type("COMPANY")
-                .companyId(id)
-                .companyName(companyService.findById(id).getName())
-                .permissions(admin.getPermissions())
-                .build())
-            .build());
+                .accessToken(token)
+                .tokenType("Bearer")
+                .expiresIn(jwtUtil.getExpiration())
+                .user(AuthDTO.UserInfo.builder()
+                        .email(sysAdmin.getEmail())
+                        .type("COMPANY")
+                        .companyId(id)
+                        .companyName(company.getName())
+                        .permissions(allPermissions)
+                        .build())
+                .build());
     }
 }

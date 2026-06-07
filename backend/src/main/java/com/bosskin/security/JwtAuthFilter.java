@@ -5,6 +5,7 @@ import com.bosskin.entity.User;
 import com.bosskin.repository.CompanyRepository;
 import com.bosskin.repository.SystemAdminRepository;
 import com.bosskin.repository.UserRepository;
+import java.util.Set;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +52,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SystemAdmin admin = systemAdminRepository.findByEmail(email).orElse(null);
                     if (admin != null && jwtUtil.isTokenValid(jwt, admin)) {
                         setAuth(admin, request);
+                    }
+                } else if (jwtUtil.isImpersonateToken(jwt)) {
+                    // Sysadmin impersonate: full quyền, không gắn với employee nào
+                    Long companyId = jwtUtil.extractCompanyId(jwt);
+                    if (companyId != null && !jwtUtil.isTokenExpired(jwt)) {
+                        com.bosskin.entity.Company company = companyRepository.findById(companyId).orElse(null);
+                        if (company != null && company.isActive()) {
+                            Set<String> perms = jwtUtil.extractPermissions(jwt);
+                            setAuth(new SysAdminImpersonateUser(email, companyId, company, perms), request);
+                        }
                     }
                 } else {
                     Long companyId = jwtUtil.extractCompanyId(jwt);

@@ -55,8 +55,11 @@ class ApiService {
 
   Future<String?> _safeRead(String key) async {
     if (_isLinuxDev) {
-      if (key == AppConstants.tokenKey ||
-          key == AppConstants.adminTokenKey) {
+      if (key == AppConstants.tokenKey) {
+        // Khi impersonate, dùng token của company user, không phải sysadmin
+        return (AuthService.instance.impersonatingUser ?? AuthService.instance.currentUser)?.token;
+      }
+      if (key == AppConstants.adminTokenKey) {
         return AuthService.instance.currentUser?.token;
       }
       return null;

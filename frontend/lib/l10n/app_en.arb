@@ -100,6 +100,7 @@
   "serverHint": "http://192.168.x.x:8080",
   "loginFailed": "Incorrect email or password",
   "loginCompanyInactive": "This company has been deactivated. Please contact the administrator.",
+  "impersonatingCompanyNotice": "You are logged in as system administrator.\nThis screen is only available for company employees.",
   "passwordMinLength": "Password must be at least 6 characters",
   "todayAttendance": "Today's attendance",
   "viewAll": "View all",

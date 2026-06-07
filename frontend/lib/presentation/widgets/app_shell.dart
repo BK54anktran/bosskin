@@ -518,8 +518,14 @@ class AppProfileMenu extends StatelessWidget {
               while (shellNavigatorKey.currentState?.canPop() == true) {
                 shellNavigatorKey.currentState!.pop();
               }
-              await AuthService.instance.logout();
-              if (context.mounted) context.go(AppRoutes.login);
+              final hasAdminSession = await AuthService.instance.isAdminLoggedIn();
+              if (hasAdminSession) {
+                await AuthService.instance.logoutCompany();
+                if (context.mounted) context.go(AppRoutes.adminDashboard);
+              } else {
+                await AuthService.instance.logout();
+                if (context.mounted) context.go(AppRoutes.login);
+              }
             }
           },
         );

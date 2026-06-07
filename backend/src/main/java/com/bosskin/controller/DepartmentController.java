@@ -175,13 +175,13 @@ public class DepartmentController {
     }
 
     private void requirePermission(User user, String perm) {
-        if (!user.hasPermission(perm))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+        if (user == null || !user.hasPermission(perm))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     private void requireViewScope(User user, Long deptId) {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "DEPARTMENT_VIEW");
         if (!scope.isEmpty() && !scope.contains(deptId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 }

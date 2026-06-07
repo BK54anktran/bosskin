@@ -223,8 +223,8 @@ public class SalaryFormulaController {
     }
 
     private void requirePermission(User user, String perm) {
-        if (!user.hasPermission(perm))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+        if (user == null || !user.hasPermission(perm))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     private void requireSameCompany(SalaryGrade grade, User user) {

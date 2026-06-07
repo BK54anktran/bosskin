@@ -93,6 +93,11 @@ public class JwtUtil {
         return (String) extractAllClaims(token).get("jti");
     }
 
+    public boolean isImpersonateToken(String token) {
+        Object v = extractAllClaims(token).get("impersonated");
+        return Boolean.TRUE.equals(v);
+    }
+
 
     @SuppressWarnings("unchecked")
     public Set<String> extractPermissions(String token) {

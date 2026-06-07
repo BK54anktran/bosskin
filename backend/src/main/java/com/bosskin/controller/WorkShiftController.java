@@ -261,14 +261,14 @@ public class WorkShiftController {
     }
 
     private void requireShiftView(User user) {
-        if (!user.hasPermission("SHIFT_VIEW") && !user.hasPermission("SHIFT_MANAGE")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: SHIFT_VIEW");
+        if (user == null || (!user.hasPermission("SHIFT_VIEW") && !user.hasPermission("SHIFT_MANAGE"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 
     private void requireShiftManage(User user) {
-        if (!user.hasPermission("SHIFT_MANAGE")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: SHIFT_MANAGE");
+        if (user == null || !user.hasPermission("SHIFT_MANAGE")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 }

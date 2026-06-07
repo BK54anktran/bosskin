@@ -1425,7 +1425,7 @@ public class AttendanceController {
     private void requireViewScope(User user, Long deptId) {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         if (!scope.isEmpty() && !scope.contains(deptId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     /** Trả về danh sách vị trí cho phép theo thứ tự ưu tiên. null = tự do (không cấu hình hoặc tắt). */

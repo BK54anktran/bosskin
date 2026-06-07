@@ -314,6 +314,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This company has been deactivated. Please contact the administrator.';
 
   @override
+  String get impersonatingCompanyNotice =>
+      'You are logged in as system administrator.\nThis screen is only available for company employees.';
+
+  @override
   String get passwordMinLength => 'Password must be at least 6 characters';
 
   @override

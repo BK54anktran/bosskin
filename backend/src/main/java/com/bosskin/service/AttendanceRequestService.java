@@ -293,7 +293,7 @@ public class AttendanceRequestService {
 
     private void requireAttendanceViewScope(User user, Employee employee) {
         if (employee == null || employee.getDepartment() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         if (scope.isEmpty()) {
@@ -302,12 +302,12 @@ public class AttendanceRequestService {
         if (scope.contains(-1L)) {
             Long selfEmployeeId = getEmployeeOrThrow(user).getId();
             if (!selfEmployeeId.equals(employee.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ được thao tác dữ liệu của chính mình");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
             }
             return;
         }
         if (!scope.contains(employee.getDepartment().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 

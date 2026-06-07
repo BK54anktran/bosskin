@@ -71,7 +71,7 @@ final _router = GoRouter(
     final isAdminLogin = path == AppRoutes.adminLogin;
     final isLoginPage = path == AppRoutes.login;
 
-    // Đã đăng nhập + remember me → bỏ qua màn login
+    // Đã đăng nhập → bỏ qua màn login
     if (isLoginPage && user != null) {
       return _firstAccessibleRoute(user);
     }
@@ -203,7 +203,7 @@ bool _canAccessPath(dynamic user, String path) {
 
 String _firstAccessibleRoute(dynamic user) {
   if (user == null) return AppRoutes.login;
-  if (user.isSystemAdmin) return AppRoutes.dashboard;
+  if (user.isSystemAdmin) return AppRoutes.adminDashboard;
 
   final routes = <String>[
     AppRoutes.dashboard,

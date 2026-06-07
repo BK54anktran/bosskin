@@ -71,6 +71,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
+    if (AuthService.instance.isImpersonating) {
+      setState(() => _loading = false);
+      return;
+    }
     final s = AppLocalizations.of(context)!;
     setState(() { _loading = true; _error = null; });
     try {
@@ -293,9 +297,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (AuthService.instance.isImpersonating) {
+      return _buildImpersonatePlaceholder(context);
+    }
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) return Center(child: Text(_error!, style: const TextStyle(color: AppTheme.error)));
     return _buildBody();
+  }
+
+  Widget _buildImpersonatePlaceholder(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    final user = AuthService.instance.currentUser;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.admin_panel_settings_outlined, size: 64, color: AppTheme.primary),
+          const SizedBox(height: 16),
+          Text(
+            user?.email ?? '',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            s.impersonatingCompanyNotice,
+            style: const TextStyle(color: AppTheme.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBody() {

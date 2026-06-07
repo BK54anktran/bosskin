@@ -158,8 +158,8 @@ public class EmployeeController {
     private static boolean notBlank(String v) { return v != null && !v.isBlank(); }
 
     private void requirePermission(User user, String perm) {
-        if (!user.hasPermission(perm)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+        if (user == null || !user.hasPermission(perm)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 }

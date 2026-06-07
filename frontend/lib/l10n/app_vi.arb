@@ -100,6 +100,7 @@
   "serverHint": "http://192.168.x.x:8080",
   "loginFailed": "Email hoặc mật khẩu không đúng",
   "loginCompanyInactive": "Công ty đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.",
+  "impersonatingCompanyNotice": "Bạn đang đăng nhập với vai trò quản trị viên hệ thống.\nMàn hình này chỉ dành cho nhân viên của công ty.",
   "passwordMinLength": "Mật khẩu ít nhất 6 ký tự",
   "todayAttendance": "Chấm công hôm nay",
   "viewAll": "Xem tất cả",

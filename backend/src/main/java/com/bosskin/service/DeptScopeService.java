@@ -26,6 +26,7 @@ public class DeptScopeService {
      * Empty result means unrestricted (no scope defined).
      */
     public Set<Long> resolvedScopes(Long userId, String permCode) {
+        if (userId == null) return Collections.emptySet(); // sysadmin impersonate → no scope restriction
         Set<Long> rawIds = deptScopeRepo.findDeptIds(userId, permCode);
         if (rawIds.isEmpty()) return Collections.emptySet();
 

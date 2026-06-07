@@ -698,6 +698,12 @@ abstract class AppLocalizations {
   /// **'Công ty đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.'**
   String get loginCompanyInactive;
 
+  /// No description provided for @impersonatingCompanyNotice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang đăng nhập với vai trò quản trị viên hệ thống.\nMàn hình này chỉ dành cho nhân viên của công ty.'**
+  String get impersonatingCompanyNotice;
+
   /// No description provided for @passwordMinLength.
   ///
   /// In vi, this message translates to:
