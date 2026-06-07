@@ -99,6 +99,7 @@
   "enterServerAddress": "Enter the server IP or domain:",
   "serverHint": "http://192.168.x.x:8080",
   "loginFailed": "Incorrect email or password",
+  "loginCompanyInactive": "This company has been deactivated. Please contact the administrator.",
   "passwordMinLength": "Password must be at least 6 characters",
   "todayAttendance": "Today's attendance",
   "viewAll": "View all",
@@ -823,9 +824,11 @@
   ,"adminStatsInactiveCompanies": "Inactive"
   ,"adminStatsTotalEmployees": "Total Employees"
   ,"adminStatsTotalUsers": "Total Accounts"
-  ,"adminStatsPayrollThisMonth": "Payroll This Month"
+  ,"adminStatsPayrollThisMonth": "Payroll {month}/{year}"
+  ,"@adminStatsPayrollThisMonth": {"placeholders": {"month": {"type": "int"}, "year": {"type": "int"}}}
   ,"adminStatsCompanyGrowth": "Company Growth"
   ,"adminStatsPayrollByCompany": "Payroll by Company"
+  ,"adminStatsPickMonth": "Select month"
   ,"adminStatsNoPayroll": "No payroll data this month"
   ,"adminStatsMonth": "Month {month}/{year}"
   ,"@adminStatsMonth": {"placeholders": {"month": {"type": "int"}, "year": {"type": "int"}}}

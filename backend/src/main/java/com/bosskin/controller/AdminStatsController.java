@@ -30,21 +30,23 @@ public class AdminStatsController {
 
     @GetMapping
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<SystemStats> getStats() {
+    public ResponseEntity<SystemStats> getStats(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer year,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer month) {
         long totalCompanies  = companyRepository.count();
         long activeCompanies = companyRepository.findAll().stream().filter(c -> c.isActive()).count();
         long totalEmployees  = employeeRepository.count();
         long totalUsers      = userRepository.count();
 
         LocalDate now = LocalDate.now();
-        int year = now.getYear();
-        int month = now.getMonthValue();
+        final int finalYear  = (year  != null) ? year  : now.getYear();
+        final int finalMonth = (month != null) ? month : now.getMonthValue();
 
-        // payroll stats: tổng lương tháng này (PAID) theo từng công ty
+        // payroll stats: tổng lương tháng này theo từng công ty
         List<CompanyPayrollStat> payrollStats = new ArrayList<>();
         companyRepository.findAll().forEach(c -> {
-            BigDecimal total = payrollRepository.sumNetSalaryByCompanyAndMonth(c.getId(), year, month);
-            long count = payrollRepository.countByCompanyAndMonth(c.getId(), year, month);
+            BigDecimal total = payrollRepository.sumNetSalaryByCompanyAndMonth(c.getId(), finalYear, finalMonth);
+            long count = payrollRepository.countByCompanyAndMonth(c.getId(), finalYear, finalMonth);
             if (count > 0) {
                 payrollStats.add(CompanyPayrollStat.builder()
                     .companyId(c.getId())
@@ -75,8 +77,8 @@ public class AdminStatsController {
             .inactiveCompanies(totalCompanies - activeCompanies)
             .totalEmployees(totalEmployees)
             .totalUsers(totalUsers)
-            .currentYear(year)
-            .currentMonth(month)
+            .currentYear(finalYear)
+            .currentMonth(finalMonth)
             .companyPayrollStats(payrollStats)
             .companyGrowth(growth)
             .build());

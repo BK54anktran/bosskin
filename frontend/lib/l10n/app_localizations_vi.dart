@@ -310,6 +310,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get loginFailed => 'Email hoặc mật khẩu không đúng';
 
   @override
+  String get loginCompanyInactive =>
+      'Công ty đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.';
+
+  @override
   String get passwordMinLength => 'Mật khẩu ít nhất 6 ký tự';
 
   @override
@@ -2324,13 +2328,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get adminStatsTotalUsers => 'Tổng tài khoản';
 
   @override
-  String get adminStatsPayrollThisMonth => 'Bảng lương tháng này';
+  String adminStatsPayrollThisMonth(int month, int year) {
+    return 'Bảng lương tháng $month/$year';
+  }
 
   @override
   String get adminStatsCompanyGrowth => 'Tăng trưởng công ty';
 
   @override
   String get adminStatsPayrollByCompany => 'Lương theo công ty';
+
+  @override
+  String get adminStatsPickMonth => 'Chọn tháng xem';
 
   @override
   String get adminStatsNoPayroll => 'Chưa có dữ liệu lương tháng này';

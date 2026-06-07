@@ -61,6 +61,10 @@ public class CompanyController {
     @PostMapping("/{id}/impersonate")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<AuthDTO.LoginResponse> impersonate(@PathVariable Long id) {
+        CompanyResponse company = companyService.findById(id);
+        if (!company.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive"); // frontend translates key
+        }
         User admin = userRepository.findFirstByCompanyId(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty chưa có user nào"));
         String token = jwtUtil.generateImpersonateToken(

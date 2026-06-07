@@ -99,6 +99,7 @@
   "enterServerAddress": "Nhập IP hoặc domain của server:",
   "serverHint": "http://192.168.x.x:8080",
   "loginFailed": "Email hoặc mật khẩu không đúng",
+  "loginCompanyInactive": "Công ty đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.",
   "passwordMinLength": "Mật khẩu ít nhất 6 ký tự",
   "todayAttendance": "Chấm công hôm nay",
   "viewAll": "Xem tất cả",
@@ -826,9 +827,11 @@
   ,"adminStatsInactiveCompanies": "Đã tắt"
   ,"adminStatsTotalEmployees": "Tổng nhân viên"
   ,"adminStatsTotalUsers": "Tổng tài khoản"
-  ,"adminStatsPayrollThisMonth": "Bảng lương tháng này"
+  ,"adminStatsPayrollThisMonth": "Bảng lương tháng {month}/{year}"
+  ,"@adminStatsPayrollThisMonth": {"placeholders": {"month": {"type": "int"}, "year": {"type": "int"}}}
   ,"adminStatsCompanyGrowth": "Tăng trưởng công ty"
   ,"adminStatsPayrollByCompany": "Lương theo công ty"
+  ,"adminStatsPickMonth": "Chọn tháng xem"
   ,"adminStatsNoPayroll": "Chưa có dữ liệu lương tháng này"
   ,"adminStatsMonth": "Tháng {month}/{year}"
   ,"@adminStatsMonth": {"placeholders": {"month": {"type": "int"}, "year": {"type": "int"}}}

@@ -4,6 +4,7 @@ import com.bosskin.dto.AuthDTO;
 import com.bosskin.entity.SystemAdmin;
 import com.bosskin.entity.User;
 import com.bosskin.entity.UserSession;
+import com.bosskin.repository.CompanyRepository;
 import com.bosskin.repository.SystemAdminRepository;
 import com.bosskin.repository.UserPermDeptScopeRepository;
 import com.bosskin.repository.UserRepository;
@@ -29,6 +30,7 @@ public class AuthService {
     private final SystemAdminRepository       systemAdminRepository;
     private final UserSessionRepository       userSessionRepository;
     private final UserPermDeptScopeRepository deptScopeRepo;
+    private final CompanyRepository           companyRepository;
     private final JwtUtil                     jwtUtil;
     private final PasswordEncoder             passwordEncoder;
 
@@ -43,6 +45,9 @@ public class AuthService {
         }
         if (!user.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị khóa");
+        }
+        if (!companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive");
         }
 
         String deviceId = req.getDeviceId() != null ? req.getDeviceId() : UUID.randomUUID().toString();
@@ -110,6 +115,10 @@ public class AuthService {
 
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Người dùng không tồn tại"));
+
+        if (!companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive");
+        }
 
         String newJti          = jwtUtil.newJti();
         String newAccessToken  = jwtUtil.generateToken(user, deviceId);

@@ -692,6 +692,12 @@ abstract class AppLocalizations {
   /// **'Email hoặc mật khẩu không đúng'**
   String get loginFailed;
 
+  /// No description provided for @loginCompanyInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.'**
+  String get loginCompanyInactive;
+
   /// No description provided for @passwordMinLength.
   ///
   /// In vi, this message translates to:
@@ -4572,8 +4578,8 @@ abstract class AppLocalizations {
   /// No description provided for @adminStatsPayrollThisMonth.
   ///
   /// In vi, this message translates to:
-  /// **'Bảng lương tháng này'**
-  String get adminStatsPayrollThisMonth;
+  /// **'Bảng lương tháng {month}/{year}'**
+  String adminStatsPayrollThisMonth(int month, int year);
 
   /// No description provided for @adminStatsCompanyGrowth.
   ///
@@ -4586,6 +4592,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Lương theo công ty'**
   String get adminStatsPayrollByCompany;
+
+  /// No description provided for @adminStatsPickMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tháng xem'**
+  String get adminStatsPickMonth;
 
   /// No description provided for @adminStatsNoPayroll.
   ///

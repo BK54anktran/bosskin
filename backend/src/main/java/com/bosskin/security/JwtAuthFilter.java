@@ -2,6 +2,7 @@ package com.bosskin.security;
 
 import com.bosskin.entity.SystemAdmin;
 import com.bosskin.entity.User;
+import com.bosskin.repository.CompanyRepository;
 import com.bosskin.repository.SystemAdminRepository;
 import com.bosskin.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -25,6 +26,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final SystemAdminRepository systemAdminRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
     protected void doFilterInternal(
@@ -55,7 +57,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     User user = (companyId != null)
                         ? userRepository.findByEmailAndCompanyId(email, companyId).orElse(null)
                         : userRepository.findByEmail(email).orElse(null);
-                    if (user != null && jwtUtil.isTokenValid(jwt, user)) {
+                    if (user != null && jwtUtil.isTokenValid(jwt, user)
+                            && user.getCompanyId() != null
+                            && companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
                         setAuth(user, request);
                     }
                 }

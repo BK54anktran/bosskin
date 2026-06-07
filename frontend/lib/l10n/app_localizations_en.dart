@@ -310,6 +310,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginFailed => 'Incorrect email or password';
 
   @override
+  String get loginCompanyInactive =>
+      'This company has been deactivated. Please contact the administrator.';
+
+  @override
   String get passwordMinLength => 'Password must be at least 6 characters';
 
   @override
@@ -2322,13 +2326,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminStatsTotalUsers => 'Total Accounts';
 
   @override
-  String get adminStatsPayrollThisMonth => 'Payroll This Month';
+  String adminStatsPayrollThisMonth(int month, int year) {
+    return 'Payroll $month/$year';
+  }
 
   @override
   String get adminStatsCompanyGrowth => 'Company Growth';
 
   @override
   String get adminStatsPayrollByCompany => 'Payroll by Company';
+
+  @override
+  String get adminStatsPickMonth => 'Select month';
 
   @override
   String get adminStatsNoPayroll => 'No payroll data this month';

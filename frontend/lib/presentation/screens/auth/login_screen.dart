@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/dialog_utils.dart';
+import 'package:dio/dio.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/services/auth_service.dart';
 
@@ -76,9 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       if (mounted) context.go(AppRoutes.dashboard);
     } catch (e) {
-      setState(() {
-        _errorMessage = AppLocalizations.of(context)!.loginFailed;
-      });
+      final s = AppLocalizations.of(context)!;
+      String msg = s.loginFailed;
+      if (e is DioException) {
+        final data = e.response?.data;
+        final serverKey = (data is Map) ? data['message'] as String? : null;
+        if (serverKey == 'error.company.inactive') {
+          msg = s.loginCompanyInactive;
+        }
+      }
+      setState(() => _errorMessage = msg);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

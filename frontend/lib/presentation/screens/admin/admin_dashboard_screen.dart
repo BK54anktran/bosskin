@@ -32,10 +32,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   Map<String, dynamic>? _stats;
   bool _statsLoading = true;
   String? _statsError;
+  late int _selectedYear;
+  late int _selectedMonth;
 
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _selectedYear  = now.year;
+    _selectedMonth = now.month;
     _tabCtrl = TabController(length: 2, vsync: this);
     _dio = Dio(BaseOptions(
       baseUrl: ServerConfig.adminUrl,
@@ -80,13 +85,111 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   Future<void> _loadStats() async {
     setState(() { _statsLoading = true; _statsError = null; });
     try {
-      final res = await _dio.get('/stats');
+      final res = await _dio.get('/stats',
+          queryParameters: {'year': _selectedYear, 'month': _selectedMonth});
       setState(() => _stats = res.data as Map<String, dynamic>);
     } catch (e) {
       setState(() => _statsError = AppLocalizations.of(context).adminStatsLoadError);
     } finally {
       setState(() => _statsLoading = false);
     }
+  }
+
+  Future<void> _pickMonth() async {
+    final now = DateTime.now();
+    // Hiện dialog chọn tháng/năm
+    int tempYear  = _selectedYear;
+    int tempMonth = _selectedMonth;
+    final s = AppLocalizations.of(context)!;
+
+    await showInstantDialog(context, (ctx) => StatefulBuilder(
+      builder: (ctx, setS) => AlertDialog(
+        title: Text(s.adminStatsPickMonth),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+        content: SizedBox(
+          width: 320,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            // Year row
+            Row(children: [
+              IconButton(
+                onPressed: tempYear > 2020 ? () => setS(() => tempYear--) : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Expanded(child: Text('$tempYear',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
+              IconButton(
+                onPressed: tempYear < now.year ? () => setS(() => tempYear++) : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ]),
+            const SizedBox(height: 12),
+            // Month grid
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.6,
+              physics: const NeverScrollableScrollPhysics(),
+              children: List.generate(12, (i) {
+                final mo = i + 1;
+                final isFuture = tempYear == now.year && mo > now.month;
+                final isSelected = mo == tempMonth && tempYear == _selectedYear;
+                return MouseRegion(
+                  cursor: isFuture ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: isFuture ? null : () => setS(() => tempMonth = mo),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : mo == tempMonth
+                                ? const Color(0xFFEEF2FF)
+                                : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF6366F1)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text('T$mo',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isFuture
+                                ? const Color(0xFFCBD5E1)
+                                : isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF374151),
+                          )),
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 8),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(s.cancel)),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _selectedYear  = tempYear;
+                _selectedMonth = tempMonth;
+              });
+              _loadStats();
+            },
+            child: Text(s.apply),
+          ),
+        ],
+      ),
+    ));
   }
 
   Future<void> _logout() async {
@@ -209,9 +312,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
-        String msg = AppLocalizations.of(context).companyLoginError;
+        final s = AppLocalizations.of(context)!;
+        String msg = s.companyLoginError;
         if (e is DioException && e.response?.data != null) {
-          msg = e.response?.data['message'] ?? msg;
+          final serverKey = e.response?.data['message'] as String?;
+          if (serverKey == 'error.company.inactive') {
+            msg = s.loginCompanyInactive;
+          } else if (serverKey != null && serverKey.isNotEmpty) {
+            msg = serverKey;
+          }
         }
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(msg), backgroundColor: AppTheme.error));
@@ -532,9 +641,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-            child: Text(s.adminStatsPayrollByCompany,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+            padding: const EdgeInsets.fromLTRB(20, 16, 16, 0),
+            child: Row(children: [
+              Text(s.adminStatsPayrollByCompany,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+              const Spacer(),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: _pickMonth,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.calendar_month_outlined, size: 15, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 6),
+                      Text('T$_selectedMonth/$_selectedYear',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF6366F1))),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFF6366F1)),
+                    ]),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+            ]),
           ),
           const SizedBox(height: 4),
           if (payrollStats.isEmpty)
@@ -557,7 +692,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 Expanded(flex: 2, child: Text(s.adminStatsPayrolls(0).replaceAll('0 ', ''),
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                     textAlign: TextAlign.right)),
-                Expanded(flex: 3, child: Text(s.adminStatsPayrollThisMonth,
+                Expanded(flex: 3, child: Text(s.adminStatsPayrollThisMonth(_selectedMonth, _selectedYear),
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                     textAlign: TextAlign.right)),
               ]),
