@@ -8,9 +8,11 @@ import com.bosskin.service.EmployeeExcelService;
 import com.bosskin.service.EmployeeImportService;
 import com.bosskin.service.EmployeeService;
 import com.bosskin.util.ExcelColumn;
+import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -25,44 +28,46 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EmployeeController {
 
-    private final EmployeeService      employeeService;
-    private final EmployeeExcelService employeeExcelService;
+    private final EmployeeService       employeeService;
+    private final EmployeeExcelService  employeeExcelService;
     private final EmployeeImportService employeeImportService;
+    private final ExcelI18n             excelI18n;
 
-    // ── Sheet 1: thứ tự cột khớp với BASIC_COLUMNS trong EmployeeExcelService ──
+    // ── Sheet 1: import columns — i18n, map bất kỳ ngôn ngữ nào ──────────────
     private static final List<ExcelColumn<EmployeeDTO.ImportRow>> BASIC_IMPORT = List.of(
-        ExcelColumn.of("Mã NV (*)",      r -> r.getEmployeeCode(),   (r, v) -> r.setEmployeeCode(v)),
-        ExcelColumn.of("Họ và tên (*)",  r -> r.getFullName(),       (r, v) -> r.setFullName(v)),
-        ExcelColumn.of("Email (*)",       r -> r.getEmail(),          (r, v) -> r.setEmail(v)),
-        ExcelColumn.of("Số điện thoại",  r -> r.getPhone(),          (r, v) -> r.setPhone(v)),
-        ExcelColumn.of("Giới tính",      r -> r.getGender(),         (r, v) -> r.setGender(v)),
-        ExcelColumn.of("Ngày sinh",      r -> r.getDateOfBirth(),    (r, v) -> r.setDateOfBirth(v)),
-        ExcelColumn.of("Ngày vào làm",   r -> r.getJoinDate(),       (r, v) -> r.setJoinDate(v)),
-        ExcelColumn.of("Ngày nghỉ",      r -> r.getLeaveDate(),      (r, v) -> r.setLeaveDate(v)),
-        ExcelColumn.of("Phòng ban (*)",  r -> r.getDepartmentCode(), (r, v) -> r.setDepartmentCode(v)),
-        ExcelColumn.readOnly("Tên phòng ban", r -> null),
-        ExcelColumn.of("Chức vụ",        r -> r.getPositionCode(),   (r, v) -> r.setPositionCode(v)),
-        ExcelColumn.readOnly("Tên chức vụ", r -> null),
-        ExcelColumn.of("Bậc lương",      r -> r.getSalaryGradeCode(),(r, v) -> r.setSalaryGradeCode(v)),
-        ExcelColumn.of("Trạng thái",     r -> r.getStatus(),         (r, v) -> r.setStatus(v))
+        ExcelColumn.ofI18n("excel.col.employee.code",           r -> r.getEmployeeCode(),   (r, v) -> r.setEmployeeCode(v)),
+        ExcelColumn.ofI18n("excel.col.employee.fullName",       r -> r.getFullName(),       (r, v) -> r.setFullName(v)),
+        ExcelColumn.ofI18n("excel.col.employee.email",          r -> r.getEmail(),          (r, v) -> r.setEmail(v)),
+        ExcelColumn.ofI18n("excel.col.employee.phone",          r -> r.getPhone(),          (r, v) -> r.setPhone(v)),
+        ExcelColumn.ofI18n("excel.col.employee.gender",         r -> r.getGender(),         (r, v) -> r.setGender(v)),
+        ExcelColumn.ofI18n("excel.col.employee.dateOfBirth",    r -> r.getDateOfBirth(),    (r, v) -> r.setDateOfBirth(v)),
+        ExcelColumn.ofI18n("excel.col.employee.joinDate",       r -> r.getJoinDate(),       (r, v) -> r.setJoinDate(v)),
+        ExcelColumn.ofI18n("excel.col.employee.leaveDate",      r -> r.getLeaveDate(),      (r, v) -> r.setLeaveDate(v)),
+        ExcelColumn.ofI18n("excel.col.employee.departmentCode", r -> r.getDepartmentCode(), (r, v) -> r.setDepartmentCode(v)),
+        ExcelColumn.readOnlyI18n("excel.col.employee.departmentName", r -> null),
+        ExcelColumn.ofI18n("excel.col.employee.positionCode",   r -> r.getPositionCode(),   (r, v) -> r.setPositionCode(v)),
+        ExcelColumn.readOnlyI18n("excel.col.employee.positionName", r -> null),
+        ExcelColumn.ofI18n("excel.col.employee.salaryGradeCode",r -> r.getSalaryGradeCode(),(r, v) -> r.setSalaryGradeCode(v)),
+        ExcelColumn.ofI18n("excel.col.employee.status",         r -> r.getStatus(),         (r, v) -> r.setStatus(v))
     );
 
-    // ── Sheet 2: thứ tự cột khớp với PERSONAL_COLUMNS ─────────────────────────
+    // ── Sheet 2 ───────────────────────────────────────────────────────────────
     private static final List<ExcelColumn<EmployeeDTO.ImportRow>> PERSONAL_IMPORT = List.of(
-        ExcelColumn.of("Mã NV",          r -> r.getEmployeeCode(),   (r, v) -> r.setEmployeeCode(v)),
-        ExcelColumn.readOnly("Họ và tên", r -> null),
-        ExcelColumn.of("CCCD/CMND",      r -> r.getIdentityCard(),   (r, v) -> r.setIdentityCard(v)),
-        ExcelColumn.of("Địa chỉ",        r -> r.getAddress(),        (r, v) -> r.setAddress(v)),
-        ExcelColumn.of("Email cá nhân",  r -> r.getPersonalEmail(),  (r, v) -> r.setPersonalEmail(v)),
-        ExcelColumn.of("Số tài khoản NH",r -> r.getBankAccount(),    (r, v) -> r.setBankAccount(v)),
-        ExcelColumn.of("Ngân hàng",      r -> r.getBankName(),       (r, v) -> r.setBankName(v)),
-        ExcelColumn.of("Lương hợp đồng", r -> r.getContractSalary(), (r, v) -> r.setContractSalary(v))
+        ExcelColumn.ofI18n("excel.col.employee.code",          r -> r.getEmployeeCode(),   (r, v) -> r.setEmployeeCode(v)),
+        ExcelColumn.readOnlyI18n("excel.col.employee.fullName", r -> null),
+        ExcelColumn.ofI18n("excel.col.employee.identityCard",  r -> r.getIdentityCard(),   (r, v) -> r.setIdentityCard(v)),
+        ExcelColumn.ofI18n("excel.col.employee.address",       r -> r.getAddress(),        (r, v) -> r.setAddress(v)),
+        ExcelColumn.ofI18n("excel.col.employee.personalEmail", r -> r.getPersonalEmail(),  (r, v) -> r.setPersonalEmail(v)),
+        ExcelColumn.ofI18n("excel.col.employee.bankAccount",   r -> r.getBankAccount(),    (r, v) -> r.setBankAccount(v)),
+        ExcelColumn.ofI18n("excel.col.employee.bankName",      r -> r.getBankName(),       (r, v) -> r.setBankName(v)),
+        ExcelColumn.ofI18n("excel.col.employee.contractSalary",r -> r.getContractSalary(), (r, v) -> r.setContractSalary(v))
     );
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> export(@AuthenticationPrincipal User user) {
         requirePermission(user, "EMPLOYEE_VIEW");
-        return employeeExcelService.export(user.getCompany().getId(), user.getId());
+        Locale locale = LocaleContextHolder.getLocale();
+        return employeeExcelService.export(user.getCompany().getId(), user.getId(), locale);
     }
 
     @PostMapping("/preview-import")
@@ -70,8 +75,8 @@ public class EmployeeController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "EMPLOYEE_CREATE");
-        List<EmployeeDTO.ImportRow> sheet1 = ExcelUtils.importRows(file, 0, BASIC_IMPORT,    EmployeeDTO.ImportRow::new);
-        List<EmployeeDTO.ImportRow> sheet2 = ExcelUtils.importRows(file, 1, PERSONAL_IMPORT, EmployeeDTO.ImportRow::new);
+        List<EmployeeDTO.ImportRow> sheet1 = ExcelUtils.importRowsByHeader(file, 0, BASIC_IMPORT,    EmployeeDTO.ImportRow::new, excelI18n);
+        List<EmployeeDTO.ImportRow> sheet2 = ExcelUtils.importRowsByHeader(file, 1, PERSONAL_IMPORT, EmployeeDTO.ImportRow::new, excelI18n);
         List<EmployeeDTO.ImportRow> merged = merge(sheet1, sheet2);
         return ResponseEntity.ok(employeeImportService.previewImport(user.getCompany().getId(), user.getId(), merged));
     }
@@ -81,14 +86,14 @@ public class EmployeeController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "EMPLOYEE_CREATE");
-        List<EmployeeDTO.ImportRow> sheet1 = ExcelUtils.importRows(file, 0, BASIC_IMPORT,    EmployeeDTO.ImportRow::new);
-        List<EmployeeDTO.ImportRow> sheet2 = ExcelUtils.importRows(file, 1, PERSONAL_IMPORT, EmployeeDTO.ImportRow::new);
+        List<EmployeeDTO.ImportRow> sheet1 = ExcelUtils.importRowsByHeader(file, 0, BASIC_IMPORT,    EmployeeDTO.ImportRow::new, excelI18n);
+        List<EmployeeDTO.ImportRow> sheet2 = ExcelUtils.importRowsByHeader(file, 1, PERSONAL_IMPORT, EmployeeDTO.ImportRow::new, excelI18n);
         List<EmployeeDTO.ImportRow> merged = merge(sheet1, sheet2);
         employeeImportService.importFromExcel(user.getCompany().getId(), user.getId(), merged);
         return ResponseEntity.ok().build();
     }
 
-    /** Merge sheet2 vào sheet1 theo employeeCode — giữ sheet1 làm chính. */
+    /** Merge sheet2 vào sheet1 theo employeeCode. */
     private List<EmployeeDTO.ImportRow> merge(List<EmployeeDTO.ImportRow> sheet1,
                                               List<EmployeeDTO.ImportRow> sheet2) {
         Map<String, EmployeeDTO.ImportRow> byCode = new java.util.LinkedHashMap<>();
@@ -100,12 +105,12 @@ public class EmployeeController {
             if (r2.getEmployeeCode() == null || r2.getEmployeeCode().isBlank()) continue;
             EmployeeDTO.ImportRow r1 = byCode.get(r2.getEmployeeCode().trim());
             if (r1 == null) continue;
-            if (notBlank(r2.getIdentityCard()))  r1.setIdentityCard(r2.getIdentityCard());
-            if (notBlank(r2.getAddress()))       r1.setAddress(r2.getAddress());
-            if (notBlank(r2.getPersonalEmail())) r1.setPersonalEmail(r2.getPersonalEmail());
-            if (notBlank(r2.getBankAccount()))   r1.setBankAccount(r2.getBankAccount());
-            if (notBlank(r2.getBankName()))      r1.setBankName(r2.getBankName());
-            if (notBlank(r2.getContractSalary()))r1.setContractSalary(r2.getContractSalary());
+            if (notBlank(r2.getIdentityCard()))   r1.setIdentityCard(r2.getIdentityCard());
+            if (notBlank(r2.getAddress()))        r1.setAddress(r2.getAddress());
+            if (notBlank(r2.getPersonalEmail()))  r1.setPersonalEmail(r2.getPersonalEmail());
+            if (notBlank(r2.getBankAccount()))    r1.setBankAccount(r2.getBankAccount());
+            if (notBlank(r2.getBankName()))       r1.setBankName(r2.getBankName());
+            if (notBlank(r2.getContractSalary())) r1.setContractSalary(r2.getContractSalary());
         }
         return new java.util.ArrayList<>(byCode.values());
     }

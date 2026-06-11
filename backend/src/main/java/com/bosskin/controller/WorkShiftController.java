@@ -18,9 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -76,13 +79,13 @@ public class WorkShiftController {
             }
             effectiveDeptIds = new ArrayList<>(scopeSet);
         }
-        return shiftExcelService.export(user.getCompany().getId(), dateFrom, dateTo, effectiveDeptIds);
+        return shiftExcelService.export(user.getCompany().getId(), dateFrom, dateTo, effectiveDeptIds, LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/export-list")
     public ResponseEntity<byte[]> exportList(@AuthenticationPrincipal User user) {
         requireShiftView(user);
-        return shiftExcelService.exportShiftListOnly(user.getCompany().getId());
+        return shiftExcelService.exportShiftListOnly(user.getCompany().getId(), LocaleContextHolder.getLocale());
     }
 
     @PostMapping("/preview-import")

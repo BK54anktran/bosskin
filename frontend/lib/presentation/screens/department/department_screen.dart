@@ -80,10 +80,8 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
           sectionLabels: const ['Phòng ban', 'Chức vụ'],
           sectionCounts: [deptRows.length, posRows.length],
           onConfirm: () async {
-            await Future.wait([
-              DepartmentService.instance.importExcel(picked.bytes, picked.filename),
-              DepartmentService.instance.importPositions(picked.bytes, picked.filename),
-            ]);
+            await DepartmentService.instance.importExcel(picked.bytes, picked.filename);
+            await DepartmentService.instance.importPositions(picked.bytes, picked.filename);
           },
         ),
       );

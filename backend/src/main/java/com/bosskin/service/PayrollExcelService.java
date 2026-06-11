@@ -2,12 +2,13 @@ package com.bosskin.service;
 
 import com.bosskin.entity.Payroll;
 import com.bosskin.repository.PayrollRepository;
+import com.bosskin.util.ExcelI18n;
+import com.bosskin.util.ExcelUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,8 @@ public class PayrollExcelService {
 
     private final PayrollRepository payrollRepository;
     private final DeptScopeService deptScopeService;
+    private final ExcelI18n excelI18n;
 
-    private static final DateTimeFormatter FILE_TS_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
-    private static final String XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     private static void writeText(Row row, int col, String value, CellStyle style) {
         Cell cell = row.createCell(col);
@@ -79,8 +77,10 @@ public class PayrollExcelService {
         return status != null ? status.name() : "";
     }
 
-    private static String buildSheetName(int month, int year) {
-        String raw = String.format("Luong Thang %02d-%04d", month, year);
+    private String buildSheetName(int month, int year) {
+        java.util.Locale locale = LocaleContextHolder.getLocale();
+        String label = String.format("%02d-%04d", month, year);
+        String raw = excelI18n.resolve("excel.sheet.payroll", locale, label);
         return sanitizeSheetName(raw);
     }
 
@@ -93,10 +93,6 @@ public class PayrollExcelService {
             return sanitized.substring(0, 31);
         }
         return sanitized;
-    }
-
-    private static String buildContentDisposition(String filename) {
-        return "attachment; filename=\"" + filename + "\"";
     }
 
     private static CellStyle buildHeaderStyle(Workbook wb) {
@@ -149,11 +145,16 @@ public class PayrollExcelService {
     // ─── Export phiếu lương tổng hợp gọn ─────────────────────────────────────
     // 1 sheet, mỗi hàng = 1 người, chỉ các giá trị cố định/tổng hợp
 
-    private static final List<String> PAYSLIP_HEADERS = List.of(
-        "Mã NV", "Họ và tên", "Phòng ban", "Bậc lương", "Loại tính",
-        "Ngày công", "Giờ ngày", "Giờ đêm", "OT ngày", "OT đêm",
-        "Lương cơ bản", "Tổng trợ cấp", "Tổng thu nhập",
-        "Gross", "Tổng khấu trừ", "Net", "Trạng thái"
+    private static final List<String> PAYSLIP_HEADER_KEYS = List.of(
+        "excel.col.payroll.empCode",     "excel.col.payroll.empName",
+        "excel.col.payroll.department",  "excel.col.payroll.salaryGrade",
+        "excel.col.payroll.payType",     "excel.col.payroll.presentDays",
+        "excel.col.payroll.dayHours",    "excel.col.payroll.nightHours",
+        "excel.col.payroll.otDay",       "excel.col.payroll.otNight",
+        "excel.col.payroll.baseSalary",  "excel.col.payroll.totalAllowance",
+        "excel.col.payroll.totalIncome", "excel.col.payroll.gross",
+        "excel.col.payroll.totalDeduction", "excel.col.payroll.net",
+        "excel.col.payroll.status"
     );
 
     @Transactional(readOnly = true)
@@ -177,6 +178,11 @@ public class PayrollExcelService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found");
         }
 
+        java.util.Locale locale = LocaleContextHolder.getLocale();
+        List<String> headers = PAYSLIP_HEADER_KEYS.stream()
+            .map(k -> excelI18n.resolve(k, locale))
+            .collect(java.util.stream.Collectors.toList());
+
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet(buildSheetName(month, year));
             sheet.createFreezePane(4, 1);
@@ -190,9 +196,9 @@ public class PayrollExcelService {
             // Column widths
             int[] widths = {14,24,20,18,12, 10,10,10,10,10, 16,16,16, 16,16,16, 12};
             Row header = sheet.createRow(0);
-            for (int i = 0; i < PAYSLIP_HEADERS.size(); i++) {
+            for (int i = 0; i < headers.size(); i++) {
                 Cell cell = header.createCell(i);
-                cell.setCellValue(PAYSLIP_HEADERS.get(i));
+                cell.setCellValue(headers.get(i));
                 cell.setCellStyle(headerStyle);
                 sheet.setColumnWidth(i, widths[i] * 256);
             }
@@ -247,17 +253,15 @@ public class PayrollExcelService {
                 writeText(row, c, statusKey(p.getStatus()), textStyle);
             }
 
-            for (int i = 0; i < PAYSLIP_HEADERS.size(); i++) {
+            for (int i = 0; i < headers.size(); i++) {
                 sheet.autoSizeColumn(i);
                 sheet.setColumnWidth(i, Math.min(sheet.getColumnWidth(i) + 512, 65280));
             }
 
             byte[] bytes = toBytes(wb);
-            String filename = buildPayslipsFilename(month, year);
-            return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, buildContentDisposition(filename))
-                .contentType(MediaType.parseMediaType(XLSX_MIME))
-                .body(bytes);
+            String filenameBase = excelI18n.resolve("excel.file.payroll", locale)
+                + "-" + String.format("%02d-%04d", month, year);
+            return ExcelUtils.buildFileResponse(filenameBase, bytes);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error.excel.export_failed", e);
         }
@@ -268,12 +272,6 @@ public class PayrollExcelService {
         return entries.values().stream()
             .map(Payroll.DeductionEntry::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private static String buildPayslipsFilename(int month, int year) {
-        String base = String.format("phieu_luong_thang_%02d-%04d", month, year);
-        String ts = LocalDateTime.now().format(FILE_TS_FMT);
-        return base + "-" + ts + ".xlsx";
     }
 
     private static byte[] toBytes(Workbook wb) throws IOException {

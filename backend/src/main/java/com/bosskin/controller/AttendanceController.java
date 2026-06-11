@@ -37,6 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -1551,7 +1552,7 @@ public class AttendanceController {
             rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
         return attendanceExcelService.exportTimesheetRange(
             employee.getFullName(), employee.getEmployeeCode(), from, to, rows,
-            company.isAttendanceDayNightMode(), otEnabled);
+            company.isAttendanceDayNightMode(), otEnabled, LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/export-day-view")
@@ -1565,7 +1566,8 @@ public class AttendanceController {
         List<Employee> employees = resolveDayViewEmployees(user, company, departmentId, scopeIds);
         if (employees.isEmpty()) {
             return attendanceExcelService.exportDayView(date, List.of(),
-                company.isAttendanceDayNightMode(), company.isAttendanceOtEnabled());
+                company.isAttendanceDayNightMode(), company.isAttendanceOtEnabled(),
+                LocaleContextHolder.getLocale());
         }
 
         LocalTime dayStart, dayEnd;
@@ -1603,7 +1605,7 @@ public class AttendanceController {
             .toList();
 
         return attendanceExcelService.exportDayView(date, rows,
-            company.isAttendanceDayNightMode(), otEnabled);
+            company.isAttendanceDayNightMode(), otEnabled, LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/export")

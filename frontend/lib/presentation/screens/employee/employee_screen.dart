@@ -64,7 +64,13 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     try {
       final grades = await _gradeRepo.getAll();
       if (mounted) setState(() => _cachedGrades = grades);
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   @override
@@ -78,7 +84,13 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       final depts =
           await DepartmentService.instance.getFlat(permission: 'EMPLOYEE_VIEW');
       if (mounted) setState(() => _departments = depts);
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Future<void> _load({bool reset = false}) async {

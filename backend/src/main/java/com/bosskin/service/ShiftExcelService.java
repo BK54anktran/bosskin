@@ -8,6 +8,7 @@ import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.repository.ShiftAssignmentRepository;
 import com.bosskin.repository.WorkShiftRepository;
 import com.bosskin.util.ExcelColumn;
+import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,20 +33,21 @@ public class ShiftExcelService {
     private final ShiftAssignmentRepository assignRepo;
     private final com.bosskin.repository.EmployeeRepository employeeRepo;
     private final DeptScopeService deptScopeService;
+    private final ExcelI18n excelI18n;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-    // Import columns với setter
+    // Import columns — i18n: match bất kỳ ngôn ngữ nào
     private static final List<ExcelColumn<ShiftRow>> IMPORT_COLUMNS = List.of(
-        ExcelColumn.of("Mã ca (*)",        r -> r.code,        (r, v) -> r.code = v),
-        ExcelColumn.of("Tên ca (*)",       r -> r.name,        (r, v) -> r.name = v),
-        ExcelColumn.of("Giờ bắt đầu",     r -> r.startTime,   (r, v) -> r.startTime = v),
-        ExcelColumn.of("Giờ kết thúc",    r -> r.endTime,     (r, v) -> r.endTime = v),
-        ExcelColumn.of("Nghỉ giải lao từ",r -> r.breakStart,  (r, v) -> r.breakStart = v),
-        ExcelColumn.of("Nghỉ giải lao đến",r -> r.breakEnd,   (r, v) -> r.breakEnd = v),
-        ExcelColumn.of("Nhóm ca",         r -> r.groupName,   (r, v) -> r.groupName = v),
-        ExcelColumn.of("Màu",             r -> r.color,       (r, v) -> r.color = v),
-        ExcelColumn.of("Phòng ban (mã, cách nhau dấu phẩy)", r -> r.deptCodes, (r, v) -> r.deptCodes = v)
+        ExcelColumn.ofI18n("excel.col.shift.code",      r -> r.code,       (r, v) -> r.code = v),
+        ExcelColumn.ofI18n("excel.col.shift.name",      r -> r.name,       (r, v) -> r.name = v),
+        ExcelColumn.ofI18n("excel.col.shift.startTime", r -> r.startTime,  (r, v) -> r.startTime = v),
+        ExcelColumn.ofI18n("excel.col.shift.endTime",   r -> r.endTime,    (r, v) -> r.endTime = v),
+        ExcelColumn.ofI18n("excel.col.shift.breakStart",r -> r.breakStart, (r, v) -> r.breakStart = v),
+        ExcelColumn.ofI18n("excel.col.shift.breakEnd",  r -> r.breakEnd,   (r, v) -> r.breakEnd = v),
+        ExcelColumn.ofI18n("excel.col.shift.groupName", r -> r.groupName,  (r, v) -> r.groupName = v),
+        ExcelColumn.ofI18n("excel.col.shift.color",     r -> r.color,      (r, v) -> r.color = v),
+        ExcelColumn.ofI18n("excel.col.shift.deptCodes", r -> r.deptCodes,  (r, v) -> r.deptCodes = v)
     );
 
     public static class ShiftRow {
@@ -56,7 +58,7 @@ public class ShiftExcelService {
     private static final String[] WEEKDAY_VI = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
 
     @Transactional(readOnly = true)
-    public ResponseEntity<byte[]> export(Long companyId, LocalDate from, LocalDate to, List<Long> departmentIds) {
+    public ResponseEntity<byte[]> export(Long companyId, LocalDate from, LocalDate to, List<Long> departmentIds, java.util.Locale locale) {
         List<WorkShift> shifts = shiftRepo.findByCompanyIdAndActiveTrue(companyId);
         List<ShiftAssignment> assignments = assignRepo.findByCompanyAndDateRange(companyId, from, to);
 
@@ -286,7 +288,7 @@ public class ShiftExcelService {
             org.apache.poi.ss.usermodel.CellStyle hoursValStyle = wb.createCellStyle();
             hoursValStyle.cloneStyleFrom(summaryValStyle);
             hoursValStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("0.0"));
-            String s2Name = "Danh sach ca";
+            String s2Name = excelI18n.resolve("excel.sheet.shift.list", locale);
             String s3Name = "_calc_hours";
             org.apache.poi.ss.usermodel.Sheet s3 = wb.createSheet(s3Name);
             java.util.Map<String, String> formulaPatches = new java.util.LinkedHashMap<>();
@@ -310,9 +312,7 @@ public class ShiftExcelService {
             org.apache.poi.ss.usermodel.Sheet s2 = wb.createSheet(s2Name);
             org.apache.poi.ss.usermodel.Row s2Header = s2.createRow(0);
             // Cột J (index 9): Phút làm — dùng để SUMIF từ sheet phân công
-            String[] shiftCols = {"Mã ca (*)", "Tên ca (*)", "Giờ bắt đầu", "Giờ kết thúc",
-                "Nghỉ giải lao từ", "Nghỉ giải lao đến", "Nhóm ca", "Màu",
-                "Phòng ban (mã, cách nhau dấu phẩy)", "Phút làm"};
+            String[] shiftCols = shiftListHeaders(locale);
             for (int c = 0; c < shiftCols.length; c++) {
                 org.apache.poi.ss.usermodel.Cell cell = s2Header.createCell(c);
                 cell.setCellValue(shiftCols[c]);
@@ -382,19 +382,15 @@ public class ShiftExcelService {
             // Patch workbook.xml để Excel nhận diện file Excel 365 (hỗ trợ LAMBDA/MAP/LET)
             byte[] bytes = patchWorkbook(out.toByteArray());
 
-            String ts = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
-            String filename = "phan_cong_ca-" + ts + ".xlsx";
-            return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(bytes);
+            String filenameBase = excelI18n.resolve("excel.file.shift", locale);
+            return com.bosskin.util.ExcelUtils.buildFileResponse(filenameBase, bytes);
         } catch (java.io.IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
         }
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity<byte[]> exportShiftListOnly(Long companyId) {
+    public ResponseEntity<byte[]> exportShiftListOnly(Long companyId, java.util.Locale locale) {
         List<WorkShift> shifts = shiftRepo.findByCompanyIdAndActiveTrue(companyId);
         try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
             wb.setCellFormulaValidation(false);
@@ -412,11 +408,10 @@ public class ShiftExcelService {
             hStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
             hStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
 
-            org.apache.poi.ss.usermodel.Sheet sheet = wb.createSheet("Danh sach ca");
+            String sheetListName = excelI18n.resolve("excel.sheet.shift.list", locale);
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.createSheet(sheetListName);
             org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
-            String[] cols = {"Mã ca (*)", "Tên ca (*)", "Giờ bắt đầu", "Giờ kết thúc",
-                "Nghỉ giải lao từ", "Nghỉ giải lao đến", "Nhóm ca", "Màu",
-                "Phòng ban (mã, cách nhau dấu phẩy)", "Phút làm"};
+            String[] cols = shiftListHeaders(locale);
             for (int c = 0; c < cols.length; c++) {
                 org.apache.poi.ss.usermodel.Cell cell = header.createCell(c);
                 cell.setCellValue(cols[c]);
@@ -450,12 +445,8 @@ public class ShiftExcelService {
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
             wb.write(out);
             byte[] bytes = out.toByteArray();
-            String ts = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
-            String filename = "danh_sach_ca-" + ts + ".xlsx";
-            return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(bytes);
+            String filenameBase = excelI18n.resolve("excel.file.shift.list", locale);
+            return com.bosskin.util.ExcelUtils.buildFileResponse(filenameBase, bytes);
         } catch (java.io.IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
         }
@@ -488,7 +479,9 @@ public class ShiftExcelService {
 
     @Transactional(readOnly = true)
     public List<ShiftDiff> previewImport(Long companyId, MultipartFile file) {
-        List<ShiftRow> rows = ExcelUtils.importRowsByHeader(file, "Danh sach ca", IMPORT_COLUMNS, ShiftRow::new);
+        String listSheet = findShiftListSheetName(file);
+        if (listSheet == null) return List.of();
+        List<ShiftRow> rows = ExcelUtils.importRowsByHeader(file, listSheet, IMPORT_COLUMNS, ShiftRow::new, excelI18n);
         Map<String, WorkShift> existingMap = shiftRepo.findByCompanyIdAndActiveTrue(companyId)
             .stream().collect(Collectors.toMap(WorkShift::getCode, s -> s, (a, b) -> a));
 
@@ -530,8 +523,9 @@ public class ShiftExcelService {
 
     @Transactional
     public Map<String, Integer> importFromExcel(Long companyId, MultipartFile file) {
-        // Đọc theo tên sheet để không bị lệch khi workbook có sheet ẩn/phụ.
-        List<ShiftRow> rows = ExcelUtils.importRowsByHeader(file, "Danh sach ca", IMPORT_COLUMNS, ShiftRow::new);
+        String listSheet = findShiftListSheetName(file);
+        if (listSheet == null) return Map.of("created", 0, "updated", 0);
+        List<ShiftRow> rows = ExcelUtils.importRowsByHeader(file, listSheet, IMPORT_COLUMNS, ShiftRow::new, excelI18n);
         Map<String, Department> deptMap = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(Department::getCode, d -> d, (a, b) -> a));
         Map<String, WorkShift> existingMap = shiftRepo.findByCompanyIdAndActiveTrue(companyId)
@@ -590,9 +584,12 @@ public class ShiftExcelService {
             int sheetYear;
             try {
                 String[] parts = sheetName.replace("Phan cong ca ", "").split("-");
+                if (parts.length < 2) throw new IllegalArgumentException();
                 sheetYear = Integer.parseInt(parts[1]);
             } catch (Exception e) {
-                sheetYear = java.time.LocalDate.now().getYear();
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                        "error.shift.invalid_sheet_name");
             }
 
             // Header cell format: "day/month\nWeekday" — đọc day và month trực tiếp
@@ -654,8 +651,9 @@ public class ShiftExcelService {
         Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "SHIFT_VIEW");
         List<ShiftDiff> shiftDiffs = new ArrayList<>();
         Map<String, ShiftRow> importedShiftRows = new LinkedHashMap<>();
-        if (hasSheet(file, "Danh sach ca")) {
-            for (ShiftRow row : ExcelUtils.importRowsByHeader(file, "Danh sach ca", IMPORT_COLUMNS, ShiftRow::new)) {
+        String listSheet = findShiftListSheetName(file);
+        if (listSheet != null) {
+            for (ShiftRow row : ExcelUtils.importRowsByHeader(file, listSheet, IMPORT_COLUMNS, ShiftRow::new, excelI18n)) {
                 if (row.code == null || row.code.isBlank()) continue;
                 importedShiftRows.put(row.code.trim(), row);
             }
@@ -778,7 +776,7 @@ public class ShiftExcelService {
         Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "SHIFT_VIEW");
         int createdShifts = 0;
         int updatedShifts = 0;
-        if (hasSheet(file, "Danh sach ca")) {
+        if (findShiftListSheetName(file) != null) {
             Map<String, Integer> shiftResult = importFromExcel(companyId, file);
             createdShifts = shiftResult.getOrDefault("created", 0);
             updatedShifts = shiftResult.getOrDefault("updated", 0);
@@ -851,14 +849,39 @@ public class ShiftExcelService {
         );
     }
 
-    private boolean hasSheet(MultipartFile file, String sheetName) {
+    /** Tên cột sheet "Danh sach ca" theo locale — gồm cả cột Phút làm (internal). */
+    private String[] shiftListHeaders(java.util.Locale locale) {
+        return new String[]{
+            excelI18n.resolve("excel.col.shift.code",      locale),
+            excelI18n.resolve("excel.col.shift.name",      locale),
+            excelI18n.resolve("excel.col.shift.startTime", locale),
+            excelI18n.resolve("excel.col.shift.endTime",   locale),
+            excelI18n.resolve("excel.col.shift.breakStart",locale),
+            excelI18n.resolve("excel.col.shift.breakEnd",  locale),
+            excelI18n.resolve("excel.col.shift.groupName", locale),
+            excelI18n.resolve("excel.col.shift.color",     locale),
+            excelI18n.resolve("excel.col.shift.deptCodes", locale),
+            "Phut lam" // internal column — not user-facing, kept as fixed key
+        };
+    }
+
+    /**
+     * Tìm tên sheet "Danh sach ca" trong file theo bất kỳ locale nào.
+     * Trả về tên sheet thực tế trong file, null nếu không tìm thấy.
+     */
+    private String findShiftListSheetName(MultipartFile file) {
+        List<String> candidates = excelI18n.allValues("excel.sheet.shift.list");
         try (java.io.InputStream is = file.getInputStream();
              org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(is)) {
-            return wb.getSheet(sheetName) != null;
+            for (String name : candidates) {
+                if (wb.getSheet(name) != null) return name;
+            }
+            return null;
         } catch (java.io.IOException e) {
             throw new RuntimeException("error.excel.import_failed", e);
         }
     }
+
 
     private Map<AssignDayKey, List<String>> groupAssignCells(List<AssignCell> cells) {
         Map<AssignDayKey, List<String>> grouped = new LinkedHashMap<>();

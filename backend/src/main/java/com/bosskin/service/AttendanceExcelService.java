@@ -6,12 +6,15 @@ import com.bosskin.entity.Employee;
 import com.bosskin.repository.AttendanceRepository;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.ShiftAssignmentRepository;
+import com.bosskin.util.ExcelI18n;
+import com.bosskin.util.ExcelUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +40,7 @@ public class AttendanceExcelService {
     private final EmployeeRepository employeeRepo;
     private final DeptScopeService deptScopeService;
     private final ShiftAssignmentRepository shiftAssignmentRepo;
+    private final ExcelI18n excelI18n;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter SHEET_DATE_FMT = DateTimeFormatter.ofPattern("MM-yyyy");
@@ -48,6 +52,7 @@ public class AttendanceExcelService {
     public ResponseEntity<byte[]> exportAttendance(Long companyId, Long userId,
                                                     LocalDate from, LocalDate to,
                                                     List<Long> departmentIds) {
+        java.util.Locale locale = LocaleContextHolder.getLocale();
         List<LocalDate> dates = new ArrayList<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) dates.add(d);
 
@@ -137,14 +142,18 @@ public class AttendanceExcelService {
             fixedStyle.setBorderRight(BorderStyle.THIN);
             fixedStyle.setBorderBottom(BorderStyle.HAIR);
 
-            // Sheet name: "Cham cong MM-yyyy" từ tháng của ngày kết thúc
-            String sheetName = "Cham cong " + to.format(SHEET_DATE_FMT);
+            String sheetName = sanitizeSheetName(
+                excelI18n.resolve("excel.sheet.attendance.month", locale, to.format(SHEET_DATE_FMT)));
             Sheet sheet = wb.createSheet(sheetName);
 
             // Header row
             Row hRow = sheet.createRow(0);
             hRow.setHeight((short)600);
-            String[] fixedCols = {"Mã NV", "Họ và tên", "Phòng ban"};
+            String[] fixedCols = {
+                excelI18n.resolve("excel.col.attendance.empCode",   locale),
+                excelI18n.resolve("excel.col.attendance.empName",   locale),
+                excelI18n.resolve("excel.col.attendance.department",locale)
+            };
             int[] fixedWidths  = {14, 28, 20};
             for (int c = 0; c < fixedCols.length; c++) {
                 Cell cell = hRow.createCell(c);
@@ -197,13 +206,10 @@ public class AttendanceExcelService {
             wb.write(out);
             byte[] bytes = out.toByteArray();
 
-            String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
-            String filename = "cham_cong-" + from.format(DateTimeFormatter.ofPattern("ddMMyyyy"))
-                + "-" + to.format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "-" + ts + ".xlsx";
-            return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(bytes);
+            String filenameBase = excelI18n.resolve("excel.file.attendance.month", locale)
+                + "-" + from.format(DateTimeFormatter.ofPattern("ddMMyyyy"))
+                + "-" + to.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            return ExcelUtils.buildFileResponse(filenameBase, bytes);
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
         }
@@ -231,7 +237,8 @@ public class AttendanceExcelService {
             String employeeName, String employeeCode,
             LocalDate from, LocalDate to,
             List<com.bosskin.dto.AttendanceDTO.TimesheetRow> rows,
-            boolean dayNightMode, boolean otEnabled) {
+            boolean dayNightMode, boolean otEnabled,
+            java.util.Locale locale) {
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             XSSFColor blue  = new XSSFColor(new byte[]{(byte)0x21,(byte)0x5C,(byte)0x98}, null);
@@ -274,23 +281,32 @@ public class AttendanceExcelService {
             fixedStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             fixedStyle.setBorderRight(BorderStyle.THIN); fixedStyle.setBorderBottom(BorderStyle.HAIR);
 
-            String sheetName = "Cham cong " + to.format(SHEET_DATE_FMT);
+            String sheetName = sanitizeSheetName(
+                excelI18n.resolve("excel.sheet.attendance.timesheet", locale, to.format(SHEET_DATE_FMT)));
             Sheet sheet = wb.createSheet(sheetName);
 
             // Build column list
             List<String> cols = new java.util.ArrayList<>(java.util.Arrays.asList(
-                "Ngày", "Thứ", "Nghỉ phép", "Ca làm", "Giờ giải lao *",
-                "Check-in *", "Check-out *", "Yêu cầu check-in", "Yêu cầu check-out",
-                "Tổng thời gian", "Thời gian ngày"
+                excelI18n.resolve("excel.col.attendance.date",           locale),
+                excelI18n.resolve("excel.col.attendance.dayOfWeek",      locale),
+                excelI18n.resolve("excel.col.attendance.leave",          locale),
+                excelI18n.resolve("excel.col.attendance.shift",          locale),
+                excelI18n.resolve("excel.col.attendance.breakTime",      locale),
+                excelI18n.resolve("excel.col.attendance.checkIn",        locale),
+                excelI18n.resolve("excel.col.attendance.checkOut",       locale),
+                excelI18n.resolve("excel.col.attendance.requestCheckIn", locale),
+                excelI18n.resolve("excel.col.attendance.requestCheckOut",locale),
+                excelI18n.resolve("excel.col.attendance.totalHours",     locale),
+                excelI18n.resolve("excel.col.attendance.dayHours",       locale)
             ));
-            if (otEnabled) cols.add("Tăng ca ngày *");
+            if (otEnabled) cols.add(excelI18n.resolve("excel.col.attendance.otDay",     locale));
             if (dayNightMode) {
-                cols.add("Thời gian đêm");
-                if (otEnabled) cols.add("Tăng ca đêm *");
+                cols.add(excelI18n.resolve("excel.col.attendance.nightHours", locale));
+                if (otEnabled) cols.add(excelI18n.resolve("excel.col.attendance.otNight", locale));
             }
-            cols.add("Trạng thái");
-            cols.add("Trạng thái duyệt *");
-            cols.add("Xóa *");
+            cols.add(excelI18n.resolve("excel.col.attendance.status",        locale));
+            cols.add(excelI18n.resolve("excel.col.attendance.approveStatus", locale));
+            cols.add(excelI18n.resolve("excel.col.attendance.delete",        locale));
 
             int[] colWidths = new int[cols.size()];
             colWidths[0] = 8; colWidths[1] = 6;
@@ -394,13 +410,11 @@ public class AttendanceExcelService {
             wb.setForceFormulaRecalculation(true);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
-            String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
-            String filename = "cham_cong_" + employeeCode + "_" + from.format(DateTimeFormatter.ofPattern("ddMMyyyy"))
-                + "-" + to.format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "-" + ts + ".xlsx";
-            return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(out.toByteArray());
+            String filenameBase = excelI18n.resolve("excel.file.attendance.timesheet", locale)
+                + "-" + employeeCode
+                + "-" + from.format(DateTimeFormatter.ofPattern("ddMMyyyy"))
+                + "-" + to.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            return ExcelUtils.buildFileResponse(filenameBase, out.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
         }
@@ -411,7 +425,8 @@ public class AttendanceExcelService {
     public ResponseEntity<byte[]> exportDayView(
             LocalDate date,
             List<com.bosskin.dto.AttendanceDTO.DayViewRow> dayRows,
-            boolean dayNightMode, boolean otEnabled) {
+            boolean dayNightMode, boolean otEnabled,
+            java.util.Locale locale) {
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             wb.setCellFormulaValidation(false);
@@ -445,27 +460,35 @@ public class AttendanceExcelService {
 
             // Cột: Nhân viên (fixed) + các cột giống tab Theo tháng
             List<String> cols = new ArrayList<>(java.util.Arrays.asList(
-                "Nhân viên", "Nghỉ phép", "Ca làm", "Giờ giải lao *",
-                "Check-in *", "Check-out *", "Yêu cầu check-in", "Yêu cầu check-out",
-                "Tổng thời gian", "Thời gian ngày"
+                excelI18n.resolve("excel.col.attendance.employee",       locale),
+                excelI18n.resolve("excel.col.attendance.leave",          locale),
+                excelI18n.resolve("excel.col.attendance.shift",          locale),
+                excelI18n.resolve("excel.col.attendance.breakTime",      locale),
+                excelI18n.resolve("excel.col.attendance.checkIn",        locale),
+                excelI18n.resolve("excel.col.attendance.checkOut",       locale),
+                excelI18n.resolve("excel.col.attendance.requestCheckIn", locale),
+                excelI18n.resolve("excel.col.attendance.requestCheckOut",locale),
+                excelI18n.resolve("excel.col.attendance.totalHours",     locale),
+                excelI18n.resolve("excel.col.attendance.dayHours",       locale)
             ));
-            if (otEnabled) cols.add("Tăng ca ngày *");
+            if (otEnabled) cols.add(excelI18n.resolve("excel.col.attendance.otDay",     locale));
             if (dayNightMode) {
-                cols.add("Thời gian đêm");
-                if (otEnabled) cols.add("Tăng ca đêm *");
+                cols.add(excelI18n.resolve("excel.col.attendance.nightHours", locale));
+                if (otEnabled) cols.add(excelI18n.resolve("excel.col.attendance.otNight", locale));
             }
-            cols.add("Trạng thái");
-            cols.add("Trạng thái duyệt *");
-            cols.add("Xóa *");
+            cols.add(excelI18n.resolve("excel.col.attendance.status",        locale));
+            cols.add(excelI18n.resolve("excel.col.attendance.approveStatus", locale));
+            cols.add(excelI18n.resolve("excel.col.attendance.delete",        locale));
 
-            String sheetName = "Cham cong " + date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-            if (sheetName.length() > 31) sheetName = sheetName.substring(0, 31);
+            String sheetName = sanitizeSheetName(
+                excelI18n.resolve("excel.sheet.attendance.day", locale, date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))));
             Sheet sheet = wb.createSheet(sheetName);
 
             // Info row — ngày
             Row infoRow = sheet.createRow(0);
             Cell infoCell = infoRow.createCell(0);
-            infoCell.setCellValue("Chấm công ngày: " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            String dayLabel = excelI18n.resolve("excel.sheet.attendance.day", locale, date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            infoCell.setCellValue(dayLabel);
             infoCell.setCellStyle(fixedStyle);
             if (cols.size() > 1) sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, cols.size() - 1));
 
@@ -579,12 +602,9 @@ public class AttendanceExcelService {
             wb.setForceFormulaRecalculation(true);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
-            String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
-            String filename = "cham_cong_ngay_" + date.format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "-" + ts + ".xlsx";
-            return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(out.toByteArray());
+            String filenameBase = excelI18n.resolve("excel.file.attendance.day", locale)
+                + "-" + date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            return ExcelUtils.buildFileResponse(filenameBase, out.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
         }
@@ -1065,6 +1085,11 @@ public class AttendanceExcelService {
         } catch (IOException e) {
             throw new RuntimeException("error.excel.import_failed", e);
         }
+    }
+
+    private static String sanitizeSheetName(String name) {
+        String sanitized = name.replaceAll("[/\\\\?*\\[\\]]", "-");
+        return sanitized.length() > 31 ? sanitized.substring(0, 31) : sanitized;
     }
 
     private LocalDate parseBaseDateFromSheetName(String sheetName) {

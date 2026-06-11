@@ -7,10 +7,12 @@ import com.bosskin.service.DepartmentService;
 import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.PositionExcelService;
 import com.bosskin.util.ExcelColumn;
+import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelSheet;
 import com.bosskin.util.ExcelUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @RestController
@@ -28,6 +31,7 @@ public class DepartmentController {
     private final DepartmentService    departmentService;
     private final DeptScopeService     deptScopeService;
     private final PositionExcelService positionExcelService;
+    private final ExcelI18n            excelI18n;
 
     @GetMapping
     public ResponseEntity<List<DepartmentDTO.Response>> getTree(@AuthenticationPrincipal User user) {
@@ -35,60 +39,65 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.getTree(user.getCompany().getId(), user.getId()));
     }
 
+    // ── Department import columns ─────────────────────────────────────────────
     private static final List<ExcelColumn<DepartmentDTO.ImportRow>> IMPORT_COLUMNS = List.of(
-            ExcelColumn.of("Mã phòng ban (*)",    r -> r.getCode(),                (r, v) -> r.setCode(v)),
-            ExcelColumn.of("Tên phòng ban (*)",   r -> r.getName(),                (r, v) -> r.setName(v)),
-            ExcelColumn.of("Mã PB cha",           r -> r.getParentCode(),          (r, v) -> r.setParentCode(v)),
-            ExcelColumn.of("Mô tả",               r -> r.getDescription(),         (r, v) -> r.setDescription(v)),
-            ExcelColumn.of("Vĩ độ (Latitude)",    r -> r.getCheckInLatitude(),     (r, v) -> r.setCheckInLatitude(v)),
-            ExcelColumn.of("Kinh độ (Longitude)", r -> r.getCheckInLongitude(),    (r, v) -> r.setCheckInLongitude(v)),
-            ExcelColumn.of("Bán kính (m)",        r -> r.getCheckInRadiusMeters(), (r, v) -> r.setCheckInRadiusMeters(v)),
-            ExcelColumn.readOnly("Số nhân viên",  r -> null),
-            ExcelColumn.of("Xóa (x)",             r -> r.getDelete(),              (r, v) -> r.setDelete(v))
+            ExcelColumn.ofI18n("excel.col.department.code",          r -> r.getCode(),                (r, v) -> r.setCode(v)),
+            ExcelColumn.ofI18n("excel.col.department.name",          r -> r.getName(),                (r, v) -> r.setName(v)),
+            ExcelColumn.ofI18n("excel.col.department.parentCode",    r -> r.getParentCode(),          (r, v) -> r.setParentCode(v)),
+            ExcelColumn.ofI18n("excel.col.department.description",   r -> r.getDescription(),         (r, v) -> r.setDescription(v)),
+            ExcelColumn.ofI18n("excel.col.department.latitude",      r -> r.getCheckInLatitude(),     (r, v) -> r.setCheckInLatitude(v)),
+            ExcelColumn.ofI18n("excel.col.department.longitude",     r -> r.getCheckInLongitude(),    (r, v) -> r.setCheckInLongitude(v)),
+            ExcelColumn.ofI18n("excel.col.department.radius",        r -> r.getCheckInRadiusMeters(), (r, v) -> r.setCheckInRadiusMeters(v)),
+            ExcelColumn.readOnlyI18n("excel.col.department.employeeCount", r -> null),
+            ExcelColumn.ofI18n("excel.col.department.delete",        r -> r.getDelete(),              (r, v) -> r.setDelete(v))
     );
 
+    // ── Department export columns ─────────────────────────────────────────────
     private static final List<ExcelColumn<DepartmentDTO.FlatItem>> DEPT_COLUMNS = List.of(
-            ExcelColumn.readOnly("Mã phòng ban (*)",    DepartmentDTO.FlatItem::getCode),
-            ExcelColumn.readOnly("Tên phòng ban (*)",   DepartmentDTO.FlatItem::getName),
-            ExcelColumn.readOnly("Mã PB cha",           r -> r.getParentCode() == null ? "" : r.getParentCode()),
-            ExcelColumn.readOnly("Mô tả",               r -> r.getDescription() == null ? "" : r.getDescription()),
-            ExcelColumn.readOnly("Vĩ độ (Latitude)",    r -> r.getCheckInLatitude() == null ? "" : r.getCheckInLatitude()),
-            ExcelColumn.readOnly("Kinh độ (Longitude)", r -> r.getCheckInLongitude() == null ? "" : r.getCheckInLongitude()),
-            ExcelColumn.readOnly("Bán kính (m)",        r -> r.getCheckInLatitude() == null ? "" : r.getCheckInRadiusMeters()),
-            ExcelColumn.readOnly("Số nhân viên",        DepartmentDTO.FlatItem::getEmployeeCount),
-            ExcelColumn.readOnly("Xóa (x)",             r -> "")
+            ExcelColumn.readOnlyI18n("excel.col.department.code",          DepartmentDTO.FlatItem::getCode),
+            ExcelColumn.readOnlyI18n("excel.col.department.name",          DepartmentDTO.FlatItem::getName),
+            ExcelColumn.readOnlyI18n("excel.col.department.parentCode",    r -> r.getParentCode() == null ? "" : r.getParentCode()),
+            ExcelColumn.readOnlyI18n("excel.col.department.description",   r -> r.getDescription() == null ? "" : r.getDescription()),
+            ExcelColumn.readOnlyI18n("excel.col.department.latitude",      r -> r.getCheckInLatitude() == null ? "" : r.getCheckInLatitude()),
+            ExcelColumn.readOnlyI18n("excel.col.department.longitude",     r -> r.getCheckInLongitude() == null ? "" : r.getCheckInLongitude()),
+            ExcelColumn.readOnlyI18n("excel.col.department.radius",        r -> r.getCheckInRadiusMeters() == null ? "" : r.getCheckInRadiusMeters()),
+            ExcelColumn.readOnlyI18n("excel.col.department.employeeCount", DepartmentDTO.FlatItem::getEmployeeCount),
+            ExcelColumn.readOnlyI18n("excel.col.department.delete",        r -> "")
     );
 
+    // ── Position export columns ───────────────────────────────────────────────
     private static final List<ExcelColumn<PositionDTO.FlatItem>> POS_COLUMNS = List.of(
-            ExcelColumn.readOnly("Mã chức vụ (*)",   PositionDTO.FlatItem::getCode),
-            ExcelColumn.readOnly("Tên chức vụ (*)",  PositionDTO.FlatItem::getName),
-            ExcelColumn.readOnly("Mã phòng ban (*)", PositionDTO.FlatItem::getDepartmentCode),
-            ExcelColumn.readOnly("Tên phòng ban",    PositionDTO.FlatItem::getDepartmentName),
-            ExcelColumn.readOnly("Mô tả",            r -> r.getDescription() == null ? "" : r.getDescription()),
-            ExcelColumn.readOnly("Số NV",            PositionDTO.FlatItem::getEmployeeCount),
-            ExcelColumn.readOnly("Xóa (x)",          r -> "")
+            ExcelColumn.readOnlyI18n("excel.col.position.code",           PositionDTO.FlatItem::getCode),
+            ExcelColumn.readOnlyI18n("excel.col.position.name",           PositionDTO.FlatItem::getName),
+            ExcelColumn.readOnlyI18n("excel.col.position.departmentCode", PositionDTO.FlatItem::getDepartmentCode),
+            ExcelColumn.readOnlyI18n("excel.col.position.departmentName", PositionDTO.FlatItem::getDepartmentName),
+            ExcelColumn.readOnlyI18n("excel.col.position.description",    r -> r.getDescription() == null ? "" : r.getDescription()),
+            ExcelColumn.readOnlyI18n("excel.col.position.employeeCount",  PositionDTO.FlatItem::getEmployeeCount),
+            ExcelColumn.readOnlyI18n("excel.col.position.delete",         r -> "")
     );
 
+    // ── Position import columns ───────────────────────────────────────────────
     private static final List<ExcelColumn<PositionDTO.ImportRow>> POS_IMPORT_COLUMNS = List.of(
-            ExcelColumn.of("Mã chức vụ (*)",   r -> r.getCode(),           (r, v) -> r.setCode(v)),
-            ExcelColumn.of("Tên chức vụ (*)",  r -> r.getName(),           (r, v) -> r.setName(v)),
-            ExcelColumn.of("Mã phòng ban (*)", r -> r.getDepartmentCode(), (r, v) -> r.setDepartmentCode(v)),
-            ExcelColumn.readOnly("Tên phòng ban", r -> null),
-            ExcelColumn.of("Mô tả",            r -> r.getDescription(),    (r, v) -> r.setDescription(v)),
-            ExcelColumn.readOnly("Số NV",      r -> null),
-            ExcelColumn.of("Xóa (x)",          r -> r.getDelete(),         (r, v) -> r.setDelete(v))
+            ExcelColumn.ofI18n("excel.col.position.code",           r -> r.getCode(),           (r, v) -> r.setCode(v)),
+            ExcelColumn.ofI18n("excel.col.position.name",           r -> r.getName(),           (r, v) -> r.setName(v)),
+            ExcelColumn.ofI18n("excel.col.position.departmentCode", r -> r.getDepartmentCode(), (r, v) -> r.setDepartmentCode(v)),
+            ExcelColumn.readOnlyI18n("excel.col.position.departmentName", r -> null),
+            ExcelColumn.ofI18n("excel.col.position.description",    r -> r.getDescription(),    (r, v) -> r.setDescription(v)),
+            ExcelColumn.readOnlyI18n("excel.col.position.employeeCount", r -> null),
+            ExcelColumn.ofI18n("excel.col.position.delete",         r -> r.getDelete(),         (r, v) -> r.setDelete(v))
     );
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> export(@AuthenticationPrincipal User user) {
         requirePermission(user, "DEPARTMENT_VIEW");
+        Locale locale = LocaleContextHolder.getLocale();
         List<DepartmentDTO.FlatItem> deptRows = departmentService.getFlat(
                 user.getCompany().getId(), user.getId(), "DEPARTMENT_VIEW");
         List<PositionDTO.FlatItem> posRows = positionExcelService.getFlat(user.getCompany().getId());
-        return ExcelUtils.exportSheets("danh_sach_phong_ban", List.of(
-                ExcelSheet.of("Phòng ban", DEPT_COLUMNS, deptRows),
-                ExcelSheet.of("Chức vụ",  POS_COLUMNS,  posRows)
-        ));
+        return ExcelUtils.exportSheets("excel.file.department", List.of(
+                ExcelSheet.ofI18n("excel.sheet.department.list", DEPT_COLUMNS, deptRows),
+                ExcelSheet.ofI18n("excel.sheet.position.list",   POS_COLUMNS,  posRows)
+        ), excelI18n, locale);
     }
 
     @PostMapping("/positions/preview-import")
@@ -96,7 +105,7 @@ public class DepartmentController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "DEPARTMENT_MANAGE");
-        List<PositionDTO.ImportRow> rows = ExcelUtils.importRows(file, 1, POS_IMPORT_COLUMNS, PositionDTO.ImportRow::new);
+        List<PositionDTO.ImportRow> rows = ExcelUtils.importRowsByHeader(file, 1, POS_IMPORT_COLUMNS, PositionDTO.ImportRow::new, excelI18n);
         return ResponseEntity.ok(positionExcelService.previewImport(user.getCompany().getId(), rows));
     }
 
@@ -105,7 +114,7 @@ public class DepartmentController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "DEPARTMENT_MANAGE");
-        List<PositionDTO.ImportRow> rows = ExcelUtils.importRows(file, 1, POS_IMPORT_COLUMNS, PositionDTO.ImportRow::new);
+        List<PositionDTO.ImportRow> rows = ExcelUtils.importRowsByHeader(file, 1, POS_IMPORT_COLUMNS, PositionDTO.ImportRow::new, excelI18n);
         positionExcelService.importFromExcel(user.getCompany().getId(), rows);
         return ResponseEntity.ok().build();
     }
@@ -115,7 +124,7 @@ public class DepartmentController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "DEPARTMENT_MANAGE");
-        List<DepartmentDTO.ImportRow> rows = ExcelUtils.importRows(file, IMPORT_COLUMNS, DepartmentDTO.ImportRow::new);
+        List<DepartmentDTO.ImportRow> rows = ExcelUtils.importRowsByHeader(file, 0, IMPORT_COLUMNS, DepartmentDTO.ImportRow::new, excelI18n);
         return ResponseEntity.ok(departmentService.previewImport(user.getCompany().getId(), user.getId(), rows));
     }
 
@@ -124,8 +133,7 @@ public class DepartmentController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         requirePermission(user, "DEPARTMENT_MANAGE");
-
-        List<DepartmentDTO.ImportRow> rows = ExcelUtils.importRows(file, IMPORT_COLUMNS, DepartmentDTO.ImportRow::new);
+        List<DepartmentDTO.ImportRow> rows = ExcelUtils.importRowsByHeader(file, 0, IMPORT_COLUMNS, DepartmentDTO.ImportRow::new, excelI18n);
         departmentService.importFromExcel(user.getCompany().getId(), user.getId(), rows);
         return ResponseEntity.ok().build();
     }
@@ -146,9 +154,9 @@ public class DepartmentController {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "DEPARTMENT_VIEW");
         if (!scope.isEmpty()) {
             if (req.getParentId() == null)
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ được tạo phòng ban con trong phạm vi được phép");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.department.must_be_child_in_scope");
             if (!scope.contains(req.getParentId()))
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Phòng ban cha không nằm trong phạm vi được phép");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.department.parent_out_of_scope");
         }
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(departmentService.create(user.getCompany().getId(), req));

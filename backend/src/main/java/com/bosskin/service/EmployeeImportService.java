@@ -270,7 +270,8 @@ public class EmployeeImportService {
 
     private BigDecimal parseMoney(String v) {
         if (isBlank(v)) return null;
-        try { return new BigDecimal(v.trim().replace(",", "").replace(".", "")); }
+        // Strip thousand separators (. or ,) then parse — Vietnamese salaries are integer amounts
+        try { return new BigDecimal(v.trim().replaceAll("[^0-9]", "")); }
         catch (NumberFormatException e) { return null; }
     }
 
