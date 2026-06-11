@@ -67,7 +67,7 @@ class _AppShellState extends State<AppShell>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final navItems = _navItems(s);
     final isWide = MediaQuery.of(context).size.width >= 900;
 
@@ -223,8 +223,9 @@ class _AppShellState extends State<AppShell>
 
   static String _titleFor(String path, AppLocalizations s) {
     if (path.startsWith(AppRoutes.editRequests)) return s.editRequests;
-    if (path.startsWith(AppRoutes.attendanceRequests))
+    if (path.startsWith(AppRoutes.attendanceRequests)) {
       return s.attendanceRequests;
+    }
     return switch (path) {
       AppRoutes.dashboard => s.dashboard,
       AppRoutes.employees => s.employees,
@@ -261,7 +262,7 @@ class _SideNav extends StatelessWidget {
     final isAdmin = user?.isAdmin ?? false;
     final isImpersonating = AuthService.instance.isImpersonating;
 
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final canSeeCompanySettings = user != null &&
         (user.isSystemAdmin || user.can('COMPANY_SETTING_VIEW'));
 
@@ -410,7 +411,7 @@ class AppProfileMenu extends StatelessWidget {
       animation:
           Listenable.merge([AuthService.instance, LanguageService.instance]),
       builder: (context, _) {
-        final s = AppLocalizations.of(context)!;
+        final s = AppLocalizations.of(context);
         final user = AuthService.instance.currentUser;
         final displayName = user?.fullName ?? user?.email ?? s.user;
         final initials =
@@ -552,7 +553,7 @@ Future<void> _showLanguageSheet(BuildContext context) async {
     context: context,
     showDragHandle: true,
     builder: (sheetContext) {
-      final s = AppLocalizations.of(sheetContext)!;
+      final s = AppLocalizations.of(sheetContext);
       return SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,

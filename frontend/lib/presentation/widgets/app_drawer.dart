@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/navigation/navigator_keys.dart';
-import '../../core/localization/language_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -32,7 +31,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final user = AuthService.instance.currentUser;
     final isAdmin = user?.isAdmin ?? false;
     final location = GoRouterState.of(context).uri.path;

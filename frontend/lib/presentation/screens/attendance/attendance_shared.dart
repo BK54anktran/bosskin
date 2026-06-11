@@ -195,7 +195,7 @@ Future<void> showAttRequestCardsDialog(
   await showDialog<void>(
     context: context,
     builder: (dialogContext) {
-      final s = AppLocalizations.of(context)!;
+      final s = AppLocalizations.of(context);
       var visibleRequests = List<AttendanceChangeRequest>.from(deduped);
 
       return StatefulBuilder(
@@ -237,7 +237,7 @@ Future<void> showAttRequestCardsDialog(
               width: 620,
               child: visibleRequests.isEmpty
                   ? Text(s.noApprovedRequests,
-                      style: TextStyle(color: AppTheme.textSecondary))
+                      style: const TextStyle(color: AppTheme.textSecondary))
                   : SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -292,7 +292,7 @@ Future<void> showAttLeaveRequestCardDialog(
   await showDialog<void>(
     context: context,
     builder: (dialogContext) {
-      final s = AppLocalizations.of(context)!;
+      final s = AppLocalizations.of(context);
       bool currentApplied = applied;
       bool updating = false;
       return StatefulBuilder(
@@ -400,7 +400,7 @@ Future<void> showAttInfoDialog(
   required String title,
   required List<Widget> children,
 }) async {
-  final s = AppLocalizations.of(context)!;
+  final s = AppLocalizations.of(context);
   await showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
@@ -610,7 +610,7 @@ class _AttLeaveInfoCardState extends State<AttLeaveInfoCard> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final l = widget.leave;
     final status = l.leaveStatus ?? 'APPROVED';
     final modeText = l.leaveMode == 'HOUR_RANGE' ? s.leaveByHour : s.leaveByDay;
@@ -826,7 +826,7 @@ class _AttRequestInfoCard extends StatelessWidget {
                   if (req.status == 'APPROVED') ...[
                     const SizedBox(width: 8),
                     Text(s.apply,
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                     const SizedBox(width: 4),
                     Transform.scale(
                       scale: 0.72,

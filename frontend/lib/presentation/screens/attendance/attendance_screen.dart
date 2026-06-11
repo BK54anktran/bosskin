@@ -45,7 +45,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final canView   = AuthService.instance.currentUser?.can('ATTENDANCE_VIEW')   ?? false;
     final canManage = AuthService.instance.currentUser?.can('ATTENDANCE_MANAGE') ?? false;
 

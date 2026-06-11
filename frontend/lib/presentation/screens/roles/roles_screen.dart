@@ -143,7 +143,7 @@ class _RolesScreenState extends State<RolesScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       children: [
         Container(
@@ -241,11 +241,12 @@ class _RolesTabState extends State<_RolesTab> {
         });
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = serverMsg(e);
           _loading = false;
         });
+      }
     }
     // Load departments separately — failure does not block role list
     try {
@@ -358,7 +359,7 @@ class _RolesTabState extends State<_RolesTab> {
       };
 
   Future<void> _delete(AppRole role) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await _showInstantDialog<bool>(
       context,
       (_) => AlertDialog(
@@ -393,7 +394,7 @@ class _RolesTabState extends State<_RolesTab> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final deptScopeIds = _expandedDepartmentScopeIds(_allDepts, _deptFilterId);
     final filtered = _roles.where((r) {
       final matchesDept = _deptFilterId == null
@@ -528,7 +529,7 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Card(
       child: InkWell(
         onTap: onTap,
@@ -559,7 +560,7 @@ class _RoleCard extends StatelessWidget {
                             ),
                             child: Text(
                               s.defaultLabel,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 10,
                                   color: AppTheme.primary,
                                   fontWeight: FontWeight.w500),
@@ -590,7 +591,7 @@ class _RoleCard extends StatelessWidget {
                 permission: 'ROLE_MANAGE',
                 child: IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  tooltip: AppLocalizations.of(context)!.edit,
+                  tooltip: AppLocalizations.of(context).edit,
                   onPressed: onTap,
                 ),
               ),
@@ -601,7 +602,7 @@ class _RoleCard extends StatelessWidget {
                     : IconButton(
                         icon: const Icon(Icons.delete_outline,
                             size: 18, color: AppTheme.error),
-                        tooltip: AppLocalizations.of(context)!.delete,
+                        tooltip: AppLocalizations.of(context).delete,
                         onPressed: onDelete,
                       ),
               ),
@@ -845,7 +846,7 @@ class _RoleEditDialogState extends State<_RoleEditDialog> {
   }
 
   Future<void> _save() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (_nameCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1011,7 +1012,7 @@ class _RoleEditDialogState extends State<_RoleEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final dialogHeight = MediaQuery.of(context).size.height * 0.95;
     final grouped = <String, List<AppPermission>>{};
     for (final p in widget.allPermissions) {
@@ -1199,11 +1200,12 @@ class _UsersTabState extends State<_UsersTab> {
         });
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = serverMsg(e);
           _loading = false;
         });
+      }
     }
     // Load departments separately — failure does not break the user list
     try {
@@ -1231,7 +1233,7 @@ class _UsersTabState extends State<_UsersTab> {
   }
 
   Future<void> _toggleEnabled(AppUser user) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (user.enabled) {
       final ok = await showDialog<bool>(
         context: context,
@@ -1272,7 +1274,7 @@ class _UsersTabState extends State<_UsersTab> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final deptScopeIds = _filterDeptId == null
         ? null
         : _expandedDepartmentScopeIds(_allDepts, _filterDeptId);
@@ -1375,7 +1377,7 @@ class _UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final initials = (user.fullName ?? user.email)[0].toUpperCase();
 
     return Card(
@@ -1808,7 +1810,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final dialogHeight = MediaQuery.of(context).size.height * 0.85;
     final grouped = <String, List<AppPermission>>{};
     for (final p in widget.allPermissions) {
@@ -2059,7 +2061,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
                   TextButton(
                     onPressed:
                         _saving ? null : () => Navigator.pop(context, false),
-                    child: Text(AppLocalizations.of(context)!.cancel),
+                    child: Text(AppLocalizations.of(context).cancel),
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
@@ -2070,7 +2072,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
                             height: 18,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : Text(AppLocalizations.of(context)!.save),
+                        : Text(AppLocalizations.of(context).save),
                   ),
                 ],
               ),
@@ -2266,7 +2268,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

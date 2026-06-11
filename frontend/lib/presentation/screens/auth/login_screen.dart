@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       if (mounted) context.go(AppRoutes.dashboard);
     } catch (e) {
-      final s = AppLocalizations.of(context)!;
+      final s = AppLocalizations.of(context);
       String msg = s.loginFailed;
       if (e is DioException) {
         final data = e.response?.data;
@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 40),
                     Text(
                       s.signIn,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
                     Text(
                       s.welcomeBack,
-                      style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                      style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
                     ),
                     const SizedBox(height: 32),
                     TextFormField(
@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: s.email,
-                        prefixIcon: Icon(Icons.email_outlined),
+                        prefixIcon: const Icon(Icons.email_outlined),
                       ),
                       validator: (v) =>
                           v == null || !v.contains('@') ? s.invalidEmail : null,
@@ -172,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onTap: () =>
                               setState(() => _rememberMe = !_rememberMe),
                           child: Text(
-                            AppLocalizations.of(context)!.rememberMe,
+                            AppLocalizations.of(context).rememberMe,
                             style: const TextStyle(fontSize: 13),
                           ),
                         ),
@@ -183,9 +183,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.error.withOpacity(0.08),
+                          color: AppTheme.error.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+                          border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
@@ -240,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(width: 12),
         Text(
           s.appName,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -259,18 +259,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showServerDialog() async {
     final ctrl = TextEditingController(text: ServerConfig.host);
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     await showInstantDialog(
       context,
       (ctx) => AlertDialog(
         title: Text(s.serverAddress,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(s.enterServerAddress,
-                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 10),
             TextField(
               controller: ctrl,
@@ -279,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 hintText: s.serverHint,
                 isDense: true,
-                prefixIcon: Icon(Icons.dns_outlined, size: 18),
+                prefixIcon: const Icon(Icons.dns_outlined, size: 18),
               ),
             ),
           ],

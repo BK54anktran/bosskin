@@ -40,7 +40,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       );
       if (mounted) context.go(AppRoutes.adminDashboard);
     } catch (e) {
-      setState(() => _errorMessage = AppLocalizations.of(context)!.loginFailed);
+      setState(() => _errorMessage = AppLocalizations.of(context).loginFailed);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -48,7 +48,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: SafeArea(
@@ -68,7 +68,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     const SizedBox(height: 12),
                     Text(
                       s.systemAdministrator,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF64748B),
@@ -78,7 +78,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     const SizedBox(height: 40),
                     Text(
                       s.adminLoginTitle,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -87,7 +87,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     const SizedBox(height: 8),
                     Text(
                       s.adminLoginSubtitle,
-                      style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
+                      style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
                     ),
                     const SizedBox(height: 32),
                     _DarkTextField(
@@ -123,9 +123,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.error.withOpacity(0.15),
+                          color: AppTheme.error.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.error.withOpacity(0.4)),
+                          border: Border.all(color: AppTheme.error.withValues(alpha: 0.4)),
                         ),
                         child: Row(
                           children: [
@@ -164,7 +164,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 ),
                               )
                             : Text(s.signIn,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.w600)),
                       ),
                     ),
@@ -174,7 +174,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         onPressed: () => context.go(AppRoutes.login),
                         child: Text(
                           s.backToCompanyLogin,
-                          style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
                         ),
                       ),
                     ),
@@ -205,7 +205,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         const SizedBox(width: 12),
         Text(
           s.appName,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -267,7 +267,7 @@ class _DarkTextField extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppTheme.error),
+          borderSide: const BorderSide(color: AppTheme.error),
         ),
       ),
     );

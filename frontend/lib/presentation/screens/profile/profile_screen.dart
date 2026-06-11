@@ -75,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _loading = false);
       return;
     }
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     setState(() { _loading = true; _error = null; });
     try {
       final p = await ProfileService.instance.getMyProfile();
@@ -131,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _adminSave() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       final updated = await ProfileService.instance.adminUpdateProfile(
@@ -155,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _submitRequest() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final hasChange = _hasProfileChanges();
 
     if (!hasChange) {
@@ -236,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _changePassword() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final current = _currentPasswordCtrl.text.trim();
     final next = _newPasswordCtrl.text.trim();
     final confirm = _confirmPasswordCtrl.text.trim();
@@ -281,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDob ?? DateTime(1990),
@@ -306,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildImpersonatePlaceholder(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final user = AuthService.instance.currentUser;
     return Center(
       child: Column(
@@ -330,7 +330,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildBody() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final p = _profile!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -665,7 +665,7 @@ class _GenderDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       borderRadius: BorderRadius.circular(12),
       decoration: InputDecoration(labelText: strings.gender),
       items: [

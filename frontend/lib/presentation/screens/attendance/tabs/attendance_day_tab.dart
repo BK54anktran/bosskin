@@ -20,7 +20,7 @@ import '../widgets/attendance_grid.dart';
 // ── Tab key ───────────────────────────────────────────────────────────────────
 
 class AttendanceDayTabKey extends GlobalKey<_AttendanceDayTabState> {
-  AttendanceDayTabKey() : super.constructor();
+  const AttendanceDayTabKey() : super.constructor();
   Future<void> exportExcel() => currentState?._exportExcel() ?? Future.value();
   Future<void> importExcel() => currentState?._importExcel() ?? Future.value();
 }
@@ -79,7 +79,9 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   void dispose() {
     _hScroll.dispose();
     _vScroll.dispose();
-    for (final c in _dayEditCtrls.values) c.dispose();
+    for (final c in _dayEditCtrls.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -109,7 +111,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   // ── Bulk actions ───────────────────────────────────────────────────────────
 
   Future<void> _dayBulkApprove() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ids = Set<int>.from(_selectedEmployeeIds);
     final slots = _pagedRows
         .where((r) => ids.contains(r.first.employeeId))
@@ -147,7 +149,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   Future<void> _dayBulkUnapprove() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ids = Set<int>.from(_selectedEmployeeIds);
     final slots = _pagedRows
         .where((r) => ids.contains(r.first.employeeId))
@@ -212,8 +214,11 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
 
   void _cancelDayEditSlot([String? slotKey]) {
     setState(() {
-      if (slotKey != null) _editingDaySlotKeys.remove(slotKey);
-      else _editingDaySlotKeys.clear();
+      if (slotKey != null) {
+        _editingDaySlotKeys.remove(slotKey);
+      } else {
+        _editingDaySlotKeys.clear();
+      }
     });
   }
 
@@ -243,7 +248,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   Future<void> _saveDayAllEditSlots() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final editingKeys = Set<String>.from(_editingDaySlotKeys);
     final slotMap = <String, DayViewRow>{};
     for (final row in _rows) {
@@ -268,7 +273,9 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       final on = onRaw.isEmpty ? null : parseAttendanceDuration(onRaw);
       if ((ciRaw.isNotEmpty && ci == null) || (coRaw.isNotEmpty && co == null) ||
           (brRaw.isNotEmpty && br == null) || (odRaw.isNotEmpty && od == null) ||
-          (onRaw.isNotEmpty && on == null)) continue;
+          (onRaw.isNotEmpty && on == null)) {
+        continue;
+      }
 
       String? norm(String? v) { final x = (v ?? '').trim(); return x.isEmpty ? null : parseAttendanceTime(x); }
       int? effBr(int m) => m > 0 ? m : null;
@@ -310,7 +317,9 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     final on = onRaw.isEmpty ? null : parseAttendanceDuration(onRaw);
     if ((ciRaw.isNotEmpty && ci == null) || (coRaw.isNotEmpty && co == null) ||
         (brRaw.isNotEmpty && br == null) || (odRaw.isNotEmpty && od == null) ||
-        (onRaw.isNotEmpty && on == null)) return;
+        (onRaw.isNotEmpty && on == null)) {
+      return;
+    }
 
     String? norm(String? v) { final s = (v ?? '').trim(); return s.isEmpty ? null : parseAttendanceTime(s); }
     int? effBr(int m) => m > 0 ? m : null;
@@ -328,8 +337,10 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
           breakMinutes: nextBr, otDayMinutes: nextOD, otNightMinutes: nextON, note: slot.overrideNote);
       await _loadRows();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
@@ -356,7 +367,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     final showActual = displayVal.isNotEmpty && displayVal != overrideVal;
     return Container(
       width: width, height: attDayRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -419,7 +430,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   Future<void> _importExcel() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final picked = await pickExcelFile();
     if (picked == null || !mounted) return;
     try {
@@ -456,13 +467,15 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
         await _loadRows();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _exportExcel() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_date);
       final result = await _repo.exportDayView(
@@ -470,11 +483,15 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
         departmentId: _filterDept,
       );
       await saveFileToDevice(result.bytes, result.filename);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(s.exportSuccess)));
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
@@ -558,7 +575,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -712,7 +729,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
               ? Center(child: Text(_error!, style: const TextStyle(color: AppTheme.error)))
               : _rows.isEmpty && !_loading
                   ? Center(child: Text(s.noAttendanceDataForThisDay,
-                        style: TextStyle(color: AppTheme.textSecondary)))
+                        style: const TextStyle(color: AppTheme.textSecondary)))
                   : _buildTable(),
         ),
       ],
@@ -722,7 +739,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   // ── Table ──────────────────────────────────────────────────────────────────
 
   Widget _buildTable() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return LayoutBuilder(builder: (context, constraints) {
       const checkW = 40.0;
       final isMobile = constraints.maxWidth < 600;
@@ -808,7 +825,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   // ── Pagination bar ─────────────────────────────────────────────────────────
 
   Widget _buildPaginationBar() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final total = _rows.length;
     final totalPages = _totalPages;
     final page = _page.clamp(0, totalPages - 1);
@@ -817,7 +834,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
 
     return Container(
       height: 40,
-      decoration: BoxDecoration(color: const Color(0xFFF5F5F5),
+      decoration: const BoxDecoration(color: Color(0xFFF5F5F5),
           border: Border(top: BorderSide(color: attGridLine))),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(children: [
@@ -872,7 +889,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     final cell = Container(
       width: width, height: height, alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLine, width: 0.8),
       )),
@@ -899,7 +916,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   Widget _dayCell({required double width, required Color bg, required Widget child}) {
     return Container(
       width: width, height: attDayRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -925,7 +942,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
 
   List<Widget> _daySlotCells(AttMergedDayViewRow row, DayViewRow? slot,
       {required int slotIndex, required List<double> cw, required Color bg}) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final colCount = attCols(s, dayNight: _dayNightMode, otEnabled: _otEnabled).length;
     if (slot == null) {
       return List.generate(colCount, (i) => _dayCell(width: cw[i], bg: bg, child: const SizedBox.shrink()));
@@ -1077,7 +1094,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     required String employeeName, required String departmentName,
     required List<DayViewLeaveInfo> leaves, required bool attendanceApproved,
   }) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final appliedIds = <int>{for (final l in leaves) if (l.leaveApplied == true) l.leaveRequestId};
     await showDialog<void>(
       context: context,
@@ -1107,8 +1124,11 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
                     }
                     final updated = await _setLeaveRequestApplied(l.leaveRequestId, value);
                     setDialogState(() {
-                      if (updated) appliedIds.add(l.leaveRequestId);
-                      else appliedIds.remove(l.leaveRequestId);
+                      if (updated) {
+                        appliedIds.add(l.leaveRequestId);
+                      } else {
+                        appliedIds.remove(l.leaveRequestId);
+                      }
                     });
                     return updated;
                   },
@@ -1146,7 +1166,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   Widget _daySlotActionCell(DayViewRow? slot, double width, Color bg) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (slot == null) return _dayCell(width: width, bg: bg, child: const SizedBox.shrink());
     if (slot.approved) {
       return _dayCell(width: width, bg: bg, child: Row(
@@ -1202,7 +1222,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       width: width, height: attDayRowHeight, alignment: Alignment.center,
       decoration: BoxDecoration(
           color: highlight ? AppTheme.warning.withValues(alpha: 0.08) : bg,
-          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
+          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
               right: BorderSide(color: attGridLineLight, width: 0.8))),
       child: Text(text, style: TextStyle(fontSize: 12,
           fontWeight: val > 0 ? FontWeight.w600 : FontWeight.normal,
@@ -1216,7 +1236,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   Widget _dayWorkStatusCell(DayViewRow slot, double width, Color bg) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final flags = slot.workFlags;
     if (flags.isEmpty) return _dayCell(width: width, bg: bg, child: const SizedBox.shrink());
     final chips = flags.map((f) {
@@ -1250,7 +1270,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     };
     final child = Container(
       width: width, height: attDayRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1264,7 +1284,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   Future<void> _approveAttendance(DayViewRow slot) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: Text(s.approve),
           content: Text('Phê duyệt chấm công ${slot.employeeFullName} ngày ${slot.date.day}/${slot.date.month}/${slot.date.year}?'),
@@ -1277,13 +1297,15 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
           employeeId: slot.employeeId, date: slot.date, shiftAssignmentId: slot.shiftAssignmentId);
       await _loadRows();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _unapproveAttendance(DayViewRow slot) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: const Text('Bỏ phê duyệt'),
           content: Text('Bỏ phê duyệt chấm công ${slot.employeeFullName} ngày ${slot.date.day}/${slot.date.month}/${slot.date.year}? Dữ liệu sẽ được tính toán lại.'),
@@ -1296,13 +1318,15 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       await _repo.unapproveAttendance(slot.attendanceId!);
       await _loadRows();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _confirmDelete(DayViewRow row) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: Text(s.delete),
           content: Text('${s.delete} ${row.employeeFullName} ${row.date.day}/${row.date.month}/${row.date.year}?'),
@@ -1315,8 +1339,10 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       await _repo.deleteAttendance(row.attendanceId!);
       await _loadRows();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 

@@ -150,9 +150,11 @@ class _ShiftScreenState extends State<ShiftScreen>
       final filename = match?.group(1) ?? 'danh_sach_ca_lam.xlsx';
       await saveFileToDevice(Uint8List.fromList(res.data!), filename);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+      }
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -170,9 +172,11 @@ class _ShiftScreenState extends State<ShiftScreen>
       final filename = match?.group(1) ?? 'danh_sach_ca.xlsx';
       await saveFileToDevice(Uint8List.fromList(res.data!), filename);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+      }
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -220,14 +224,16 @@ class _ShiftScreenState extends State<ShiftScreen>
 
       if (confirmed == true && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.importSuccess)),
+          SnackBar(content: Text(AppLocalizations.of(context).importSuccess)),
         );
         _loadShifts();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+      }
     } finally {
       if (mounted) setState(() => _importing = false);
     }
@@ -283,15 +289,17 @@ class _ShiftScreenState extends State<ShiftScreen>
 
       if (confirmed == true && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.importSuccess)),
+          SnackBar(content: Text(AppLocalizations.of(context).importSuccess)),
         );
         _loadShifts();
         _assignTabKey.reload();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+      }
     } finally {
       if (mounted) setState(() => _importing = false);
     }
@@ -300,7 +308,7 @@ class _ShiftScreenState extends State<ShiftScreen>
   Future<void> _openForm([WorkShift? shift]) async {
     final groups = _shifts
         .map((s) => s.groupName?.trim())
-        .where((g) => g != null && g!.isNotEmpty)
+        .where((g) => g != null && g.isNotEmpty)
         .cast<String>()
         .toSet()
         .toList()
@@ -313,7 +321,7 @@ class _ShiftScreenState extends State<ShiftScreen>
   }
 
   Future<void> _deleteShift(WorkShift shift) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showInstantDialog<bool>(
       context,
       (ctx) => AlertDialog(
@@ -348,7 +356,7 @@ class _ShiftScreenState extends State<ShiftScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final canView = AuthService.instance.currentUser?.can('SHIFT_VIEW') ?? false;
     final canManage = AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false;
     return Column(
@@ -517,7 +525,7 @@ class _ShiftListTabState extends State<_ShiftListTab> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (widget.loading) return const Center(child: CircularProgressIndicator());
     if (widget.error != null) {
       return Center(
@@ -567,7 +575,7 @@ class _ShiftListTabState extends State<_ShiftListTab> {
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
                   child: Text(item.label,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textSecondary,
@@ -625,7 +633,7 @@ class _ShiftCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final color = _parseColor(shift.color);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),

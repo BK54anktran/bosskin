@@ -100,7 +100,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     // Hiện dialog chọn tháng/năm
     int tempYear  = _selectedYear;
     int tempMonth = _selectedMonth;
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
 
     await showInstantDialog(context, (ctx) => StatefulBuilder(
       builder: (ctx, setS) => AlertDialog(
@@ -198,7 +198,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 
   void _showCreateCompanyDialog() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final formKey = GlobalKey<FormState>();
     final nameCtrl = TextEditingController();
     final codeCtrl = TextEditingController();
@@ -312,7 +312,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
-        final s = AppLocalizations.of(context)!;
+        final s = AppLocalizations.of(context);
         String msg = s.companyLoginError;
         if (e is DioException && e.response?.data != null) {
           final serverKey = e.response?.data['message'] as String?;
@@ -333,15 +333,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       await _dio.patch('/companies/$id/toggle-active');
       if (mounted) { _loadCompanies(); _loadStats(); }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e))));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -398,7 +400,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   // ── Overview Tab ──────────────────────────────────────────────────────────
 
   Widget _buildOverviewTab() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (_statsLoading) return const Center(child: CircularProgressIndicator());
     if (_statsError != null) {
       return Center(child: Column(
@@ -493,12 +495,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0,2))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0,2))],
         ),
         child: Row(children: [
           Container(
             width: 44, height: 44,
-            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
@@ -516,7 +518,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 
   Widget _buildGrowthChart(List growthData) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final bars = growthData.asMap().entries.map((e) {
       final d = e.value as Map<String, dynamic>;
       final count = (d['count'] as int?) ?? 0;
@@ -738,7 +740,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   // ── Companies Tab ─────────────────────────────────────────────────────────
 
   Widget _buildCompaniesTab() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(children: [
       // Header
       Container(
@@ -773,7 +775,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 
   Widget _buildCompanyGrid() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (_companiesLoading) return const Center(child: CircularProgressIndicator());
     if (_companiesError != null) {
       return Center(child: Column(
@@ -847,7 +849,7 @@ class _CompanyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isActive = company['active'] as bool? ?? true;
     final empCount = company['employeeCount'] as int? ?? 0;
     return Card(
@@ -863,7 +865,7 @@ class _CompanyCard extends StatelessWidget {
             Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
-                color: isActive ? AppTheme.primary.withOpacity(0.1) : const Color(0xFFFEF2F2),
+                color: isActive ? AppTheme.primary.withValues(alpha: 0.1) : const Color(0xFFFEF2F2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(Icons.business, color: isActive ? AppTheme.primary : AppTheme.error, size: 22),
@@ -919,7 +921,7 @@ class _CompanyCard extends StatelessWidget {
                   onPressed: () => onToggleActive(company['id'] as int, isActive),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 7),
-                    side: BorderSide(color: isActive ? AppTheme.error.withOpacity(0.5) : AppTheme.success.withOpacity(0.5)),
+                    side: BorderSide(color: isActive ? AppTheme.error.withValues(alpha: 0.5) : AppTheme.success.withValues(alpha: 0.5)),
                     foregroundColor: isActive ? AppTheme.error : AppTheme.success,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -940,7 +942,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(

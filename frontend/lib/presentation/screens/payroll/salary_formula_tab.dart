@@ -102,7 +102,7 @@ class _SalaryFormulaTabState extends State<SalaryFormulaTab> {
   }
 
   Future<void> _delete(SalaryFormula f) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -132,7 +132,7 @@ class _SalaryFormulaTabState extends State<SalaryFormulaTab> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final filtered = _filtered;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -397,12 +397,18 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
     }
 
     _grossFocus.addListener(() {
-      if (!_grossFocus.hasFocus) _grossLastSel = _grossCtrl.selection;
-      else setState(() => _netActive = false);
+      if (!_grossFocus.hasFocus) {
+        _grossLastSel = _grossCtrl.selection;
+      } else {
+        setState(() => _netActive = false);
+      }
     });
     _netFocus.addListener(() {
-      if (!_netFocus.hasFocus) _netLastSel = _netCtrl.selection;
-      else setState(() => _netActive = true);
+      if (!_netFocus.hasFocus) {
+        _netLastSel = _netCtrl.selection;
+      } else {
+        setState(() => _netActive = true);
+      }
     });
   }
 
@@ -420,12 +426,14 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
         _varRepo.getAll(),
         _varRepo.getAllVariables(),
       ]);
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _globalVars = results[0] as List<FormulaVariable>;
         _systemVars = (results[1] as List<AllVariable>)
             .where((v) => v.scope == VariableScope.system)
             .toList();
       });
+      }
     } catch (_) {}
   }
 
@@ -466,9 +474,11 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
         await _varRepo.delete(existing!.id);
         _loadCustomVars();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
         );
+        }
       }
     } else {
       _loadCustomVars();
@@ -511,13 +521,15 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
         incomeVars: _incomeVars,
         allowanceVars: _allowanceVars,
       );
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _errPrivate = result.errorsPrivate;
         _errDeduction = result.errorsDeduction;
         _errGross = result.errorsGross;
         _errNet = result.errorsNet;
         _validated = result.valid;
       });
+      }
     } catch (e) {
       if (mounted) setState(() => _error = serverMsg(e));
     } finally {
@@ -598,7 +610,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isEdit = widget.existing != null;
     final screenH = MediaQuery.of(context).size.height;
     return Dialog(
@@ -656,7 +668,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                       // Grade picker — ẩn khi inline mode
                       if (widget.onSave == null && !isEdit) ...[
                         DropdownButtonFormField<SalaryGrade>(
-                          value: _selectedGrade,
+                          initialValue: _selectedGrade,
                           isExpanded: true,
                           decoration: InputDecoration(labelText: s.salaryGrade),
                           items: widget.grades.map((g) => DropdownMenuItem(
@@ -720,8 +732,8 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             // ── Biến Global (company-wide) ──────────────────
                             Row(
                               children: [
-                                Text('Biến Global (toàn công ty)',
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                                const Text('Biến Global (toàn công ty)',
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () => _openCustomVarDialog(),
@@ -771,8 +783,8 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             // ── Biến Private (chỉ trong công thức này) ──────
                             Row(
                               children: [
-                                Text('Biến Private (công thức này)',
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                                const Text('Biến Private (công thức này)',
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () => _openPrivateVarDialog(),
@@ -789,8 +801,8 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                               ),
                             const SizedBox(height: 4),
                             if (_privateVars.isEmpty)
-                              Text('Chưa có biến private',
-                                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary,
+                              const Text('Chưa có biến private',
+                                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary,
                                       fontStyle: FontStyle.italic))
                             else
                               Wrap(
@@ -1031,7 +1043,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
         Text(subtitle, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
         const SizedBox(height: 4),
         if (vars.isEmpty)
-          Text('Chưa có mục nào', style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic))
+          const Text('Chưa có mục nào', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic))
         else
           ReorderableListView(
             shrinkWrap: true,
@@ -1204,7 +1216,8 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
         widget.repo.getAll(),
         widget.repo.getAllVariables(),
       ]);
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _globalVars = (results[0] as List<FormulaVariable>)
             .where((v) => v.name != widget.existing?.name)
             .toList();
@@ -1212,6 +1225,7 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
             .where((v) => v.scope == VariableScope.system)
             .toList();
       });
+      }
     } catch (_) {}
   }
 
@@ -1351,9 +1365,9 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
                 ),
               ),
             if (_validated && _errors.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Row(children: const [
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Row(children: [
                   Icon(Icons.check_circle, color: AppTheme.secondary, size: 16),
                   SizedBox(width: 6),
                   Text('Biểu thức hợp lệ',
@@ -1587,7 +1601,7 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
                     ],
                   ),
                 );
-                if (ok == true && context.mounted) Navigator.pop(context, MapEntry('__delete__', const DeductionVarEntry(label: '', expression: '')));
+                if (ok == true && context.mounted) Navigator.pop(context, const MapEntry('__delete__', DeductionVarEntry(label: '', expression: '')));
               },
               icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.error),
               label: const Text('Xoá', style: TextStyle(color: AppTheme.error)),

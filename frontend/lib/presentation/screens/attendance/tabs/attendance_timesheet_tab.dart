@@ -22,7 +22,7 @@ import '../widgets/attendance_grid.dart';
 // ── Tab key ───────────────────────────────────────────────────────────────────
 
 class AttendanceTimesheetTabKey extends GlobalKey<_AttendanceTimesheetTabState> {
-  AttendanceTimesheetTabKey() : super.constructor();
+  const AttendanceTimesheetTabKey() : super.constructor();
   Future<void> exportExcel() => currentState?._exportExcel() ?? Future.value();
   Future<void> importExcel() => currentState?._importExcel() ?? Future.value();
 }
@@ -84,7 +84,9 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   void dispose() {
     _hScroll.dispose();
     _vScroll.dispose();
-    for (final c in _editCtrls.values) c.dispose();
+    for (final c in _editCtrls.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -183,7 +185,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   // ── Bulk actions ───────────────────────────────────────────────────────────
 
   Future<void> _bulkApprove() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final keys = Set<String>.from(_selectedDates);
     final rows = _mergedRows.where((r) => keys.contains(_dateKey(r.first.date))).toList();
     final unapprovedRows = rows.expand((r) => r.rows).where((r) => !r.approved).toList();
@@ -218,7 +220,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   }
 
   Future<void> _bulkUnapprove() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final keys = Set<String>.from(_selectedDates);
     final rows = _mergedRows.where((r) => keys.contains(_dateKey(r.first.date))).toList();
     final approvedRows = rows.expand((r) => r.rows)
@@ -302,8 +304,11 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
 
   void _cancelEditRow([String? dateKey]) {
     setState(() {
-      if (dateKey != null) _editingRows.remove(dateKey);
-      else _editingRows.clear();
+      if (dateKey != null) {
+        _editingRows.remove(dateKey);
+      } else {
+        _editingRows.clear();
+      }
     });
   }
 
@@ -322,7 +327,9 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final on = onRaw.isEmpty ? null : parseAttendanceDuration(onRaw);
     if ((ciRaw.isNotEmpty && ci == null) || (coRaw.isNotEmpty && co == null) ||
         (brRaw.isNotEmpty && br == null) || (odRaw.isNotEmpty && od == null) ||
-        (onRaw.isNotEmpty && on == null)) return null;
+        (onRaw.isNotEmpty && on == null)) {
+      return null;
+    }
 
     String? norm(String? v) { final s = (v ?? '').trim(); return s.isEmpty ? null : parseAttendanceTime(s); }
     int? effBr(int m) => m > 0 ? m : null;
@@ -354,13 +361,15 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
           otNightMinutes: payload.otNightMinutes, note: row.overrideNote);
       await _loadTimesheet();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _saveAllEditRows() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final editingKeys = Set<String>.from(_editingRows);
     final rowMap = <String, TimesheetRow>{};
     for (final r in _mergedRows.expand((m) => m.rows)) {
@@ -481,7 +490,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       case AttViewRangeMode.payroll:
         break;
     }
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final now = DateTime.now();
     final picked = await showDialog<DateTime>(
       context: context,
@@ -499,7 +508,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   DropdownButtonFormField<int>(
-                    value: selectedYear,
+                    initialValue: selectedYear,
                     isExpanded: true,
                     decoration: InputDecoration(
                         labelText: s.year, floatingLabelBehavior: FloatingLabelBehavior.always),
@@ -543,7 +552,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
 
   Future<void> _exportExcel() async {
     if (_selected == null) return;
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     try {
       final range = _currentRange;
       final fmt = DateFormat('yyyy-MM-dd');
@@ -553,16 +562,20 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         to: fmt.format(range.end),
       );
       await saveFileToDevice(result.bytes, result.filename);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(s.exportSuccess)));
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _importExcel() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final picked = await pickExcelFile();
     if (picked == null || !mounted) return;
     try {
@@ -599,8 +612,10 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         await _loadTimesheet();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
@@ -660,7 +675,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -712,7 +727,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
             SizedBox(
               width: 320, height: 56,
               child: DropdownButtonFormField<int?>(
-                value: _selected?.id,
+                initialValue: _selected?.id,
                 borderRadius: BorderRadius.circular(8),
                 isExpanded: true,
                 decoration: InputDecoration(
@@ -833,7 +848,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                 FilledButton.icon(
                   onPressed: _saveAllEditRows,
                   icon: const Icon(Icons.check, size: 16),
-                  label: Text(AppLocalizations.of(context)!.save),
+                  label: Text(AppLocalizations.of(context).save),
                   style: FilledButton.styleFrom(backgroundColor: AppTheme.secondary,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       textStyle: const TextStyle(fontSize: 12)),
@@ -842,7 +857,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                 OutlinedButton.icon(
                   onPressed: () => _cancelEditRow(),
                   icon: const Icon(Icons.close, size: 16),
-                  label: Text(AppLocalizations.of(context)!.cancel),
+                  label: Text(AppLocalizations.of(context).cancel),
                   style: OutlinedButton.styleFrom(foregroundColor: AppTheme.error,
                       side: const BorderSide(color: AppTheme.error),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -860,7 +875,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   // ── Table ──────────────────────────────────────────────────────────────────
 
   Widget _buildTable() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (_error != null) {
       return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
         Text(_error!, style: const TextStyle(color: AppTheme.error)),
@@ -954,7 +969,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         : isToday ? const Color(0xFFE3F2FD) : Colors.white;
     final cell = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: color, border: Border(
+      decoration: BoxDecoration(color: color, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLine, width: 0.8),
       )),
@@ -978,7 +993,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         : isToday ? const Color(0xFFE3F2FD) : Colors.white;
     final cell = Container(
       width: width, height: height, alignment: Alignment.center,
-      decoration: BoxDecoration(color: color, border: Border(
+      decoration: BoxDecoration(color: color, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLine, width: 0.8),
       )),
@@ -1005,7 +1020,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final showActual = displayVal.isNotEmpty && displayVal != overrideVal;
     return Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1037,7 +1052,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   }
 
   List<Widget> _dataCells(TimesheetRow row, List<double> cw, {bool selected = false}) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isToday = row.date.year == DateTime.now().year &&
         row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
     final bg = selected ? AppTheme.primary.withValues(alpha: 0.08)
@@ -1127,11 +1142,11 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final isLeave = row.leaveCode != null;
     final leaveNotApplied = isLeave && row.leaveApplied == false;
     final effectiveBg = (row.leaveMode == 'DAY_RANGE') && isLeave ? const Color(0xFFE8F5E9) : bg;
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final child = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(color: effectiveBg, border: Border(
+      decoration: BoxDecoration(color: effectiveBg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1178,7 +1193,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     return Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1209,7 +1224,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       width: width, height: attRowHeight, alignment: Alignment.center,
       decoration: BoxDecoration(
           color: highlight ? AppTheme.warning.withValues(alpha: 0.08) : bg,
-          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
+          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
               right: BorderSide(color: attGridLineLight, width: 0.8))),
       child: Text(text, style: TextStyle(fontSize: 12,
           fontWeight: val > 0 ? FontWeight.w600 : FontWeight.normal,
@@ -1230,7 +1245,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     };
     final child = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: Border(
+      decoration: BoxDecoration(color: bg, border: const Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1244,12 +1259,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   }
 
   Widget _workStatusCell(TimesheetRow row, double width, Color bg) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final flags = row.workFlags;
     if (flags.isEmpty) {
       return Container(width: width, height: attRowHeight,
           decoration: BoxDecoration(color: bg,
-              border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))));
+              border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))));
     }
     final chips = flags.map((f) {
       final (label, color) = switch (f) {
@@ -1270,19 +1285,19 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       width: width, height: attRowHeight, alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(color: bg,
-          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
+          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
       child: SingleChildScrollView(scrollDirection: Axis.horizontal,
           child: Row(mainAxisSize: MainAxisSize.min, children: chips)),
     );
   }
 
   Widget _actionCell(TimesheetRow row, double width, Color bg) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Container(
       width: width, height: attRowHeight, alignment: Alignment.centerLeft,
       padding: const EdgeInsets.only(left: 8),
       decoration: BoxDecoration(color: bg,
-          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
+          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         if (row.approved) ...[
           Tooltip(
@@ -1330,7 +1345,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   }
 
   Future<void> _approveRow(TimesheetRow row) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: Text(s.approve),
           content: Text('${s.approve} ${row.date.day}/${row.date.month}/${row.date.year}?'),
@@ -1343,13 +1358,15 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
           employeeId: _selected!.id, date: row.date, shiftAssignmentId: row.shiftAssignmentId);
       await _loadTimesheet();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _unapproveRow(TimesheetRow row) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: Text(s.unapprove),
           content: Text('${s.unapprove} ${row.date.day}/${row.date.month}/${row.date.year}?'),
@@ -1362,13 +1379,15 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       await _repo.unapproveAttendance(row.attendanceId!);
       await _loadTimesheet();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   Future<void> _deleteRow(TimesheetRow row) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: Text(s.delete),
           content: Text('${s.delete} ${row.date.day}/${row.date.month}/${row.date.year}?'),
@@ -1381,8 +1400,10 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       await _repo.deleteAttendance(row.attendanceId!);
       await _loadTimesheet();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
@@ -1448,7 +1469,7 @@ class _AttSmallDateRangeDialogState extends State<_AttSmallDateRangeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final fmt = DateFormat('dd/MM/yyyy');
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

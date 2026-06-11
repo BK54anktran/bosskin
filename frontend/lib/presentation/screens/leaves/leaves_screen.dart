@@ -166,7 +166,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _openCreateRequest() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final canPickEmployee = _canCreateForOthers;
     final employees = canPickEmployee
         ? (await _empRepo.getAll(page: 0, size: 500, departmentId: _filterDeptId)).items
@@ -189,7 +189,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _openManualGrant() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final employees =
         (await _empRepo.getAll(page: 0, size: 500, departmentId: _filterDeptId)).items;
     if (!mounted) return;
@@ -206,14 +206,14 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _approve(Map<String, dynamic> req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     await _run(() async {
       await _repo.approveRequest(req['id'] as int);
     }, okMsg: s.leaveRequestApproved);
   }
 
   Future<void> _cancel(Map<String, dynamic> req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -236,7 +236,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _reject(Map<String, dynamic> req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ctrl = TextEditingController();
     final note = await showDialog<String>(
       context: context,
@@ -264,7 +264,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _openTypeDialog([Map<String, dynamic>? item]) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final res = await showDialog<bool>(
       context: context,
       builder: (_) => _LeaveTypeDialog(initial: item),
@@ -282,7 +282,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _openRuleDialog([Map<String, dynamic>? item]) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final res = await showDialog<bool>(
       context: context,
       builder: (_) => _AccrualRuleDialog(
@@ -303,7 +303,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _deleteType(Map<String, dynamic> item) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -328,7 +328,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Future<void> _deleteRule(Map<String, dynamic> item) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -354,7 +354,7 @@ class _LeavesScreenState extends State<LeavesScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -435,7 +435,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Widget _buildRequestsTab() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final myEmpId = AuthService.instance.currentUser?.employeeId;
     final statusLabels = {
       null: s.all,
@@ -665,7 +665,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Widget _buildBalanceTab() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.only(top: 12),
       children: [
@@ -809,7 +809,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Widget _buildTypesTab() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.only(top: 12),
       children: [
@@ -922,7 +922,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   Widget _buildRulesTab() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.only(top: 12),
       children: [
@@ -1085,7 +1085,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   }
 
   String _d(dynamic v) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (v == null) return l10n.leaveUnlimited;
     final text = v.toString();
     if (text.isEmpty) return l10n.leaveUnlimited;
@@ -1143,7 +1143,7 @@ class _CreateLeaveRequestDialogState extends State<_CreateLeaveRequestDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(s.leaveCreateRequest),
       content: SizedBox(
@@ -1156,7 +1156,7 @@ class _CreateLeaveRequestDialogState extends State<_CreateLeaveRequestDialog> {
               children: [
                 if (widget.canPickEmployee) ...[
                   DropdownButtonFormField<int>(
-                    value: _employeeId,
+                    initialValue: _employeeId,
                     isExpanded: true,
                     items: widget.employees
                         .map((e) => DropdownMenuItem<int>(
@@ -1172,7 +1172,7 @@ class _CreateLeaveRequestDialogState extends State<_CreateLeaveRequestDialog> {
                   const SizedBox(height: 8),
                 ],
                 DropdownButtonFormField<int>(
-                  value: _typeId,
+                  initialValue: _typeId,
                   isExpanded: true,
                   items: widget.types
                       .map((t) => DropdownMenuItem<int>(
@@ -1318,7 +1318,7 @@ class _ManualGrantDialogState extends State<_ManualGrantDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(s.leaveManualGrant),
       content: SizedBox(
@@ -1329,7 +1329,7 @@ class _ManualGrantDialogState extends State<_ManualGrantDialog> {
             child: Column(
               children: [
                 DropdownButtonFormField<int>(
-                  value: _employeeId,
+                  initialValue: _employeeId,
                   isExpanded: true,
                   items: widget.employees
                       .map((e) => DropdownMenuItem<int>(
@@ -1497,7 +1497,7 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(widget.initial == null ? s.leaveAddType : s.leaveEditType),
       content: SizedBox(
@@ -1520,7 +1520,7 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
                       (v ?? '').trim().isEmpty ? s.requiredField : null),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _unit,
+                initialValue: _unit,
                 items: const [
                   DropdownMenuItem(value: 'DAY', child: Text('DAY')),
                   DropdownMenuItem(value: 'HOUR', child: Text('HOUR')),
@@ -1644,7 +1644,7 @@ class _AccrualRuleDialogState extends State<_AccrualRuleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(widget.initial == null ? s.leaveAddRule : s.leaveEditRule),
       content: SizedBox(
@@ -1703,7 +1703,7 @@ class _AccrualRuleDialogState extends State<_AccrualRuleDialog> {
                 ]),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _freq,
+                  initialValue: _freq,
                   items: const [
                     DropdownMenuItem(value: 'MONTHLY', child: Text('MONTHLY')),
                     DropdownMenuItem(value: 'YEARLY', child: Text('YEARLY')),
@@ -1957,7 +1957,7 @@ class _EmployeeGrantHistoryDialogState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final screenW = MediaQuery.of(context).size.width;
     final isMobile = screenW < 600;
 
@@ -2028,7 +2028,7 @@ class _EmployeeGrantHistoryDialogState
   }
 
   Widget _buildDesktopTable(ColorScheme colorScheme) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final zebraColor = colorScheme.surfaceContainerHighest.withValues(alpha: 0.35);
     const colWidths = [90.0, 120.0, 110.0, 110.0, 110.0, 170.0];
     const headers = ['Cấp ngày', 'Nguồn', 'Cấp', 'Đã dùng', 'Còn lại', 'Hiệu lực'];
@@ -2152,7 +2152,7 @@ class _EmployeeGrantHistoryDialogState
   }
 
   Widget _buildMobileList(ColorScheme colorScheme) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: _grants.length,

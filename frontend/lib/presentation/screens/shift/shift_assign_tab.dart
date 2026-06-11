@@ -372,7 +372,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(_serverMsg(e, AppLocalizations.of(context)!)),
+            content: Text(_serverMsg(e, AppLocalizations.of(context))),
             backgroundColor: AppTheme.error));
       }
     }
@@ -411,7 +411,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
   }
 
   Future<void> _deleteById(int id, {bool hasAttendance = false, bool approved = false}) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (approved) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(s.shiftAssignmentApprovedCannotDelete),
@@ -444,7 +444,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_serverMsg(e, AppLocalizations.of(context)!)),
+            content: Text(_serverMsg(e, AppLocalizations.of(context))),
             backgroundColor: Colors.red,
           ),
         );
@@ -511,7 +511,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
       final start = a.customStartTime ?? '?';
       final end = a.customEndTime ?? '?';
       final brk = (a.customBreakStart != null && a.customBreakEnd != null)
-          ? '\n${AppLocalizations.of(context)!.breakTime}: ${a.customBreakStart} – ${a.customBreakEnd}'
+          ? '\n${AppLocalizations.of(context).breakTime}: ${a.customBreakStart} – ${a.customBreakEnd}'
           : '';
       tooltipText = '$start – $end$brk';
     } else {
@@ -698,7 +698,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
   }
 
   Widget _buildGrid(List<DateTime> periodDays, List<Employee> emps, bool canManage) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final assignMap = <String, List<ShiftAssignment>>{};
     for (final a in _assignments) {
       assignMap.putIfAbsent('${a.employeeId}_${a.workDate}', () => []).add(a);
@@ -734,7 +734,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
               alignment: Alignment.centerLeft,
               padding: const EdgeInsets.only(left: 8),
               child: Text(s.employeeShort,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textSecondary))),
@@ -983,7 +983,7 @@ class _MonthNav extends StatelessWidget {
   final bool panelOpen;
   final VoidCallback onPrev, onNext, onPick, onTogglePanel;
   final ValueChanged<_ViewRangeMode> onModeChanged;
-  _MonthNav({
+  const _MonthNav({
     required this.label,
     required this.mode,
     required this.loading,
@@ -1109,7 +1109,7 @@ class _QuickFillPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Container(
       width: 200,
       decoration: const BoxDecoration(
@@ -1321,7 +1321,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     const monthLabels = [
       'T1',
       'T2',
@@ -1355,7 +1355,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
-                value: _year,
+                initialValue: _year,
                 decoration: InputDecoration(
                   labelText: s.year,
                   border: const OutlineInputBorder(),
@@ -1480,7 +1480,7 @@ class _SmallDateRangeDialogState extends State<_SmallDateRangeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final fmt = DateFormat('dd/MM/yyyy');
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -1703,7 +1703,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final dateStr = DateFormat('dd/MM/yyyy').format(widget.date);
     final dowStr = [
       s.monday,

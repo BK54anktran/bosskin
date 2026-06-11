@@ -106,7 +106,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   Future<void> _exportPayslips({List<int>? ids}) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     setState(() => _exportingPayslips = true);
     try {
       final result = await _repo.exportPayslips(
@@ -129,7 +129,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   Future<void> _approve(Payroll p) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await _confirm(s.payrollConfirmApprove);
     if (!ok) return;
     try {
@@ -142,7 +142,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   Future<void> _pay(Payroll p) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await _confirm(s.payrollConfirmPay);
     if (!ok) return;
     try {
@@ -155,7 +155,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   Future<void> _delete(Payroll p) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -182,7 +182,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   Future<void> _recalculate(Payroll p) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     int? formulaId;
     CustomFormulaSnapshot? customFormula;
 
@@ -234,17 +234,18 @@ class _PayrollScreenState extends State<PayrollScreen> {
       }
       setState(() =>
           _items = _items.map((e) => e.id == p.id ? updated : e).toList());
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(s.payrollRecalculateDone)),
         );
+      }
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
     }
   }
 
   Future<bool> _confirm(String msg) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -335,7 +336,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final filtered = _filtered;
     final paged = _paged;
     return Column(
@@ -480,13 +481,13 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     final monthField = SizedBox(
       width: 130,
       child: DropdownButtonFormField<int>(
-        value: month,
+        initialValue: month,
         decoration: InputDecoration(labelText: s.month, isDense: true),
         items: List.generate(
             12,
@@ -512,7 +513,7 @@ class _FilterBar extends StatelessWidget {
     final statusField = SizedBox(
       width: 140,
       child: DropdownButtonFormField<String?>(
-        value: status,
+        initialValue: status,
         isExpanded: true,
         decoration: InputDecoration(labelText: s.status, isDense: true),
         items: [
@@ -668,7 +669,7 @@ class _PayrollCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final p = payroll;
     return Card(
       margin: EdgeInsets.zero,
@@ -823,7 +824,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final (label, color) = switch (status) {
       PayrollStatus.approved => (s.payrollStatusApproved, AppTheme.primary),
       PayrollStatus.paid => (s.payrollStatusPaid, AppTheme.secondary),
@@ -880,7 +881,7 @@ class _PickFormulaDialogState extends State<_PickFormulaDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(s.payrollPickFormulaTitle),
       content: SizedBox(
@@ -1015,9 +1016,10 @@ class _GenerateDialogState extends State<_GenerateDialog> {
       final res = await widget.empRepo.getAll(search: q, size: 10);
       // Lọc bỏ nhân viên đã chọn
       final existing = _entries.map((e) => e.employee.id).toSet();
-      if (mounted)
+      if (mounted) {
         setState(() => _suggestions =
             res.items.where((e) => !existing.contains(e.id)).toList());
+      }
     } finally {
       if (mounted) setState(() => _searching = false);
     }
@@ -1094,7 +1096,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(s.payrollGenerate),
       content: SizedBox(
@@ -1114,7 +1116,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<int>(
-                    value: _month,
+                    initialValue: _month,
                     decoration:
                         InputDecoration(labelText: s.month, isDense: true),
                     items: List.generate(
@@ -1229,13 +1231,13 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                             Expanded(
                               flex: 2,
                               child: DropdownButtonFormField<SalaryFormula>(
-                                value: entry.selectedFormula,
+                                initialValue: entry.selectedFormula,
                                 isDense: true,
                                 isExpanded: true,
                                 decoration: InputDecoration(
                                   labelText: s.salaryFormula,
                                   isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 6),
                                 ),
                                 items: entry.formulas
@@ -1347,17 +1349,18 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
       );
       if (mounted) Navigator.pop(context, updated);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _saving = false;
           _error = serverMsg(e);
         });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(s.payrollEdit),
       content: SizedBox(
@@ -1435,7 +1438,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
   bool _recalculating = false;
 
   Future<void> _recalculate() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final p = widget.payroll;
     int? formulaId;
     CustomFormulaSnapshot? customFormula;
@@ -1466,8 +1469,11 @@ class _PayslipDialogState extends State<_PayslipDialog> {
         );
         if (!mounted) return;
         if (result == null) return;
-        if (result.isCustom) customFormula = p.customFormula;
-        else formulaId = result.formula?.id;
+        if (result.isCustom) {
+          customFormula = p.customFormula;
+        } else {
+          formulaId = result.formula?.id;
+        }
       }
     }
 
@@ -1484,15 +1490,17 @@ class _PayslipDialogState extends State<_PayslipDialog> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     } finally {
       if (mounted) setState(() => _recalculating = false);
     }
   }
 
   Future<void> _exportThis() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     setState(() => _exporting = true);
     try {
       final p = widget.payroll;
@@ -1521,7 +1529,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final p = widget.payroll;
     final totalDed =
         p.customDeductions.values.fold(0.0, (s, e) => s + e.amount) +

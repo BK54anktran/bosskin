@@ -31,7 +31,7 @@ class _PayrollTabScreenState extends State<PayrollTabScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       children: [
         Material(

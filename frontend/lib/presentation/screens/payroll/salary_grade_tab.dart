@@ -78,7 +78,7 @@ class _SalaryGradeTabState extends State<SalaryGradeTab> {
   }
 
   Future<void> _delete(SalaryGrade g) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -108,7 +108,7 @@ class _SalaryGradeTabState extends State<SalaryGradeTab> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -359,7 +359,7 @@ class _SalaryGradeDialogState extends State<_SalaryGradeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isEdit = widget.existing != null;
     return AlertDialog(
       title: Text(isEdit ? s.salaryGradeEdit : s.salaryGradeAdd),

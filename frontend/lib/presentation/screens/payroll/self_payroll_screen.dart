@@ -50,7 +50,7 @@ class _SelfPayrollScreenState extends State<SelfPayrollScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (AuthService.instance.isImpersonating) {
       return Center(
         child: Column(
@@ -121,7 +121,7 @@ class _SelfPayrollCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final p = payroll;
     final monthNames = ['', 'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
       'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9',
@@ -159,7 +159,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final (label, color) = switch (status) {
       PayrollStatus.approved => (s.payrollStatusApproved, AppTheme.primary),
       PayrollStatus.paid     => (s.payrollStatusPaid, AppTheme.secondary),
@@ -183,7 +183,7 @@ class _SelfPayslipDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final p = payroll;
     final totalDed = p.customDeductions.values.fold(0.0, (s, e) => s + e.amount)
         + p.otherDeductions;
@@ -222,13 +222,13 @@ class _SelfPayslipDialog extends StatelessWidget {
               const SizedBox(height: 4),
               // ── Thu nhập (chỉ hiện nếu có) ──
               if (p.incomeEntries.isNotEmpty) ...[
-                _SectionHeader('Thu nhập', AppTheme.primary),
+                const _SectionHeader('Thu nhập', AppTheme.primary),
                 ...(p.incomeEntries.values.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder))).map((e) => _Row(e.label, _fmt2(e.amount))),
                 const SizedBox(height: 4),
               ],
               // ── Trợ cấp (chỉ hiện nếu có) ──
               if (p.allowanceEntries.isNotEmpty) ...[
-                _SectionHeader('Trợ cấp', const Color(0xFF9C27B0)),
+                const _SectionHeader('Trợ cấp', Color(0xFF9C27B0)),
                 ...(p.allowanceEntries.values.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder))).map((e) => _Row(e.label, _fmt2(e.amount))),
                 const SizedBox(height: 4),
               ],
@@ -239,7 +239,7 @@ class _SelfPayslipDialog extends StatelessWidget {
               _Row(s.grossSalary, _fmt2(p.grossSalary), bold: true, color: AppTheme.primary),
               const SizedBox(height: 8),
               // ── Khấu trừ ──
-              _SectionHeader('Khấu trừ', AppTheme.error),
+              const _SectionHeader('Khấu trừ', AppTheme.error),
               ...p.customDeductions.values.map((d) =>
                 _Row(d.label, '-${_fmt2(d.amount)}', color: AppTheme.error)),
               if (p.otherDeductions > 0)

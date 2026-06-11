@@ -178,7 +178,7 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isEdit = widget.shift != null;
 
     return Dialog(

@@ -33,7 +33,7 @@ class DepartmentPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () async {
@@ -129,7 +129,7 @@ class DepartmentMultiPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () async {
@@ -211,7 +211,7 @@ class _DepartmentMultiPickerDialogState
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final visible = _visible();
     return AlertDialog(
@@ -351,7 +351,7 @@ class _DepartmentPickerDialogState extends State<_DepartmentPickerDialog> {
     final theme = Theme.of(context);
     final visible = _visible();
     return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.department),
+      title: Text(AppLocalizations.of(context).department),
       content: SizedBox(
         width: 460,
         height: 420,

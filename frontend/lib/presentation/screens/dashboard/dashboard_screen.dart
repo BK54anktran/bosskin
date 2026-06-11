@@ -185,8 +185,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       _rangeData = null;      _rangeLoading = false;
       _analyticsData = null;  _analyticsLoading = tab == _DashTab.analytics;
     });
-    if (tab == _DashTab.day) _loadDay();
-    else if (tab == _DashTab.month) _loadMonth();
+    if (tab == _DashTab.day) {
+      _loadDay();
+    } else if (tab == _DashTab.month) _loadMonth();
     else if (tab == _DashTab.range) _loadRange();
     else _loadAnalytics();
   }
@@ -1743,26 +1744,26 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = const TextStyle(
+    const titleStyle = TextStyle(
       color: Color(0xFF111827),
       fontSize: 12,
       fontWeight: FontWeight.w700,
       height: 1.25,
     );
-    final bodyStyle = const TextStyle(
+    const bodyStyle = TextStyle(
       color: Color(0xFF111827),
       fontSize: 11,
       fontWeight: FontWeight.w600,
       height: 1.3,
     );
-    final mutedStyle = TextStyle(
-      color: const Color(0xFF6B7280),
+    const mutedStyle = TextStyle(
+      color: Color(0xFF6B7280),
       fontSize: 10,
       fontWeight: FontWeight.w500,
       height: 1.25,
     );
-    final accentStyle = TextStyle(
-      color: const Color(0xFF7C3AED),
+    const accentStyle = TextStyle(
+      color: Color(0xFF7C3AED),
       fontSize: 11,
       fontWeight: FontWeight.w700,
       height: 1.3,

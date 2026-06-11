@@ -20,7 +20,7 @@ class AppDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       isExpanded: isExpanded,
       borderRadius: BorderRadius.circular(12),
       decoration: InputDecoration(labelText: label, isDense: true),

@@ -120,7 +120,7 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
   }
 
   Future<void> _export() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     setState(() => _exporting = true);
     try {
       final result = await DepartmentService.instance.exportExcel();
@@ -182,7 +182,7 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
   }
 
   Future<void> _delete(DepartmentNode node) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showInstantDialog<bool>(
       context,
       (ctx) => AlertDialog(
@@ -215,7 +215,7 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       children: [
         Padding(
@@ -301,7 +301,7 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
   }
 
   Widget _emptyState() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -346,7 +346,7 @@ class _DepartmentTileState extends State<_DepartmentTile> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final node = widget.node;
     final hasChildren = node.children.isNotEmpty;
     final indent = node.level * 24.0;
@@ -714,7 +714,7 @@ class _DepartmentFormDialogState extends State<_DepartmentFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isEdit = widget.node != null;
     return AlertDialog(
       title: Text(isEdit ? s.editDepartment : s.addDepartment),
@@ -824,11 +824,12 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
     try {
       final list =
           await PositionService.instance.getByDepartment(widget.department.id);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _positions = list;
           _loading = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -846,7 +847,7 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
   }
 
   Future<void> _delete(PositionModel pos) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showInstantDialog<bool>(
       context,
       (ctx) => AlertDialog(
@@ -879,7 +880,7 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return AlertDialog(
       title: Row(
         children: [
@@ -1060,7 +1061,7 @@ class _PositionFormDialogState extends State<_PositionFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isEdit = widget.position != null;
     return AlertDialog(
       title: Text(isEdit ? s.editPosition : s.addPosition),

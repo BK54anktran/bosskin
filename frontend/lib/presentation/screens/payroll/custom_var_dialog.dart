@@ -56,7 +56,8 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
         widget.repo.getAll(),
         widget.repo.getAllVariables(),
       ]);
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _visibleGlobals = (results[0] as List<FormulaVariable>)
             .where((v) => v.showInFormula && v.name != widget.existing?.name)
             .toList();
@@ -64,6 +65,7 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
             .where((v) => v.scope == VariableScope.system)
             .toList();
       });
+      }
     } catch (_) {}
   }
 
@@ -256,9 +258,9 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
                 ),
               ),
             if (_validated && _errors.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Row(children: const [
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Row(children: [
                   Icon(Icons.check_circle, color: AppTheme.secondary, size: 16),
                   SizedBox(width: 6),
                   Text('Biểu thức hợp lệ',

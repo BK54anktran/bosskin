@@ -120,14 +120,16 @@ class _VariablesTabState extends State<VariablesTab> {
       await _repo.toggleShowInFormula(v.id!, !v.showInFormula);
       _load();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+      }
     }
   }
 
   Future<void> _delete(AllVariable v) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (!mounted) return;
 
     // Check usages trước khi xoá
@@ -197,15 +199,17 @@ class _VariablesTabState extends State<VariablesTab> {
       });
       await _load();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
       );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final filtered = _filtered;
     final paged = _paged;
 
@@ -229,7 +233,7 @@ class _VariablesTabState extends State<VariablesTab> {
             final categoryDropdown = _categories.isEmpty
                 ? null
                 : DropdownButtonFormField<String?>(
-                    value: _categoryFilter,
+                    initialValue: _categoryFilter,
                     isDense: true,
                     decoration: const InputDecoration(
                       labelText: 'Nhóm',

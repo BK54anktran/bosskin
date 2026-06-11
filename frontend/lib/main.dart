@@ -239,7 +239,7 @@ class BossKinApp extends StatelessWidget {
       builder: (_, __) {
         final locale = LanguageService.instance.locale;
         return MaterialApp.router(
-          onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
+          onGenerateTitle: (context) => AppLocalizations.of(context).appName,
           theme: AppTheme.light,
           routerConfig: _router,
           locale: locale,

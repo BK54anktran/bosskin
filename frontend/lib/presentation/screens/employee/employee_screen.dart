@@ -89,7 +89,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         page: _page,
         size: _pageSize,
         search: _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim(),
-        departmentId: _filterDept != null ? _filterDept!.toInt() : null,
+        departmentId: _filterDept?.toInt(),
         status: _filterStatus,
       );
       setState(() {
@@ -188,7 +188,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   Future<void> _delete(Employee emp) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final ok = await showInstantDialog<bool>(
       context,
       (_) => AlertDialog(
@@ -211,15 +211,16 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       await _repo.delete(emp.id);
       _load(reset: true);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
         );
+      }
     }
   }
 
   Future<void> _syncUserAccounts() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final passwordCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -333,7 +334,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       children: [
         Padding(
@@ -404,7 +405,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   Widget _buildFilters() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isWide = MediaQuery.of(context).size.width > 600;
     final search = SearchTextField(
       controller: _searchCtrl,
@@ -424,7 +425,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       },
     );
     final statusFilter = DropdownButtonFormField<EmployeeStatus?>(
-      value: _filterStatus,
+      initialValue: _filterStatus,
       borderRadius: BorderRadius.circular(12),
       decoration: InputDecoration(labelText: s.status, isDense: true),
       items: [
@@ -476,7 +477,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   Widget _buildBody() {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (_loading && _employees.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -550,7 +551,7 @@ class _EmployeeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final e = employee;
     final isActive = e.status == EmployeeStatus.active;
 
@@ -721,7 +722,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final (label, color) = switch (status) {
       EmployeeStatus.active => (s.employeeStatusActive, Colors.green),
       EmployeeStatus.inactive => (s.employeeStatusInactive, Colors.red),
@@ -835,14 +836,16 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
       await _shRepo.delete(sh.id);
       _loadSh();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final currFmt = NumberFormat('#,###', 'vi_VN');
     return Dialog(
       child: ConstrainedBox(
@@ -1054,7 +1057,7 @@ class _SalaryHistoryFormDialogState extends State<_SalaryHistoryFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final dateFmt = DateFormat('dd/MM/yyyy');
     return AlertDialog(
       title: Text(widget.existing != null ? s.edit : s.salaryHistoryAdd),

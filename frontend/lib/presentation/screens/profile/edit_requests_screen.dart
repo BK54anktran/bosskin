@@ -64,7 +64,7 @@ class _EditRequestsScreenState extends State<EditRequestsScreen>
         _resolved = all.where((r) => r.status != 'PENDING').toList();
       });
     } catch (e) {
-      final s = AppLocalizations.of(context)!;
+      final s = AppLocalizations.of(context);
       setState(() => _error = '${s.errorPrefix}: $e');
     } finally {
       setState(() => _loading = false);
@@ -72,7 +72,7 @@ class _EditRequestsScreenState extends State<EditRequestsScreen>
   }
 
   Future<void> _approve(EditRequest req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     try {
       await ProfileService.instance.approveRequest(req.id);
       await AuthService.instance.refreshCurrentUserProfile();
@@ -84,7 +84,7 @@ class _EditRequestsScreenState extends State<EditRequestsScreen>
   }
 
   Future<void> _reject(EditRequest req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final noteCtrl = TextEditingController();
     final note = await showInstantDialog<String>(
       context,
@@ -132,7 +132,7 @@ class _EditRequestsScreenState extends State<EditRequestsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       children: [
         Padding(
@@ -292,7 +292,7 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final r = request;
     final isPending = r.status == 'PENDING';
     final statusColor = switch (r.status) {
@@ -440,7 +440,7 @@ class _ChangesTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     String genderLabel(String? v) => switch (v) {
           'MALE' => s.genderMale,
           'FEMALE' => s.genderFemale,
@@ -470,7 +470,7 @@ class _ChangesTable extends StatelessWidget {
     }
 
     if (rows.isEmpty) {
-      return Text(AppLocalizations.of(context)!.noChangesContent,
+      return Text(AppLocalizations.of(context).noChangesContent,
           style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary));
     }
 

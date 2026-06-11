@@ -40,7 +40,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   DateTime? _filterFrom;
   DateTime? _filterTo;
   bool _loading = true;
-  bool _submitting = false;
+  final bool _submitting = false;
   bool _acting = false;
   String? _error;
   List<DepartmentFlat> _depts = [];
@@ -114,7 +114,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   }
 
   Future<void> _openCreateRequestDialog() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final created = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -127,17 +127,17 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   }
 
   Future<void> _approve(AttendanceChangeRequest req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     await _runAction(() => _repo.approveRequest(req.id), s.approved);
   }
 
   Future<void> _cancel(AttendanceChangeRequest req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     await _runAction(() => _repo.cancelRequest(req.id), s.cancelled);
   }
 
   Future<void> _reject(AttendanceChangeRequest req) async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final noteCtrl = TextEditingController();
     final note = await showDialog<String>(
       context: context,
@@ -229,7 +229,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   List<AttendanceChangeRequest> _applyFilters(
     List<AttendanceChangeRequest> items,
   ) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final q = foldSearchText(_searchCtrl.text);
     final from = _filterFrom == null
         ? null
@@ -274,7 +274,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final isImpersonating = AuthService.instance.isImpersonating;
     final pending = _applyFilters(_pending);
     final resolved = _applyFilters(_resolved);
@@ -497,7 +497,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
   }
 
   Future<void> _showDayInfo() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final info = _requestDayInfo;
     final dateLabel = DateFormat(
             'EEEE, dd/MM/yyyy', Localizations.localeOf(context).toLanguageTag())
@@ -560,7 +560,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
   }
 
   Future<bool> _submit() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (!(_formKey.currentState?.validate() ?? false)) return false;
     final shifts = _requestDayInfo?.shifts ?? const [];
     final effectiveShiftId = shifts.length > 1
@@ -629,7 +629,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(20),
       child: ConstrainedBox(
@@ -731,7 +731,7 @@ class _RequestForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final dateLabel = DateFormat('EEEE, dd/MM/yyyy', 'vi').format(requestDate);
     return Container(
       padding: const EdgeInsets.all(16),
@@ -792,10 +792,10 @@ class _RequestForm extends StatelessWidget {
                   final selectedShiftId = shiftAssignmentId ??
                       (shifts.isNotEmpty ? shifts.first.id : null);
                   return DropdownButtonFormField<int>(
-                    value: selectedShiftId,
+                    initialValue: selectedShiftId,
                     decoration: InputDecoration(
                       labelText: s.chooseShiftApply,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: [
                       ...?dayInfo?.shifts.map(
@@ -815,10 +815,10 @@ class _RequestForm extends StatelessWidget {
               const SizedBox(height: 12),
             ],
             DropdownButtonFormField<String>(
-              value: type,
+              initialValue: type,
               decoration: InputDecoration(
                 labelText: s.requestType,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               items: [
                 DropdownMenuItem(
@@ -866,7 +866,7 @@ class _RequestForm extends StatelessWidget {
                 children: [
                   Text(
                     s.otDayNight,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -894,7 +894,7 @@ class _RequestForm extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     s.otScope,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -925,7 +925,7 @@ class _RequestForm extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: s.overtimeDuration,
                       hintText: s.timeFormatHint,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (v) {
                       if (type != 'OT') return null;
@@ -1002,7 +1002,7 @@ class _RequestForm extends StatelessWidget {
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: s.note,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -1062,7 +1062,7 @@ class _DayShiftsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (loading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 8),
@@ -1147,7 +1147,7 @@ class _ShiftInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final title = shift.name.trim().isEmpty ? s.shift : shift.name.trim();
     final mainTime = '${shift.startTime} - ${shift.endTime}';
     final checkIn =
@@ -1248,7 +1248,7 @@ class _FilterPanelState extends State<_FilterPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final dateFmt = DateFormat('dd/MM/yyyy', 'vi');
     final hasFilters = widget.searchCtrl.text.trim().isNotEmpty ||
         widget.filterType != 'ALL' ||
@@ -1425,7 +1425,7 @@ class _TimeInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(
@@ -1456,7 +1456,7 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -1506,7 +1506,7 @@ class _RequestListState extends State<_RequestList> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (widget.requests.isEmpty) {
       return EmptyState(message: widget.emptyMessage);
     }

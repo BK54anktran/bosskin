@@ -154,7 +154,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   }
 
   Future<void> _save() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (!_form.currentState!.validate()) return;
     if (_deptId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -205,7 +205,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEdit ? s.editInfoAdminTitle : s.addEmployee),
@@ -280,7 +280,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   keyboardType: TextInputType.phone,
                 )),
                 _field(DropdownButtonFormField<Gender>(
-                  value: _gender,
+                  initialValue: _gender,
                   borderRadius: BorderRadius.circular(12),
                   decoration: InputDecoration(labelText: '${s.gender} *'),
                   items: [
@@ -316,10 +316,10 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                     ? InputDecorator(
                         decoration:
                             InputDecoration(labelText: s.position),
-                        child: LinearProgressIndicator(),
+                        child: const LinearProgressIndicator(),
                       )
                     : DropdownButtonFormField<int>(
-                        value: _positions.any((p) => p['id'] == _positionId)
+                        initialValue: _positions.any((p) => p['id'] == _positionId)
                             ? _positionId
                             : null,
                         borderRadius: BorderRadius.circular(12),
@@ -340,7 +340,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
             _section(s.salaryGrade, [
               _row([
                 _field(DropdownButtonFormField<int>(
-                  value: _grades.any((g) => g.id == _gradeId) ? _gradeId : null,
+                  initialValue: _grades.any((g) => g.id == _gradeId) ? _gradeId : null,
                   borderRadius: BorderRadius.circular(12),
                   decoration: InputDecoration(labelText: s.salaryGrade),
                   items: [
@@ -481,7 +481,7 @@ class _EmployeeLocationsPreviewState
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

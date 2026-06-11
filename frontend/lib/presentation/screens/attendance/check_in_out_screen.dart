@@ -116,7 +116,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   }
 
   Future<void> _doCheckIn() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     await _runAction(
       () => _repo.selfCheckIn(lat: _position?.latitude, lng: _position?.longitude),
       s.checkInSuccess,
@@ -124,7 +124,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   }
 
   Future<void> _doCheckOut() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     await _runAction(
       () => _repo.selfCheckOut(lat: _position?.latitude, lng: _position?.longitude),
       s.checkOutSuccess,
@@ -158,7 +158,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     if (AuthService.instance.isImpersonating) {
       return Center(
         child: Column(
@@ -231,7 +231,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
                   const SizedBox(height: 12),
                   if (hasShifts) ...[
                     for (final shift in data!.shifts) ...[
-                      _ShiftPanel(shift: shift, date: data!.date),
+                      _ShiftPanel(shift: shift, date: data.date),
                       const SizedBox(height: 12),
                     ],
                   ] else if (data?.shift != null)
@@ -392,7 +392,7 @@ class _ShiftPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final today = DateTime.now();
     final isYesterday = date != null &&
         date!.year == today.subtract(const Duration(days: 1)).year &&
@@ -460,7 +460,7 @@ class _StatusPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Row(
       children: [
         _InfoTile(
@@ -556,7 +556,7 @@ class _HistorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final localeTag = Localizations.localeOf(context).toLanguageTag();
     final timeFmt = DateFormat('HH:mm');
     final dateFmt = DateFormat('EEE, dd/MM', localeTag);

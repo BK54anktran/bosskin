@@ -144,13 +144,16 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
     if (picked == null) return;
     setState(() {
-      if (isStart) _dayStart = picked;
-      else _dayEnd = picked;
+      if (isStart) {
+        _dayStart = picked;
+      } else {
+        _dayEnd = picked;
+      }
     });
   }
 
   Future<void> _save() async {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final hours = double.tryParse(_hoursPerDayCtrl.text.trim());
     if (hours == null || hours <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -226,7 +229,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
 
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -447,7 +450,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<int?>(
-                                  value: _roundCheckInMinutes,
+                                  initialValue: _roundCheckInMinutes,
                                   decoration: const InputDecoration(labelText: 'Làm tròn check-in'),
                                   items: const [null, 1, 5, 15, 30, 60]
                                       .map((v) => DropdownMenuItem<int?>(
@@ -461,7 +464,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: DropdownButtonFormField<int?>(
-                                  value: _roundCheckOutMinutes,
+                                  initialValue: _roundCheckOutMinutes,
                                   decoration: const InputDecoration(labelText: 'Làm tròn check-out'),
                                   items: const [null, 1, 5, 15, 30, 60]
                                       .map((v) => DropdownMenuItem<int?>(
@@ -476,7 +479,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<int?>(
-                            value: _roundWorkMinutes,
+                            initialValue: _roundWorkMinutes,
                             decoration: const InputDecoration(labelText: 'Làm tròn giờ ngày/đêm/OT'),
                             items: const [null, 1, 5, 15, 30, 60]
                                 .map((v) => DropdownMenuItem<int?>(
