@@ -35,6 +35,100 @@ public class EmployeeImportService {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String DEFAULT_PASSWORD = "Bosskin@123";
 
+    // ─── LOAD FOR EXPORT ─────────────────────────────────────────────────────
+
+    private static final java.time.format.DateTimeFormatter DATE_EXPORT_FMT =
+        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    @Transactional(readOnly = true)
+    public List<EmployeeDTO.ImportRow> loadAllForExport(Long companyId, Long userId) {
+        return loadAllForExport(companyId, userId, Map.of());
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeDTO.ImportRow> loadAllForExport(Long companyId, Long userId,
+                                                         Map<String, String> filters) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
+
+        // Filter: departmentCodes (comma-separated, multi-select từ UI)
+        String deptCodesRaw = filters.getOrDefault("departmentCodes",
+            filters.getOrDefault("departmentCode", ""));
+        if (!deptCodesRaw.isBlank()) {
+            Set<Long> pickedIds = Arrays.stream(deptCodesRaw.split(","))
+                .map(String::trim).filter(c -> !c.isEmpty())
+                .map(code -> deptRepo.findByCodeAndCompanyId(code, companyId))
+                .filter(Optional::isPresent).map(opt -> opt.get().getId())
+                .collect(Collectors.toSet());
+            if (pickedIds.isEmpty()) return List.of();
+            final Set<Long> scope = scopeIds;
+            scopeIds = scope.isEmpty() ? pickedIds
+                : pickedIds.stream().filter(scope::contains).collect(Collectors.toSet());
+            if (scopeIds.isEmpty()) return List.of();
+        }
+
+        List<com.bosskin.entity.Employee> employees = scopeIds.isEmpty()
+            ? employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
+            : employeeRepo.findAllByCompanyIdAndDepartmentIdInFetchDepartment(companyId, scopeIds);
+
+        // Filter: status
+        String statusFilter = filters.getOrDefault("status", "");
+        if (!statusFilter.isBlank() && !statusFilter.equals("ALL")) {
+            employees = employees.stream()
+                .filter(e -> e.getStatus() != null && e.getStatus().name().equals(statusFilter))
+                .collect(Collectors.toList());
+        }
+
+        // Filter: salaryGradeCode
+        String gradeFilter = filters.getOrDefault("salaryGradeCode", "");
+        if (!gradeFilter.isBlank()) {
+            employees = employees.stream()
+                .filter(e -> e.getSalaryGrade() != null && gradeFilter.equals(e.getSalaryGrade().getCode()))
+                .collect(Collectors.toList());
+        }
+
+        // Filter: joinDateFrom / joinDateTo
+        String joinFrom = filters.getOrDefault("joinDateFrom", "");
+        String joinTo   = filters.getOrDefault("joinDateTo", "");
+        if (!joinFrom.isBlank()) {
+            LocalDate from = LocalDate.parse(joinFrom);
+            employees = employees.stream()
+                .filter(e -> e.getJoinDate() != null && !e.getJoinDate().isBefore(from))
+                .collect(Collectors.toList());
+        }
+        if (!joinTo.isBlank()) {
+            LocalDate to = LocalDate.parse(joinTo);
+            employees = employees.stream()
+                .filter(e -> e.getJoinDate() != null && !e.getJoinDate().isAfter(to))
+                .collect(Collectors.toList());
+        }
+
+        return employees.stream().map(e -> {
+            EmployeeDTO.ImportRow r = new EmployeeDTO.ImportRow();
+            r.setEmployeeCode(e.getEmployeeCode());
+            r.setFullName(e.getFullName());
+            r.setEmail(e.getEmail());
+            r.setPhone(e.getPhone());
+            r.setGender(e.getGender() != null ? e.getGender().name() : "");
+            r.setDateOfBirth(e.getDateOfBirth() != null ? e.getDateOfBirth().format(DATE_EXPORT_FMT) : "");
+            r.setJoinDate(e.getJoinDate() != null ? e.getJoinDate().format(DATE_EXPORT_FMT) : "");
+            r.setLeaveDate(e.getLeaveDate() != null ? e.getLeaveDate().format(DATE_EXPORT_FMT) : "");
+            r.setDepartmentCode(e.getDepartment() != null ? e.getDepartment().getCode() : "");
+            r.setDepartmentName(e.getDepartment() != null ? e.getDepartment().getName() : "");
+            r.setPositionCode(safeCode(e.getPosition()));
+            r.setPositionName(safeName(e.getPosition()));
+            r.setSalaryGradeCode(e.getSalaryGrade() != null ? e.getSalaryGrade().getCode() : "");
+            r.setStatus(e.getStatus() != null ? e.getStatus().name() : "");
+            r.setIdentityCard(e.getIdentityCard());
+            r.setAddress(e.getAddress());
+            r.setPersonalEmail(e.getPersonalEmail());
+            r.setBankAccount(e.getBankAccount());
+            r.setBankName(e.getBankName());
+            r.setContractSalary(e.getContractSalary() != null
+                ? e.getContractSalary().stripTrailingZeros().toPlainString() : "");
+            return r;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
     // ─── PREVIEW ─────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
@@ -113,11 +207,11 @@ public class EmployeeImportService {
         Map<String, Employee>   existing   = employeeRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(Employee::getEmployeeCode, e -> e));
         Map<String, Department> deptMap    = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
-            .stream().collect(Collectors.toMap(Department::getCode, d -> d));
+            .stream().collect(Collectors.toMap(d -> d.getCode().toUpperCase(), d -> d));
         Map<String, Position>   posMap     = positionRepo.findByDepartmentCompanyId(companyId)
-            .stream().collect(Collectors.toMap(Position::getCode, p -> p));
+            .stream().collect(Collectors.toMap(p -> p.getCode().toUpperCase(), p -> p));
         Map<String, SalaryGrade>gradeMap   = salaryGradeRepo.findByCompanyId(companyId)
-            .stream().collect(Collectors.toMap(SalaryGrade::getCode, g -> g));
+            .stream().collect(Collectors.toMap(g -> g.getCode().toUpperCase(), g -> g));
 
         Optional<Role> defaultRole = roleRepo.findByCompanyId(companyId).stream()
             .filter(r -> r.getName().equalsIgnoreCase("employee"))
@@ -211,6 +305,238 @@ public class EmployeeImportService {
                 employeeRepo.save(emp);
             }
         }
+    }
+
+    // ─── PER-ROW IMPORT / PREVIEW ────────────────────────────────────────────
+
+    /** Preview 1 row — không ghi DB. Trả về RowResult với rowNum = 0 (caller tự set). */
+    @Transactional(readOnly = true)
+    public com.bosskin.util.SheetImportResult.RowResult previewRow(
+            Long companyId, Long userId,
+            EmployeeDTO.ImportRow row,
+            com.bosskin.util.ImportCommand command) {
+
+        String code = row.getEmployeeCode() == null ? null : row.getEmployeeCode().trim();
+        Employee emp = code == null ? null
+            : employeeRepo.findByEmployeeCodeAndCompanyId(code, companyId).orElse(null);
+        boolean exists = emp != null;
+
+        // Enrich departmentName cho identifier display
+        if (exists && emp.getDepartment() != null) {
+            row.setDepartmentName(emp.getDepartment().getName());
+        } else if (!isBlank(row.getDepartmentCode())) {
+            deptRepo.findByCodeAndCompanyId(row.getDepartmentCode().trim().toUpperCase(), companyId)
+                .ifPresent(d -> row.setDepartmentName(d.getName()));
+        }
+
+        return switch (command) {
+            case CREATE -> exists
+                ? com.bosskin.util.SheetImportResult.RowResult.error(0, "error.employee.already_exists")
+                : com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", buildCreateSummary(row));
+            case UPDATE -> !exists
+                ? com.bosskin.util.SheetImportResult.RowResult.error(0, "error.employee.not_found")
+                : com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", buildChangeSummary(emp, row));
+            case MERGE  -> exists
+                ? com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", buildChangeSummary(emp, row))
+                : com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", buildCreateSummary(row));
+            case DELETE -> !exists
+                ? com.bosskin.util.SheetImportResult.RowResult.error(0, "error.employee.not_found")
+                : com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", "preview.delete:" + emp.getFullName());
+        };
+    }
+
+    private String buildCreateSummary(EmployeeDTO.ImportRow row) {
+        List<String> parts = new ArrayList<>();
+        if (!isBlank(row.getFullName())) parts.add(row.getFullName().trim());
+        String dept = !isBlank(row.getDepartmentName()) ? row.getDepartmentName().trim()
+                    : !isBlank(row.getDepartmentCode()) ? row.getDepartmentCode().trim() : "";
+        if (!dept.isEmpty()) parts.add(dept);
+        if (!isBlank(row.getEmail())) parts.add(row.getEmail().trim());
+        return "preview.create:" + String.join("|", parts);
+    }
+
+    private String buildChangeSummary(Employee emp, EmployeeDTO.ImportRow row) {
+        List<String> changes = new ArrayList<>();
+        diffStr(changes, "excel.col.employee.fullName",      emp.getFullName(),     row.getFullName());
+        diffStr(changes, "excel.col.employee.email",         emp.getEmail(),        row.getEmail());
+        diffStr(changes, "excel.col.employee.phone",         emp.getPhone(),        row.getPhone());
+        diffStr(changes, "excel.col.employee.gender",        str(emp.getGender()),  row.getGender());
+        diffDate(changes, "excel.col.employee.dateOfBirth",  emp.getDateOfBirth(),  row.getDateOfBirth());
+        diffDate(changes, "excel.col.employee.joinDate",     emp.getJoinDate(),     row.getJoinDate());
+        diffDate(changes, "excel.col.employee.leaveDate",    emp.getLeaveDate(),    row.getLeaveDate());
+        if (!isBlank(row.getStatus()) && !normalizeStatus(row.getStatus()).equals(normalizeStatus(str(emp.getStatus()))))
+            changes.add("excel.col.employee.status:" + normalizeStatus(str(emp.getStatus())) + "→" + normalizeStatus(row.getStatus()));
+        if (!isBlank(row.getDepartmentCode())) {
+            String empCode = emp.getDepartment() != null ? emp.getDepartment().getCode() : "";
+            if (!row.getDepartmentCode().trim().equalsIgnoreCase(empCode))
+                changes.add("excel.col.employee.departmentCode:" + empCode + "→" + row.getDepartmentCode().trim());
+        }
+        if (!isBlank(row.getPositionCode())) {
+            String empCode = safeCode(emp.getPosition());
+            if (!row.getPositionCode().trim().equalsIgnoreCase(empCode))
+                changes.add("excel.col.employee.positionCode:" + empCode + "→" + row.getPositionCode().trim());
+        }
+        if (!isBlank(row.getSalaryGradeCode())) {
+            String empCode = emp.getSalaryGrade() != null ? emp.getSalaryGrade().getCode() : "";
+            if (!row.getSalaryGradeCode().trim().equalsIgnoreCase(empCode))
+                changes.add("excel.col.employee.salaryGradeCode:" + empCode + "→" + row.getSalaryGradeCode().trim());
+        }
+        if (!isBlank(row.getContractSalary())) {
+            BigDecimal newVal = parseMoney(row.getContractSalary());
+            if (newVal != null && (emp.getContractSalary() == null
+                    || emp.getContractSalary().compareTo(newVal) != 0))
+                changes.add("excel.col.employee.contractSalary:" + newVal.stripTrailingZeros().toPlainString());
+        }
+        diffStr(changes, "excel.col.employee.identityCard",  emp.getIdentityCard(),  row.getIdentityCard());
+        diffStr(changes, "excel.col.employee.address",       emp.getAddress(),       row.getAddress());
+        diffStr(changes, "excel.col.employee.personalEmail", emp.getPersonalEmail(), row.getPersonalEmail());
+        diffStr(changes, "excel.col.employee.bankAccount",   emp.getBankAccount(),   row.getBankAccount());
+        diffStr(changes, "excel.col.employee.bankName",      emp.getBankName(),      row.getBankName());
+        return changes.isEmpty() ? "preview.noChange" : String.join(",", changes);
+    }
+
+    private void diffStr(List<String> out, String key, String empVal, String rowVal) {
+        if (isBlank(rowVal)) return;
+        if (!rowVal.trim().equals(empVal == null ? "" : empVal.trim())) out.add(key);
+    }
+
+    private void diffDate(List<String> out, String key, LocalDate empVal, String rowVal) {
+        if (isBlank(rowVal)) return;
+        LocalDate newDate = parseDate(rowVal);
+        if (newDate != null && !newDate.equals(empVal))
+            out.add(key + ":" + (empVal != null ? empVal.format(DATE_FMT) : "") + "→" + newDate.format(DATE_FMT));
+    }
+
+    /** Thực hiện import 1 row theo command. */
+    @Transactional
+    public void importRow(Long companyId, Long userId,
+                          EmployeeDTO.ImportRow row,
+                          com.bosskin.util.ImportCommand command,
+                          Set<String> presentColumns) {
+
+        Company company = companyRepo.findById(companyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
+
+        Map<String, Department> deptMap  = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
+            .stream().collect(Collectors.toMap(d -> d.getCode().toUpperCase(), d -> d));
+        Map<String, Position>   posMap   = positionRepo.findByDepartmentCompanyId(companyId)
+            .stream().collect(Collectors.toMap(p -> p.getCode().toUpperCase(), p -> p));
+        Map<String, SalaryGrade> gradeMap = salaryGradeRepo.findByCompanyId(companyId)
+            .stream().collect(Collectors.toMap(g -> g.getCode().toUpperCase(), g -> g));
+
+        String code = row.getEmployeeCode() == null ? null : row.getEmployeeCode().trim();
+        Employee emp = code == null ? null
+            : employeeRepo.findByEmployeeCodeAndCompanyId(code, companyId).orElse(null);
+
+        switch (command) {
+            case CREATE -> {
+                if (emp != null)
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "error.employee.already_exists");
+                doCreate(row, code, company, deptMap, posMap, gradeMap);
+            }
+            case UPDATE -> {
+                if (emp == null)
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found");
+                doUpdate(emp, row, presentColumns, deptMap, posMap, gradeMap);
+            }
+            case MERGE -> {
+                if (emp == null) doCreate(row, code, company, deptMap, posMap, gradeMap);
+                else             doUpdate(emp, row, presentColumns, deptMap, posMap, gradeMap);
+            }
+            case DELETE -> {
+                if (emp == null)
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found");
+                employeeRepo.delete(emp);
+            }
+        }
+    }
+
+    private void doCreate(EmployeeDTO.ImportRow row, String code, Company company,
+                          Map<String, Department> deptMap,
+                          Map<String, Position> posMap,
+                          Map<String, SalaryGrade> gradeMap) {
+        if (isBlank(row.getEmail()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Nhân viên \"" + row.getFullName() + "\" thiếu email");
+        String email = row.getEmail().trim();
+        if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, company.getId()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Email \"" + email + "\" đã được sử dụng");
+
+        Employee emp = Employee.builder()
+            .company(company)
+            .employeeCode(isBlank(code) ? generateCode(company.getId()) : code)
+            .fullName(row.getFullName().trim())
+            .email(email)
+            .phone(row.getPhone())
+            .gender(parseGender(row.getGender()))
+            .dateOfBirth(parseDate(row.getDateOfBirth()))
+            .joinDate(parseDate(row.getJoinDate()) != null ? parseDate(row.getJoinDate()) : LocalDate.now())
+            .leaveDate(parseDate(row.getLeaveDate()))
+            .department(resolveDept(deptMap, row.getDepartmentCode(), code))
+            .position(resolvePos(posMap, row.getPositionCode(), code))
+            .salaryGrade(resolveGrade(gradeMap, row.getSalaryGradeCode()))
+            .address(row.getAddress())
+            .personalEmail(row.getPersonalEmail())
+            .identityCard(row.getIdentityCard())
+            .bankAccount(row.getBankAccount())
+            .bankName(row.getBankName())
+            .contractSalary(parseMoney(row.getContractSalary()))
+            .status(Employee.Status.ACTIVE)
+            .build();
+        emp = employeeRepo.save(emp);
+
+        Optional<Role> defaultRole = roleRepo.findByCompanyId(company.getId()).stream()
+            .filter(r -> r.getName().equalsIgnoreCase("employee")).findFirst();
+        String pwd = isBlank(row.getDefaultPassword()) ? DEFAULT_PASSWORD : row.getDefaultPassword().trim();
+        var user = com.bosskin.entity.User.builder()
+            .email(email).password(passwordEncoder.encode(pwd))
+            .company(company).employee(emp).enabled(true).build();
+        defaultRole.ifPresent(r -> user.getRoles().add(r));
+        userRepo.save(user);
+    }
+
+    private void doUpdate(Employee emp, EmployeeDTO.ImportRow row,
+                          Set<String> presentColumns,
+                          Map<String, Department> deptMap,
+                          Map<String, Position> posMap,
+                          Map<String, SalaryGrade> gradeMap) {
+        // Chỉ update field nào có cột trong file (present).
+        // Nếu present + trống → set null (user chủ ý xóa).
+        // Nếu không present → giữ nguyên.
+        if (presentColumns.contains("employee.fullName") && !isBlank(row.getFullName()))
+            emp.setFullName(row.getFullName().trim());
+        if (presentColumns.contains("employee.phone"))
+            emp.setPhone(isBlank(row.getPhone()) ? null : row.getPhone().trim());
+        if (presentColumns.contains("employee.gender"))
+            emp.setGender(isBlank(row.getGender()) ? null : parseGender(row.getGender()));
+        if (presentColumns.contains("employee.dateOfBirth"))
+            emp.setDateOfBirth(parseDate(row.getDateOfBirth()));
+        if (presentColumns.contains("employee.joinDate") && !isBlank(row.getJoinDate()))
+            emp.setJoinDate(parseDate(row.getJoinDate()));
+        if (presentColumns.contains("employee.leaveDate"))
+            emp.setLeaveDate(parseDate(row.getLeaveDate()));
+        if (presentColumns.contains("employee.status") && !isBlank(row.getStatus()))
+            emp.setStatus(parseStatus(row.getStatus()));
+        if (presentColumns.contains("employee.address"))
+            emp.setAddress(isBlank(row.getAddress()) ? null : row.getAddress().trim());
+        if (presentColumns.contains("employee.personalEmail"))
+            emp.setPersonalEmail(isBlank(row.getPersonalEmail()) ? null : row.getPersonalEmail().trim());
+        if (presentColumns.contains("employee.identityCard"))
+            emp.setIdentityCard(isBlank(row.getIdentityCard()) ? null : row.getIdentityCard().trim());
+        if (presentColumns.contains("employee.bankAccount"))
+            emp.setBankAccount(isBlank(row.getBankAccount()) ? null : row.getBankAccount().trim());
+        if (presentColumns.contains("employee.bankName"))
+            emp.setBankName(isBlank(row.getBankName()) ? null : row.getBankName().trim());
+        if (presentColumns.contains("employee.contractSalary"))
+            emp.setContractSalary(isBlank(row.getContractSalary()) ? null : parseMoney(row.getContractSalary()));
+        if (presentColumns.contains("employee.departmentCode") && !isBlank(row.getDepartmentCode()))
+            emp.setDepartment(resolveDept(deptMap, row.getDepartmentCode(), emp.getEmployeeCode()));
+        if (presentColumns.contains("employee.positionCode"))
+            emp.setPosition(isBlank(row.getPositionCode()) ? null : resolvePos(posMap, row.getPositionCode(), emp.getEmployeeCode()));
+        if (presentColumns.contains("employee.salaryGradeCode") && !isBlank(row.getSalaryGradeCode()))
+            emp.setSalaryGrade(resolveGrade(gradeMap, row.getSalaryGradeCode()));
+        employeeRepo.save(emp);
     }
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────
@@ -320,6 +646,10 @@ public class EmployeeImportService {
 
     private static String safeCode(com.bosskin.entity.Position p) {
         try { return p == null ? "" : p.getCode(); } catch (Exception e) { return ""; }
+    }
+
+    private static String safeName(com.bosskin.entity.Position p) {
+        try { return p == null ? "" : p.getName(); } catch (Exception e) { return ""; }
     }
 
     private static String safeCode(com.bosskin.entity.SalaryGrade g) {

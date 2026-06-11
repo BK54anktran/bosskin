@@ -2154,6 +2154,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get importSuccess => 'Nhập dữ liệu thành công';
 
   @override
+  String get importPreviewRow => 'Dòng';
+
+  @override
   String get importPreviewTitle => 'Xem trước thay đổi';
 
   @override
@@ -2376,4 +2379,58 @@ class AppLocalizationsVi extends AppLocalizations {
   String adminCompanyCount(int count) {
     return '$count công ty';
   }
+
+  @override
+  String get excelColEmployeeCode => 'Mã NV';
+
+  @override
+  String get excelColEmployeeFullName => 'Họ và tên';
+
+  @override
+  String get excelColEmployeeEmail => 'Email';
+
+  @override
+  String get excelColEmployeePhone => 'Số điện thoại';
+
+  @override
+  String get excelColEmployeeGender => 'Giới tính';
+
+  @override
+  String get excelColEmployeeDateOfBirth => 'Ngày sinh';
+
+  @override
+  String get excelColEmployeeJoinDate => 'Ngày vào làm';
+
+  @override
+  String get excelColEmployeeLeaveDate => 'Ngày nghỉ';
+
+  @override
+  String get excelColEmployeeStatus => 'Trạng thái';
+
+  @override
+  String get excelColEmployeeDepartmentCode => 'Phòng ban';
+
+  @override
+  String get excelColEmployeePositionCode => 'Chức vụ';
+
+  @override
+  String get excelColEmployeeSalaryGradeCode => 'Bậc lương';
+
+  @override
+  String get excelColEmployeeContractSalary => 'Lương hợp đồng';
+
+  @override
+  String get excelColEmployeeIdentityCard => 'CCCD/CMND';
+
+  @override
+  String get excelColEmployeeAddress => 'Địa chỉ';
+
+  @override
+  String get excelColEmployeePersonalEmail => 'Email cá nhân';
+
+  @override
+  String get excelColEmployeeBankAccount => 'Số tài khoản NH';
+
+  @override
+  String get excelColEmployeeBankName => 'Ngân hàng';
 }

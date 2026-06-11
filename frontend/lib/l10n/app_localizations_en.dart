@@ -2154,6 +2154,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importSuccess => 'Data imported successfully';
 
   @override
+  String get importPreviewRow => 'Row';
+
+  @override
   String get importPreviewTitle => 'Preview changes';
 
   @override
@@ -2374,4 +2377,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminCompanyCount(int count) {
     return '$count companies';
   }
+
+  @override
+  String get excelColEmployeeCode => 'Employee Code';
+
+  @override
+  String get excelColEmployeeFullName => 'Full Name';
+
+  @override
+  String get excelColEmployeeEmail => 'Email';
+
+  @override
+  String get excelColEmployeePhone => 'Phone Number';
+
+  @override
+  String get excelColEmployeeGender => 'Gender';
+
+  @override
+  String get excelColEmployeeDateOfBirth => 'Date of Birth';
+
+  @override
+  String get excelColEmployeeJoinDate => 'Join Date';
+
+  @override
+  String get excelColEmployeeLeaveDate => 'Leave Date';
+
+  @override
+  String get excelColEmployeeStatus => 'Status';
+
+  @override
+  String get excelColEmployeeDepartmentCode => 'Department';
+
+  @override
+  String get excelColEmployeePositionCode => 'Position';
+
+  @override
+  String get excelColEmployeeSalaryGradeCode => 'Salary Grade';
+
+  @override
+  String get excelColEmployeeContractSalary => 'Contract Salary';
+
+  @override
+  String get excelColEmployeeIdentityCard => 'ID Card';
+
+  @override
+  String get excelColEmployeeAddress => 'Address';
+
+  @override
+  String get excelColEmployeePersonalEmail => 'Personal Email';
+
+  @override
+  String get excelColEmployeeBankAccount => 'Bank Account';
+
+  @override
+  String get excelColEmployeeBankName => 'Bank Name';
 }

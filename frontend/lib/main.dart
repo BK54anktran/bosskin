@@ -28,6 +28,7 @@ import 'presentation/screens/leaves/leaves_screen.dart';
 import 'presentation/screens/company_settings/company_settings_screen.dart';
 import 'presentation/screens/payroll/payroll_tab_screen.dart';
 import 'presentation/screens/payroll/self_payroll_screen.dart';
+import 'presentation/screens/excel/excel_import_export_screen.dart';
 import 'presentation/widgets/app_shell.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -55,6 +56,7 @@ const _routePermissions = <String, String>{
   AppRoutes.roles: 'ROLE_VIEW',
   AppRoutes.leaves: 'LEAVE_VIEW',
   AppRoutes.companySettings: 'COMPANY_SETTING_VIEW',
+  AppRoutes.excelImportExport: 'EMPLOYEE_VIEW',
 };
 
 final _router = GoRouter(
@@ -177,6 +179,11 @@ final _router = GoRouter(
           path: AppRoutes.editRequests,
           pageBuilder: (_, __) =>
               const NoTransitionPage(child: EditRequestsScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.excelImportExport,
+          pageBuilder: (_, __) =>
+              const NoTransitionPage(child: ExcelImportExportScreen()),
         ),
       ],
     ),

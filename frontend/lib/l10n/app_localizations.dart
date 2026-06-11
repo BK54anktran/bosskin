@@ -4239,6 +4239,12 @@ abstract class AppLocalizations {
   /// **'Nhập dữ liệu thành công'**
   String get importSuccess;
 
+  /// No description provided for @importPreviewRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dòng'**
+  String get importPreviewRow;
+
   /// No description provided for @importPreviewTitle.
   ///
   /// In vi, this message translates to:
@@ -4652,6 +4658,114 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{count} công ty'**
   String adminCompanyCount(int count);
+
+  /// No description provided for @excelColEmployeeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã NV'**
+  String get excelColEmployeeCode;
+
+  /// No description provided for @excelColEmployeeFullName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên'**
+  String get excelColEmployeeFullName;
+
+  /// No description provided for @excelColEmployeeEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email'**
+  String get excelColEmployeeEmail;
+
+  /// No description provided for @excelColEmployeePhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại'**
+  String get excelColEmployeePhone;
+
+  /// No description provided for @excelColEmployeeGender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giới tính'**
+  String get excelColEmployeeGender;
+
+  /// No description provided for @excelColEmployeeDateOfBirth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày sinh'**
+  String get excelColEmployeeDateOfBirth;
+
+  /// No description provided for @excelColEmployeeJoinDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày vào làm'**
+  String get excelColEmployeeJoinDate;
+
+  /// No description provided for @excelColEmployeeLeaveDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày nghỉ'**
+  String get excelColEmployeeLeaveDate;
+
+  /// No description provided for @excelColEmployeeStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get excelColEmployeeStatus;
+
+  /// No description provided for @excelColEmployeeDepartmentCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get excelColEmployeeDepartmentCode;
+
+  /// No description provided for @excelColEmployeePositionCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ'**
+  String get excelColEmployeePositionCode;
+
+  /// No description provided for @excelColEmployeeSalaryGradeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bậc lương'**
+  String get excelColEmployeeSalaryGradeCode;
+
+  /// No description provided for @excelColEmployeeContractSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương hợp đồng'**
+  String get excelColEmployeeContractSalary;
+
+  /// No description provided for @excelColEmployeeIdentityCard.
+  ///
+  /// In vi, this message translates to:
+  /// **'CCCD/CMND'**
+  String get excelColEmployeeIdentityCard;
+
+  /// No description provided for @excelColEmployeeAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ'**
+  String get excelColEmployeeAddress;
+
+  /// No description provided for @excelColEmployeePersonalEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email cá nhân'**
+  String get excelColEmployeePersonalEmail;
+
+  /// No description provided for @excelColEmployeeBankAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tài khoản NH'**
+  String get excelColEmployeeBankAccount;
+
+  /// No description provided for @excelColEmployeeBankName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngân hàng'**
+  String get excelColEmployeeBankName;
 }
 
 class _AppLocalizationsDelegate

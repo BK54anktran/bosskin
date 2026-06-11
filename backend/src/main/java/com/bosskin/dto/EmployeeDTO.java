@@ -22,7 +22,9 @@ public class EmployeeDTO {
         private String joinDate;      // dd/MM/yyyy
         private String leaveDate;     // dd/MM/yyyy
         private String departmentCode;
+        private String departmentName;
         private String positionCode;
+        private String positionName;
         private String salaryGradeCode;
         private String status;        // "Đang làm" | "Nghỉ việc" | ...
         /** Mật khẩu mặc định khi tạo mới — để trống thì BE dùng password mặc định. */

@@ -553,6 +553,69 @@ public class ShiftExcelService {
         return Map.of("created", created, "updated", updated);
     }
 
+    // ─── Import trực tiếp từ List<ShiftRow> (dùng bởi UniversalExcelService) ──
+
+    @Transactional
+    public List<com.bosskin.util.SheetImportResult.RowResult> importRowsDirect(
+            Long companyId,
+            List<ShiftRow> rows,
+            List<com.bosskin.util.ImportCommand> commands,
+            boolean dryRun) {
+
+        Map<String, Department> deptMap = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
+            .stream().collect(Collectors.toMap(Department::getCode, d -> d, (a, b) -> a));
+        Map<String, WorkShift> existingMap = shiftRepo.findByCompanyIdAndActiveTrue(companyId)
+            .stream().collect(Collectors.toMap(WorkShift::getCode, s -> s, (a, b) -> a));
+
+        List<com.bosskin.util.SheetImportResult.RowResult> results = new ArrayList<>();
+        for (int i = 0; i < rows.size(); i++) {
+            ShiftRow row = rows.get(i);
+            com.bosskin.util.ImportCommand cmd = commands.get(i);
+            int rowNum = i + 2;
+
+            if (row.code == null || row.code.isBlank()) {
+                results.add(com.bosskin.util.SheetImportResult.RowResult.error(rowNum, "error.shift.code_required"));
+                continue;
+            }
+
+            try {
+                WorkShift existing = existingMap.get(row.code.trim());
+
+                if (cmd == com.bosskin.util.ImportCommand.DELETE) {
+                    if (!dryRun && existing != null) {
+                        shiftService.deleteShift(existing.getId(), companyId);
+                    }
+                    results.add(com.bosskin.util.SheetImportResult.RowResult.ok(rowNum));
+                    continue;
+                }
+
+                if (row.name == null || row.name.isBlank()) {
+                    results.add(com.bosskin.util.SheetImportResult.RowResult.error(rowNum, "error.shift.name_required"));
+                    continue;
+                }
+
+                List<Long> deptIds = parseDeptIds(row.deptCodes, deptMap);
+                ShiftDTO.ShiftRequest req = new ShiftDTO.ShiftRequest(
+                    row.name.trim(), row.code.trim(),
+                    parseTime(row.startTime), parseTime(row.endTime),
+                    parseTime(row.breakStart), parseTime(row.breakEnd),
+                    row.groupName != null && !row.groupName.isBlank() ? row.groupName.trim() : null,
+                    row.color != null && !row.color.isBlank() ? row.color.trim() : "#1976D2",
+                    deptIds
+                );
+
+                if (!dryRun) {
+                    if (existing != null) shiftService.updateShift(existing.getId(), companyId, req);
+                    else shiftService.createShift(companyId, req);
+                }
+                results.add(com.bosskin.util.SheetImportResult.RowResult.ok(rowNum));
+            } catch (Exception e) {
+                results.add(com.bosskin.util.SheetImportResult.RowResult.error(rowNum, e.getMessage()));
+            }
+        }
+        return results;
+    }
+
     // ─── Import phân công ca từ sheet 0 (bảng ngang) ─────────────────────────
 
     @lombok.Value

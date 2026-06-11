@@ -143,10 +143,10 @@ class DepartmentMultiPickerField extends StatelessWidget {
         if (result != null) onChanged(result);
       },
       child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
+        decoration: const InputDecoration(
           isDense: true,
-          border: const OutlineInputBorder(),
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         ),
         child: Row(children: [
           Expanded(
@@ -156,7 +156,7 @@ class DepartmentMultiPickerField extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Icon(Icons.arrow_drop_down),
+          const Icon(Icons.arrow_drop_down, size: 18),
         ]),
       ),
     );
@@ -279,15 +279,23 @@ class _DepartmentMultiPickerDialogState
           }).toList(),
         ),
       ),
+      actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(s.cancel),
+          onPressed: () => Navigator.pop(context, <int>{}),
+          child: Text(s.all),
         ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, _selected),
-          child: Text(s.apply),
-        ),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(s.cancel),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, _selected),
+            child: Text(s.apply),
+          ),
+        ]),
       ],
     );
   }
