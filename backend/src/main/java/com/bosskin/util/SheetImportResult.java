@@ -17,6 +17,7 @@ public record SheetImportResult(
     public record RowResult(int rowNum, String status, String message) {
         public static RowResult ok(int rowNum)                     { return new RowResult(rowNum, "OK", ""); }
         public static RowResult skip(int rowNum)                   { return new RowResult(rowNum, "SKIP", ""); }
+        public static RowResult warn(int rowNum, String message)   { return new RowResult(rowNum, "WARN", message); }
         public static RowResult error(int rowNum, String message)  { return new RowResult(rowNum, "ERROR", message); }
         public static RowResult of(int rowNum, String status, String message) { return new RowResult(rowNum, status, message); }
     }

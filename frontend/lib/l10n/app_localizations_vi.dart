@@ -2166,6 +2166,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get importPreviewUpdate => 'Cập nhật';
 
   @override
+  String get importPreviewWarn => 'Cảnh báo';
+
+  @override
   String get importPreviewNoChange => 'Không đổi';
 
   @override

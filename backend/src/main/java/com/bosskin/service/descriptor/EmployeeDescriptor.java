@@ -129,8 +129,10 @@ public class EmployeeDescriptor implements ExcelEntityDescriptor<EmployeeDTO.Imp
                 }
             } else {
                 try {
-                    employeeImportService.importRow(companyId, userId, rw.data(), rw.command(), rw.presentColumns());
-                    results.add(SheetImportResult.RowResult.ok(rw.rowNum()));
+                    boolean done = employeeImportService.importRow(companyId, userId, rw.data(), rw.command(), rw.presentColumns());
+                    results.add(done
+                        ? SheetImportResult.RowResult.ok(rw.rowNum())
+                        : SheetImportResult.RowResult.warn(rw.rowNum(), "warning.employee.already_exists"));
                 } catch (Exception e) {
                     results.add(SheetImportResult.RowResult.error(rw.rowNum(), e.getMessage()));
                 }

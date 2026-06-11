@@ -37,10 +37,10 @@ class _UniversalImportPreviewDialogState
   String? _errorMsg;
 
   bool get _hasChanges => widget.diffs.values.any(
-      (rows) => rows.any((r) => r.action != 'SKIP' && !r.isError));
+      (rows) => rows.any((r) => r.action != 'SKIP' && (!r.isError || r.isWarn)));
 
   bool get _hasErrors =>
-      widget.diffs.values.any((rows) => rows.any((r) => r.isError));
+      widget.diffs.values.any((rows) => rows.any((r) => r.isError && !r.isWarn));
 
   int get _totalCreate =>
       _count((r) => r.action == 'CREATE');
@@ -50,8 +50,10 @@ class _UniversalImportPreviewDialogState
       _count((r) => r.action == 'MERGE');
   int get _totalDelete =>
       _count((r) => r.action == 'DELETE');
+  int get _totalWarn =>
+      _count((r) => r.action == 'WARN');
   int get _totalError =>
-      _count((r) => r.isError);
+      _count((r) => r.isError && !r.isWarn);
 
   int _count(bool Function(UniversalImportDiff) test) =>
       widget.diffs.values.expand((l) => l).where(test).length;
@@ -89,6 +91,10 @@ class _UniversalImportPreviewDialogState
         ],
         if (_totalDelete > 0) ...[
           _Chip('$_totalDelete ${s.importPreviewDelete}', Colors.red),
+          const SizedBox(width: 4),
+        ],
+        if (_totalWarn > 0) ...[
+          _Chip('$_totalWarn ${s.importPreviewWarn}', Colors.orange),
           const SizedBox(width: 4),
         ],
         if (_totalError > 0)
@@ -170,15 +176,16 @@ class _SheetSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = _typeLabels[type] ?? type;
+    final warns   = rows.where((r) => r.action == 'WARN').toList();
     final creates = rows.where((r) => r.action == 'CREATE' && !r.isError).toList();
     final merges  = rows.where((r) => r.action == 'MERGE'  && !r.isError).toList();
     final updates = rows.where((r) => r.action == 'UPDATE' && !r.isError).toList();
     final deletes = rows.where((r) => r.action == 'DELETE' && !r.isError).toList();
-    final errors  = rows.where((r) => r.isError).toList();
+    final errors  = rows.where((r) => r.isError && !r.isWarn).toList();
     final skips   = rows.where((r) => r.action == 'SKIP' && !r.isError).length;
 
     final hasAnything = creates.isNotEmpty || merges.isNotEmpty ||
-        updates.isNotEmpty || deletes.isNotEmpty || errors.isNotEmpty;
+        updates.isNotEmpty || deletes.isNotEmpty || warns.isNotEmpty || errors.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -221,6 +228,10 @@ class _SheetSection extends StatelessWidget {
         if (deletes.isNotEmpty) ...[
           _RowGroupHeader(s.importPreviewDelete, Colors.red, Icons.delete_outline),
           ...deletes.map((r) => _DiffTile(diff: r, color: Colors.red)),
+        ],
+        if (warns.isNotEmpty) ...[
+          _RowGroupHeader(s.importPreviewWarn, Colors.orange, Icons.warning_amber_outlined),
+          ...warns.map((r) => _DiffTile(diff: r, color: Colors.orange, isWarning: true)),
         ],
         if (errors.isNotEmpty) ...[
           _RowGroupHeader('Lỗi (${errors.length})', Colors.red.shade900,
@@ -279,31 +290,60 @@ Map<String, String> _buildColLabels(AppLocalizations s) => {
   'excel.col.employee.bankName':      s.excelColEmployeeBankName,
 };
 
-String _parseSummary(String? raw, AppLocalizations s) {
-  if (raw == null || raw.isEmpty) return '';
+const _keyMessages = <String, Map<String, String>>{
+  'warning.employee.already_exists': {'vi': 'Nhân viên đã tồn tại — bỏ qua', 'en': 'Employee already exists — skipped'},
+  'error.employee.not_found':        {'vi': 'Không tìm thấy nhân viên',       'en': 'Employee not found'},
+  'error.employee.already_exists':   {'vi': 'Nhân viên đã tồn tại',           'en': 'Employee already exists'},
+};
+
+String _translateKey(String key, AppLocalizations s) {
+  final isEn = s.localeName == 'en';
+  final map = _keyMessages[key];
+  if (map != null) return map[isEn ? 'en' : 'vi'] ?? key;
+  return key;
+}
+
+class _SummaryItem {
+  final String label;
+  final String? oldVal;
+  final String? newVal;
+  const _SummaryItem({required this.label, this.oldVal, this.newVal});
+  bool get hasArrow => oldVal != null || newVal != null;
+}
+
+List<_SummaryItem> _parseSummaryItems(String? raw, AppLocalizations s) {
+  if (raw == null || raw.isEmpty) return [];
   final colLabels = _buildColLabels(s);
   if (raw.startsWith('preview.create:')) {
-    final parts = raw.substring('preview.create:'.length).split('|').where((p) => p.isNotEmpty).join(' · ');
-    return '${s.importPreviewCreate}: $parts';
+    final info = raw.substring('preview.create:'.length).split('|').where((p) => p.isNotEmpty).join(' · ');
+    return [_SummaryItem(label: '${s.importPreviewCreate}: $info')];
   }
   if (raw.startsWith('preview.delete:')) {
-    return '${s.importPreviewDelete}: ${raw.substring('preview.delete:'.length)}';
+    return [_SummaryItem(label: '${s.importPreviewDelete}: ${raw.substring('preview.delete:'.length)}')];
   }
-  // Danh sách thay đổi: "key1,key2:old→new,key3"
-  final parts = raw.split(',');
-  final labels = <String>[];
-  for (final part in parts) {
+  final items = <_SummaryItem>[];
+  for (final part in raw.split(',')) {
+    if (part.isEmpty) continue;
     final colonIdx = part.indexOf(':');
     if (colonIdx < 0) {
-      labels.add(colLabels[part] ?? part);
+      items.add(_SummaryItem(label: colLabels[part] ?? part));
     } else {
-      final key   = part.substring(0, colonIdx);
-      final arrow = part.substring(colonIdx + 1).replaceAll('→', ' → ');
-      final label = colLabels[key] ?? key;
-      labels.add('$label: $arrow');
+      final key    = part.substring(0, colonIdx);
+      final rest   = part.substring(colonIdx + 1);
+      final arrowIdx = rest.indexOf('→'); // →
+      final label  = colLabels[key] ?? key;
+      if (arrowIdx < 0) {
+        items.add(_SummaryItem(label: label, newVal: rest));
+      } else {
+        items.add(_SummaryItem(
+          label:  label,
+          oldVal: rest.substring(0, arrowIdx),
+          newVal: rest.substring(arrowIdx + 1),
+        ));
+      }
     }
   }
-  return labels.join(' · ');
+  return items;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -312,7 +352,8 @@ class _DiffTile extends StatelessWidget {
   final UniversalImportDiff diff;
   final Color color;
   final bool isError;
-  const _DiffTile({required this.diff, required this.color, this.isError = false});
+  final bool isWarning;
+  const _DiffTile({required this.diff, required this.color, this.isError = false, this.isWarning = false});
 
   List<Widget> _buildIdentifierWidgets(String identifier, Color color) {
     final parts = identifier.split('|');
@@ -357,27 +398,63 @@ class _DiffTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
-        child: Row(children: [
-          Text('${s.importPreviewRow} ${diff.rowNum}',
-              style: TextStyle(
-                  fontSize: 10,
-                  color: color.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w600)),
-          const SizedBox(width: 8),
-          if (diff.identifier.isNotEmpty) ...[
-            ..._buildIdentifierWidgets(diff.identifier, color),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Header row: số dòng + identifier
+          Row(children: [
+            Text('${s.importPreviewRow} ${diff.rowNum}',
+                style: TextStyle(
+                    fontSize: 10,
+                    color: color.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w600)),
             const SizedBox(width: 8),
+            if (diff.identifier.isNotEmpty)
+              ..._buildIdentifierWidgets(diff.identifier, color),
+            if ((isError || isWarning) && diff.error != null) ...[
+              const SizedBox(width: 8),
+              Expanded(
+                  child: Text(_translateKey(diff.error!, s),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isWarning ? const Color(0xFFB45309) : Colors.red),
+                      overflow: TextOverflow.ellipsis)),
+            ],
+          ]),
+          // Change rows
+          if (diff.summary != null && diff.summary!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            ..._parseSummaryItems(diff.summary, s).map((item) => Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(children: [
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_right_alt_rounded, size: 14, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(item.label,
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: color.withValues(alpha: 0.85))),
+                if (item.hasArrow) ...[
+                  const SizedBox(width: 6),
+                  if (item.oldVal != null && item.oldVal!.isNotEmpty)
+                    Text(item.oldVal!,
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                            decoration: TextDecoration.lineThrough)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(Icons.east_rounded, size: 12, color: Colors.grey),
+                  ),
+                  Text(item.newVal ?? '',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: color)),
+                ],
+              ]),
+            )),
           ],
-          if (diff.summary != null && diff.summary!.isNotEmpty)
-            Expanded(
-                child: Text(_parseSummary(diff.summary, s),
-                    style: const TextStyle(fontSize: 12),
-                    overflow: TextOverflow.ellipsis)),
-          if (isError && diff.error != null)
-            Expanded(
-                child: Text(diff.error!,
-                    style: const TextStyle(fontSize: 12, color: Colors.red),
-                    overflow: TextOverflow.ellipsis)),
         ]),
       ),
     );

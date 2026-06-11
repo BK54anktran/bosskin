@@ -34,6 +34,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
   Map<String, ExportMeta> _meta = {};
 
   ({Uint8List bytes, String filename})? _pickedFile;
+  UniversalImportResult? _lastResult;
 
   static const _allTypes = [
     _TypeEntry('employee',   'Nhân viên',    Icons.people_outline),
@@ -129,35 +130,23 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
     setState(() => _importing = true);
     try {
       final result = await _repo.importAll(file.bytes, file.filename);
-      // Download file kết quả
-      await saveFileToDevice(result.resultBytes, result.filename);
       if (mounted) {
-        final parts = <String>[];
-        if (result.ok   > 0) parts.add('${result.ok} thành công');
-        if (result.error > 0) parts.add('${result.error} lỗi');
-        if (result.skip > 0) parts.add('${result.skip} bỏ qua');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(parts.join(' · ')),
-            backgroundColor: result.error > 0 ? AppTheme.warning : AppTheme.success,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 6),
-            action: SnackBarAction(
-              label: 'Xem file',
-              textColor: Colors.white,
-              onPressed: () {
-                // File đã download — không cần action thêm
-              },
-            ),
-          ),
-        );
-        // Reset file đã chọn sau khi import
-        setState(() { _pickedFile = null; _importing = false; });
+        setState(() {
+          _pickedFile = null;
+          _importing = false;
+          _lastResult = result;
+        });
       }
     } catch (e) {
       if (mounted) setState(() => _importing = false);
-      rethrow; // dialog hiện lỗi
+      rethrow;
     }
+  }
+
+  Future<void> _downloadResult() async {
+    final r = _lastResult;
+    if (r == null) return;
+    await saveFileToDevice(r.resultBytes, r.filename);
   }
 
   void _showError(String msg) {
@@ -202,9 +191,12 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
                   pickedFile: _pickedFile,
                   previewing: _previewing,
                   importing: _importing,
+                  lastResult: _lastResult,
                   onPick: _pickFile,
                   onClear: () => setState(() => _pickedFile = null),
                   onPreview: _preview,
+                  onDownloadResult: _downloadResult,
+                  onClearResult: () => setState(() => _lastResult = null),
                   s: s,
                 ),
               ],
@@ -334,18 +326,24 @@ class _ImportCard extends StatelessWidget {
   final ({Uint8List bytes, String filename})? pickedFile;
   final bool previewing;
   final bool importing;
+  final UniversalImportResult? lastResult;
   final VoidCallback onPick;
   final VoidCallback onClear;
   final VoidCallback onPreview;
+  final VoidCallback onDownloadResult;
+  final VoidCallback onClearResult;
   final AppLocalizations s;
 
   const _ImportCard({
     required this.pickedFile,
     required this.previewing,
     required this.importing,
+    required this.lastResult,
     required this.onPick,
     required this.onClear,
     required this.onPreview,
+    required this.onDownloadResult,
+    required this.onClearResult,
     required this.s,
   });
 
@@ -384,6 +382,14 @@ class _ImportCard extends StatelessWidget {
               previewing: previewing || importing,
               s: s,
             ),
+          if (lastResult != null) ...[
+            const SizedBox(height: 12),
+            _ResultBanner(
+              result: lastResult!,
+              onDownload: onDownloadResult,
+              onDismiss: onClearResult,
+            ),
+          ],
           const SizedBox(height: 16),
           _ImportSteps(),
         ]),
@@ -543,6 +549,63 @@ class _ImportSteps extends StatelessWidget {
           ),
         ]);
       }),
+    );
+  }
+}
+
+// ── Result banner ─────────────────────────────────────────────────────────────
+
+class _ResultBanner extends StatelessWidget {
+  final UniversalImportResult result;
+  final VoidCallback onDownload;
+  final VoidCallback onDismiss;
+  const _ResultBanner({
+    required this.result,
+    required this.onDownload,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasError = result.error > 0;
+    final color = hasError ? AppTheme.warning : AppTheme.success;
+    final parts = <String>[];
+    if (result.ok    > 0) parts.add('${result.ok} thành công');
+    if (result.error > 0) parts.add('${result.error} lỗi');
+    if (result.skip  > 0) parts.add('${result.skip} bỏ qua');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(children: [
+        Icon(hasError ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+            size: 18, color: color),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(parts.join(' · '),
+              style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w600)),
+        ),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: TextButton.icon(
+            onPressed: onDownload,
+            icon: Icon(Icons.download_outlined, size: 16, color: color),
+            label: Text('Tải file kết quả', style: TextStyle(color: color, fontSize: 12)),
+            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
+          ),
+        ),
+        IconButton(
+          onPressed: onDismiss,
+          icon: const Icon(Icons.close, size: 16),
+          color: AppTheme.textSecondary,
+          tooltip: 'Đóng',
+          visualDensity: VisualDensity.compact,
+        ),
+      ]),
     );
   }
 }

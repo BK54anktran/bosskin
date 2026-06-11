@@ -331,7 +331,7 @@ public class EmployeeImportService {
 
         return switch (command) {
             case CREATE -> exists
-                ? com.bosskin.util.SheetImportResult.RowResult.error(0, "error.employee.already_exists")
+                ? com.bosskin.util.SheetImportResult.RowResult.warn(0, "warning.employee.already_exists")
                 : com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", buildCreateSummary(row));
             case UPDATE -> !exists
                 ? com.bosskin.util.SheetImportResult.RowResult.error(0, "error.employee.not_found")
@@ -397,7 +397,9 @@ public class EmployeeImportService {
 
     private void diffStr(List<String> out, String key, String empVal, String rowVal) {
         if (isBlank(rowVal)) return;
-        if (!rowVal.trim().equals(empVal == null ? "" : empVal.trim())) out.add(key);
+        String o = empVal == null ? "" : empVal.trim();
+        String n = rowVal.trim();
+        if (!n.equals(o)) out.add(key + ":" + o + "→" + n);
     }
 
     private void diffDate(List<String> out, String key, LocalDate empVal, String rowVal) {
@@ -407,9 +409,9 @@ public class EmployeeImportService {
             out.add(key + ":" + (empVal != null ? empVal.format(DATE_FMT) : "") + "→" + newDate.format(DATE_FMT));
     }
 
-    /** Thực hiện import 1 row theo command. */
+    /** Thực hiện import 1 row theo command. Trả về false nếu bị skip (CREATE đã tồn tại). */
     @Transactional
-    public void importRow(Long companyId, Long userId,
+    public boolean importRow(Long companyId, Long userId,
                           EmployeeDTO.ImportRow row,
                           com.bosskin.util.ImportCommand command,
                           Set<String> presentColumns) {
@@ -430,8 +432,7 @@ public class EmployeeImportService {
 
         switch (command) {
             case CREATE -> {
-                if (emp != null)
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "error.employee.already_exists");
+                if (emp != null) return false; // đã tồn tại → skip
                 doCreate(row, code, company, deptMap, posMap, gradeMap);
             }
             case UPDATE -> {
@@ -449,6 +450,7 @@ public class EmployeeImportService {
                 employeeRepo.delete(emp);
             }
         }
+        return true;
     }
 
     private void doCreate(EmployeeDTO.ImportRow row, String code, Company company,

@@ -132,7 +132,8 @@ class UniversalImportDiff {
     this.error,
   });
 
-  bool get isError => error != null && error!.isNotEmpty;
+  bool get isWarn  => action == 'WARN';
+  bool get isError => error != null && error!.isNotEmpty && action != 'WARN';
 
   factory UniversalImportDiff.fromJson(Map<String, dynamic> j) {
     final rawError = j['error'];

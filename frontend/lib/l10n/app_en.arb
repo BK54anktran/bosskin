@@ -769,6 +769,7 @@
   ,"importPreviewTitle": "Preview changes"
   ,"importPreviewCreate": "New"
   ,"importPreviewUpdate": "Update"
+  ,"importPreviewWarn": "Warning"
   ,"importPreviewNoChange": "No change"
   ,"importPreviewEmpty": "No changes detected"
   ,"importConfirm": "Confirm import"

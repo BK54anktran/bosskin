@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../localization/language_service.dart';
 
 const _viMessages = <String, String>{
+  'warning.employee.already_exists': 'Nhân viên đã tồn tại — bỏ qua',
   'error.permission.denied': 'Không có quyền thực hiện thao tác này',
   'error.department.must_be_child_in_scope': 'Chỉ được tạo phòng ban con trong phạm vi được phép',
   'error.department.parent_out_of_scope': 'Phòng ban cha không nằm trong phạm vi được phép',
@@ -13,6 +14,7 @@ const _viMessages = <String, String>{
 };
 
 const _enMessages = <String, String>{
+  'warning.employee.already_exists': 'Employee already exists — skipped',
   'error.permission.denied': 'You do not have permission to perform this action',
   'error.department.must_be_child_in_scope': 'You can only create sub-departments within your permitted scope',
   'error.department.parent_out_of_scope': 'The parent department is outside your permitted scope',

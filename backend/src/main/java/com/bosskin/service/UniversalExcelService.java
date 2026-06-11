@@ -195,12 +195,13 @@ public class UniversalExcelService {
             String id = rw != null ? desc.getIdentifier(rw.data()) : "";
             String action = rw != null && rw.command() != null ? rw.command().name() : r.status();
             boolean isError = r.status().equals("ERROR");
+            boolean isWarn  = r.status().equals("WARN");
             String msg = r.message();
-            // Skip rows không thay đổi — không cần hiện trong preview
-            if (!isError && "preview.noChange".equals(msg)) continue;
-            String summary = (!isError && msg != null && !msg.isBlank()) ? msg : null;
-            String errorMsg = isError ? msg : null;
-            diffs.add(new UniversalImportDiff(r.rowNum(), action, id, summary, errorMsg));
+            if (!isError && !isWarn && "preview.noChange".equals(msg)) continue;
+            String summary  = (!isError && !isWarn && msg != null && !msg.isBlank()) ? msg : null;
+            String errorMsg = (isError || isWarn) ? msg : null;
+            String diffAction = isWarn ? "WARN" : action;
+            diffs.add(new UniversalImportDiff(r.rowNum(), diffAction, id, summary, errorMsg));
         }
         return diffs;
     }
@@ -262,9 +263,10 @@ public class UniversalExcelService {
             String statusHeader  = excelI18n.resolve("excel.col.status",  locale);
             String messageHeader = excelI18n.resolve("excel.col.message", locale);
 
-            CellStyle okStyle  = buildResultStyle(wb, new byte[]{(byte)0xD1,(byte)0xFA,(byte)0xE8});
-            CellStyle errStyle = buildResultStyle(wb, new byte[]{(byte)0xFE,(byte)0xE2,(byte)0xE2});
-            CellStyle skipStyle= buildResultStyle(wb, new byte[]{(byte)0xF3,(byte)0xF4,(byte)0xF6});
+            CellStyle okStyle   = buildResultStyle(wb, new byte[]{(byte)0xD1,(byte)0xFA,(byte)0xE8});
+            CellStyle errStyle  = buildResultStyle(wb, new byte[]{(byte)0xFE,(byte)0xE2,(byte)0xE2});
+            CellStyle warnStyle = buildResultStyle(wb, new byte[]{(byte)0xFF,(byte)0xF3,(byte)0xCD});
+            CellStyle skipStyle = buildResultStyle(wb, new byte[]{(byte)0xF3,(byte)0xF4,(byte)0xF6});
             CellStyle hdrStyle = buildHeaderStyle(wb);
 
             for (SheetImportResult sheetResult : allResults.values()) {
@@ -295,13 +297,14 @@ public class UniversalExcelService {
                     CellStyle cs = switch (r.status()) {
                         case "OK"    -> okStyle;
                         case "ERROR" -> errStyle;
+                        case "WARN"  -> warnStyle;
                         default      -> skipStyle;
                     };
                     Cell statusCell = row.createCell(statusCol);
                     statusCell.setCellValue(r.status());
                     statusCell.setCellStyle(cs);
                     Cell msgCell = row.createCell(messageCol);
-                    msgCell.setCellValue(r.message() != null ? r.message() : "");
+                    msgCell.setCellValue(resolveMessage(r.message(), locale));
                     msgCell.setCellStyle(cs);
                 }
             }
@@ -401,6 +404,13 @@ public class UniversalExcelService {
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
             default      -> "";
         };
+    }
+
+    /** Resolve message key sang text theo locale; nếu không phải key thì trả nguyên. */
+    private String resolveMessage(String msg, java.util.Locale locale) {
+        if (msg == null || msg.isBlank()) return "";
+        String resolved = excelI18n.resolve(msg, locale);
+        return resolved.equals(msg) ? msg : resolved;
     }
 
     /** Tìm tên sheet trong workbook bằng cách thử tất cả locale của key. */

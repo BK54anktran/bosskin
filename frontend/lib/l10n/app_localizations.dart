@@ -4263,6 +4263,12 @@ abstract class AppLocalizations {
   /// **'Cập nhật'**
   String get importPreviewUpdate;
 
+  /// No description provided for @importPreviewWarn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo'**
+  String get importPreviewWarn;
+
   /// No description provided for @importPreviewNoChange.
   ///
   /// In vi, this message translates to:

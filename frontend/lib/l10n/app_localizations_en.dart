@@ -2166,6 +2166,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importPreviewUpdate => 'Update';
 
   @override
+  String get importPreviewWarn => 'Warning';
+
+  @override
   String get importPreviewNoChange => 'No change';
 
   @override
