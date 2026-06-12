@@ -30,24 +30,29 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
   bool _previewing = false;
   bool _importing = false;
   bool _metaLoading = false;
+  bool _historyLoading = false;
 
   Map<String, ExportMeta> _meta = {};
+  List<ExcelHistoryEntry> _history = [];
 
   ({Uint8List bytes, String filename})? _pickedFile;
   UniversalImportResult? _lastResult;
-
-  static const _allTypes = [
-    _TypeEntry('employee',   'Nhân viên',    Icons.people_outline),
-    _TypeEntry('department', 'Phòng ban',    Icons.account_tree_outlined),
-    _TypeEntry('position',   'Chức vụ',      Icons.work_outline),
-    _TypeEntry('shift',      'Ca làm việc',  Icons.schedule_outlined),
-  ];
 
   @override
   void initState() {
     super.initState();
     _loadMeta();
+    _loadHistory();
   }
+
+  List<_TypeEntry> _buildTypes(AppLocalizations s) => [
+    _TypeEntry('employee',   s.excelModuleEmployee,   Icons.people_outline),
+    _TypeEntry('department', s.excelModuleDepartment, Icons.account_tree_outlined),
+    _TypeEntry('position',   s.excelModulePosition,   Icons.work_outline),
+    _TypeEntry('shift',      s.excelModuleShift,      Icons.schedule_outlined),
+    _TypeEntry('attendance', s.excelModuleAttendance, Icons.event_available_outlined),
+    _TypeEntry('payroll',    s.excelModulePayroll,    Icons.payments_outlined),
+  ];
 
   Future<void> _loadMeta() async {
     setState(() => _metaLoading = true);
@@ -59,7 +64,17 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
     }
   }
 
-  Future<void> _export() async {
+  Future<void> _loadHistory() async {
+    setState(() => _historyLoading = true);
+    try {
+      final list = await _repo.getHistory();
+      if (mounted) setState(() { _history = list; _historyLoading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _historyLoading = false);
+    }
+  }
+
+  Future<void> _export(AppLocalizations s) async {
     if (_metaLoading) return;
 
     final opts = await showInstantDialog<ExportOptions>(
@@ -82,12 +97,12 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                '${AppLocalizations.of(context).exportSuccess}: ${result.filename}'),
+            content: Text('${s.exportSuccess}: ${result.filename}'),
             backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
+        _loadHistory();
       }
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
@@ -109,16 +124,13 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
     try {
       final diffs = await _repo.previewImport(file.bytes, file.filename);
       if (!mounted) return;
-      final confirmed = await showInstantDialog<bool>(
+      await showInstantDialog<bool>(
         context,
         (ctx) => UniversalImportPreviewDialog(
           diffs: diffs,
           onConfirm: () => _doImport(file),
         ),
       );
-      if (confirmed == true && mounted) {
-        // Import đã xảy ra trong onConfirm — kết quả được download bởi _doImport
-      }
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
     } finally {
@@ -136,6 +148,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
           _importing = false;
           _lastResult = result;
         });
+        _loadHistory();
       }
     } catch (e) {
       if (mounted) setState(() => _importing = false);
@@ -147,6 +160,15 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
     final r = _lastResult;
     if (r == null) return;
     await saveFileToDevice(r.resultBytes, r.filename);
+  }
+
+  Future<void> _downloadHistoryFile(int id, String filename) async {
+    try {
+      final bytes = await _repo.downloadHistoryFile(id);
+      await saveFileToDevice(bytes, filename);
+    } catch (e) {
+      if (mounted) _showError(serverMsg(e));
+    }
   }
 
   void _showError(String msg) {
@@ -162,9 +184,10 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
+    final allTypes = _buildTypes(s);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Import / Export dữ liệu'),
+        title: Text(s.excelScreenTitle),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -176,7 +199,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _ExportCard(
-                  allTypes: _allTypes,
+                  allTypes: allTypes,
                   selectedTypes: _selectedTypes,
                   exporting: _exporting,
                   metaLoading: _metaLoading,
@@ -184,7 +207,8 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
                       setState(() => _selectedTypes.contains(type)
                           ? _selectedTypes.remove(type)
                           : _selectedTypes.add(type)),
-                  onExport: _export,
+                  onExport: () => _export(s),
+                  s: s,
                 ),
                 const SizedBox(height: 20),
                 _ImportCard(
@@ -197,6 +221,13 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
                   onPreview: _preview,
                   onDownloadResult: _downloadResult,
                   onClearResult: () => setState(() => _lastResult = null),
+                  s: s,
+                ),
+                const SizedBox(height: 20),
+                _HistoryCard(
+                  history: _history,
+                  loading: _historyLoading,
+                  onDownload: _downloadHistoryFile,
                   s: s,
                 ),
               ],
@@ -217,6 +248,7 @@ class _ExportCard extends StatelessWidget {
   final bool metaLoading;
   final void Function(String) onToggle;
   final VoidCallback onExport;
+  final AppLocalizations s;
 
   const _ExportCard({
     required this.allTypes,
@@ -225,6 +257,7 @@ class _ExportCard extends StatelessWidget {
     required this.metaLoading,
     required this.onToggle,
     required this.onExport,
+    required this.s,
   });
 
   @override
@@ -241,8 +274,8 @@ class _ExportCard extends StatelessWidget {
           Row(children: [
             const Icon(Icons.download_outlined, color: AppTheme.primary),
             const SizedBox(width: 10),
-            const Text('Xuất dữ liệu',
-                style: TextStyle(
+            Text(s.excelExportTitle,
+                style: const TextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold)),
             const Spacer(),
             MouseRegion(
@@ -256,14 +289,14 @@ class _ExportCard extends StatelessWidget {
                             strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.tune_outlined, size: 16),
                 label: Text(selectedTypes.isEmpty
-                    ? 'Chọn & Xuất'
-                    : 'Chọn & Xuất (${selectedTypes.length})'),
+                    ? s.excelExportButton
+                    : s.excelExportButtonN(selectedTypes.length)),
               ),
             ),
           ]),
           const SizedBox(height: 6),
           Text(
-            'Chọn module muốn xuất. Bỏ trống để xuất toàn bộ.',
+            s.excelExportSubtitle,
             style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
@@ -302,14 +335,13 @@ class _ExportCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFBFDBFE)),
             ),
-            child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Icon(Icons.info_outline, size: 14, color: Color(0xFF3B82F6)),
-              SizedBox(width: 8),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.info_outline, size: 14, color: Color(0xFF3B82F6)),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'File Excel xuất ra có cột "Lệnh" (hoặc "Command"). '
-                  'Điền CREATE / UPDATE / DELETE vào cột đó rồi import lại để thực hiện thay đổi hàng loạt.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF1D4ED8)),
+                  s.excelExportHint,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF1D4ED8)),
                 ),
               ),
             ]),
@@ -361,18 +393,18 @@ class _ImportCard extends StatelessWidget {
           Row(children: [
             const Icon(Icons.upload_outlined, color: AppTheme.secondary),
             const SizedBox(width: 10),
-            const Text('Nhập dữ liệu',
-                style: TextStyle(
+            Text(s.excelImportTitle,
+                style: const TextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 6),
           Text(
-            'Chọn file Excel (đã điền cột Lệnh) để xem trước và nhập.',
-            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            s.excelImportSubtitle,
+            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
           if (pickedFile == null)
-            _DropZone(onTap: onPick)
+            _DropZone(onTap: onPick, s: s)
           else
             _SelectedFile(
               filename: pickedFile!.filename,
@@ -388,10 +420,11 @@ class _ImportCard extends StatelessWidget {
               result: lastResult!,
               onDownload: onDownloadResult,
               onDismiss: onClearResult,
+              s: s,
             ),
           ],
           const SizedBox(height: 16),
-          _ImportSteps(),
+          _ImportSteps(s: s),
         ]),
       ),
     );
@@ -400,7 +433,8 @@ class _ImportCard extends StatelessWidget {
 
 class _DropZone extends StatelessWidget {
   final VoidCallback onTap;
-  const _DropZone({required this.onTap});
+  final AppLocalizations s;
+  const _DropZone({required this.onTap, required this.s});
 
   @override
   Widget build(BuildContext context) {
@@ -425,7 +459,7 @@ class _DropZone extends StatelessWidget {
                 Icon(Icons.cloud_upload_outlined,
                     size: 32, color: AppTheme.primary.withValues(alpha: 0.6)),
                 const SizedBox(height: 8),
-                Text('Nhấn để chọn file .xlsx',
+                Text(s.excelImportDropzone,
                     style: TextStyle(
                         fontSize: 13,
                         color: AppTheme.primary.withValues(alpha: 0.8))),
@@ -480,7 +514,7 @@ class _SelectedFile extends StatelessWidget {
                     fontWeight: FontWeight.w600, fontSize: 13),
                 overflow: TextOverflow.ellipsis),
             Text(_size,
-                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
           ]),
         ),
         const SizedBox(width: 12),
@@ -496,7 +530,7 @@ class _SelectedFile extends StatelessWidget {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
                 : const Icon(Icons.preview_outlined, size: 16),
-            label: const Text('Xem trước & Nhập'),
+            label: Text(s.excelImportPreviewBtn),
           ),
         ),
         const SizedBox(width: 6),
@@ -505,7 +539,7 @@ class _SelectedFile extends StatelessWidget {
           child: IconButton(
             onPressed: onClear,
             icon: const Icon(Icons.close, size: 18),
-            tooltip: 'Xóa file',
+            tooltip: s.excelImportClearFile,
             color: AppTheme.textSecondary,
           ),
         ),
@@ -515,14 +549,17 @@ class _SelectedFile extends StatelessWidget {
 }
 
 class _ImportSteps extends StatelessWidget {
+  final AppLocalizations s;
+  const _ImportSteps({required this.s});
+
   @override
   Widget build(BuildContext context) {
-    const steps = [
-      (Icons.download_outlined,     'Xuất file mẫu ở trên'),
-      (Icons.edit_outlined,          'Điền cột Lệnh: CREATE / UPDATE / DELETE'),
-      (Icons.upload_file_outlined,   'Chọn file đã điền'),
-      (Icons.preview_outlined,       'Xem trước thay đổi'),
-      (Icons.check_circle_outlined,  'Xác nhận → nhận file kết quả'),
+    final steps = [
+      (Icons.download_outlined,    s.excelStepExport),
+      (Icons.edit_outlined,         s.excelStepFill),
+      (Icons.upload_file_outlined,  s.excelStepPick),
+      (Icons.preview_outlined,      s.excelStepPreview),
+      (Icons.check_circle_outlined, s.excelStepConfirm),
     ];
     return Row(
       children: List.generate(steps.length * 2 - 1, (i) {
@@ -545,7 +582,7 @@ class _ImportSteps extends StatelessWidget {
             width: 80,
             child: Text(label,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
           ),
         ]);
       }),
@@ -559,10 +596,13 @@ class _ResultBanner extends StatelessWidget {
   final UniversalImportResult result;
   final VoidCallback onDownload;
   final VoidCallback onDismiss;
+  final AppLocalizations s;
+
   const _ResultBanner({
     required this.result,
     required this.onDownload,
     required this.onDismiss,
+    required this.s,
   });
 
   @override
@@ -570,9 +610,9 @@ class _ResultBanner extends StatelessWidget {
     final hasError = result.error > 0;
     final color = hasError ? AppTheme.warning : AppTheme.success;
     final parts = <String>[];
-    if (result.ok    > 0) parts.add('${result.ok} thành công');
-    if (result.error > 0) parts.add('${result.error} lỗi');
-    if (result.skip  > 0) parts.add('${result.skip} bỏ qua');
+    if (result.ok    > 0) parts.add(s.excelImportResultOk(result.ok));
+    if (result.error > 0) parts.add(s.excelImportResultError(result.error));
+    if (result.skip  > 0) parts.add(s.excelImportResultSkip(result.skip));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -594,7 +634,7 @@ class _ResultBanner extends StatelessWidget {
           child: TextButton.icon(
             onPressed: onDownload,
             icon: Icon(Icons.download_outlined, size: 16, color: color),
-            label: Text('Tải file kết quả', style: TextStyle(color: color, fontSize: 12)),
+            label: Text(s.excelImportResultDownload, style: TextStyle(color: color, fontSize: 12)),
             style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
           ),
         ),
@@ -602,11 +642,235 @@ class _ResultBanner extends StatelessWidget {
           onPressed: onDismiss,
           icon: const Icon(Icons.close, size: 16),
           color: AppTheme.textSecondary,
-          tooltip: 'Đóng',
           visualDensity: VisualDensity.compact,
         ),
       ]),
     );
+  }
+}
+
+// ── History card ──────────────────────────────────────────────────────────────
+
+class _HistoryCard extends StatelessWidget {
+  final List<ExcelHistoryEntry> history;
+  final bool loading;
+  final Future<void> Function(int id, String filename) onDownload;
+  final AppLocalizations s;
+
+  const _HistoryCard({
+    required this.history,
+    required this.loading,
+    required this.onDownload,
+    required this.s,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppTheme.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.history_outlined, color: AppTheme.textSecondary),
+            const SizedBox(width: 10),
+            Text(s.excelHistoryTitle,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ]),
+          const SizedBox(height: 12),
+          if (loading)
+            const Center(
+                child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator()))
+          else if (history.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(s.excelHistoryEmpty,
+                  style: const TextStyle(
+                      fontSize: 13, color: AppTheme.textSecondary)),
+            )
+          else
+            ...history.map((e) => _HistoryTile(entry: e, onDownload: onDownload, s: s)),
+        ]),
+      ),
+    );
+  }
+}
+
+class _HistoryTile extends StatefulWidget {
+  final ExcelHistoryEntry entry;
+  final Future<void> Function(int id, String filename) onDownload;
+  final AppLocalizations s;
+
+  const _HistoryTile({
+    required this.entry,
+    required this.onDownload,
+    required this.s,
+  });
+
+  @override
+  State<_HistoryTile> createState() => _HistoryTileState();
+}
+
+class _HistoryTileState extends State<_HistoryTile> {
+  bool _downloading = false;
+
+  String _moduleLabel(AppLocalizations s) {
+    switch (widget.entry.module) {
+      case 'payroll':    return s.excelModulePayroll;
+      case 'attendance': return s.excelModuleAttendance;
+      default:           return s.excelModuleUniversal;
+    }
+  }
+
+  Future<void> _handleDownload() async {
+    if (_downloading) return;
+    setState(() => _downloading = true);
+    try {
+      await Future.microtask(
+          () => widget.onDownload(widget.entry.id, widget.entry.filename));
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entry = widget.entry;
+    final s = widget.s;
+    final isImport = entry.type == 'IMPORT';
+    final isReport = entry.type == 'REPORT';
+    final Color color = isImport
+        ? AppTheme.secondary
+        : isReport
+            ? const Color(0xFF7C3AED)
+            : AppTheme.primary;
+    final String typeLabel = isImport
+        ? s.excelHistoryTypeImport
+        : isReport
+            ? s.excelHistoryTypeReport
+            : s.excelHistoryTypeExport;
+    final IconData icon = isImport
+        ? Icons.upload_outlined
+        : isReport
+            ? Icons.summarize_outlined
+            : Icons.download_outlined;
+
+    final parts = <String>[];
+    if ((entry.okCount ?? 0)    > 0) parts.add(s.excelHistoryOk(entry.okCount!));
+    if ((entry.errorCount ?? 0) > 0) parts.add(s.excelHistoryError(entry.errorCount!));
+    if ((entry.skipCount ?? 0)  > 0) parts.add(s.excelHistorySkip(entry.skipCount!));
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Row(children: [
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(typeLabel,
+                    style: TextStyle(
+                        fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: AppTheme.border,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(_moduleLabel(s),
+                    style: const TextStyle(
+                        fontSize: 10, color: AppTheme.textSecondary)),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(entry.filename,
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis),
+              ),
+            ]),
+            if (parts.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(parts.join(' · '),
+                  style: const TextStyle(
+                      fontSize: 11, color: AppTheme.textSecondary)),
+            ],
+            const SizedBox(height: 2),
+            Row(children: [
+              Text(_formatDate(entry.createdAt),
+                  style: const TextStyle(
+                      fontSize: 10, color: AppTheme.textSecondary)),
+              if (entry.performedBy != null) ...[
+                const Text(' · ',
+                    style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                Text(entry.performedBy!,
+                    style: const TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w500)),
+              ],
+            ]),
+          ]),
+        ),
+        if (entry.fileUrl != null)
+          MouseRegion(
+            cursor: _downloading
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.click,
+            child: SizedBox(
+              width: 36, height: 36,
+              child: _downloading
+                  ? Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: color),
+                    )
+                  : IconButton(
+                      onPressed: _handleDownload,
+                      icon: const Icon(Icons.download_outlined, size: 18),
+                      color: color,
+                      tooltip: s.excelHistoryDownload,
+                      visualDensity: VisualDensity.compact,
+                    ),
+            ),
+          ),
+      ]),
+    );
+  }
+
+  String _formatDate(DateTime dt) {
+    return '${dt.day.toString().padLeft(2, '0')}/'
+        '${dt.month.toString().padLeft(2, '0')}/'
+        '${dt.year}  '
+        '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}';
   }
 }
 

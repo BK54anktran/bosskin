@@ -4263,6 +4263,12 @@ abstract class AppLocalizations {
   /// **'Cập nhật'**
   String get importPreviewUpdate;
 
+  /// No description provided for @importPreviewMerge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp nhất'**
+  String get importPreviewMerge;
+
   /// No description provided for @importPreviewWarn.
   ///
   /// In vi, this message translates to:
@@ -4328,6 +4334,222 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhập chấm công thành công'**
   String get importAttendanceSuccess;
+
+  /// No description provided for @excelScreenTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Import / Export dữ liệu'**
+  String get excelScreenTitle;
+
+  /// No description provided for @excelExportTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất dữ liệu'**
+  String get excelExportTitle;
+
+  /// No description provided for @excelExportSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn module muốn xuất. Bỏ trống để xuất toàn bộ.'**
+  String get excelExportSubtitle;
+
+  /// No description provided for @excelExportButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn & Xuất'**
+  String get excelExportButton;
+
+  /// No description provided for @excelExportButtonN.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn & Xuất ({n})'**
+  String excelExportButtonN(int n);
+
+  /// No description provided for @excelExportHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'File Excel xuất ra có cột \"Lệnh\" (hoặc \"Command\"). Điền CREATE / UPDATE / MERGE / DELETE vào cột đó rồi import lại để thực hiện thay đổi hàng loạt.'**
+  String get excelExportHint;
+
+  /// No description provided for @excelModuleEmployee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên'**
+  String get excelModuleEmployee;
+
+  /// No description provided for @excelModuleDepartment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get excelModuleDepartment;
+
+  /// No description provided for @excelModulePosition.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ'**
+  String get excelModulePosition;
+
+  /// No description provided for @excelModuleShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca làm việc'**
+  String get excelModuleShift;
+
+  /// No description provided for @excelImportTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập dữ liệu'**
+  String get excelImportTitle;
+
+  /// No description provided for @excelImportSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn file Excel (đã điền cột Lệnh) để xem trước và nhập.'**
+  String get excelImportSubtitle;
+
+  /// No description provided for @excelImportDropzone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhấn để chọn file .xlsx'**
+  String get excelImportDropzone;
+
+  /// No description provided for @excelImportPreviewBtn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem trước & Nhập'**
+  String get excelImportPreviewBtn;
+
+  /// No description provided for @excelImportClearFile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa file'**
+  String get excelImportClearFile;
+
+  /// No description provided for @excelImportResultDownload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải file kết quả'**
+  String get excelImportResultDownload;
+
+  /// No description provided for @excelImportResultOk.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} thành công'**
+  String excelImportResultOk(int n);
+
+  /// No description provided for @excelImportResultError.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} lỗi'**
+  String excelImportResultError(int n);
+
+  /// No description provided for @excelImportResultSkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} bỏ qua'**
+  String excelImportResultSkip(int n);
+
+  /// No description provided for @excelStepExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất file mẫu ở trên'**
+  String get excelStepExport;
+
+  /// No description provided for @excelStepFill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điền cột Lệnh:\nCREATE / UPDATE /\nMERGE / DELETE'**
+  String get excelStepFill;
+
+  /// No description provided for @excelStepPick.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn file đã điền'**
+  String get excelStepPick;
+
+  /// No description provided for @excelStepPreview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem trước thay đổi'**
+  String get excelStepPreview;
+
+  /// No description provided for @excelStepConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận → nhận file kết quả'**
+  String get excelStepConfirm;
+
+  /// No description provided for @excelHistoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử'**
+  String get excelHistoryTitle;
+
+  /// No description provided for @excelHistoryEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có lịch sử.'**
+  String get excelHistoryEmpty;
+
+  /// No description provided for @excelHistoryTypeExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất'**
+  String get excelHistoryTypeExport;
+
+  /// No description provided for @excelHistoryTypeImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập'**
+  String get excelHistoryTypeImport;
+
+  /// No description provided for @excelHistoryDownload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lại'**
+  String get excelHistoryDownload;
+
+  /// No description provided for @excelHistoryOk.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} thành công'**
+  String excelHistoryOk(int n);
+
+  /// No description provided for @excelHistoryError.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} lỗi'**
+  String excelHistoryError(int n);
+
+  /// No description provided for @excelHistorySkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} bỏ qua'**
+  String excelHistorySkip(int n);
+
+  /// No description provided for @excelHistoryTypeReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo'**
+  String get excelHistoryTypeReport;
+
+  /// No description provided for @excelModulePayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương'**
+  String get excelModulePayroll;
+
+  /// No description provided for @excelModuleAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công'**
+  String get excelModuleAttendance;
+
+  /// No description provided for @excelModuleUniversal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dữ liệu'**
+  String get excelModuleUniversal;
 
   /// No description provided for @dashboardErrorLoad.
   ///
@@ -4772,6 +4994,312 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Ngân hàng'**
   String get excelColEmployeeBankName;
+
+  /// No description provided for @excelColAttendanceDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày (*)'**
+  String get excelColAttendanceDate;
+
+  /// No description provided for @excelColAttendanceEmployeeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã NV (*)'**
+  String get excelColAttendanceEmployeeCode;
+
+  /// No description provided for @excelColAttendanceEmployeeName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên'**
+  String get excelColAttendanceEmployeeName;
+
+  /// No description provided for @excelColAttendanceDepartmentName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get excelColAttendanceDepartmentName;
+
+  /// No description provided for @excelColAttendanceStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get excelColAttendanceStatus;
+
+  /// No description provided for @excelColAttendanceCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Check-in'**
+  String get excelColAttendanceCheckIn;
+
+  /// No description provided for @excelColAttendanceCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Check-out'**
+  String get excelColAttendanceCheckOut;
+
+  /// No description provided for @excelColAttendanceNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú'**
+  String get excelColAttendanceNote;
+
+  /// No description provided for @excelColAttendanceSnapActualHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ thực tế'**
+  String get excelColAttendanceSnapActualHours;
+
+  /// No description provided for @excelColAttendanceSnapDayOt.
+  ///
+  /// In vi, this message translates to:
+  /// **'OT ngày'**
+  String get excelColAttendanceSnapDayOt;
+
+  /// No description provided for @excelColAttendanceSnapNightOt.
+  ///
+  /// In vi, this message translates to:
+  /// **'OT đêm'**
+  String get excelColAttendanceSnapNightOt;
+
+  /// No description provided for @excelColAttendanceApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt'**
+  String get excelColAttendanceApproved;
+
+  /// No description provided for @excelColAttendanceOverrideCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Override Check-in'**
+  String get excelColAttendanceOverrideCheckIn;
+
+  /// No description provided for @excelColAttendanceOverrideCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Override Check-out'**
+  String get excelColAttendanceOverrideCheckOut;
+
+  /// No description provided for @excelColAttendanceOverrideBreakMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Override nghỉ (phút)'**
+  String get excelColAttendanceOverrideBreakMinutes;
+
+  /// No description provided for @excelColAttendanceOverrideOtDayMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Override OT ngày (phút)'**
+  String get excelColAttendanceOverrideOtDayMinutes;
+
+  /// No description provided for @excelColAttendanceOverrideOtNightMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Override OT đêm (phút)'**
+  String get excelColAttendanceOverrideOtNightMinutes;
+
+  /// No description provided for @excelColPayrollYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm'**
+  String get excelColPayrollYear;
+
+  /// No description provided for @excelColPayrollMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng'**
+  String get excelColPayrollMonth;
+
+  /// No description provided for @excelColPayrollEmployeeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã NV'**
+  String get excelColPayrollEmployeeCode;
+
+  /// No description provided for @excelColPayrollEmployeeName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên'**
+  String get excelColPayrollEmployeeName;
+
+  /// No description provided for @excelColPayrollDepartmentName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get excelColPayrollDepartmentName;
+
+  /// No description provided for @excelColPayrollPositionName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ'**
+  String get excelColPayrollPositionName;
+
+  /// No description provided for @excelColPayrollSalaryGradeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bậc lương'**
+  String get excelColPayrollSalaryGradeCode;
+
+  /// No description provided for @excelColPayrollPayType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại tính'**
+  String get excelColPayrollPayType;
+
+  /// No description provided for @excelColPayrollBaseSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương cơ bản'**
+  String get excelColPayrollBaseSalary;
+
+  /// No description provided for @excelColPayrollAllowance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trợ cấp'**
+  String get excelColPayrollAllowance;
+
+  /// No description provided for @excelColPayrollBonus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thưởng'**
+  String get excelColPayrollBonus;
+
+  /// No description provided for @excelColPayrollOvertimePay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương OT'**
+  String get excelColPayrollOvertimePay;
+
+  /// No description provided for @excelColPayrollGrossSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gross'**
+  String get excelColPayrollGrossSalary;
+
+  /// No description provided for @excelColPayrollSocialInsurance.
+  ///
+  /// In vi, this message translates to:
+  /// **'BHXH'**
+  String get excelColPayrollSocialInsurance;
+
+  /// No description provided for @excelColPayrollHealthInsurance.
+  ///
+  /// In vi, this message translates to:
+  /// **'BHYT'**
+  String get excelColPayrollHealthInsurance;
+
+  /// No description provided for @excelColPayrollUnemploymentInsurance.
+  ///
+  /// In vi, this message translates to:
+  /// **'BHTN'**
+  String get excelColPayrollUnemploymentInsurance;
+
+  /// No description provided for @excelColPayrollPersonalIncomeTax.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế TNCN'**
+  String get excelColPayrollPersonalIncomeTax;
+
+  /// No description provided for @excelColPayrollOtherDeductions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khấu trừ khác'**
+  String get excelColPayrollOtherDeductions;
+
+  /// No description provided for @excelColPayrollNetSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Net (thực lãnh)'**
+  String get excelColPayrollNetSalary;
+
+  /// No description provided for @excelColPayrollStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get excelColPayrollStatus;
+
+  /// No description provided for @excelColPayrollNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú'**
+  String get excelColPayrollNote;
+
+  /// No description provided for @excelColPayrollPeriodFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ từ ngày'**
+  String get excelColPayrollPeriodFrom;
+
+  /// No description provided for @excelColPayrollPeriodTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ đến ngày'**
+  String get excelColPayrollPeriodTo;
+
+  /// No description provided for @excelColPayrollStandardWorkDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày công chuẩn'**
+  String get excelColPayrollStandardWorkDays;
+
+  /// No description provided for @excelColPayrollPresentDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày công thực tế'**
+  String get excelColPayrollPresentDays;
+
+  /// No description provided for @excelColPayrollDayHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ ngày'**
+  String get excelColPayrollDayHours;
+
+  /// No description provided for @excelColPayrollNightHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ đêm'**
+  String get excelColPayrollNightHours;
+
+  /// No description provided for @excelColPayrollDayOt.
+  ///
+  /// In vi, this message translates to:
+  /// **'OT ngày'**
+  String get excelColPayrollDayOt;
+
+  /// No description provided for @excelColPayrollNightOt.
+  ///
+  /// In vi, this message translates to:
+  /// **'OT đêm'**
+  String get excelColPayrollNightOt;
+
+  /// No description provided for @excelFilterDepartment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get excelFilterDepartment;
+
+  /// No description provided for @excelFilterYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm'**
+  String get excelFilterYear;
+
+  /// No description provided for @excelFilterMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng'**
+  String get excelFilterMonth;
+
+  /// No description provided for @excelFilterStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get excelFilterStatus;
+
+  /// No description provided for @excelFilterAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get excelFilterAll;
 }
 
 class _AppLocalizationsDelegate

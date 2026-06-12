@@ -166,6 +166,47 @@ class UniversalImportResult {
   });
 }
 
+// ── History ───────────────────────────────────────────────────────────────────
+
+class ExcelHistoryEntry {
+  final int id;
+  final String type;   // EXPORT | IMPORT | REPORT
+  final String module; // universal | payroll | attendance | shift
+  final String filename;
+  final String? fileUrl;
+  final int? okCount;
+  final int? errorCount;
+  final int? skipCount;
+  final DateTime createdAt;
+  final String? performedBy;
+
+  const ExcelHistoryEntry({
+    required this.id,
+    required this.type,
+    required this.module,
+    required this.filename,
+    this.fileUrl,
+    this.okCount,
+    this.errorCount,
+    this.skipCount,
+    required this.createdAt,
+    this.performedBy,
+  });
+
+  factory ExcelHistoryEntry.fromJson(Map<String, dynamic> j) => ExcelHistoryEntry(
+        id:          (j['id'] as num).toInt(),
+        type:        j['type'] as String,
+        module:      j['module'] as String? ?? 'universal',
+        filename:    j['filename'] as String,
+        fileUrl:     j['fileUrl'] as String?,
+        okCount:     (j['okCount'] as num?)?.toInt(),
+        errorCount:  (j['errorCount'] as num?)?.toInt(),
+        skipCount:   (j['skipCount'] as num?)?.toInt(),
+        createdAt:   DateTime.parse(j['createdAt'] as String),
+        performedBy: j['performedBy'] as String?,
+      );
+}
+
 // ── Repository ────────────────────────────────────────────────────────────────
 
 class UniversalExcelRepository {
@@ -220,6 +261,23 @@ class UniversalExcelRepository {
           .toList();
       return MapEntry(key, list);
     });
+  }
+
+  /// Lấy lịch sử import/export (20 bản ghi gần nhất).
+  Future<List<ExcelHistoryEntry>> getHistory() async {
+    final res = await _api.dio.get<List<dynamic>>('/excel/history');
+    return (res.data ?? [])
+        .map((e) => ExcelHistoryEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Tải lại file qua backend (tránh CORS/auth issue khi download trực tiếp S3).
+  Future<Uint8List> downloadHistoryFile(int id) async {
+    final res = await _api.dio.get<List<int>>(
+      '/excel/history/$id/download',
+      options: Options(responseType: ResponseType.bytes),
+    );
+    return Uint8List.fromList(res.data ?? const <int>[]);
   }
 
   /// Import thực sự — ghi DB, trả về file kết quả + summary.

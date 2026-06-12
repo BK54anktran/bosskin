@@ -2166,6 +2166,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importPreviewUpdate => 'Update';
 
   @override
+  String get importPreviewMerge => 'Merge';
+
+  @override
   String get importPreviewWarn => 'Warning';
 
   @override
@@ -2197,6 +2200,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importAttendanceSuccess => 'Attendance imported successfully';
+
+  @override
+  String get excelScreenTitle => 'Import / Export Data';
+
+  @override
+  String get excelExportTitle => 'Export Data';
+
+  @override
+  String get excelExportSubtitle =>
+      'Select modules to export. Leave empty to export all.';
+
+  @override
+  String get excelExportButton => 'Select & Export';
+
+  @override
+  String excelExportButtonN(int n) {
+    return 'Select & Export ($n)';
+  }
+
+  @override
+  String get excelExportHint =>
+      'The exported Excel file contains a \"Command\" column. Fill in CREATE / UPDATE / MERGE / DELETE then re-import to apply bulk changes.';
+
+  @override
+  String get excelModuleEmployee => 'Employees';
+
+  @override
+  String get excelModuleDepartment => 'Departments';
+
+  @override
+  String get excelModulePosition => 'Positions';
+
+  @override
+  String get excelModuleShift => 'Work Shifts';
+
+  @override
+  String get excelImportTitle => 'Import Data';
+
+  @override
+  String get excelImportSubtitle =>
+      'Select an Excel file (with Command column filled) to preview and import.';
+
+  @override
+  String get excelImportDropzone => 'Click to select .xlsx file';
+
+  @override
+  String get excelImportPreviewBtn => 'Preview & Import';
+
+  @override
+  String get excelImportClearFile => 'Clear file';
+
+  @override
+  String get excelImportResultDownload => 'Download result file';
+
+  @override
+  String excelImportResultOk(int n) {
+    return '$n succeeded';
+  }
+
+  @override
+  String excelImportResultError(int n) {
+    return '$n errors';
+  }
+
+  @override
+  String excelImportResultSkip(int n) {
+    return '$n skipped';
+  }
+
+  @override
+  String get excelStepExport => 'Export sample above';
+
+  @override
+  String get excelStepFill =>
+      'Fill Command:\nCREATE / UPDATE /\nMERGE / DELETE';
+
+  @override
+  String get excelStepPick => 'Select filled file';
+
+  @override
+  String get excelStepPreview => 'Preview changes';
+
+  @override
+  String get excelStepConfirm => 'Confirm → get result file';
+
+  @override
+  String get excelHistoryTitle => 'History';
+
+  @override
+  String get excelHistoryEmpty => 'No history yet.';
+
+  @override
+  String get excelHistoryTypeExport => 'Export';
+
+  @override
+  String get excelHistoryTypeImport => 'Import';
+
+  @override
+  String get excelHistoryDownload => 'Re-download';
+
+  @override
+  String excelHistoryOk(int n) {
+    return '$n succeeded';
+  }
+
+  @override
+  String excelHistoryError(int n) {
+    return '$n errors';
+  }
+
+  @override
+  String excelHistorySkip(int n) {
+    return '$n skipped';
+  }
+
+  @override
+  String get excelHistoryTypeReport => 'Report';
+
+  @override
+  String get excelModulePayroll => 'Payroll';
+
+  @override
+  String get excelModuleAttendance => 'Attendance';
+
+  @override
+  String get excelModuleUniversal => 'Data';
 
   @override
   String get dashboardErrorLoad => 'Failed to load dashboard data';
@@ -2434,4 +2563,158 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get excelColEmployeeBankName => 'Bank Name';
+
+  @override
+  String get excelColAttendanceDate => 'Date (*)';
+
+  @override
+  String get excelColAttendanceEmployeeCode => 'Employee Code (*)';
+
+  @override
+  String get excelColAttendanceEmployeeName => 'Full Name';
+
+  @override
+  String get excelColAttendanceDepartmentName => 'Department';
+
+  @override
+  String get excelColAttendanceStatus => 'Status';
+
+  @override
+  String get excelColAttendanceCheckIn => 'Check-in';
+
+  @override
+  String get excelColAttendanceCheckOut => 'Check-out';
+
+  @override
+  String get excelColAttendanceNote => 'Note';
+
+  @override
+  String get excelColAttendanceSnapActualHours => 'Actual Hours';
+
+  @override
+  String get excelColAttendanceSnapDayOt => 'Day OT';
+
+  @override
+  String get excelColAttendanceSnapNightOt => 'Night OT';
+
+  @override
+  String get excelColAttendanceApproved => 'Approved';
+
+  @override
+  String get excelColAttendanceOverrideCheckIn => 'Override Check-in';
+
+  @override
+  String get excelColAttendanceOverrideCheckOut => 'Override Check-out';
+
+  @override
+  String get excelColAttendanceOverrideBreakMinutes => 'Override Break (min)';
+
+  @override
+  String get excelColAttendanceOverrideOtDayMinutes => 'Override Day OT (min)';
+
+  @override
+  String get excelColAttendanceOverrideOtNightMinutes =>
+      'Override Night OT (min)';
+
+  @override
+  String get excelColPayrollYear => 'Year';
+
+  @override
+  String get excelColPayrollMonth => 'Month';
+
+  @override
+  String get excelColPayrollEmployeeCode => 'Employee Code';
+
+  @override
+  String get excelColPayrollEmployeeName => 'Full Name';
+
+  @override
+  String get excelColPayrollDepartmentName => 'Department';
+
+  @override
+  String get excelColPayrollPositionName => 'Position';
+
+  @override
+  String get excelColPayrollSalaryGradeCode => 'Salary Grade';
+
+  @override
+  String get excelColPayrollPayType => 'Pay Type';
+
+  @override
+  String get excelColPayrollBaseSalary => 'Base Salary';
+
+  @override
+  String get excelColPayrollAllowance => 'Allowance';
+
+  @override
+  String get excelColPayrollBonus => 'Bonus';
+
+  @override
+  String get excelColPayrollOvertimePay => 'Overtime Pay';
+
+  @override
+  String get excelColPayrollGrossSalary => 'Gross Salary';
+
+  @override
+  String get excelColPayrollSocialInsurance => 'Social Insurance';
+
+  @override
+  String get excelColPayrollHealthInsurance => 'Health Insurance';
+
+  @override
+  String get excelColPayrollUnemploymentInsurance => 'Unemployment Insurance';
+
+  @override
+  String get excelColPayrollPersonalIncomeTax => 'Personal Income Tax';
+
+  @override
+  String get excelColPayrollOtherDeductions => 'Other Deductions';
+
+  @override
+  String get excelColPayrollNetSalary => 'Net Salary';
+
+  @override
+  String get excelColPayrollStatus => 'Status';
+
+  @override
+  String get excelColPayrollNote => 'Note';
+
+  @override
+  String get excelColPayrollPeriodFrom => 'Period From';
+
+  @override
+  String get excelColPayrollPeriodTo => 'Period To';
+
+  @override
+  String get excelColPayrollStandardWorkDays => 'Standard Work Days';
+
+  @override
+  String get excelColPayrollPresentDays => 'Present Days';
+
+  @override
+  String get excelColPayrollDayHours => 'Day Hours';
+
+  @override
+  String get excelColPayrollNightHours => 'Night Hours';
+
+  @override
+  String get excelColPayrollDayOt => 'Day OT';
+
+  @override
+  String get excelColPayrollNightOt => 'Night OT';
+
+  @override
+  String get excelFilterDepartment => 'Department';
+
+  @override
+  String get excelFilterYear => 'Year';
+
+  @override
+  String get excelFilterMonth => 'Month';
+
+  @override
+  String get excelFilterStatus => 'Status';
+
+  @override
+  String get excelFilterAll => 'All';
 }

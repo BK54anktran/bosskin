@@ -1,13 +1,18 @@
 package com.bosskin.service;
 
+import com.bosskin.dto.AttendanceDTO;
 import com.bosskin.entity.Attendance;
 import com.bosskin.entity.Department;
 import com.bosskin.entity.Employee;
+import com.bosskin.entity.ExcelHistory.HistoryType;
 import com.bosskin.repository.AttendanceRepository;
+import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.ShiftAssignmentRepository;
 import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelUtils;
+import com.bosskin.util.ImportCommand;
+import com.bosskin.util.SheetImportResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +36,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +44,227 @@ public class AttendanceExcelService {
 
     private final AttendanceRepository attendanceRepo;
     private final EmployeeRepository employeeRepo;
+    private final DepartmentRepository deptRepo;
     private final DeptScopeService deptScopeService;
     private final ShiftAssignmentRepository shiftAssignmentRepo;
     private final ExcelI18n excelI18n;
+    private final ExcelHistoryHelper historyHelper;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter SHEET_DATE_FMT = DateTimeFormatter.ofPattern("MM-yyyy");
     private static final String[] WEEKDAY_VI = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // ── Universal Export (for UniversalExcelService) ─────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<AttendanceDTO.ImportRow> loadAllForExport(Long companyId, Long userId,
+                                                           Map<String, String> filters) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "ATTENDANCE_VIEW");
+
+        String deptCodesRaw = filters.getOrDefault("departmentCodes", "");
+        if (!deptCodesRaw.isBlank()) {
+            Set<Long> pickedIds = Arrays.stream(deptCodesRaw.split(","))
+                .map(String::trim).filter(c -> !c.isEmpty())
+                .map(code -> deptRepo.findByCodeAndCompanyId(code, companyId))
+                .filter(Optional::isPresent).map(opt -> opt.get().getId())
+                .collect(Collectors.toSet());
+            if (pickedIds.isEmpty()) return List.of();
+            final Set<Long> scope = scopeIds;
+            scopeIds = scope.isEmpty() ? pickedIds
+                : pickedIds.stream().filter(scope::contains).collect(Collectors.toSet());
+            if (scopeIds.isEmpty()) return List.of();
+        }
+
+        // Date range: default current month
+        LocalDate from;
+        LocalDate to;
+        String yearStr  = filters.getOrDefault("year",  "");
+        String monthStr = filters.getOrDefault("month", "");
+        if (!yearStr.isBlank() && !monthStr.isBlank()) {
+            try {
+                int y = Integer.parseInt(yearStr.trim());
+                int m = Integer.parseInt(monthStr.trim());
+                from = LocalDate.of(y, m, 1);
+                to   = from.withDayOfMonth(from.lengthOfMonth());
+            } catch (Exception e) {
+                from = LocalDate.now().withDayOfMonth(1);
+                to   = from.withDayOfMonth(from.lengthOfMonth());
+            }
+        } else {
+            from = LocalDate.now().withDayOfMonth(1);
+            to   = from.withDayOfMonth(from.lengthOfMonth());
+        }
+
+        final Set<Long> finalScopeIds = scopeIds;
+        Long deptId = null;
+        if (finalScopeIds.size() == 1) deptId = finalScopeIds.iterator().next();
+
+        List<Attendance> list;
+        if (!finalScopeIds.isEmpty() && deptId == null) {
+            list = attendanceRepo.findByCompanyAndDateRange(companyId, from, to)
+                .stream()
+                .filter(a -> a.getEmployee() != null
+                    && a.getEmployee().getDepartment() != null
+                    && finalScopeIds.contains(a.getEmployee().getDepartment().getId()))
+                .collect(Collectors.toList());
+        } else {
+            list = attendanceRepo.findByCompanyAndDateRangeAndDept(companyId, from, to, deptId);
+        }
+
+        String statusFilter = filters.getOrDefault("status", "");
+        if (!statusFilter.isBlank() && !statusFilter.equals("ALL")) {
+            Attendance.Status s;
+            try { s = Attendance.Status.valueOf(statusFilter.trim()); } catch (Exception e) { s = null; }
+            final Attendance.Status fs = s;
+            if (fs != null) list = list.stream().filter(a -> fs.equals(a.getStatus())).collect(Collectors.toList());
+        }
+
+        String empCode = filters.getOrDefault("employeeCode", "").trim();
+        if (!empCode.isBlank()) {
+            list = list.stream()
+                .filter(a -> a.getEmployee() != null && empCode.equalsIgnoreCase(a.getEmployee().getEmployeeCode()))
+                .collect(Collectors.toList());
+        }
+
+        return list.stream().map(this::toUniversalRow).collect(Collectors.toList());
+    }
+
+    private AttendanceDTO.ImportRow toUniversalRow(Attendance a) {
+        Employee emp = a.getEmployee();
+        var row = new AttendanceDTO.ImportRow();
+        row.setDate(a.getDate() != null ? a.getDate().format(DATE_FMT) : "");
+        row.setEmployeeCode(emp != null ? nvlStr(emp.getEmployeeCode()) : "");
+        row.setEmployeeName(emp != null ? nvlStr(emp.getFullName()) : "");
+        row.setDepartmentName(emp != null && emp.getDepartment() != null
+            ? nvlStr(emp.getDepartment().getName()) : "");
+        row.setStatus(a.getStatus() != null ? a.getStatus().name() : "");
+        row.setCheckIn(a.getCheckIn() != null ? a.getCheckIn().toLocalTime().format(TIME_FMT) : "");
+        row.setCheckOut(a.getCheckOut() != null ? a.getCheckOut().toLocalTime().format(TIME_FMT) : "");
+        row.setNote(nvlStr(a.getNote()));
+        row.setOverrideCheckIn(a.getOverrideCheckIn() != null ? a.getOverrideCheckIn().format(TIME_FMT) : "");
+        row.setOverrideCheckOut(a.getOverrideCheckOut() != null ? a.getOverrideCheckOut().format(TIME_FMT) : "");
+        row.setOverrideBreakMinutes(a.getOverrideBreakMinutes() != null ? String.valueOf(a.getOverrideBreakMinutes()) : "");
+        row.setOverrideOtDayMinutes(a.getOverrideOtDayMinutes() != null ? String.valueOf(a.getOverrideOtDayMinutes()) : "");
+        row.setOverrideOtNightMinutes(a.getOverrideOtNightMinutes() != null ? String.valueOf(a.getOverrideOtNightMinutes()) : "");
+        row.setSnapActualHours(a.getSnapActualHours() != null ? String.format("%.2f", a.getSnapActualHours()) : "");
+        row.setSnapDayOt(a.getSnapDayOt() != null ? String.format("%.2f", a.getSnapDayOt()) : "");
+        row.setSnapNightOt(a.getSnapNightOt() != null ? String.format("%.2f", a.getSnapNightOt()) : "");
+        row.setApproved(a.isApproved() ? "true" : "false");
+        return row;
+    }
+
+    // ── Universal Import (for UniversalExcelService) ─────────────────────────
+
+    @Transactional
+    public SheetImportResult.RowResult previewUniversalRow(Long companyId, Long userId,
+                                                            AttendanceDTO.ImportRow row,
+                                                            ImportCommand cmd) {
+        try {
+            validateUniversalRow(row);
+            Employee emp = resolveEmployee(companyId, row.getEmployeeCode());
+            LocalDate date = parseDateStr(row.getDate());
+            Optional<Attendance> existing = attendanceRepo.findByEmployeeIdAndDate(emp.getId(), date)
+                .stream().findFirst();
+            return switch (cmd) {
+                case CREATE -> existing.isPresent()
+                    ? SheetImportResult.RowResult.warn(0, "warning.attendance.already_exists")
+                    : SheetImportResult.RowResult.ok(0);
+                case UPDATE -> existing.isEmpty()
+                    ? SheetImportResult.RowResult.warn(0, "warning.attendance.not_found")
+                    : SheetImportResult.RowResult.ok(0);
+                case MERGE  -> SheetImportResult.RowResult.ok(0);
+                case DELETE -> existing.isEmpty()
+                    ? SheetImportResult.RowResult.warn(0, "warning.attendance.not_found")
+                    : SheetImportResult.RowResult.ok(0);
+            };
+        } catch (Exception e) {
+            return SheetImportResult.RowResult.error(0, e.getMessage());
+        }
+    }
+
+    @Transactional
+    public boolean importUniversalRow(Long companyId, Long userId, AttendanceDTO.ImportRow row,
+                                       ImportCommand cmd, Set<String> presentColumns) {
+        validateUniversalRow(row);
+        Employee emp  = resolveEmployee(companyId, row.getEmployeeCode());
+        LocalDate date = parseDateStr(row.getDate());
+        Optional<Attendance> existing = attendanceRepo.findByEmployeeIdAndDate(emp.getId(), date)
+            .stream().findFirst();
+
+        if (cmd == ImportCommand.DELETE) {
+            existing.ifPresent(a -> { a.setDeleted(true); attendanceRepo.save(a); });
+            return existing.isPresent();
+        }
+        if (cmd == ImportCommand.CREATE && existing.isPresent()) return false;
+
+        Attendance a = existing.orElseGet(() -> Attendance.builder().employee(emp).date(date).build());
+
+        if (hasCol(presentColumns, "excel.col.attendance.status") && notBlank(row.getStatus()))
+            try { a.setStatus(Attendance.Status.valueOf(row.getStatus().trim().toUpperCase())); } catch (Exception ignored) {}
+        if (hasCol(presentColumns, "excel.col.attendance.checkIn") && notBlank(row.getCheckIn()))
+            a.setCheckIn(date.atTime(parseTimeStr(row.getCheckIn())));
+        if (hasCol(presentColumns, "excel.col.attendance.checkOut") && notBlank(row.getCheckOut()))
+            a.setCheckOut(date.atTime(parseTimeStr(row.getCheckOut())));
+        if (hasCol(presentColumns, "excel.col.attendance.note") && row.getNote() != null)
+            a.setNote(row.getNote());
+        if (hasCol(presentColumns, "excel.col.attendance.overrideCheckIn") && notBlank(row.getOverrideCheckIn()))
+            a.setOverrideCheckIn(parseTimeStr(row.getOverrideCheckIn()));
+        if (hasCol(presentColumns, "excel.col.attendance.overrideCheckOut") && notBlank(row.getOverrideCheckOut()))
+            a.setOverrideCheckOut(parseTimeStr(row.getOverrideCheckOut()));
+        if (hasCol(presentColumns, "excel.col.attendance.overrideBreakMinutes") && notBlank(row.getOverrideBreakMinutes()))
+            try { a.setOverrideBreakMinutes(Integer.parseInt(row.getOverrideBreakMinutes().trim())); } catch (Exception ignored) {}
+        if (hasCol(presentColumns, "excel.col.attendance.overrideOtDayMinutes") && notBlank(row.getOverrideOtDayMinutes()))
+            try { a.setOverrideOtDayMinutes(Integer.parseInt(row.getOverrideOtDayMinutes().trim())); } catch (Exception ignored) {}
+        if (hasCol(presentColumns, "excel.col.attendance.overrideOtNightMinutes") && notBlank(row.getOverrideOtNightMinutes()))
+            try { a.setOverrideOtNightMinutes(Integer.parseInt(row.getOverrideOtNightMinutes().trim())); } catch (Exception ignored) {}
+
+        attendanceRepo.save(a);
+        return true;
+    }
+
+    // ── Helper ────────────────────────────────────────────────────────────────
+
+    private void validateUniversalRow(AttendanceDTO.ImportRow row) {
+        if (row.getDate() == null || row.getDate().isBlank())
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.date_required");
+        if (row.getEmployeeCode() == null || row.getEmployeeCode().isBlank())
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "error.employee.code_required");
+        parseDateStr(row.getDate());
+    }
+
+    private Employee resolveEmployee(Long companyId, String code) {
+        return employeeRepo.findByEmployeeCodeAndCompanyId(code.trim(), companyId)
+            .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND, "error.employee.not_found:" + code));
+    }
+
+    private LocalDate parseDateStr(String s) {
+        try { return LocalDate.parse(s.trim(), DATE_FMT); }
+        catch (java.time.format.DateTimeParseException e) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.invalid_date:" + s);
+        }
+    }
+
+    private LocalTime parseTimeStr(String s) {
+        try { return LocalTime.parse(s.trim(), TIME_FMT); }
+        catch (java.time.format.DateTimeParseException e) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.invalid_time:" + s);
+        }
+    }
+
+    private static boolean hasCol(Set<String> cols, String key) {
+        return cols == null || cols.isEmpty() || cols.contains(key);
+    }
+
+    private static boolean notBlank(String s) { return s != null && !s.isBlank(); }
+
+    private static String nvlStr(String s) { return s != null ? s : ""; }
 
     // ── Export ──────────────────────────────────────────────────────────────
 
@@ -209,6 +429,8 @@ public class AttendanceExcelService {
             String filenameBase = excelI18n.resolve("excel.file.attendance.month", locale)
                 + "-" + from.format(DateTimeFormatter.ofPattern("ddMMyyyy"))
                 + "-" + to.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            historyHelper.save(companyId, userId, HistoryType.EXPORT, "attendance",
+                    filenameBase + ".xlsx", bytes, null, null, null);
             return ExcelUtils.buildFileResponse(filenameBase, bytes);
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
@@ -234,6 +456,7 @@ public class AttendanceExcelService {
     // ── Export Timesheet (ngày × cột — giống màn hình Theo tháng) ────────────
 
     public ResponseEntity<byte[]> exportTimesheetRange(
+            Long companyId, Long userId,
             String employeeName, String employeeCode,
             LocalDate from, LocalDate to,
             List<com.bosskin.dto.AttendanceDTO.TimesheetRow> rows,
@@ -414,6 +637,8 @@ public class AttendanceExcelService {
                 + "-" + employeeCode
                 + "-" + from.format(DateTimeFormatter.ofPattern("ddMMyyyy"))
                 + "-" + to.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            historyHelper.save(companyId, userId, HistoryType.EXPORT, "attendance",
+                    filenameBase + ".xlsx", out.toByteArray(), null, null, null);
             return ExcelUtils.buildFileResponse(filenameBase, out.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
@@ -423,6 +648,7 @@ public class AttendanceExcelService {
     // ── Export Day View (1 sheet — nhiều NV × 1 ngày, giống màn hình Theo ngày) ─
 
     public ResponseEntity<byte[]> exportDayView(
+            Long companyId, Long userId,
             LocalDate date,
             List<com.bosskin.dto.AttendanceDTO.DayViewRow> dayRows,
             boolean dayNightMode, boolean otEnabled,
@@ -604,6 +830,8 @@ public class AttendanceExcelService {
             wb.write(out);
             String filenameBase = excelI18n.resolve("excel.file.attendance.day", locale)
                 + "-" + date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+            historyHelper.save(companyId, userId, HistoryType.EXPORT, "attendance",
+                    filenameBase + ".xlsx", out.toByteArray(), null, null, null);
             return ExcelUtils.buildFileResponse(filenameBase, out.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
@@ -794,7 +1022,11 @@ public class AttendanceExcelService {
                 skipped++;
             }
         }
-        return Map.of("created", created, "updated", updated, "deleted", deleted, "skipped", skipped);
+        Map<String, Integer> result = Map.of("created", created, "updated", updated, "deleted", deleted, "skipped", skipped);
+        historyHelper.save(companyId, userId, HistoryType.IMPORT, "attendance",
+                "cham-cong-import.xlsx", file.isEmpty() ? new byte[0] : readBytes(file),
+                created + updated, 0, skipped);
+        return result;
     }
 
     // ── Internal helpers ────────────────────────────────────────────────────
@@ -1285,7 +1517,11 @@ public class AttendanceExcelService {
                 }
             } catch (Exception e) { skipped++; }
         }
-        return Map.of("created", created, "updated", updated, "deleted", deleted, "skipped", skipped);
+        Map<String, Integer> result = Map.of("created", created, "updated", updated, "deleted", deleted, "skipped", skipped);
+        historyHelper.save(companyId, userId, HistoryType.IMPORT, "attendance",
+                "timesheet-import.xlsx", file.isEmpty() ? new byte[0] : readBytes(file),
+                created + updated, 0, skipped);
+        return result;
     }
 
     private void applyTimesheetRow(Attendance.AttendanceBuilder b, TimesheetImportRow row) {
@@ -1338,9 +1574,12 @@ public class AttendanceExcelService {
     private void autoSizeAll(Sheet sheet, int numCols) {
         for (int c = 0; c < numCols; c++) {
             sheet.autoSizeColumn(c);
-            // thêm padding 512 twips (~2 ký tự) tránh bị cụt
             int current = sheet.getColumnWidth(c);
             sheet.setColumnWidth(c, Math.min(current + 512, 65280));
         }
+    }
+
+    private static byte[] readBytes(MultipartFile file) {
+        try { return file.getBytes(); } catch (IOException e) { return new byte[0]; }
     }
 }

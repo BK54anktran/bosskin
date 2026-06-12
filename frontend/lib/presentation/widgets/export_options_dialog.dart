@@ -185,6 +185,8 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
         'department' => 'Phòng ban',
         'position'   => 'Chức vụ',
         'shift'      => 'Ca làm việc',
+        'attendance' => 'Chấm công',
+        'payroll'    => 'Bảng lương',
         _            => type,
       };
 }
@@ -357,10 +359,16 @@ class _ColumnList extends StatelessWidget {
   }
 
   static String _groupLabel(String group) => switch (group) {
-        'basic'    => 'Thông tin cơ bản',
-        'contract' => 'Hợp đồng & Lương',
-        'personal' => 'Thông tin cá nhân',
-        _          => group,
+        'basic'          => 'Thông tin cơ bản',
+        'contract'       => 'Hợp đồng & Lương',
+        'personal'       => 'Thông tin cá nhân',
+        'computed'       => 'Dữ liệu tổng hợp',
+        'override'       => 'Ghi đè thủ công',
+        'identification' => 'Định danh',
+        'earnings'       => 'Thu nhập',
+        'deductions'     => 'Khấu trừ & Net',
+        'period'         => 'Kỳ lương & Giờ công',
+        _                => group,
       };
 }
 
@@ -422,13 +430,23 @@ class _FilterField extends StatelessWidget {
   String _label() => _knownLabels[filter.labelKey] ?? filter.labelKey;
 
   static const _knownLabels = {
-    'filter.department':      'Phòng ban',
-    'filter.status':          'Trạng thái',
-    'filter.salaryGrade':     'Bậc lương',
-    'filter.joinDate':        'Ngày vào làm',
-    'filter.status.all':      'Tất cả',
-    'filter.status.active':   'Đang làm',
-    'filter.status.inactive': 'Đã nghỉ',
+    'filter.department':           'Phòng ban',
+    'filter.status':               'Trạng thái',
+    'filter.salaryGrade':          'Bậc lương',
+    'filter.joinDate':             'Ngày vào làm',
+    'filter.year':                 'Năm',
+    'filter.month':                'Tháng',
+    'filter.status.all':           'Tất cả',
+    'filter.status.active':        'Đang làm',
+    'filter.status.inactive':      'Đã nghỉ',
+    'filter.attendance.present':   'Có mặt',
+    'filter.attendance.absent':    'Vắng mặt',
+    'filter.attendance.late':      'Đi trễ',
+    'filter.attendance.halfDay':   'Nửa ngày',
+    'filter.attendance.leave':     'Nghỉ phép',
+    'filter.payroll.draft':        'Nháp',
+    'filter.payroll.approved':     'Đã duyệt',
+    'filter.payroll.paid':         'Đã trả',
   };
 
   static String _optLabel(FilterOption opt) =>

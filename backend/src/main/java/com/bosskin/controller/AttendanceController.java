@@ -1551,6 +1551,7 @@ public class AttendanceController {
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1))
             rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
         return attendanceExcelService.exportTimesheetRange(
+            user.getCompany().getId(), user.getId(),
             employee.getFullName(), employee.getEmployeeCode(), from, to, rows,
             company.isAttendanceDayNightMode(), otEnabled, LocaleContextHolder.getLocale());
     }
@@ -1565,7 +1566,8 @@ public class AttendanceController {
         Set<Long> scopeIds = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         List<Employee> employees = resolveDayViewEmployees(user, company, departmentId, scopeIds);
         if (employees.isEmpty()) {
-            return attendanceExcelService.exportDayView(date, List.of(),
+            return attendanceExcelService.exportDayView(user.getCompany().getId(), user.getId(),
+                date, List.of(),
                 company.isAttendanceDayNightMode(), company.isAttendanceOtEnabled(),
                 LocaleContextHolder.getLocale());
         }
@@ -1604,7 +1606,8 @@ public class AttendanceController {
             ).stream())
             .toList();
 
-        return attendanceExcelService.exportDayView(date, rows,
+        return attendanceExcelService.exportDayView(user.getCompany().getId(), user.getId(),
+            date, rows,
             company.isAttendanceDayNightMode(), otEnabled, LocaleContextHolder.getLocale());
     }
 

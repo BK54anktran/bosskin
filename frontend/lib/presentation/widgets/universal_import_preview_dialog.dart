@@ -82,7 +82,7 @@ class _UniversalImportPreviewDialogState
           const SizedBox(width: 4),
         ],
         if (_totalMerge > 0) ...[
-          _Chip('$_totalMerge MERGE', Colors.blue),
+          _Chip('$_totalMerge ${s.importPreviewMerge}', Colors.blue),
           const SizedBox(width: 4),
         ],
         if (_totalUpdate > 0) ...[
@@ -218,7 +218,7 @@ class _SheetSection extends StatelessWidget {
           ...creates.map((r) => _DiffTile(diff: r, color: Colors.green)),
         ],
         if (merges.isNotEmpty) ...[
-          _RowGroupHeader('MERGE', Colors.blue, Icons.merge_outlined),
+          _RowGroupHeader(s.importPreviewMerge, Colors.blue, Icons.merge_outlined),
           ...merges.map((r) => _DiffTile(diff: r, color: Colors.blue)),
         ],
         if (updates.isNotEmpty) ...[

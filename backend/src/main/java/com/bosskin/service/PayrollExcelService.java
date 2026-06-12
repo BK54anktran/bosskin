@@ -1,6 +1,10 @@
 package com.bosskin.service;
 
+import com.bosskin.dto.PayrollDTO;
+import com.bosskin.entity.Employee;
+import com.bosskin.entity.ExcelHistory.HistoryType;
 import com.bosskin.entity.Payroll;
+import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.repository.PayrollRepository;
 import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelUtils;
@@ -17,18 +21,20 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PayrollExcelService {
 
     private final PayrollRepository payrollRepository;
+    private final DepartmentRepository departmentRepository;
     private final DeptScopeService deptScopeService;
     private final ExcelI18n excelI18n;
+    private final ExcelHistoryHelper historyHelper;
 
 
     private static void writeText(Row row, int col, String value, CellStyle style) {
@@ -141,6 +147,112 @@ public class PayrollExcelService {
         style.setAlignment(HorizontalAlignment.CENTER);
         return style;
     }
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // ── Universal Export (for UniversalExcelService) ─────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<PayrollDTO.ImportRow> loadAllForExport(Long companyId, Long userId,
+                                                        Map<String, String> filters) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "PAYROLL_VIEW");
+
+        // Filter: departmentCodes
+        String deptCodesRaw = filters.getOrDefault("departmentCodes", "");
+        if (!deptCodesRaw.isBlank()) {
+            Set<Long> pickedIds = Arrays.stream(deptCodesRaw.split(","))
+                .map(String::trim).filter(c -> !c.isEmpty())
+                .map(code -> departmentRepository.findByCodeAndCompanyId(code, companyId))
+                .filter(Optional::isPresent).map(opt -> opt.get().getId())
+                .collect(Collectors.toSet());
+            if (pickedIds.isEmpty()) return List.of();
+            final Set<Long> scope = scopeIds;
+            scopeIds = scope.isEmpty() ? pickedIds
+                : pickedIds.stream().filter(scope::contains).collect(Collectors.toSet());
+            if (scopeIds.isEmpty()) return List.of();
+        }
+
+        // Filter: year + month (required for payroll)
+        int year  = LocalDate.now().getYear();
+        int month = LocalDate.now().getMonthValue();
+        try { year  = Integer.parseInt(filters.getOrDefault("year",  String.valueOf(year)).trim()); }  catch (Exception ignored) {}
+        try { month = Integer.parseInt(filters.getOrDefault("month", String.valueOf(month)).trim()); } catch (Exception ignored) {}
+
+        // Filter: status
+        Payroll.Status statusFilter = null;
+        String statusRaw = filters.getOrDefault("status", "");
+        if (!statusRaw.isBlank() && !statusRaw.equals("ALL")) {
+            try { statusFilter = Payroll.Status.valueOf(statusRaw.trim()); } catch (Exception ignored) {}
+        }
+
+        Set<Long> deptScope = scopeIds.stream().filter(id -> id > 0).collect(Collectors.toSet());
+        List<Payroll> payrolls;
+        if (scopeIds.isEmpty()) {
+            payrolls = payrollRepository.findExportByMonth(companyId, year, month);
+        } else if (deptScope.isEmpty()) {
+            return List.of();
+        } else {
+            payrolls = payrollRepository.findExportByMonthAndDeptScope(companyId, year, month, deptScope);
+        }
+
+        final Payroll.Status finalStatus = statusFilter;
+        if (finalStatus != null) {
+            payrolls = payrolls.stream().filter(p -> finalStatus.equals(p.getStatus())).collect(Collectors.toList());
+        }
+
+        return payrolls.stream().map(this::toUniversalRow).collect(Collectors.toList());
+    }
+
+    private PayrollDTO.ImportRow toUniversalRow(Payroll p) {
+        Employee emp = p.getEmployee();
+        var row = new PayrollDTO.ImportRow();
+        row.setYear(p.getYear() != null ? String.valueOf(p.getYear()) : "");
+        row.setMonth(p.getMonth() != null ? String.valueOf(p.getMonth()) : "");
+        row.setEmployeeCode(emp != null ? nvl(emp.getEmployeeCode()) : "");
+        row.setEmployeeName(emp != null ? nvl(emp.getFullName()) : "");
+        row.setDepartmentName(emp != null && emp.getDepartment() != null ? nvl(emp.getDepartment().getName()) : "");
+        row.setPositionName(emp != null && emp.getPosition() != null ? nvl(emp.getPosition().getName()) : "");
+        row.setSalaryGradeCode(p.getSalaryGradeCode() != null ? p.getSalaryGradeCode()
+            : (emp != null && emp.getSalaryGrade() != null ? nvl(emp.getSalaryGrade().getCode()) : ""));
+        row.setPayType(nvl(p.getPayType()));
+        row.setPeriodFrom(p.getPeriodFrom() != null ? p.getPeriodFrom().format(DATE_FMT) : "");
+        row.setPeriodTo(p.getPeriodTo() != null ? p.getPeriodTo().format(DATE_FMT) : "");
+        row.setStandardWorkDays(p.getStandardWorkDays() != null ? String.valueOf(p.getStandardWorkDays()) : "");
+        row.setPresentDays(p.getPresentDays() != null ? String.valueOf(p.getPresentDays()) : "");
+        row.setBaseSalary(fmtMoney(p.getBaseSalary()));
+        row.setAllowance(fmtMoney(p.getAllowance()));
+        row.setBonus(fmtMoney(p.getBonus()));
+        row.setOvertimePay(fmtMoney(p.getOvertimePay()));
+        row.setGrossSalary(fmtMoney(p.getGrossSalary()));
+        row.setSocialInsurance(fmtMoney(p.getSocialInsurance()));
+        row.setHealthInsurance(fmtMoney(p.getHealthInsurance()));
+        row.setUnemploymentInsurance(fmtMoney(p.getUnemploymentInsurance()));
+        row.setPersonalIncomeTax(fmtMoney(p.getPersonalIncomeTax()));
+        row.setOtherDeductions(fmtMoney(p.getOtherDeductions()));
+        row.setNetSalary(fmtMoney(p.getNetSalary()));
+        row.setStatus(p.getStatus() != null ? p.getStatus().name() : "");
+        row.setNote(nvl(p.getNote()));
+        row.setDayHours(fmtDecimal(p.getDayHours()));
+        row.setNightHours(fmtDecimal(p.getNightHours()));
+        row.setDayOt(fmtDecimal(p.getDayOt()));
+        row.setNightOt(fmtDecimal(p.getNightOt()));
+        BigDecimal totalAllowance = sumEntries(p.getAllowanceEntries())
+            .add(nvl(p.getAllowance())).add(nvl(p.getBonus()));
+        BigDecimal totalIncome = sumEntries(p.getIncomeEntries())
+            .add(nvl(p.getOvertimePay()));
+        BigDecimal totalDeduction = nvl(p.getSocialInsurance())
+            .add(nvl(p.getHealthInsurance())).add(nvl(p.getUnemploymentInsurance()))
+            .add(nvl(p.getPersonalIncomeTax())).add(nvl(p.getOtherDeductions()))
+            .add(sumEntries(p.getCustomDeductions()));
+        row.setTotalAllowance(fmtMoney(totalAllowance));
+        row.setTotalIncome(fmtMoney(totalIncome));
+        row.setTotalDeduction(fmtMoney(totalDeduction));
+        return row;
+    }
+
+    private static String nvl(String s) { return s != null ? s : ""; }
+    private static String fmtMoney(BigDecimal v) { return v != null ? v.stripTrailingZeros().toPlainString() : ""; }
+    private static String fmtDecimal(BigDecimal v) { return v != null ? String.format("%.2f", v) : ""; }
 
     // ─── Export phiếu lương tổng hợp gọn ─────────────────────────────────────
     // 1 sheet, mỗi hàng = 1 người, chỉ các giá trị cố định/tổng hợp
@@ -261,6 +373,8 @@ public class PayrollExcelService {
             byte[] bytes = toBytes(wb);
             String filenameBase = excelI18n.resolve("excel.file.payroll", locale)
                 + "-" + String.format("%02d-%04d", month, year);
+            historyHelper.save(companyId, userId, HistoryType.REPORT, "payroll",
+                    filenameBase + ".xlsx", bytes, null, null, null);
             return ExcelUtils.buildFileResponse(filenameBase, bytes);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error.excel.export_failed", e);

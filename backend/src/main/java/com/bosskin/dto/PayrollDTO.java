@@ -115,4 +115,40 @@ public class PayrollDTO {
         private String note;
         private Payroll.CustomFormula customFormula;
     }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ImportRow {
+        private String year;
+        private String month;
+        private String employeeCode;
+        private String employeeName;           // read-only
+        private String departmentName;         // read-only
+        private String positionName;           // read-only
+        private String salaryGradeCode;        // read-only
+        private String payType;                // read-only
+        private String periodFrom;             // dd/MM/yyyy read-only
+        private String periodTo;               // dd/MM/yyyy read-only
+        private String standardWorkDays;       // read-only
+        private String presentDays;            // read-only
+        private String baseSalary;             // read-only
+        private String allowance;
+        private String bonus;
+        private String overtimePay;            // read-only
+        private String grossSalary;            // read-only
+        private String socialInsurance;        // read-only
+        private String healthInsurance;        // read-only
+        private String unemploymentInsurance;  // read-only
+        private String personalIncomeTax;      // read-only
+        private String otherDeductions;
+        private String netSalary;              // read-only
+        private String status;                 // read-only
+        private String note;
+        private String dayHours;               // read-only
+        private String nightHours;             // read-only
+        private String dayOt;                  // read-only
+        private String nightOt;                // read-only
+        private String totalAllowance;         // read-only: allowanceEntries + allowance + bonus
+        private String totalIncome;            // read-only: incomeEntries + overtimePay
+        private String totalDeduction;         // read-only: BHXH + BHYT + BHTN + TNCN + others + customDed
+    }
 }

@@ -2166,6 +2166,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get importPreviewUpdate => 'Cập nhật';
 
   @override
+  String get importPreviewMerge => 'Hợp nhất';
+
+  @override
   String get importPreviewWarn => 'Cảnh báo';
 
   @override
@@ -2197,6 +2200,132 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get importAttendanceSuccess => 'Nhập chấm công thành công';
+
+  @override
+  String get excelScreenTitle => 'Import / Export dữ liệu';
+
+  @override
+  String get excelExportTitle => 'Xuất dữ liệu';
+
+  @override
+  String get excelExportSubtitle =>
+      'Chọn module muốn xuất. Bỏ trống để xuất toàn bộ.';
+
+  @override
+  String get excelExportButton => 'Chọn & Xuất';
+
+  @override
+  String excelExportButtonN(int n) {
+    return 'Chọn & Xuất ($n)';
+  }
+
+  @override
+  String get excelExportHint =>
+      'File Excel xuất ra có cột \"Lệnh\" (hoặc \"Command\"). Điền CREATE / UPDATE / MERGE / DELETE vào cột đó rồi import lại để thực hiện thay đổi hàng loạt.';
+
+  @override
+  String get excelModuleEmployee => 'Nhân viên';
+
+  @override
+  String get excelModuleDepartment => 'Phòng ban';
+
+  @override
+  String get excelModulePosition => 'Chức vụ';
+
+  @override
+  String get excelModuleShift => 'Ca làm việc';
+
+  @override
+  String get excelImportTitle => 'Nhập dữ liệu';
+
+  @override
+  String get excelImportSubtitle =>
+      'Chọn file Excel (đã điền cột Lệnh) để xem trước và nhập.';
+
+  @override
+  String get excelImportDropzone => 'Nhấn để chọn file .xlsx';
+
+  @override
+  String get excelImportPreviewBtn => 'Xem trước & Nhập';
+
+  @override
+  String get excelImportClearFile => 'Xóa file';
+
+  @override
+  String get excelImportResultDownload => 'Tải file kết quả';
+
+  @override
+  String excelImportResultOk(int n) {
+    return '$n thành công';
+  }
+
+  @override
+  String excelImportResultError(int n) {
+    return '$n lỗi';
+  }
+
+  @override
+  String excelImportResultSkip(int n) {
+    return '$n bỏ qua';
+  }
+
+  @override
+  String get excelStepExport => 'Xuất file mẫu ở trên';
+
+  @override
+  String get excelStepFill =>
+      'Điền cột Lệnh:\nCREATE / UPDATE /\nMERGE / DELETE';
+
+  @override
+  String get excelStepPick => 'Chọn file đã điền';
+
+  @override
+  String get excelStepPreview => 'Xem trước thay đổi';
+
+  @override
+  String get excelStepConfirm => 'Xác nhận → nhận file kết quả';
+
+  @override
+  String get excelHistoryTitle => 'Lịch sử';
+
+  @override
+  String get excelHistoryEmpty => 'Chưa có lịch sử.';
+
+  @override
+  String get excelHistoryTypeExport => 'Xuất';
+
+  @override
+  String get excelHistoryTypeImport => 'Nhập';
+
+  @override
+  String get excelHistoryDownload => 'Tải lại';
+
+  @override
+  String excelHistoryOk(int n) {
+    return '$n thành công';
+  }
+
+  @override
+  String excelHistoryError(int n) {
+    return '$n lỗi';
+  }
+
+  @override
+  String excelHistorySkip(int n) {
+    return '$n bỏ qua';
+  }
+
+  @override
+  String get excelHistoryTypeReport => 'Báo cáo';
+
+  @override
+  String get excelModulePayroll => 'Lương';
+
+  @override
+  String get excelModuleAttendance => 'Chấm công';
+
+  @override
+  String get excelModuleUniversal => 'Dữ liệu';
 
   @override
   String get dashboardErrorLoad => 'Không thể tải dữ liệu tổng quan';
@@ -2436,4 +2565,159 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get excelColEmployeeBankName => 'Ngân hàng';
+
+  @override
+  String get excelColAttendanceDate => 'Ngày (*)';
+
+  @override
+  String get excelColAttendanceEmployeeCode => 'Mã NV (*)';
+
+  @override
+  String get excelColAttendanceEmployeeName => 'Họ và tên';
+
+  @override
+  String get excelColAttendanceDepartmentName => 'Phòng ban';
+
+  @override
+  String get excelColAttendanceStatus => 'Trạng thái';
+
+  @override
+  String get excelColAttendanceCheckIn => 'Check-in';
+
+  @override
+  String get excelColAttendanceCheckOut => 'Check-out';
+
+  @override
+  String get excelColAttendanceNote => 'Ghi chú';
+
+  @override
+  String get excelColAttendanceSnapActualHours => 'Giờ thực tế';
+
+  @override
+  String get excelColAttendanceSnapDayOt => 'OT ngày';
+
+  @override
+  String get excelColAttendanceSnapNightOt => 'OT đêm';
+
+  @override
+  String get excelColAttendanceApproved => 'Đã duyệt';
+
+  @override
+  String get excelColAttendanceOverrideCheckIn => 'Override Check-in';
+
+  @override
+  String get excelColAttendanceOverrideCheckOut => 'Override Check-out';
+
+  @override
+  String get excelColAttendanceOverrideBreakMinutes => 'Override nghỉ (phút)';
+
+  @override
+  String get excelColAttendanceOverrideOtDayMinutes =>
+      'Override OT ngày (phút)';
+
+  @override
+  String get excelColAttendanceOverrideOtNightMinutes =>
+      'Override OT đêm (phút)';
+
+  @override
+  String get excelColPayrollYear => 'Năm';
+
+  @override
+  String get excelColPayrollMonth => 'Tháng';
+
+  @override
+  String get excelColPayrollEmployeeCode => 'Mã NV';
+
+  @override
+  String get excelColPayrollEmployeeName => 'Họ và tên';
+
+  @override
+  String get excelColPayrollDepartmentName => 'Phòng ban';
+
+  @override
+  String get excelColPayrollPositionName => 'Chức vụ';
+
+  @override
+  String get excelColPayrollSalaryGradeCode => 'Bậc lương';
+
+  @override
+  String get excelColPayrollPayType => 'Loại tính';
+
+  @override
+  String get excelColPayrollBaseSalary => 'Lương cơ bản';
+
+  @override
+  String get excelColPayrollAllowance => 'Trợ cấp';
+
+  @override
+  String get excelColPayrollBonus => 'Thưởng';
+
+  @override
+  String get excelColPayrollOvertimePay => 'Lương OT';
+
+  @override
+  String get excelColPayrollGrossSalary => 'Gross';
+
+  @override
+  String get excelColPayrollSocialInsurance => 'BHXH';
+
+  @override
+  String get excelColPayrollHealthInsurance => 'BHYT';
+
+  @override
+  String get excelColPayrollUnemploymentInsurance => 'BHTN';
+
+  @override
+  String get excelColPayrollPersonalIncomeTax => 'Thuế TNCN';
+
+  @override
+  String get excelColPayrollOtherDeductions => 'Khấu trừ khác';
+
+  @override
+  String get excelColPayrollNetSalary => 'Net (thực lãnh)';
+
+  @override
+  String get excelColPayrollStatus => 'Trạng thái';
+
+  @override
+  String get excelColPayrollNote => 'Ghi chú';
+
+  @override
+  String get excelColPayrollPeriodFrom => 'Kỳ từ ngày';
+
+  @override
+  String get excelColPayrollPeriodTo => 'Kỳ đến ngày';
+
+  @override
+  String get excelColPayrollStandardWorkDays => 'Ngày công chuẩn';
+
+  @override
+  String get excelColPayrollPresentDays => 'Ngày công thực tế';
+
+  @override
+  String get excelColPayrollDayHours => 'Giờ ngày';
+
+  @override
+  String get excelColPayrollNightHours => 'Giờ đêm';
+
+  @override
+  String get excelColPayrollDayOt => 'OT ngày';
+
+  @override
+  String get excelColPayrollNightOt => 'OT đêm';
+
+  @override
+  String get excelFilterDepartment => 'Phòng ban';
+
+  @override
+  String get excelFilterYear => 'Năm';
+
+  @override
+  String get excelFilterMonth => 'Tháng';
+
+  @override
+  String get excelFilterStatus => 'Trạng thái';
+
+  @override
+  String get excelFilterAll => 'Tất cả';
 }

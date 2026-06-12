@@ -1,10 +1,14 @@
 package com.bosskin.service;
 
+import com.bosskin.entity.ExcelHistory;
+import com.bosskin.entity.ExcelHistory.HistoryType;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.ExcelHistoryRepository;
 import com.bosskin.util.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +33,8 @@ public class UniversalExcelService {
     private final List<ExcelEntityDescriptor<?>> descriptors;
     private final ExcelI18n excelI18n;
     private final DepartmentRepository deptRepo;
+    private final ExcelHistoryRepository historyRepo;
+    private final ExcelHistoryHelper historyHelper;
 
     // ─── EXPORT ──────────────────────────────────────────────────────────────
 
@@ -51,7 +57,10 @@ public class UniversalExcelService {
 
             String filenameKey = excelI18n.resolve("excel.file.universal", locale);
             byte[] bytes = toBytes(wb);
-            return ExcelUtils.buildFileResponse(filenameKey, bytes);
+            ResponseEntity<byte[]> response = ExcelUtils.buildFileResponse(filenameKey, bytes);
+            historyHelper.save(companyId, userId, HistoryType.EXPORT, "universal",
+                    filenameKey + ".xlsx", bytes, null, null, null);
+            return response;
         } catch (IOException e) {
             throw new RuntimeException("error.excel.export_failed", e);
         }
@@ -66,6 +75,10 @@ public class UniversalExcelService {
         String sheetName = sanitize(excelI18n.resolve(desc.sheetKey(), locale));
         Sheet sheet = wb.createSheet(sheetName);
 
+        CellStyle moneyStyle   = buildMoneyStyle(wb);
+        CellStyle decimalStyle = buildDecimalStyle(wb);
+        CellStyle integerStyle = buildIntegerStyle(wb);
+
         // Lọc cột theo selectedColumnKeys; null = tất cả defaultVisible
         List<ExcelColumn<T>> allCols = desc.columns();
         List<ExcelColumn<T>> cols;
@@ -74,7 +87,6 @@ public class UniversalExcelService {
             cols = allCols.stream()
                 .filter(c -> selected.contains(c.getColumnKey()))
                 .collect(Collectors.toList());
-            // Đảm bảo thứ tự theo định nghĩa gốc
             if (cols.isEmpty()) cols = allCols.stream()
                 .filter(ExcelColumn::isDefaultVisible)
                 .collect(Collectors.toList());
@@ -115,7 +127,23 @@ public class UniversalExcelService {
             T data = rows.get(r);
             for (int c = 0; c < cols.size(); c++) {
                 Cell cell = row.createCell(c + 1);
-                Object val = cols.get(c).getValue(data);
+                ExcelColumn<T> col = cols.get(c);
+                Object val = col.getValue(data);
+                ExcelColumn.ColType colType = col.getColType();
+                if (val != null && !val.toString().isBlank()
+                        && colType != ExcelColumn.ColType.TEXT) {
+                    try {
+                        double num = Double.parseDouble(val.toString().replace(",", ""));
+                        cell.setCellValue(num);
+                        cell.setCellStyle(switch (colType) {
+                            case MONEY   -> moneyStyle;
+                            case DECIMAL -> decimalStyle;
+                            case INTEGER -> integerStyle;
+                            default      -> dataStyle;
+                        });
+                        continue;
+                    } catch (NumberFormatException ignored) {}
+                }
                 if (val != null) cell.setCellValue(val.toString());
                 cell.setCellStyle(dataStyle);
             }
@@ -237,12 +265,27 @@ public class UniversalExcelService {
         String summary = String.format("{\"ok\":%d,\"error\":%d,\"skip\":%d}", totalOk, totalError, totalSkip);
 
         String filenameKey = excelI18n.resolve("excel.file.universal", locale) + "-ket-qua";
+        historyHelper.save(companyId, userId, HistoryType.IMPORT, "universal",
+                filenameKey + ".xlsx", resultBytes,
+                (int) totalOk, (int) totalError, (int) totalSkip);
+
         ResponseEntity<byte[]> base = ExcelUtils.buildFileResponse(filenameKey, resultBytes);
         return ResponseEntity.status(base.getStatusCode())
             .headers(base.getHeaders())
             .header("X-Import-Summary", summary)
             .header("Access-Control-Expose-Headers", "X-Import-Summary")
             .body(base.getBody());
+    }
+
+    // ─── HISTORY ─────────────────────────────────────────────────────────────
+
+    public record HistoryWithPerformer(ExcelHistory history, String performedBy) {}
+
+    public List<HistoryWithPerformer> getHistory(Long companyId) {
+        return historyRepo.findWithPerformerByCompanyId(companyId, PageRequest.of(0, 20))
+                .stream()
+                .map(row -> new HistoryWithPerformer((ExcelHistory) row[0], (String) row[1]))
+                .toList();
     }
 
     @SuppressWarnings("unchecked")
@@ -490,6 +533,33 @@ public class UniversalExcelService {
 
     private static CellStyle buildDataStyle(XSSFWorkbook wb) {
         CellStyle style = wb.createCellStyle();
+        style.setBorderRight(BorderStyle.HAIR);
+        style.setBorderBottom(BorderStyle.HAIR);
+        return style;
+    }
+
+    private static CellStyle buildMoneyStyle(XSSFWorkbook wb) {
+        CellStyle style = wb.createCellStyle();
+        style.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("#,##0"));
+        style.setAlignment(HorizontalAlignment.RIGHT);
+        style.setBorderRight(BorderStyle.HAIR);
+        style.setBorderBottom(BorderStyle.HAIR);
+        return style;
+    }
+
+    private static CellStyle buildDecimalStyle(XSSFWorkbook wb) {
+        CellStyle style = wb.createCellStyle();
+        style.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("#,##0.0#"));
+        style.setAlignment(HorizontalAlignment.RIGHT);
+        style.setBorderRight(BorderStyle.HAIR);
+        style.setBorderBottom(BorderStyle.HAIR);
+        return style;
+    }
+
+    private static CellStyle buildIntegerStyle(XSSFWorkbook wb) {
+        CellStyle style = wb.createCellStyle();
+        style.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("0"));
+        style.setAlignment(HorizontalAlignment.CENTER);
         style.setBorderRight(BorderStyle.HAIR);
         style.setBorderBottom(BorderStyle.HAIR);
         return style;

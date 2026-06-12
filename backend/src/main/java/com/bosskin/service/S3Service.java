@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -48,6 +50,57 @@ public class S3Service {
     public String uploadDocument(MultipartFile file, String folder) {
         validateFile(file, ALLOWED_DOC_TYPES);
         return upload(file, folder);
+    }
+
+    /**
+     * Upload raw bytes (không validate type/size). Dùng cho file Excel nội bộ.
+     * Trả về public URL.
+     */
+    public String uploadRaw(byte[] bytes, String folder, String filename, String contentType) {
+        String ext = filename.contains(".") ? filename.substring(filename.lastIndexOf('.')) : "";
+        String key = folder + "/" + UUID.randomUUID() + ext;
+        PutObjectRequest req = PutObjectRequest.builder()
+                .bucket(props.getBucket())
+                .key(key)
+                .contentType(contentType)
+                .contentLength((long) bytes.length)
+                .build();
+        s3Client.putObject(req, RequestBody.fromBytes(bytes));
+        return buildPublicUrl(key);
+    }
+
+    /**
+     * Tải bytes của object từ S3 theo key. Dùng để stream file về client qua backend.
+     */
+    public byte[] downloadAsBytes(String key) {
+        GetObjectRequest req = GetObjectRequest.builder()
+                .bucket(props.getBucket())
+                .key(key)
+                .build();
+        return s3Client.getObject(req, ResponseTransformer.toBytes()).asByteArray();
+    }
+
+    /**
+     * Trích key từ public URL.
+     * AWS:   https://bucket.s3.region.amazonaws.com/key  → key
+     * MinIO: http://endpoint/bucket/key                  → key
+     */
+    public String keyFromUrl(String url) {
+        String endpoint = props.getEndpoint();
+        if (endpoint != null && !endpoint.isBlank()) {
+            // MinIO: http://endpoint/bucket/key
+            String prefix = endpoint.stripTrailing() + "/" + props.getBucket() + "/";
+            if (url.startsWith(prefix)) return url.substring(prefix.length());
+        } else {
+            // AWS S3: https://bucket.s3.region.amazonaws.com/key
+            // Lấy phần path sau domain (bỏ leading slash)
+            try {
+                java.net.URI uri = java.net.URI.create(url);
+                String path = uri.getPath();
+                if (path != null && path.startsWith("/")) return path.substring(1);
+            } catch (IllegalArgumentException ignored) {}
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.s3.invalid_url");
     }
 
     /**

@@ -334,4 +334,25 @@ public class AttendanceDTO {
         private Integer overrideOtNightMinutes;
         private String overrideNote;
     }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ImportRow {
+        private String date;                   // dd/MM/yyyy
+        private String employeeCode;
+        private String employeeName;           // read-only
+        private String departmentName;         // read-only
+        private String status;                 // PRESENT | ABSENT | LATE | HALF_DAY | LEAVE
+        private String checkIn;                // HH:mm
+        private String checkOut;               // HH:mm
+        private String note;
+        private String overrideCheckIn;        // HH:mm
+        private String overrideCheckOut;       // HH:mm
+        private String overrideBreakMinutes;
+        private String overrideOtDayMinutes;
+        private String overrideOtNightMinutes;
+        private String snapActualHours;        // read-only
+        private String snapDayOt;              // read-only
+        private String snapNightOt;            // read-only
+        private String approved;               // read-only
+    }
 }
