@@ -128,6 +128,17 @@ public class AttendanceExcelService {
                 .collect(Collectors.toList());
         }
 
+        // Filter: search (comma-separated employee codes từ pick)
+        String searchRaw = filters.getOrDefault("search", "").trim();
+        if (!searchRaw.isBlank()) {
+            Set<String> codes = Arrays.stream(searchRaw.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+            list = list.stream()
+                .filter(a -> a.getEmployee() != null && codes.contains(a.getEmployee().getEmployeeCode()))
+                .collect(Collectors.toList());
+        }
+
         return list.stream().map(this::toUniversalRow).collect(Collectors.toList());
     }
 

@@ -1,10 +1,12 @@
 package com.bosskin.service.descriptor;
 
 import com.bosskin.entity.Department;
+import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.repository.WorkShiftRepository;
 import com.bosskin.service.ShiftExcelService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelEntityDescriptor;
+import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
@@ -12,16 +14,19 @@ import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class ShiftDescriptor implements ExcelEntityDescriptor<ShiftExcelService.ShiftRow> {
 
-    private final ShiftExcelService shiftExcelService;
-    private final WorkShiftRepository shiftRepo;
+    private final ShiftExcelService    shiftExcelService;
+    private final WorkShiftRepository  shiftRepo;
+    private final DepartmentRepository deptRepo;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -47,23 +52,85 @@ public class ShiftDescriptor implements ExcelEntityDescriptor<ShiftExcelService.
     public ShiftExcelService.ShiftRow newRow() { return new ShiftExcelService.ShiftRow(); }
 
     @Override
+    public List<PickItem> searchForPick(Long companyId, Long userId, String q) {
+        String lq = q == null ? "" : q.trim().toLowerCase();
+        return shiftRepo.findByCompanyIdAndActiveTrue(companyId).stream()
+            .filter(sh -> lq.isEmpty()
+                || (sh.getName() != null && sh.getName().toLowerCase().contains(lq))
+                || (sh.getCode() != null && sh.getCode().toLowerCase().contains(lq)))
+            .limit(20)
+            .map(sh -> new PickItem(sh.getCode(), sh.getName() + " (" + sh.getCode() + ")"))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilterDefinition> filterDefinitions(Long companyId) {
+        List<FilterDefinition.Option> deptOptions = deptRepo
+            .findByCompanyIdOrderByLevelAscNameAsc(companyId).stream()
+            .filter(d -> d.getCode() != null && !d.getCode().isBlank())
+            .map(d -> FilterDefinition.opt(d.getCode(), d.getName() + " (" + d.getCode() + ")"))
+            .collect(Collectors.toList());
+
+        List<FilterDefinition.Option> groupOptions = shiftRepo
+            .findByCompanyIdAndActiveTrue(companyId).stream()
+            .map(sh -> sh.getGroupName())
+            .filter(g -> g != null && !g.isBlank())
+            .distinct().sorted()
+            .map(g -> FilterDefinition.opt(g, g))
+            .collect(Collectors.toList());
+
+        List<FilterDefinition> filters = new ArrayList<>();
+        filters.add(FilterDefinition.text("search", "filter.search"));
+        filters.add(FilterDefinition.select("departmentCodes", "filter.department", deptOptions));
+        if (!groupOptions.isEmpty())
+            filters.add(FilterDefinition.select("groupName", "filter.shift.group", groupOptions));
+        return filters;
+    }
+
+    @Override
     public List<ShiftExcelService.ShiftRow> loadForExport(Long companyId, Long userId,
                                                            Map<String, String> filters) {
-        return shiftRepo.findByCompanyIdAndActiveTrue(companyId).stream().map(sh -> {
-            ShiftExcelService.ShiftRow r = new ShiftExcelService.ShiftRow();
-            r.code      = sh.getCode();
-            r.name      = sh.getName();
-            r.startTime = sh.getStartTime() != null ? sh.getStartTime().format(TIME_FMT) : "";
-            r.endTime   = sh.getEndTime()   != null ? sh.getEndTime().format(TIME_FMT)   : "";
-            r.breakStart= sh.getBreakStart()!= null ? sh.getBreakStart().format(TIME_FMT): "";
-            r.breakEnd  = sh.getBreakEnd()  != null ? sh.getBreakEnd().format(TIME_FMT)  : "";
-            r.groupName = sh.getGroupName() != null ? sh.getGroupName() : "";
-            r.color     = sh.getColor()     != null ? sh.getColor()     : "";
-            r.deptCodes = sh.getDepartments().stream()
-                .map(Department::getCode).filter(c -> c != null)
-                .collect(Collectors.joining(","));
-            return r;
-        }).collect(Collectors.toList());
+        String deptCodesRaw = filters.getOrDefault("departmentCodes",
+            filters.getOrDefault("departmentCode", "")).trim();
+        Set<String> deptFilter = deptCodesRaw.isEmpty() ? Set.of()
+            : Arrays.stream(deptCodesRaw.split(","))
+                .map(s -> s.trim().toUpperCase()).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        String groupFilter = filters.getOrDefault("groupName", "").trim();
+        String searchRaw = filters.getOrDefault("search", "").trim();
+        Set<String> pickedCodes = searchRaw.isEmpty() ? Set.of()
+            : Arrays.stream(searchRaw.split(","))
+                .map(s -> s.trim().toUpperCase()).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        return shiftRepo.findByCompanyIdAndActiveTrue(companyId).stream()
+            .filter(sh -> {
+                if (!pickedCodes.isEmpty())
+                    return sh.getCode() != null && pickedCodes.contains(sh.getCode().toUpperCase());
+                if (!groupFilter.isEmpty()
+                        && !groupFilter.equals(sh.getGroupName())) return false;
+                if (!deptFilter.isEmpty()) {
+                    Set<String> shiftDeptCodes = sh.getDepartments().stream()
+                        .map(Department::getCode).filter(c -> c != null)
+                        .map(String::toUpperCase).collect(Collectors.toSet());
+                    return shiftDeptCodes.stream().anyMatch(deptFilter::contains);
+                }
+                return true;
+            })
+            .map(sh -> {
+                ShiftExcelService.ShiftRow r = new ShiftExcelService.ShiftRow();
+                r.code      = sh.getCode();
+                r.name      = sh.getName();
+                r.startTime = sh.getStartTime() != null ? sh.getStartTime().format(TIME_FMT) : "";
+                r.endTime   = sh.getEndTime()   != null ? sh.getEndTime().format(TIME_FMT)   : "";
+                r.breakStart= sh.getBreakStart()!= null ? sh.getBreakStart().format(TIME_FMT): "";
+                r.breakEnd  = sh.getBreakEnd()  != null ? sh.getBreakEnd().format(TIME_FMT)  : "";
+                r.groupName = sh.getGroupName() != null ? sh.getGroupName() : "";
+                r.color     = sh.getColor()     != null ? sh.getColor()     : "";
+                r.deptCodes = sh.getDepartments().stream()
+                    .map(Department::getCode).filter(c -> c != null)
+                    .collect(Collectors.joining(","));
+                return r;
+            }).collect(Collectors.toList());
     }
 
     @Override

@@ -4,6 +4,8 @@ import '../../data/models/department_model.dart';
 import '../../data/repositories/universal_excel_repository.dart';
 import 'department_picker_field.dart';
 
+final _excelRepo = UniversalExcelRepository();
+
 /// Dialog chọn cột + bộ lọc trước khi export.
 ///
 /// Trả về [ExportOptions] khi user nhấn Xuất, null nếu Cancel.
@@ -126,6 +128,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
               children: _types.map((type) {
                 final meta = widget.meta[type]!;
                 return _ModuleOptionsTab(
+                  module: type,
                   meta: meta,
                   selectedColumns: _selectedColumns[type]!,
                   filters: _filters[type]!,
@@ -157,12 +160,20 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
           // ── Actions ─────────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-            child: Row(children: [
-              Text(
-                _types.map((t) => '${_selectedColumns[t]!.length} cột ${_typeLabel(t)}').join(' · '),
-                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+              Expanded(
+                child: Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
+                  children: _types.map((t) => Text(
+                    '${_selectedColumns[t]!.length} cột ${_typeLabel(t)}  ·',
+                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                  )).toList(),
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Hủy'),
@@ -194,6 +205,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
 // ── Per-module tab ────────────────────────────────────────────────────────────
 
 class _ModuleOptionsTab extends StatelessWidget {
+  final String module;
   final ExportMeta meta;
   final Set<String> selectedColumns;
   final Map<String, String> filters;
@@ -206,6 +218,7 @@ class _ModuleOptionsTab extends StatelessWidget {
   final void Function(Set<int> ids) onDeptChanged;
 
   const _ModuleOptionsTab({
+    required this.module,
     required this.meta,
     required this.selectedColumns,
     required this.filters,
@@ -278,6 +291,7 @@ class _ModuleOptionsTab extends StatelessWidget {
                               onChanged: onDeptChanged,
                             )
                           : _FilterField(
+                              module: module,
                               filter: f,
                               value: filters[f.key],
                               valueFrom: filters['${f.key}From'],
@@ -413,6 +427,7 @@ class _DeptFilterField extends StatelessWidget {
 // ── Generic filter field ──────────────────────────────────────────────────────
 
 class _FilterField extends StatelessWidget {
+  final String module;
   final ExcelFilterDef filter;
   final String? value;
   final String? valueFrom;
@@ -420,6 +435,7 @@ class _FilterField extends StatelessWidget {
   final void Function(String key, String? value) onChange;
 
   const _FilterField({
+    required this.module,
     required this.filter,
     required this.onChange,
     this.value,
@@ -430,12 +446,15 @@ class _FilterField extends StatelessWidget {
   String _label() => _knownLabels[filter.labelKey] ?? filter.labelKey;
 
   static const _knownLabels = {
+    'filter.search':               'Tìm kiếm',
     'filter.department':           'Phòng ban',
+    'filter.department.parent':    'Phòng ban cha',
     'filter.status':               'Trạng thái',
     'filter.salaryGrade':          'Bậc lương',
     'filter.joinDate':             'Ngày vào làm',
     'filter.year':                 'Năm',
     'filter.month':                'Tháng',
+    'filter.shift.group':          'Nhóm ca',
     'filter.status.all':           'Tất cả',
     'filter.status.active':        'Đang làm',
     'filter.status.inactive':      'Đã nghỉ',
@@ -455,10 +474,21 @@ class _FilterField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(_label(),
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-      const SizedBox(height: 4),
-      if (filter.type == 'SELECT' || filter.type == 'MULTI_SELECT')
+      if (filter.type != 'TEXT') ...[
+        Text(_label(),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 4),
+      ],
+      if (filter.type == 'TEXT')
+        _MultiPickField(
+          module: module,
+          filterKey: filter.key,
+          selectedCodes: value == null || value!.isEmpty
+              ? const []
+              : value!.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+          onChange: (codes) => onChange(filter.key, codes.isEmpty ? null : codes.join(',')),
+        )
+      else if (filter.type == 'SELECT' || filter.type == 'MULTI_SELECT')
         DropdownButtonFormField<String>(
           initialValue: value,
           decoration: const InputDecoration(
@@ -499,6 +529,174 @@ class _FilterField extends StatelessWidget {
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           ),
           onChanged: (v) => onChange(filter.key, v.isEmpty ? null : v),
+        ),
+    ]);
+  }
+}
+
+// ── Multi-pick field (autocomplete + chips) ───────────────────────────────────
+
+class _MultiPickField extends StatefulWidget {
+  final String module;
+  final String filterKey;
+  final List<String> selectedCodes;
+  final void Function(List<String> codes) onChange;
+
+  const _MultiPickField({
+    required this.module,
+    required this.filterKey,
+    required this.selectedCodes,
+    required this.onChange,
+  });
+
+  @override
+  State<_MultiPickField> createState() => _MultiPickFieldState();
+}
+
+class _MultiPickFieldState extends State<_MultiPickField> {
+  final _ctrl = TextEditingController();
+  final _focus = FocusNode();
+  List<ExcelPickItem> _suggestions = [];
+  late List<String> _selected; // codes đang chọn
+  // label cache: code → label
+  final Map<String, String> _labelCache = {};
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = List.from(widget.selectedCodes);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _search(String q) async {
+    if (q.trim().isEmpty) {
+      setState(() => _suggestions = []);
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final items = await _excelRepo.searchForPick(widget.module, q.trim());
+      if (mounted) {
+        for (final i in items) { _labelCache[i.code] = i.label; }
+        setState(() { _suggestions = items; _loading = false; });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _suggestions = []; _loading = false; });
+    }
+  }
+
+  void _pick(ExcelPickItem item) {
+    if (_selected.contains(item.code)) return;
+    _labelCache[item.code] = item.label;
+    setState(() {
+      _selected = [..._selected, item.code];
+      _suggestions = [];
+      _ctrl.clear();
+    });
+    widget.onChange(_selected);
+    _focus.requestFocus();
+  }
+
+  void _remove(String code) {
+    setState(() => _selected = _selected.where((c) => c != code).toList());
+    widget.onChange(_selected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // ── Chips ──
+      if (_selected.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: _selected.map((code) {
+              final label = _labelCache[code] ?? code;
+              return Chip(
+                label: Text(label, style: const TextStyle(fontSize: 11)),
+                deleteIcon: const Icon(Icons.close, size: 12),
+                onDeleted: () => _remove(code),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                visualDensity: VisualDensity.compact,
+              );
+            }).toList(),
+          ),
+        ),
+      // ── Search input ──
+      TextField(
+        controller: _ctrl,
+        focusNode: _focus,
+        decoration: InputDecoration(
+          hintText: 'Tìm tên hoặc mã...',
+          hintStyle: const TextStyle(fontSize: 11),
+          border: const OutlineInputBorder(),
+          contentPadding: EdgeInsets.zero,
+          prefixIcon: const Icon(Icons.search_outlined, size: 16),
+          suffixIcon: _loading
+              ? const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: SizedBox(width: 14, height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2)))
+              : _ctrl.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 14),
+                      onPressed: () {
+                        _ctrl.clear();
+                        setState(() => _suggestions = []);
+                      },
+                      visualDensity: VisualDensity.compact,
+                    )
+                  : null,
+        ),
+        onChanged: _search,
+      ),
+      // ── Dropdown gợi ý ──
+      if (_suggestions.isNotEmpty)
+        Container(
+          margin: const EdgeInsets.only(top: 2),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppTheme.border),
+            borderRadius: BorderRadius.circular(6),
+            color: Colors.white,
+            boxShadow: [BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 6, offset: const Offset(0, 2))],
+          ),
+          constraints: const BoxConstraints(maxHeight: 160),
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            children: _suggestions.map((item) {
+              final picked = _selected.contains(item.code);
+              return InkWell(
+                onTap: picked ? null : () => _pick(item),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(item.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: picked ? AppTheme.textSecondary : AppTheme.textPrimary,
+                          )),
+                    ),
+                    if (picked)
+                      const Icon(Icons.check, size: 14, color: AppTheme.primary),
+                  ]),
+                ),
+              );
+            }).toList(),
+          ),
         ),
     ]);
   }

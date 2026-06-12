@@ -580,8 +580,9 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
   @override
   Widget build(BuildContext context) {
     if (_loadingEmps) return const Center(child: CircularProgressIndicator());
+    final isSysAdmin = AuthService.instance.currentUser?.isSystemAdmin ?? false;
     final canManage = widget.canManage &&
-        (AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false);
+        (isSysAdmin || (AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false));
 
     final periodDays = _periodDays;
     final emps = _pageEmployees;

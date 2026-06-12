@@ -1,8 +1,11 @@
 package com.bosskin.service.descriptor;
 
 import com.bosskin.dto.EmployeeDTO;
+import com.bosskin.entity.Employee;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.SalaryGradeRepository;
+import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.EmployeeImportService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelEntityDescriptor;
@@ -10,11 +13,13 @@ import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,6 +29,8 @@ public class EmployeeDescriptor implements ExcelEntityDescriptor<EmployeeDTO.Imp
     private final EmployeeImportService employeeImportService;
     private final DepartmentRepository  deptRepo;
     private final SalaryGradeRepository salaryGradeRepo;
+    private final EmployeeRepository    employeeRepo;
+    private final DeptScopeService      deptScopeService;
 
     private static final String G_BASIC    = "basic";
     private static final String G_CONTRACT = "contract";
@@ -71,6 +78,20 @@ public class EmployeeDescriptor implements ExcelEntityDescriptor<EmployeeDTO.Imp
     }
 
     @Override
+    public List<PickItem> searchForPick(Long companyId, Long userId, String q) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
+        org.springframework.data.domain.Page<Employee> page = scopeIds.isEmpty()
+            ? employeeRepo.findAllWithFilters(companyId, q, null, null, PageRequest.of(0, 20))
+            : employeeRepo.findAllWithDeptScope(companyId, scopeIds, q, null, PageRequest.of(0, 20));
+        return page.getContent().stream()
+            .map(e -> new PickItem(
+                e.getEmployeeCode(),
+                e.getFullName() + " (" + e.getEmployeeCode() + ")"
+                    + (e.getDepartment() != null ? " — " + e.getDepartment().getName() : "")))
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public List<FilterDefinition> filterDefinitions(Long companyId) {
         // Department options — value = code, label = "Tên (mã)"
         List<FilterDefinition.Option> deptOptions = deptRepo
@@ -86,6 +107,7 @@ public class EmployeeDescriptor implements ExcelEntityDescriptor<EmployeeDTO.Imp
             .collect(Collectors.toList());
 
         return List.of(
+            FilterDefinition.text("search", "filter.search"),
             FilterDefinition.select("departmentCodes", "filter.department", deptOptions),
             FilterDefinition.select("status", "filter.status", List.of(
                 FilterDefinition.opt("ALL",      "filter.status.all"),

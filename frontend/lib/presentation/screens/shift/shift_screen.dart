@@ -357,8 +357,9 @@ class _ShiftScreenState extends State<ShiftScreen>
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final canView = AuthService.instance.currentUser?.can('SHIFT_VIEW') ?? false;
-    final canManage = AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false;
+    final isSysAdmin = AuthService.instance.currentUser?.isSystemAdmin ?? false;
+    final canView   = isSysAdmin || (AuthService.instance.currentUser?.can('SHIFT_VIEW')   ?? false);
+    final canManage = isSysAdmin || (AuthService.instance.currentUser?.can('SHIFT_MANAGE') ?? false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

@@ -1,23 +1,29 @@
 package com.bosskin.service.descriptor;
 
 import com.bosskin.dto.PositionDTO;
+import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.service.PositionExcelService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelEntityDescriptor;
+import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class PositionDescriptor implements ExcelEntityDescriptor<PositionDTO.ImportRow> {
 
     private final PositionExcelService positionExcelService;
+    private final DepartmentRepository deptRepo;
 
     @Override public String sheetKey() { return "excel.sheet.position.list"; }
     @Override public String type()     { return "position"; }
@@ -37,9 +43,55 @@ public class PositionDescriptor implements ExcelEntityDescriptor<PositionDTO.Imp
     public PositionDTO.ImportRow newRow() { return new PositionDTO.ImportRow(); }
 
     @Override
+    public List<PickItem> searchForPick(Long companyId, Long userId, String q) {
+        String lq = q == null ? "" : q.trim().toLowerCase();
+        return positionExcelService.getFlat(companyId).stream()
+            .filter(p -> lq.isEmpty()
+                || p.getName().toLowerCase().contains(lq)
+                || p.getCode().toLowerCase().contains(lq))
+            .limit(20)
+            .map(p -> new PickItem(p.getCode(), p.getName() + " (" + p.getCode() + ")"
+                + (p.getDepartmentName() != null ? " — " + p.getDepartmentName() : "")))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public List<FilterDefinition> filterDefinitions(Long companyId) {
+        List<FilterDefinition.Option> deptOptions = deptRepo
+            .findByCompanyIdOrderByLevelAscNameAsc(companyId).stream()
+            .filter(d -> d.getCode() != null && !d.getCode().isBlank())
+            .map(d -> FilterDefinition.opt(d.getCode(), d.getName() + " (" + d.getCode() + ")"))
+            .collect(Collectors.toList());
+
+        return List.of(
+            FilterDefinition.text("search", "filter.search"),
+            FilterDefinition.select("departmentCodes", "filter.department", deptOptions)
+        );
+    }
+
+    @Override
     public List<PositionDTO.ImportRow> loadForExport(Long companyId, Long userId,
                                                       Map<String, String> filters) {
-        return positionExcelService.getFlat(companyId).stream().map(flat -> {
+        String deptCodesRaw = filters.getOrDefault("departmentCodes",
+            filters.getOrDefault("departmentCode", "")).trim();
+        Set<String> deptFilter = deptCodesRaw.isEmpty() ? Set.of()
+            : Arrays.stream(deptCodesRaw.split(","))
+                .map(s -> s.trim().toUpperCase())
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        String searchRaw = filters.getOrDefault("search", "").trim();
+        Set<String> pickedCodes = searchRaw.isEmpty() ? Set.of()
+            : Arrays.stream(searchRaw.split(","))
+                .map(s -> s.trim().toUpperCase()).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        return positionExcelService.getFlat(companyId).stream()
+            .filter(flat -> {
+                if (!pickedCodes.isEmpty())
+                    return flat.getCode() != null && pickedCodes.contains(flat.getCode().toUpperCase());
+                return deptFilter.isEmpty() || (flat.getDepartmentCode() != null
+                    && deptFilter.contains(flat.getDepartmentCode().toUpperCase()));
+            })
+            .map(flat -> {
             PositionDTO.ImportRow r = new PositionDTO.ImportRow();
             r.setCode(flat.getCode());
             r.setName(flat.getName());

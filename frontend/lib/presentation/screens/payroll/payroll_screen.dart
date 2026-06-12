@@ -66,9 +66,10 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   void _initPerms() {
     final user = AuthService.instance.currentUser;
-    _canCreate = user?.can('PAYROLL_CREATE') ?? false;
-    _canApprove = user?.can('PAYROLL_APPROVE') ?? false;
-    _canPay = user?.can('PAYROLL_PAY') ?? false;
+    final isSysAdmin = user?.isSystemAdmin ?? false;
+    _canCreate  = isSysAdmin || (user?.can('PAYROLL_CREATE')  ?? false);
+    _canApprove = isSysAdmin || (user?.can('PAYROLL_APPROVE') ?? false);
+    _canPay     = isSysAdmin || (user?.can('PAYROLL_PAY')     ?? false);
   }
 
   Future<void> _loadDepts() async {

@@ -115,6 +115,19 @@ class ExportMeta {
       );
 }
 
+// ── Pick item (autocomplete search result) ────────────────────────────────────
+
+class ExcelPickItem {
+  final String code;
+  final String label;
+  const ExcelPickItem({required this.code, required this.label});
+
+  factory ExcelPickItem.fromJson(Map<String, dynamic> j) => ExcelPickItem(
+        code:  j['code']  as String,
+        label: j['label'] as String,
+      );
+}
+
 // ── Import diff / result ──────────────────────────────────────────────────────
 
 class UniversalImportDiff {
@@ -211,6 +224,17 @@ class ExcelHistoryEntry {
 
 class UniversalExcelRepository {
   final _api = ApiService.instance;
+
+  /// Tìm kiếm gợi ý để pick khi filter export.
+  Future<List<ExcelPickItem>> searchForPick(String module, String q) async {
+    final res = await _api.dio.get<List<dynamic>>(
+      '/excel/search',
+      queryParameters: {'module': module, 'q': q},
+    );
+    return (res.data ?? [])
+        .map((e) => ExcelPickItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 
   /// Lấy metadata cột + filter definitions cho từng module.
   Future<Map<String, ExportMeta>> getMeta() async {

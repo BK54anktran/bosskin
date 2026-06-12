@@ -1,18 +1,23 @@
 package com.bosskin.service.descriptor;
 
 import com.bosskin.dto.AttendanceDTO;
+import com.bosskin.entity.Employee;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.service.AttendanceExcelService;
+import com.bosskin.service.DeptScopeService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelEntityDescriptor;
 import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,6 +26,8 @@ public class AttendanceDescriptor implements ExcelEntityDescriptor<AttendanceDTO
 
     private final AttendanceExcelService attendanceExcelService;
     private final DepartmentRepository   deptRepo;
+    private final EmployeeRepository     employeeRepo;
+    private final DeptScopeService       deptScopeService;
 
     private static final String G_BASIC    = "basic";
     private static final String G_COMPUTED = "computed";
@@ -59,6 +66,20 @@ public class AttendanceDescriptor implements ExcelEntityDescriptor<AttendanceDTO
     public AttendanceDTO.ImportRow newRow() { return new AttendanceDTO.ImportRow(); }
 
     @Override
+    public List<PickItem> searchForPick(Long companyId, Long userId, String q) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "ATTENDANCE_VIEW");
+        org.springframework.data.domain.Page<Employee> page = scopeIds.isEmpty()
+            ? employeeRepo.findAllWithFilters(companyId, q, null, null, PageRequest.of(0, 20))
+            : employeeRepo.findAllWithDeptScope(companyId, scopeIds, q, null, PageRequest.of(0, 20));
+        return page.getContent().stream()
+            .map(e -> new PickItem(
+                e.getEmployeeCode(),
+                e.getFullName() + " (" + e.getEmployeeCode() + ")"
+                    + (e.getDepartment() != null ? " — " + e.getDepartment().getName() : "")))
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public List<AttendanceDTO.ImportRow> loadForExport(Long companyId, Long userId,
                                                         Map<String, String> filters) {
         return attendanceExcelService.loadAllForExport(companyId, userId, filters);
@@ -85,6 +106,7 @@ public class AttendanceDescriptor implements ExcelEntityDescriptor<AttendanceDTO
             monthOptions.add(FilterDefinition.opt(String.valueOf(m), String.format("%02d", m)));
 
         return List.of(
+            FilterDefinition.text("search", "filter.search"),
             FilterDefinition.select("departmentCodes", "filter.department", deptOptions),
             FilterDefinition.select("year",  "filter.year",  yearOptions),
             FilterDefinition.select("month", "filter.month", monthOptions),

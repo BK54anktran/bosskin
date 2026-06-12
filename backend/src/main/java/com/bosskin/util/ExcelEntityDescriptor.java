@@ -64,6 +64,14 @@ public interface ExcelEntityDescriptor<T> {
     default boolean importable() { return true; }
 
     /**
+     * Tìm kiếm gợi ý để user pick khi filter export.
+     * Trả về list {code, label} — tối đa 20 kết quả.
+     * Default trả empty list (module không hỗ trợ search-pick).
+     */
+    record PickItem(String code, String label) {}
+    default List<PickItem> searchForPick(Long companyId, Long userId, String q) { return List.of(); }
+
+    /**
      * @param presentColumns set các columnKey có header trong file Excel
      *                       (dùng để phân biệt "cột trống" vs "cột không có trong file")
      */

@@ -44,15 +44,17 @@ public class UniversalExcelService {
         List<String> types = req != null ? req.types() : null;
         List<ExcelEntityDescriptor<?>> targets = filterDescriptors(types);
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            CellStyle headerStyle = buildHeaderStyle(wb);
-            CellStyle cmdStyle    = buildCommandStyle(wb);
-            CellStyle dataStyle   = buildDataStyle(wb);
+            CellStyle headerStyle   = buildHeaderStyle(wb);
+            CellStyle roHeaderStyle = buildReadOnlyHeaderStyle(wb);
+            CellStyle cmdStyle      = buildCommandStyle(wb);
+            CellStyle dataStyle     = buildDataStyle(wb);
+            CellStyle roDataStyle   = buildReadOnlyDataStyle(wb);
 
             for (ExcelEntityDescriptor<?> desc : targets) {
                 List<String> selCols  = req != null ? req.columnsFor(desc.type())   : null;
                 Map<String, String> filters = req != null ? req.filtersFor(desc.type()) : Map.of();
                 writeSheet(wb, desc, companyId, userId, locale,
-                           selCols, filters, headerStyle, cmdStyle, dataStyle);
+                           selCols, filters, headerStyle, roHeaderStyle, cmdStyle, dataStyle, roDataStyle);
             }
 
             String filenameKey = excelI18n.resolve("excel.file.universal", locale);
@@ -71,7 +73,8 @@ public class UniversalExcelService {
                                  Long companyId, Long userId, java.util.Locale locale,
                                  List<String> selectedColumnKeys,
                                  Map<String, String> filters,
-                                 CellStyle headerStyle, CellStyle cmdStyle, CellStyle dataStyle) {
+                                 CellStyle headerStyle, CellStyle roHeaderStyle,
+                                 CellStyle cmdStyle, CellStyle dataStyle, CellStyle roDataStyle) {
         String sheetName = sanitize(excelI18n.resolve(desc.sheetKey(), locale));
         Sheet sheet = wb.createSheet(sheetName);
 
@@ -112,7 +115,7 @@ public class UniversalExcelService {
             cell.setCellValue(col.isI18n()
                 ? excelI18n.resolve(col.getHeaderKey(), locale)
                 : (col.getHeader() != null ? col.getHeader() : ""));
-            cell.setCellStyle(headerStyle);
+            cell.setCellStyle(col.isImportable() ? headerStyle : roHeaderStyle);
             sheet.setColumnWidth(c + 1, 22 * 256);
         }
 
@@ -145,12 +148,23 @@ public class UniversalExcelService {
                     } catch (NumberFormatException ignored) {}
                 }
                 if (val != null) cell.setCellValue(val.toString());
-                cell.setCellStyle(dataStyle);
+                cell.setCellStyle(col.isImportable() ? dataStyle : roDataStyle);
             }
         }
 
         sheet.createFreezePane(1, 1);
         addCommandDropdown(wb, sheet, rows.size());
+    }
+
+    // ─── SEARCH FOR PICK ─────────────────────────────────────────────────────
+
+    public List<ExcelEntityDescriptor.PickItem> searchForPick(
+            Long companyId, Long userId, String module, String q) {
+        return descriptors.stream()
+            .filter(d -> d.type().equals(module))
+            .findFirst()
+            .map(d -> d.searchForPick(companyId, userId, q))
+            .orElse(List.of());
     }
 
     // ─── META (column defs + filters cho UI) ────────────────────────────────
@@ -533,6 +547,29 @@ public class UniversalExcelService {
 
     private static CellStyle buildDataStyle(XSSFWorkbook wb) {
         CellStyle style = wb.createCellStyle();
+        style.setBorderRight(BorderStyle.HAIR);
+        style.setBorderBottom(BorderStyle.HAIR);
+        return style;
+    }
+
+    private static CellStyle buildReadOnlyHeaderStyle(XSSFWorkbook wb) {
+        XSSFCellStyle style = wb.createCellStyle();
+        XSSFFont font = wb.createFont();
+        font.setBold(true);
+        font.setColor(new XSSFColor(new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF}, null));
+        style.setFont(font);
+        style.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0x78,(byte)0x8A,(byte)0x9B}, null));
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setBorderBottom(BorderStyle.MEDIUM);
+        return style;
+    }
+
+    private static CellStyle buildReadOnlyDataStyle(XSSFWorkbook wb) {
+        XSSFCellStyle style = wb.createCellStyle();
+        style.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0xF2,(byte)0xF3,(byte)0xF4}, null));
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setBorderRight(BorderStyle.HAIR);
         style.setBorderBottom(BorderStyle.HAIR);
         return style;

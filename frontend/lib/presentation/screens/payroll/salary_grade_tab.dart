@@ -42,7 +42,8 @@ class _SalaryGradeTabState extends State<SalaryGradeTab> {
   @override
   void initState() {
     super.initState();
-    _canEdit = AuthService.instance.currentUser?.can('PAYROLL_CREATE') ?? false;
+    final user = AuthService.instance.currentUser;
+    _canEdit = (user?.isSystemAdmin ?? false) || (user?.can('PAYROLL_CREATE') ?? false);
     _loadDepts();
     _load();
   }

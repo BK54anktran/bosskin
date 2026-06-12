@@ -272,7 +272,7 @@ class _ExportCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const Icon(Icons.download_outlined, color: AppTheme.primary),
+            const Icon(Icons.upload_outlined, color: AppTheme.primary),
             const SizedBox(width: 10),
             Text(s.excelExportTitle,
                 style: const TextStyle(
@@ -391,7 +391,7 @@ class _ImportCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const Icon(Icons.upload_outlined, color: AppTheme.secondary),
+            const Icon(Icons.download_outlined, color: AppTheme.secondary),
             const SizedBox(width: 10),
             Text(s.excelImportTitle,
                 style: const TextStyle(
@@ -456,7 +456,7 @@ class _DropZone extends StatelessWidget {
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cloud_upload_outlined,
+                Icon(Icons.cloud_download_outlined,
                     size: 32, color: AppTheme.primary.withValues(alpha: 0.6)),
                 const SizedBox(height: 8),
                 Text(s.excelImportDropzone,
@@ -555,9 +555,9 @@ class _ImportSteps extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final steps = [
-      (Icons.download_outlined,    s.excelStepExport),
+      (Icons.upload_outlined,       s.excelStepExport),
       (Icons.edit_outlined,         s.excelStepFill),
-      (Icons.upload_file_outlined,  s.excelStepPick),
+      (Icons.download_outlined,     s.excelStepPick),
       (Icons.preview_outlined,      s.excelStepPreview),
       (Icons.check_circle_outlined, s.excelStepConfirm),
     ];

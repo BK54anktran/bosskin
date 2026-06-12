@@ -70,6 +70,17 @@ public class EmployeeImportService {
             ? employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
             : employeeRepo.findAllByCompanyIdAndDepartmentIdInFetchDepartment(companyId, scopeIds);
 
+        // Filter: search (comma-separated employee codes từ pick)
+        String searchRaw = filters.getOrDefault("search", "").trim();
+        if (!searchRaw.isBlank()) {
+            Set<String> codes = Arrays.stream(searchRaw.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+            employees = employees.stream()
+                .filter(e -> e.getEmployeeCode() != null && codes.contains(e.getEmployeeCode()))
+                .collect(Collectors.toList());
+        }
+
         // Filter: status
         String statusFilter = filters.getOrDefault("status", "");
         if (!statusFilter.isBlank() && !statusFilter.equals("ALL")) {

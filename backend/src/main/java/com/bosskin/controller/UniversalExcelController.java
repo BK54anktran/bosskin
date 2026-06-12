@@ -5,6 +5,7 @@ import com.bosskin.entity.User;
 import com.bosskin.repository.ExcelHistoryRepository;
 import com.bosskin.service.S3Service;
 import com.bosskin.service.UniversalExcelService;
+import com.bosskin.util.ExcelEntityDescriptor;
 import com.bosskin.util.ExportRequest;
 import com.bosskin.util.UniversalImportDiff;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,18 @@ public class UniversalExcelController {
     private final UniversalExcelService universalExcelService;
     private final ExcelHistoryRepository historyRepo;
     private final S3Service s3Service;
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ExcelEntityDescriptor.PickItem>> search(
+            @RequestParam String module,
+            @RequestParam(defaultValue = "") String q,
+            @AuthenticationPrincipal User user) {
+        if (!user.can("excel.export") && !user.can("excel.import")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        return ResponseEntity.ok(
+            universalExcelService.searchForPick(user.getCompanyId(), user.getId(), module, q));
+    }
 
     @GetMapping("/meta")
     public ResponseEntity<Map<String, UniversalExcelService.ExportMeta>> meta(

@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -198,6 +199,17 @@ public class PayrollExcelService {
         final Payroll.Status finalStatus = statusFilter;
         if (finalStatus != null) {
             payrolls = payrolls.stream().filter(p -> finalStatus.equals(p.getStatus())).collect(Collectors.toList());
+        }
+
+        // Filter: search (comma-separated employee codes từ pick)
+        String searchRaw = filters.getOrDefault("search", "").trim();
+        if (!searchRaw.isBlank()) {
+            Set<String> codes = Arrays.stream(searchRaw.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+            payrolls = payrolls.stream()
+                .filter(p -> p.getEmployee() != null && codes.contains(p.getEmployee().getEmployeeCode()))
+                .collect(Collectors.toList());
         }
 
         return payrolls.stream().map(this::toUniversalRow).collect(Collectors.toList());

@@ -1,23 +1,29 @@
 package com.bosskin.service.descriptor;
 
 import com.bosskin.dto.DepartmentDTO;
+import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.service.DepartmentService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelEntityDescriptor;
+import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class DepartmentDescriptor implements ExcelEntityDescriptor<DepartmentDTO.ImportRow> {
 
-    private final DepartmentService departmentService;
+    private final DepartmentService    departmentService;
+    private final DepartmentRepository deptRepo;
 
     @Override public String sheetKey() { return "excel.sheet.department.list"; }
     @Override public String type()     { return "department"; }
@@ -40,10 +46,55 @@ public class DepartmentDescriptor implements ExcelEntityDescriptor<DepartmentDTO
     public DepartmentDTO.ImportRow newRow() { return new DepartmentDTO.ImportRow(); }
 
     @Override
+    public List<PickItem> searchForPick(Long companyId, Long userId, String q) {
+        String lq = q == null ? "" : q.trim().toLowerCase();
+        return deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId).stream()
+            .filter(d -> d.getCode() != null && !d.getCode().isBlank())
+            .filter(d -> lq.isEmpty()
+                || d.getName().toLowerCase().contains(lq)
+                || d.getCode().toLowerCase().contains(lq))
+            .limit(20)
+            .map(d -> new PickItem(d.getCode(), d.getName() + " (" + d.getCode() + ")"))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilterDefinition> filterDefinitions(Long companyId) {
+        // Chỉ lấy phòng ban cấp gốc (level 0) làm option lọc cha
+        List<FilterDefinition.Option> parentOptions = deptRepo
+            .findByCompanyIdOrderByLevelAscNameAsc(companyId).stream()
+            .filter(d -> d.getParent() == null && d.getCode() != null && !d.getCode().isBlank())
+            .map(d -> FilterDefinition.opt(d.getCode(), d.getName() + " (" + d.getCode() + ")"))
+            .collect(Collectors.toList());
+
+        return List.of(
+            FilterDefinition.text("search", "filter.search"),
+            FilterDefinition.select("parentCode", "filter.department.parent", parentOptions)
+        );
+    }
+
+    @Override
     public List<DepartmentDTO.ImportRow> loadForExport(Long companyId, Long userId,
                                                         Map<String, String> filters) {
+        String parentCodeFilter = filters.getOrDefault("parentCode", "").trim().toUpperCase();
+        String searchRaw = filters.getOrDefault("search", "").trim();
+        Set<String> pickedCodes = searchRaw.isEmpty() ? Set.of()
+            : Arrays.stream(searchRaw.split(","))
+                .map(s -> s.trim().toUpperCase()).filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
         return departmentService.getFlat(companyId, userId, "DEPARTMENT_VIEW")
-            .stream().map(flat -> {
+            .stream()
+            .filter(flat -> {
+                if (!pickedCodes.isEmpty()) {
+                    String code = flat.getCode() != null ? flat.getCode().toUpperCase() : "";
+                    return pickedCodes.contains(code);
+                }
+                if (parentCodeFilter.isEmpty()) return true;
+                String pc = flat.getParentCode() != null ? flat.getParentCode().toUpperCase() : "";
+                String code = flat.getCode() != null ? flat.getCode().toUpperCase() : "";
+                return parentCodeFilter.equals(code) || parentCodeFilter.equals(pc);
+            })
+            .map(flat -> {
                 DepartmentDTO.ImportRow r = new DepartmentDTO.ImportRow();
                 r.setCode(flat.getCode());
                 r.setName(flat.getName());
@@ -53,7 +104,7 @@ public class DepartmentDescriptor implements ExcelEntityDescriptor<DepartmentDTO
                 r.setCheckInLongitude(flat.getCheckInLongitude() != null ? String.valueOf(flat.getCheckInLongitude()) : "");
                 r.setCheckInRadiusMeters(flat.getCheckInRadiusMeters() != null ? String.valueOf(flat.getCheckInRadiusMeters()) : "");
                 return r;
-            }).collect(java.util.stream.Collectors.toList());
+            }).collect(Collectors.toList());
     }
 
     @Override

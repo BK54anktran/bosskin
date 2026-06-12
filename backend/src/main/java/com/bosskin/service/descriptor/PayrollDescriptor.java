@@ -1,9 +1,12 @@
 package com.bosskin.service.descriptor;
 
 import com.bosskin.dto.PayrollDTO;
+import com.bosskin.entity.Employee;
 import com.bosskin.entity.Payroll;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.PayrollRepository;
+import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.PayrollExcelService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelColumn.ColType;
@@ -11,11 +14,13 @@ import com.bosskin.util.ExcelEntityDescriptor;
 import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,6 +30,8 @@ public class PayrollDescriptor implements ExcelEntityDescriptor<PayrollDTO.Impor
     private final PayrollExcelService   payrollExcelService;
     private final PayrollRepository     payrollRepository;
     private final DepartmentRepository  deptRepo;
+    private final EmployeeRepository    employeeRepo;
+    private final DeptScopeService      deptScopeService;
 
     private static final String G_ID      = "identification";
     private static final String G_EARNING = "earnings";
@@ -66,6 +73,20 @@ public class PayrollDescriptor implements ExcelEntityDescriptor<PayrollDTO.Impor
     public PayrollDTO.ImportRow newRow() { return new PayrollDTO.ImportRow(); }
 
     @Override
+    public List<PickItem> searchForPick(Long companyId, Long userId, String q) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "PAYROLL_VIEW");
+        org.springframework.data.domain.Page<Employee> page = scopeIds.isEmpty()
+            ? employeeRepo.findAllWithFilters(companyId, q, null, null, PageRequest.of(0, 20))
+            : employeeRepo.findAllWithDeptScope(companyId, scopeIds, q, null, PageRequest.of(0, 20));
+        return page.getContent().stream()
+            .map(e -> new PickItem(
+                e.getEmployeeCode(),
+                e.getFullName() + " (" + e.getEmployeeCode() + ")"
+                    + (e.getDepartment() != null ? " — " + e.getDepartment().getName() : "")))
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public List<PayrollDTO.ImportRow> loadForExport(Long companyId, Long userId,
                                                      Map<String, String> filters) {
         return payrollExcelService.loadAllForExport(companyId, userId, filters);
@@ -91,6 +112,7 @@ public class PayrollDescriptor implements ExcelEntityDescriptor<PayrollDTO.Impor
             monthOptions.add(FilterDefinition.opt(String.valueOf(m), String.format("%02d", m)));
 
         return List.of(
+            FilterDefinition.text("search", "filter.search"),
             FilterDefinition.select("departmentCodes", "filter.department", deptOptions),
             FilterDefinition.select("year",  "filter.year",  yearOptions),
             FilterDefinition.select("month", "filter.month", monthOptions),
