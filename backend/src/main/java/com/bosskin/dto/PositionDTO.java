@@ -50,6 +50,7 @@ public class PositionDTO {
         private String code;
         private String name;
         private String departmentCode;
+        private String departmentName;
         private String description;
         private String delete;
 

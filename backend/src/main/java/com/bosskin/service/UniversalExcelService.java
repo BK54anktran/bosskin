@@ -8,6 +8,7 @@ import com.bosskin.util.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -49,18 +50,22 @@ public class UniversalExcelService {
             CellStyle cmdStyle      = buildCommandStyle(wb);
             CellStyle dataStyle     = buildDataStyle(wb);
             CellStyle roDataStyle   = buildReadOnlyDataStyle(wb);
+            CellStyle wrapStyle     = buildWrapStyle(wb, false);
+            CellStyle roWrapStyle   = buildWrapStyle(wb, true);
 
             for (ExcelEntityDescriptor<?> desc : targets) {
                 List<String> selCols  = req != null ? req.columnsFor(desc.type())   : null;
                 Map<String, String> filters = req != null ? req.filtersFor(desc.type()) : Map.of();
                 writeSheet(wb, desc, companyId, userId, locale,
-                           selCols, filters, headerStyle, roHeaderStyle, cmdStyle, dataStyle, roDataStyle);
+                           selCols, filters, headerStyle, roHeaderStyle, cmdStyle, dataStyle, roDataStyle, wrapStyle, roWrapStyle);
             }
 
             String filenameKey = excelI18n.resolve("excel.file.universal", locale);
             byte[] bytes = toBytes(wb);
             ResponseEntity<byte[]> response = ExcelUtils.buildFileResponse(filenameKey, bytes);
-            historyHelper.save(companyId, userId, HistoryType.EXPORT, "universal",
+            String moduleStr = targets.stream().map(ExcelEntityDescriptor::type)
+                    .collect(java.util.stream.Collectors.joining(","));
+            historyHelper.save(companyId, userId, HistoryType.EXPORT, moduleStr,
                     filenameKey + ".xlsx", bytes, null, null, null);
             return response;
         } catch (IOException e) {
@@ -74,7 +79,8 @@ public class UniversalExcelService {
                                  List<String> selectedColumnKeys,
                                  Map<String, String> filters,
                                  CellStyle headerStyle, CellStyle roHeaderStyle,
-                                 CellStyle cmdStyle, CellStyle dataStyle, CellStyle roDataStyle) {
+                                 CellStyle cmdStyle, CellStyle dataStyle, CellStyle roDataStyle,
+                                 CellStyle wrapStyle, CellStyle roWrapStyle) {
         String sheetName = sanitize(excelI18n.resolve(desc.sheetKey(), locale));
         Sheet sheet = wb.createSheet(sheetName);
 
@@ -147,8 +153,14 @@ public class UniversalExcelService {
                         continue;
                     } catch (NumberFormatException ignored) {}
                 }
-                if (val != null) cell.setCellValue(val.toString());
-                cell.setCellStyle(col.isImportable() ? dataStyle : roDataStyle);
+                String strVal = val != null ? val.toString() : "";
+                if (!strVal.isEmpty()) cell.setCellValue(strVal);
+                boolean multiline = strVal.contains("\n");
+                if (col.isImportable()) {
+                    cell.setCellStyle(multiline ? wrapStyle : dataStyle);
+                } else {
+                    cell.setCellStyle(multiline ? roWrapStyle : roDataStyle);
+                }
             }
         }
 
@@ -240,6 +252,7 @@ public class UniversalExcelService {
             boolean isWarn  = r.status().equals("WARN");
             String msg = r.message();
             if (!isError && !isWarn && "preview.noChange".equals(msg)) continue;
+            if ("SKIP".equals(r.status())) continue;
             String summary  = (!isError && !isWarn && msg != null && !msg.isBlank()) ? msg : null;
             String errorMsg = (isError || isWarn) ? msg : null;
             String diffAction = isWarn ? "WARN" : action;
@@ -278,8 +291,14 @@ public class UniversalExcelService {
         long totalSkip  = allResults.values().stream().mapToLong(SheetImportResult::skipCount).sum();
         String summary = String.format("{\"ok\":%d,\"error\":%d,\"skip\":%d}", totalOk, totalError, totalSkip);
 
-        String filenameKey = excelI18n.resolve("excel.file.universal", locale) + "-ket-qua";
-        historyHelper.save(companyId, userId, HistoryType.IMPORT, "universal",
+        String ts = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
+        String moduleSlug = allResults.keySet().stream()
+                .collect(java.util.stream.Collectors.joining("-"));
+        String filenameKey = excelI18n.resolve("excel.file.universal.result", locale)
+                + "-" + moduleSlug + "-" + ts;
+        String importModuleStr = String.join(",", allResults.keySet());
+        historyHelper.save(companyId, userId, HistoryType.IMPORT, importModuleStr,
                 filenameKey + ".xlsx", resultBytes,
                 (int) totalOk, (int) totalError, (int) totalSkip);
 
@@ -300,6 +319,25 @@ public class UniversalExcelService {
                 .stream()
                 .map(row -> new HistoryWithPerformer((ExcelHistory) row[0], (String) row[1]))
                 .toList();
+    }
+
+    public record HistoryPage(List<HistoryWithPerformer> items, long total) {}
+
+    public HistoryPage getHistoryPaged(Long companyId, String type, String module,
+                                       java.time.LocalDate dateFrom, java.time.LocalDate dateTo,
+                                       int page, int size) {
+        HistoryType historyType = null;
+        if (type != null && !type.isBlank()) {
+            try { historyType = HistoryType.valueOf(type.toUpperCase()); } catch (Exception ignored) {}
+        }
+        String moduleFilter = (module != null && !module.isBlank()) ? module : null;
+        Page<Object[]> pageResult = historyRepo.findWithFilters(
+            companyId, historyType, moduleFilter, dateFrom, dateTo,
+            PageRequest.of(page, size));
+        List<HistoryWithPerformer> items = pageResult.getContent().stream()
+            .map(row -> new HistoryWithPerformer((ExcelHistory) row[0], (String) row[1]))
+            .toList();
+        return new HistoryPage(items, pageResult.getTotalElements());
     }
 
     @SuppressWarnings("unchecked")
@@ -331,13 +369,22 @@ public class UniversalExcelService {
                 Sheet sheet = findSheetInWb(wb, sheetResult.sheetKey());
                 if (sheet == null) continue;
 
-                // Xác định index cột Status/Message = số cột hiện tại
+                // Xác định index cột Status/Message — ghi đè nếu đã tồn tại
                 Row headerRow = sheet.getRow(0);
                 if (headerRow == null) continue;
-                int statusCol  = headerRow.getLastCellNum();
-                int messageCol = statusCol + 1;
+                int statusCol  = -1;
+                int messageCol = -1;
+                for (int ci = 0; ci < headerRow.getLastCellNum(); ci++) {
+                    Cell c = headerRow.getCell(ci);
+                    if (c == null) continue;
+                    String v = c.getStringCellValue();
+                    if (statusHeader.equalsIgnoreCase(v)  || "Result".equalsIgnoreCase(v) || "Kết quả".equalsIgnoreCase(v)) statusCol  = ci;
+                    if (messageHeader.equalsIgnoreCase(v) || "Note".equalsIgnoreCase(v)   || "Ghi chú".equalsIgnoreCase(v))   messageCol = ci;
+                }
+                if (statusCol  < 0) statusCol  = headerRow.getLastCellNum();
+                if (messageCol < 0) messageCol = statusCol + 1;
 
-                // Thêm header
+                // Thêm/ghi đè header
                 Cell sc = headerRow.createCell(statusCol);
                 sc.setCellValue(statusHeader);
                 sc.setCellStyle(hdrStyle);
@@ -570,6 +617,19 @@ public class UniversalExcelService {
         XSSFCellStyle style = wb.createCellStyle();
         style.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0xF2,(byte)0xF3,(byte)0xF4}, null));
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setBorderRight(BorderStyle.HAIR);
+        style.setBorderBottom(BorderStyle.HAIR);
+        return style;
+    }
+
+    private static CellStyle buildWrapStyle(XSSFWorkbook wb, boolean readOnly) {
+        XSSFCellStyle style = wb.createCellStyle();
+        if (readOnly) {
+            style.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0xF2,(byte)0xF3,(byte)0xF4}, null));
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        }
+        style.setWrapText(true);
+        style.setVerticalAlignment(VerticalAlignment.TOP);
         style.setBorderRight(BorderStyle.HAIR);
         style.setBorderBottom(BorderStyle.HAIR);
         return style;

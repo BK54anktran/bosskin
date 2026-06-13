@@ -4503,6 +4503,72 @@ abstract class AppLocalizations {
   /// **'Nhập'**
   String get excelHistoryTypeImport;
 
+  /// No description provided for @excelHistoryFilterType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại'**
+  String get excelHistoryFilterType;
+
+  /// No description provided for @excelHistoryFilterModule.
+  ///
+  /// In vi, this message translates to:
+  /// **'Module'**
+  String get excelHistoryFilterModule;
+
+  /// No description provided for @excelHistoryFilterFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ ngày'**
+  String get excelHistoryFilterFrom;
+
+  /// No description provided for @excelHistoryFilterTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến ngày'**
+  String get excelHistoryFilterTo;
+
+  /// No description provided for @excelHistoryModuleAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get excelHistoryModuleAll;
+
+  /// No description provided for @excelHistoryModuleEmployee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên'**
+  String get excelHistoryModuleEmployee;
+
+  /// No description provided for @excelHistoryModuleDepartment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get excelHistoryModuleDepartment;
+
+  /// No description provided for @excelHistoryModulePosition.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ'**
+  String get excelHistoryModulePosition;
+
+  /// No description provided for @excelHistoryModuleShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca làm việc'**
+  String get excelHistoryModuleShift;
+
+  /// No description provided for @excelHistoryModuleAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công'**
+  String get excelHistoryModuleAttendance;
+
+  /// No description provided for @excelHistoryModulePayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảng lương'**
+  String get excelHistoryModulePayroll;
+
   /// No description provided for @excelHistoryDownload.
   ///
   /// In vi, this message translates to:
@@ -4536,7 +4602,7 @@ abstract class AppLocalizations {
   /// No description provided for @excelModulePayroll.
   ///
   /// In vi, this message translates to:
-  /// **'Lương'**
+  /// **'Bảng lương'**
   String get excelModulePayroll;
 
   /// No description provided for @excelModuleAttendance.
@@ -4550,6 +4616,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Dữ liệu'**
   String get excelModuleUniversal;
+
+  /// No description provided for @excelModuleSalaryGrade.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bậc lương'**
+  String get excelModuleSalaryGrade;
+
+  /// No description provided for @excelModuleSalaryFormula.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công thức lương'**
+  String get excelModuleSalaryFormula;
+
+  /// No description provided for @excelModuleFormulaVariable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biến công thức'**
+  String get excelModuleFormulaVariable;
 
   /// No description provided for @dashboardErrorLoad.
   ///

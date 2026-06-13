@@ -2298,6 +2298,39 @@ class AppLocalizationsVi extends AppLocalizations {
   String get excelHistoryTypeImport => 'Nhập';
 
   @override
+  String get excelHistoryFilterType => 'Loại';
+
+  @override
+  String get excelHistoryFilterModule => 'Module';
+
+  @override
+  String get excelHistoryFilterFrom => 'Từ ngày';
+
+  @override
+  String get excelHistoryFilterTo => 'Đến ngày';
+
+  @override
+  String get excelHistoryModuleAll => 'Tất cả';
+
+  @override
+  String get excelHistoryModuleEmployee => 'Nhân viên';
+
+  @override
+  String get excelHistoryModuleDepartment => 'Phòng ban';
+
+  @override
+  String get excelHistoryModulePosition => 'Chức vụ';
+
+  @override
+  String get excelHistoryModuleShift => 'Ca làm việc';
+
+  @override
+  String get excelHistoryModuleAttendance => 'Chấm công';
+
+  @override
+  String get excelHistoryModulePayroll => 'Bảng lương';
+
+  @override
   String get excelHistoryDownload => 'Tải lại';
 
   @override
@@ -2319,13 +2352,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String get excelHistoryTypeReport => 'Báo cáo';
 
   @override
-  String get excelModulePayroll => 'Lương';
+  String get excelModulePayroll => 'Bảng lương';
 
   @override
   String get excelModuleAttendance => 'Chấm công';
 
   @override
   String get excelModuleUniversal => 'Dữ liệu';
+
+  @override
+  String get excelModuleSalaryGrade => 'Bậc lương';
+
+  @override
+  String get excelModuleSalaryFormula => 'Công thức lương';
+
+  @override
+  String get excelModuleFormulaVariable => 'Biến công thức';
 
   @override
   String get dashboardErrorLoad => 'Không thể tải dữ liệu tổng quan';

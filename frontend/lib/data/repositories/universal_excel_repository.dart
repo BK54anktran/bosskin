@@ -287,12 +287,28 @@ class UniversalExcelRepository {
     });
   }
 
-  /// Lấy lịch sử import/export (20 bản ghi gần nhất).
-  Future<List<ExcelHistoryEntry>> getHistory() async {
-    final res = await _api.dio.get<List<dynamic>>('/excel/history');
-    return (res.data ?? [])
+  Future<({List<ExcelHistoryEntry> items, int total})> getHistoryPaged({
+    String? type,
+    String? module,
+    String? dateFrom,
+    String? dateTo,
+    int page = 0,
+    int size = 10,
+  }) async {
+    final res = await _api.dio.get<Map<String, dynamic>>('/excel/history',
+        queryParameters: {
+          if (type != null && type.isNotEmpty) 'type': type,
+          if (module != null && module.isNotEmpty) 'module': module,
+          if (dateFrom != null) 'dateFrom': dateFrom,
+          if (dateTo != null) 'dateTo': dateTo,
+          'page': page,
+          'size': size,
+        });
+    final data = res.data!;
+    final items = (data['items'] as List<dynamic>)
         .map((e) => ExcelHistoryEntry.fromJson(e as Map<String, dynamic>))
         .toList();
+    return (items: items, total: (data['total'] as num).toInt());
   }
 
   /// Tải lại file qua backend (tránh CORS/auth issue khi download trực tiếp S3).

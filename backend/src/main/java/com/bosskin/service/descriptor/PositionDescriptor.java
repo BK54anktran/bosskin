@@ -34,7 +34,7 @@ public class PositionDescriptor implements ExcelEntityDescriptor<PositionDTO.Imp
             ExcelColumn.ofI18n("excel.col.position.code",           r -> r.getCode(),           (r, v) -> r.setCode(v)),
             ExcelColumn.ofI18n("excel.col.position.name",           r -> r.getName(),           (r, v) -> r.setName(v)),
             ExcelColumn.ofI18n("excel.col.position.departmentCode", r -> r.getDepartmentCode(), (r, v) -> r.setDepartmentCode(v)),
-            ExcelColumn.readOnlyI18n("excel.col.position.departmentName", r -> null),
+            ExcelColumn.readOnlyI18n("excel.col.position.departmentName", r -> r.getDepartmentName()),
             ExcelColumn.ofI18n("excel.col.position.description",    r -> r.getDescription(),    (r, v) -> r.setDescription(v))
         );
     }
@@ -96,6 +96,7 @@ public class PositionDescriptor implements ExcelEntityDescriptor<PositionDTO.Imp
             r.setCode(flat.getCode());
             r.setName(flat.getName());
             r.setDepartmentCode(flat.getDepartmentCode() != null ? flat.getDepartmentCode() : "");
+            r.setDepartmentName(flat.getDepartmentName() != null ? flat.getDepartmentName() : "");
             r.setDescription(flat.getDescription() != null ? flat.getDescription() : "");
             return r;
         }).collect(java.util.stream.Collectors.toList());

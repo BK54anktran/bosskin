@@ -28,8 +28,8 @@ public class ExcelHistory {
     @Column(nullable = false, length = 10)
     private HistoryType type;
 
-    /** universal | payroll | attendance | shift | ... */
-    @Column(nullable = false, length = 50)
+    /** comma-separated module types, e.g. "employee,department" | "attendance" | "payroll" */
+    @Column(nullable = false, length = 255)
     private String module;
 
     @Column(nullable = false)

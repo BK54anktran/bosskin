@@ -9,6 +9,7 @@ import '../../../core/utils/file_saver_utils.dart';
 import '../../../data/repositories/universal_excel_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/export_options_dialog.dart';
+import '../../widgets/pagination_bar.dart';
 import '../../widgets/universal_import_preview_dialog.dart';
 
 /// Màn hình Export / Import tổng hợp kiểu Matrixify.
@@ -30,10 +31,9 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
   bool _previewing = false;
   bool _importing = false;
   bool _metaLoading = false;
-  bool _historyLoading = false;
 
   Map<String, ExportMeta> _meta = {};
-  List<ExcelHistoryEntry> _history = [];
+  final _historyKey = GlobalKey<_HistoryCardState>();
 
   ({Uint8List bytes, String filename})? _pickedFile;
   UniversalImportResult? _lastResult;
@@ -42,16 +42,17 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
   void initState() {
     super.initState();
     _loadMeta();
-    _loadHistory();
   }
 
   List<_TypeEntry> _buildTypes(AppLocalizations s) => [
-    _TypeEntry('employee',   s.excelModuleEmployee,   Icons.people_outline),
-    _TypeEntry('department', s.excelModuleDepartment, Icons.account_tree_outlined),
-    _TypeEntry('position',   s.excelModulePosition,   Icons.work_outline),
-    _TypeEntry('shift',      s.excelModuleShift,      Icons.schedule_outlined),
-    _TypeEntry('attendance', s.excelModuleAttendance, Icons.event_available_outlined),
-    _TypeEntry('payroll',    s.excelModulePayroll,    Icons.payments_outlined),
+    _TypeEntry('employee',       s.excelModuleEmployee,       Icons.people_outline),
+    _TypeEntry('department',     s.excelModuleDepartment,     Icons.account_tree_outlined),
+    _TypeEntry('position',       s.excelModulePosition,       Icons.work_outline),
+    _TypeEntry('shift',          s.excelModuleShift,          Icons.schedule_outlined),
+    _TypeEntry('salary_grade',     s.excelModuleSalaryGrade,     Icons.bar_chart_outlined),
+    _TypeEntry('salary_formula',   s.excelModuleSalaryFormula,   Icons.functions_outlined),
+    _TypeEntry('formula_variable', s.excelModuleFormulaVariable, Icons.data_object_outlined),
+    _TypeEntry('payroll',          s.excelModulePayroll,          Icons.payments_outlined),
   ];
 
   Future<void> _loadMeta() async {
@@ -64,15 +65,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
     }
   }
 
-  Future<void> _loadHistory() async {
-    setState(() => _historyLoading = true);
-    try {
-      final list = await _repo.getHistory();
-      if (mounted) setState(() { _history = list; _historyLoading = false; });
-    } catch (_) {
-      if (mounted) setState(() => _historyLoading = false);
-    }
-  }
+  void _reloadHistory() => _historyKey.currentState?.reload();
 
   Future<void> _export(AppLocalizations s) async {
     if (_metaLoading) return;
@@ -102,7 +95,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        _loadHistory();
+        _reloadHistory();
       }
     } catch (e) {
       if (mounted) _showError(serverMsg(e));
@@ -148,7 +141,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
           _importing = false;
           _lastResult = result;
         });
-        _loadHistory();
+        _reloadHistory();
       }
     } catch (e) {
       if (mounted) setState(() => _importing = false);
@@ -225,8 +218,7 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
                 ),
                 const SizedBox(height: 20),
                 _HistoryCard(
-                  history: _history,
-                  loading: _historyLoading,
+                  key: _historyKey,
                   onDownload: _downloadHistoryFile,
                   s: s,
                 ),
@@ -651,21 +643,81 @@ class _ResultBanner extends StatelessWidget {
 
 // ── History card ──────────────────────────────────────────────────────────────
 
-class _HistoryCard extends StatelessWidget {
-  final List<ExcelHistoryEntry> history;
-  final bool loading;
+class _HistoryCard extends StatefulWidget {
   final Future<void> Function(int id, String filename) onDownload;
   final AppLocalizations s;
 
-  const _HistoryCard({
-    required this.history,
-    required this.loading,
-    required this.onDownload,
-    required this.s,
-  });
+  const _HistoryCard({required super.key, required this.onDownload, required this.s});
+
+  @override
+  State<_HistoryCard> createState() => _HistoryCardState();
+}
+
+class _HistoryCardState extends State<_HistoryCard> {
+  final _repo = UniversalExcelRepository();
+
+  List<ExcelHistoryEntry> _items = [];
+  int _total = 0;
+  bool _loading = false;
+
+  int _page = 0;
+  int _pageSize = 10;
+  String? _filterType;
+  String? _filterModule;
+  DateTime? _dateFrom;
+  DateTime? _dateTo;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  void reload() {
+    setState(() => _page = 0);
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final result = await _repo.getHistoryPaged(
+        type: _filterType,
+        module: _filterModule,
+        dateFrom: _dateFrom != null
+            ? '${_dateFrom!.year}-${_dateFrom!.month.toString().padLeft(2,'0')}-${_dateFrom!.day.toString().padLeft(2,'0')}'
+            : null,
+        dateTo: _dateTo != null
+            ? '${_dateTo!.year}-${_dateTo!.month.toString().padLeft(2,'0')}-${_dateTo!.day.toString().padLeft(2,'0')}'
+            : null,
+        page: _page,
+        size: _pageSize,
+      );
+      if (mounted) setState(() { _items = result.items; _total = result.total; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _pickDate(bool isFrom) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: (isFrom ? _dateFrom : _dateTo) ?? now,
+      firstDate: DateTime(2020),
+      lastDate: now,
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isFrom) _dateFrom = picked; else _dateTo = picked;
+      _page = 0;
+    });
+    _load();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.s;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -675,6 +727,7 @@ class _HistoryCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Header
           Row(children: [
             const Icon(Icons.history_outlined, color: AppTheme.textSecondary),
             const SizedBox(width: 10),
@@ -682,21 +735,134 @@ class _HistoryCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 12),
-          if (loading)
-            const Center(
-                child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator()))
-          else if (history.isEmpty)
+          // Filter bar
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            SizedBox(
+              width: 130,
+              child: DropdownButtonFormField<String?>(
+                initialValue: _filterType,
+                decoration: InputDecoration(
+                  labelText: s.excelHistoryFilterType,
+                  labelStyle: const TextStyle(fontSize: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
+                items: [
+                  DropdownMenuItem(value: null,     child: Text(s.excelHistoryModuleAll,       style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'EXPORT', child: Text(s.excelHistoryTypeExport,       style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'IMPORT', child: Text(s.excelHistoryTypeImport,       style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'REPORT', child: Text(s.excelHistoryTypeReport,       style: const TextStyle(fontSize: 12))),
+                ],
+                onChanged: (v) { setState(() { _filterType = v; _page = 0; }); _load(); },
+              ),
+            ),
+            SizedBox(
+              width: 160,
+              child: DropdownButtonFormField<String?>(
+                initialValue: _filterModule,
+                decoration: InputDecoration(
+                  labelText: s.excelHistoryFilterModule,
+                  labelStyle: const TextStyle(fontSize: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
+                items: [
+                  DropdownMenuItem(value: null,              child: Text(s.excelHistoryModuleAll,        style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'employee',        child: Text(s.excelModuleEmployee,          style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'department',      child: Text(s.excelModuleDepartment,        style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'position',        child: Text(s.excelModulePosition,          style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'shift',           child: Text(s.excelModuleShift,             style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'salary_grade',     child: Text(s.excelModuleSalaryGrade,     style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'salary_formula',   child: Text(s.excelModuleSalaryFormula,   style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'formula_variable', child: Text(s.excelModuleFormulaVariable, style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'payroll',          child: Text(s.excelModulePayroll,          style: const TextStyle(fontSize: 12))),
+                ],
+                onChanged: (v) { setState(() { _filterModule = v; _page = 0; }); _load(); },
+              ),
+            ),
+            _DateChip(
+              label: _dateFrom == null ? s.excelHistoryFilterFrom : _fmt(_dateFrom!),
+              onTap: () => _pickDate(true),
+              onClear: _dateFrom == null ? null : () { setState(() { _dateFrom = null; _page = 0; }); _load(); },
+            ),
+            _DateChip(
+              label: _dateTo == null ? s.excelHistoryFilterTo : _fmt(_dateTo!),
+              onTap: () => _pickDate(false),
+              onClear: _dateTo == null ? null : () { setState(() { _dateTo = null; _page = 0; }); _load(); },
+            ),
+          ]),
+          const SizedBox(height: 12),
+          // List
+          if (_loading)
+            const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()))
+          else if (_items.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(s.excelHistoryEmpty,
-                  style: const TextStyle(
-                      fontSize: 13, color: AppTheme.textSecondary)),
+                  style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
             )
           else
-            ...history.map((e) => _HistoryTile(entry: e, onDownload: onDownload, s: s)),
+            ..._items.map((e) => _HistoryTile(entry: e, onDownload: widget.onDownload, s: s)),
+          // Pagination
+          if (_total > 0) ...[
+            const SizedBox(height: 8),
+            PaginationBar(
+              total: _total,
+              page: _page,
+              pageSize: _pageSize,
+              onPageSizeChanged: (sz) { setState(() { _pageSize = sz; _page = 0; }); _load(); },
+              onPrev: _page > 0 ? () { setState(() => _page--); _load(); } : null,
+              onNext: (_page + 1) * _pageSize < _total ? () { setState(() => _page++); _load(); } : null,
+            ),
+          ],
         ]),
+      ),
+    );
+  }
+
+  String _fmt(DateTime d) =>
+      '${d.day.toString().padLeft(2,'0')}/${d.month.toString().padLeft(2,'0')}/${d.year}';
+}
+
+class _DateChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+  const _DateChip({required this.label, required this.onTap, this.onClear});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = onClear != null;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            border: Border.all(color: active ? AppTheme.primary : AppTheme.border),
+            borderRadius: BorderRadius.circular(6),
+            color: active ? AppTheme.primary.withValues(alpha: 0.06) : null,
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.calendar_today_outlined, size: 13,
+                color: active ? AppTheme.primary : AppTheme.textSecondary),
+            const SizedBox(width: 5),
+            Text(label, style: TextStyle(fontSize: 12,
+                color: active ? AppTheme.primary : AppTheme.textSecondary)),
+            if (onClear != null) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: onClear,
+                child: const Icon(Icons.close, size: 13, color: AppTheme.primary),
+              ),
+            ],
+          ]),
+        ),
       ),
     );
   }
@@ -721,11 +887,21 @@ class _HistoryTileState extends State<_HistoryTile> {
   bool _downloading = false;
 
   String _moduleLabel(AppLocalizations s) {
-    switch (widget.entry.module) {
-      case 'payroll':    return s.excelModulePayroll;
-      case 'attendance': return s.excelModuleAttendance;
-      default:           return s.excelModuleUniversal;
-    }
+    final labels = <String, String>{
+      'employee':        s.excelModuleEmployee,
+      'department':      s.excelModuleDepartment,
+      'position':        s.excelModulePosition,
+      'shift':           s.excelModuleShift,
+      'attendance':      s.excelModuleAttendance,
+      'payroll':         s.excelModulePayroll,
+      'salary_grade':     s.excelModuleSalaryGrade,
+      'salary_formula':   s.excelModuleSalaryFormula,
+      'formula_variable': s.excelModuleFormulaVariable,
+    };
+    return widget.entry.module
+        .split(',')
+        .map((m) => labels[m.trim()] ?? (m.trim() == 'universal' ? s.excelModuleUniversal : m.trim()))
+        .join(', ');
   }
 
   Future<void> _handleDownload() async {

@@ -67,6 +67,12 @@ public class ExcelColumn<T> {
         return new ExcelColumn<>(null, headerKey, null, null, true, false, ColType.TEXT, getter, setter);
     }
 
+    public static <T> ExcelColumn<T> ofI18n(String headerKey, ColType colType,
+                                             Function<T, Object> getter,
+                                             BiConsumer<T, String> setter) {
+        return new ExcelColumn<>(null, headerKey, null, null, true, false, colType, getter, setter);
+    }
+
     public static <T> ExcelColumn<T> ofI18n(String headerKey, String group,
                                              boolean defaultVisible, boolean required,
                                              Function<T, Object> getter,

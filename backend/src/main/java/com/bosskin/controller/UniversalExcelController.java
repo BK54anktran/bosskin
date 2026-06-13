@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -119,17 +120,28 @@ public class UniversalExcelController {
         return ResponseEntity.ok().headers(headers).body(bytes);
     }
 
+    public record HistoryPageResponse(List<HistoryResponse> items, long total) {}
+
     @GetMapping("/history")
-    public ResponseEntity<List<HistoryResponse>> history(
+    public ResponseEntity<HistoryPageResponse> history(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String module,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal User user) {
         if (!user.can("excel.export") && !user.can("excel.import")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
-        List<HistoryResponse> list = universalExcelService.getHistory(user.getCompanyId())
-                .stream()
-                .map(hw -> HistoryResponse.from(hw.history(), hw.performedBy()))
-                .toList();
-        return ResponseEntity.ok(list);
+        LocalDate from = dateFrom != null && !dateFrom.isBlank() ? LocalDate.parse(dateFrom) : null;
+        LocalDate to   = dateTo   != null && !dateTo.isBlank()   ? LocalDate.parse(dateTo)   : null;
+        UniversalExcelService.HistoryPage result =
+            universalExcelService.getHistoryPaged(user.getCompanyId(), type, module, from, to, page, size);
+        List<HistoryResponse> items = result.items().stream()
+            .map(hw -> HistoryResponse.from(hw.history(), hw.performedBy()))
+            .toList();
+        return ResponseEntity.ok(new HistoryPageResponse(items, result.total()));
     }
 
     public record HistoryResponse(

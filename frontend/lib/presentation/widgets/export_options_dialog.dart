@@ -192,13 +192,16 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
   }
 
   static String _typeLabel(String type) => switch (type) {
-        'employee'   => 'Nhân viên',
-        'department' => 'Phòng ban',
-        'position'   => 'Chức vụ',
-        'shift'      => 'Ca làm việc',
-        'attendance' => 'Chấm công',
-        'payroll'    => 'Bảng lương',
-        _            => type,
+        'employee'       => 'Nhân viên',
+        'department'     => 'Phòng ban',
+        'position'       => 'Chức vụ',
+        'shift'          => 'Ca làm việc',
+        'attendance'     => 'Chấm công',
+        'payroll'        => 'Bảng lương',
+        'salary_grade'     => 'Bậc lương',
+        'salary_formula'   => 'Công thức lương',
+        'formula_variable' => 'Biến công thức',
+        _                  => type,
       };
 }
 
@@ -466,6 +469,11 @@ class _FilterField extends StatelessWidget {
     'filter.payroll.draft':        'Nháp',
     'filter.payroll.approved':     'Đã duyệt',
     'filter.payroll.paid':         'Đã trả',
+    'filter.grade':                'Bậc lương',
+    'filter.grade.payType':        'Loại tính lương',
+    'filter.grade.payType.daily':  'Theo ngày',
+    'filter.grade.payType.hourly': 'Theo giờ',
+    'filter.variable.category':    'Nhóm biến',
   };
 
   static String _optLabel(FilterOption opt) =>

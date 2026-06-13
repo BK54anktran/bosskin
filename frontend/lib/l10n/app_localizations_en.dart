@@ -2298,6 +2298,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get excelHistoryTypeImport => 'Import';
 
   @override
+  String get excelHistoryFilterType => 'Type';
+
+  @override
+  String get excelHistoryFilterModule => 'Module';
+
+  @override
+  String get excelHistoryFilterFrom => 'From date';
+
+  @override
+  String get excelHistoryFilterTo => 'To date';
+
+  @override
+  String get excelHistoryModuleAll => 'All';
+
+  @override
+  String get excelHistoryModuleEmployee => 'Employee';
+
+  @override
+  String get excelHistoryModuleDepartment => 'Department';
+
+  @override
+  String get excelHistoryModulePosition => 'Position';
+
+  @override
+  String get excelHistoryModuleShift => 'Shift';
+
+  @override
+  String get excelHistoryModuleAttendance => 'Attendance';
+
+  @override
+  String get excelHistoryModulePayroll => 'Payroll';
+
+  @override
   String get excelHistoryDownload => 'Re-download';
 
   @override
@@ -2326,6 +2359,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get excelModuleUniversal => 'Data';
+
+  @override
+  String get excelModuleSalaryGrade => 'Salary Grades';
+
+  @override
+  String get excelModuleSalaryFormula => 'Salary Formulas';
+
+  @override
+  String get excelModuleFormulaVariable => 'Formula Variables';
 
   @override
   String get dashboardErrorLoad => 'Failed to load dashboard data';
