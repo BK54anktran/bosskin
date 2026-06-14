@@ -97,6 +97,20 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
         @org.springframework.data.repository.query.Param("to") LocalDate to
     );
 
+    @Modifying
+    @Query(value = """
+        UPDATE shift_assignments
+        SET deleted = TRUE
+        WHERE employee_id IN (:empIds)
+          AND work_date BETWEEN :from AND :to
+          AND deleted = FALSE
+        """, nativeQuery = true)
+    int softDeleteByEmployeeIdsAndDateRange(
+        @org.springframework.data.repository.query.Param("empIds") java.util.List<Long> empIds,
+        @org.springframework.data.repository.query.Param("from") LocalDate from,
+        @org.springframework.data.repository.query.Param("to") LocalDate to
+    );
+
     @Query("""
         SELECT DISTINCT a.shift
         FROM ShiftAssignment a

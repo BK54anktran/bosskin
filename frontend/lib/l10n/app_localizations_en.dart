@@ -2379,7 +2379,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get excelModuleLeaveGrant => 'Leave Balances';
 
   @override
-  String get reportScreenTitle => 'HR Reports';
+  String get reportScreenTitle => 'Reports';
 
   @override
   String get reportScreenSubtitle => 'Export business reports to Excel';
@@ -2483,6 +2483,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportExportSuccess => 'Report exported successfully';
+
+  @override
+  String get reportExportOptions => 'Export options';
+
+  @override
+  String get reportGroupYearly => 'Yearly Overview';
+
+  @override
+  String get reportYearlyOverview => 'Yearly Overview Report';
+
+  @override
+  String get reportYearlyOverviewDesc =>
+      'Full-year management report — payroll, HR, attendance & leave trends with embedded charts';
 
   @override
   String get dashboardErrorLoad => 'Failed to load dashboard data';

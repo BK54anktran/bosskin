@@ -865,8 +865,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                               bars.add(_timelineBar(ov, dayW, _rowH,
                                   fromMin: 0,
                                   toMin: e,
-                                  squareLeft: true,
-                                  hideLabel: true));
+                                  squareLeft: true));
                             }
                           }
 

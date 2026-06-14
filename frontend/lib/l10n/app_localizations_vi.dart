@@ -2379,13 +2379,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get excelModuleLeaveGrant => 'Số dư phép';
 
   @override
-  String get reportScreenTitle => 'Báo cáo nhân sự';
+  String get reportScreenTitle => 'Báo cáo';
 
   @override
   String get reportScreenSubtitle => 'Xuất báo cáo kinh doanh ra Excel';
 
   @override
-  String get reportGroupEmployee => 'Báo cáo nhân sự';
+  String get reportGroupEmployee => 'Nhân sự';
 
   @override
   String get reportGroupAttendance => 'Báo cáo chấm công';
@@ -2483,6 +2483,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get reportExportSuccess => 'Xuất báo cáo thành công';
+
+  @override
+  String get reportExportOptions => 'Tùy chọn xuất';
+
+  @override
+  String get reportGroupYearly => 'Báo cáo năm';
+
+  @override
+  String get reportYearlyOverview => 'Báo cáo tổng quan năm';
+
+  @override
+  String get reportYearlyOverviewDesc =>
+      'Báo cáo quản lý cả năm — lương, nhân sự, chấm công, nghỉ phép kèm biểu đồ xu hướng';
 
   @override
   String get dashboardErrorLoad => 'Không thể tải dữ liệu tổng quan';

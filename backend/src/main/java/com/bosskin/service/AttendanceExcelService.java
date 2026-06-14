@@ -1022,6 +1022,7 @@ public class AttendanceExcelService {
         }
 
         int created = 0, updated = 0, deleted = 0, skipped = 0;
+        List<Attendance> toSave = new ArrayList<>();
         for (AttendanceImportRow row : rows) {
             Employee emp = empMap.get(row.empCode);
             if (emp == null) { skipped++; continue; }
@@ -1033,7 +1034,7 @@ public class AttendanceExcelService {
                     if (att == null || att.isDeleted()) { skipped++; continue; }
                     att.setDeleted(true);
                     att.setDeletedAt(LocalDateTime.now());
-                    attendanceRepo.save(att);
+                    toSave.add(att);
                     deleted++;
                     continue;
                 }
@@ -1049,17 +1050,18 @@ public class AttendanceExcelService {
                         .deleted(false)
                         .approved(false);
                     applyParsed(b, parsed);
-                    attendanceRepo.save(b.build());
+                    toSave.add(b.build());
                     created++;
                 } else {
                     applyParsedToExisting(att, parsed);
-                    attendanceRepo.save(att);
+                    toSave.add(att);
                     updated++;
                 }
             } catch (Exception e) {
                 skipped++;
             }
         }
+        attendanceRepo.saveAll(toSave);
         Map<String, Integer> result = Map.of("created", created, "updated", updated, "deleted", deleted, "skipped", skipped);
         historyHelper.save(companyId, userId, HistoryType.IMPORT, "attendance",
                 "cham-cong-import.xlsx", file.isEmpty() ? new byte[0] : readBytes(file),
@@ -1088,15 +1090,13 @@ public class AttendanceExcelService {
 
             // Parse year + month from sheet name "Cham cong MM-yyyy"
             String sheetName = sheet.getSheetName();
-            int sheetYear, sheetMonth;
+            int sheetYear;
             try {
                 String datePart = sheetName.replace("Cham cong ", "").trim();
                 String[] parts = datePart.split("-");
-                sheetMonth = Integer.parseInt(parts[0]);
-                sheetYear  = Integer.parseInt(parts[1]);
+                sheetYear = Integer.parseInt(parts[1]);
             } catch (Exception e) {
-                sheetYear  = LocalDate.now().getYear();
-                sheetMonth = LocalDate.now().getMonthValue();
+                sheetYear = LocalDate.now().getYear();
             }
 
             // Parse date columns from header (format: "d/M\nWeekday") + tìm cột "Xóa"
@@ -1501,6 +1501,10 @@ public class AttendanceExcelService {
         approveTaskHolder.set(approveTasks);
 
         int created = 0, updated = 0, deleted = 0, skipped = 0;
+        // toSave: entities to batch-persist; approveFlags[i] = shouldApprove for toSave[i]
+        List<Attendance> toSave = new ArrayList<>();
+        List<Boolean> approveFlags = new ArrayList<>();
+
         for (TimesheetImportRow row : rows) {
             com.bosskin.entity.Employee emp = empMap.get(row.empCode);
             if (emp == null) { skipped++; continue; }
@@ -1510,7 +1514,7 @@ public class AttendanceExcelService {
                     if (att == null || att.isDeleted()) { skipped++; continue; }
                     att.setDeleted(true);
                     att.setDeletedAt(LocalDateTime.now());
-                    attendanceRepo.save(att);
+                    toSave.add(att); approveFlags.add(false);
                     deleted++; continue;
                 }
                 if (att == null) {
@@ -1519,41 +1523,38 @@ public class AttendanceExcelService {
                     boolean hasShift = shiftDatesByEmployee
                         .getOrDefault(emp.getId(), Set.of())
                         .contains(row.date);
-                    // Không có dữ liệu gì AND không có ca → bỏ qua
                     if (!hasCheckIn && !hasCheckOut && !hasShift) { skipped++; continue; }
-                    // Status để null — approve mới tính PRESENT/ABSENT
                     Attendance.AttendanceBuilder b = Attendance.builder()
                         .employee(emp).date(row.date).deleted(false).approved(false)
                         .status(null);
                     applyTimesheetRow(b, row);
-                    Attendance saved = attendanceRepo.save(b.build());
-                    if (row.approved != null && row.approved) {
-                        approveTasks.add(new ApproveTask(saved.getId(), true));
-                    }
+                    toSave.add(b.build());
+                    approveFlags.add(row.approved != null && row.approved);
                     created++;
                 } else {
                     boolean wasApproved = att.isApproved();
-                    // Nếu đã approve → unapprove trước khi update để recalculate đúng
                     if (wasApproved) {
                         att.setApproved(false);
                         att.setApprovedAt(null); att.setApprovedBy(null);
                         att.setSnapActualHours(null); att.setSnapDayHours(null);
                         att.setSnapDayOt(null); att.setSnapNightHours(null);
                         att.setSnapNightOt(null); att.setWorkFlags(null);
-                        att.setStatus(null); // reset status — approve lại mới tính
+                        att.setStatus(null);
                     }
                     applyTimesheetRowToExisting(att, row);
-                    Attendance saved = attendanceRepo.save(att);
-                    // Approve lại nếu trước đó đã approve, hoặc theo cột Trạng thái duyệt
                     boolean shouldApprove = row.approved != null ? row.approved : wasApproved;
-                    if (shouldApprove) {
-                        approveTasks.add(new ApproveTask(saved.getId(), true));
-                    } else if (row.approved != null && !row.approved) {
-                        // Explicit false → giữ unapproved
-                    }
+                    toSave.add(att); approveFlags.add(shouldApprove);
                     updated++;
                 }
             } catch (Exception e) { skipped++; }
+        }
+
+        // Batch save tất cả → lấy IDs cho approval tasks
+        List<Attendance> saved = attendanceRepo.saveAll(toSave);
+        for (int i = 0; i < saved.size(); i++) {
+            if (Boolean.TRUE.equals(approveFlags.get(i))) {
+                approveTasks.add(new ApproveTask(saved.get(i).getId(), true));
+            }
         }
         Map<String, Integer> result = Map.of("created", created, "updated", updated, "deleted", deleted, "skipped", skipped);
         historyHelper.save(companyId, userId, HistoryType.IMPORT, "attendance",

@@ -218,4 +218,25 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         @Param("year") int year,
         @Param("departmentId") Long departmentId
     );
+
+    // Tổng hợp theo năm cho báo cáo tổng quan: gross, net, khấu trừ, số phiếu, OT, ngày công
+    @Query("""
+        SELECT p.month,
+               SUM(p.grossSalary),
+               SUM(p.netSalary),
+               SUM(p.grossSalary) - SUM(p.netSalary),
+               COUNT(p),
+               SUM(p.dayOt),
+               SUM(p.nightOt),
+               SUM(p.presentDays)
+        FROM Payroll p JOIN p.employee e
+        WHERE e.company.id = :companyId AND p.year = :year
+          AND (:deptId IS NULL OR e.department.id = :deptId)
+        GROUP BY p.month ORDER BY p.month
+        """)
+    List<Object[]> findYearlySummary(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("deptId") Long deptId
+    );
 }

@@ -99,6 +99,18 @@ public class ReportController {
                 year, month, deptId, locale);
     }
 
+    /** Yearly overview — all modules, with charts */
+    @GetMapping("/yearly-overview")
+    public ResponseEntity<byte[]> yearlyOverview(
+            @RequestParam int year,
+            @RequestParam(required = false) Long deptId,
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkPermission(user);
+        return reportService.reportYearlyOverview(user.getCompanyId(), user.getId(),
+                year, deptId, locale);
+    }
+
     /** Leave balance summary per employee */
     @GetMapping("/leave-balance")
     public ResponseEntity<byte[]> leaveBalance(

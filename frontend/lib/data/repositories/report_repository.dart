@@ -74,4 +74,10 @@ class ReportRepository {
     int? deptId,
   }) =>
       _get('/reports/leave-usage', {'from': from, 'to': to, 'deptId': deptId});
+
+  Future<({Uint8List bytes, String filename})> yearlyOverview({
+    required int year,
+    int? deptId,
+  }) =>
+      _get('/reports/yearly-overview', {'year': year, 'deptId': deptId});
 }

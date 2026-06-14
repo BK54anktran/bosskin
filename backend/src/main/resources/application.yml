@@ -21,6 +21,10 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         default_batch_fetch_size: 20
+        jdbc:
+          "[batch_size]": 50
+        "[order_inserts]": true
+        "[order_updates]": true
 
   flyway:
     enabled: true
@@ -28,11 +32,18 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: false
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
 server:
   port: 8080
   error:
     include-message: always
     include-binding-errors: always
+  tomcat:
+    connection-timeout: 120000   # 2 phút cho import file lớn
 
 app:
   jwt:

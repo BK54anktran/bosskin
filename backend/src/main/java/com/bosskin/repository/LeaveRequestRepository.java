@@ -91,4 +91,21 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
         @Param("id") Long id,
         @Param("companyId") Long companyId
     );
+
+    // Tổng hợp ngày phép đã dùng theo tháng trong năm (cho báo cáo tổng quan năm)
+    @Query("""
+        SELECT MONTH(lr.fromDate), SUM(lr.requestedAmount), COUNT(lr)
+        FROM LeaveRequest lr
+        WHERE lr.company.id = :companyId
+          AND YEAR(lr.fromDate) = :year
+          AND lr.status = :status
+          AND (:deptId IS NULL OR lr.employee.department.id = :deptId)
+        GROUP BY MONTH(lr.fromDate) ORDER BY MONTH(lr.fromDate)
+        """)
+    List<Object[]> findMonthlyLeaveUsageByYear(
+        @Param("companyId") Long companyId,
+        @Param("year") int year,
+        @Param("deptId") Long deptId,
+        @Param("status") LeaveRequest.Status status
+    );
 }

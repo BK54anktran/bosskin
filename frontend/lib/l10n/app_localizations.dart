@@ -4656,7 +4656,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportScreenTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Báo cáo nhân sự'**
+  /// **'Báo cáo'**
   String get reportScreenTitle;
 
   /// No description provided for @reportScreenSubtitle.
@@ -4668,7 +4668,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportGroupEmployee.
   ///
   /// In vi, this message translates to:
-  /// **'Báo cáo nhân sự'**
+  /// **'Nhân sự'**
   String get reportGroupEmployee;
 
   /// No description provided for @reportGroupAttendance.
@@ -4850,6 +4850,30 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xuất báo cáo thành công'**
   String get reportExportSuccess;
+
+  /// No description provided for @reportExportOptions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tùy chọn xuất'**
+  String get reportExportOptions;
+
+  /// No description provided for @reportGroupYearly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo năm'**
+  String get reportGroupYearly;
+
+  /// No description provided for @reportYearlyOverview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo tổng quan năm'**
+  String get reportYearlyOverview;
+
+  /// No description provided for @reportYearlyOverviewDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo quản lý cả năm — lương, nhân sự, chấm công, nghỉ phép kèm biểu đồ xu hướng'**
+  String get reportYearlyOverviewDesc;
 
   /// No description provided for @dashboardErrorLoad.
   ///

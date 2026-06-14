@@ -858,10 +858,10 @@ public class ShiftExcelService {
             .build();
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public Map<String, Integer> importAssignments(Long companyId, Long userId, MultipartFile file) {
         Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "SHIFT_VIEW");
-        int createdShifts = 0;
-        int updatedShifts = 0;
+        int createdShifts = 0, updatedShifts = 0;
         if (findShiftListSheetName(file) != null) {
             Map<String, Integer> shiftResult = importFromExcel(companyId, file);
             createdShifts = shiftResult.getOrDefault("created", 0);
@@ -870,69 +870,86 @@ public class ShiftExcelService {
 
         List<AssignCell> cells = readAssignSheet(file, companyId);
         if (cells.isEmpty()) {
-            return Map.of(
-                "created", createdShifts,
-                "updated", updatedShifts,
-                "assigned", 0,
-                "deleted", 0,
-                "skipped", 0
-            );
+            return Map.of("created", createdShifts, "updated", updatedShifts,
+                          "assigned", 0, "deleted", 0, "skipped", 0);
         }
 
-        Map<AssignDayKey, List<String>> grouped = groupAssignCells(cells);
-        Map<String, com.bosskin.entity.Employee> empMap = employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
-            .stream()
-            .filter(e -> scopeIds.isEmpty() || (e.getDepartment() != null && scopeIds.contains(e.getDepartment().getId())))
+        // ── Pre-load lookup maps ──────────────────────────────────────────────
+        Map<String, com.bosskin.entity.Employee> empMap = employeeRepo
+            .findAllByCompanyIdFetchDepartment(companyId).stream()
+            .filter(e -> scopeIds.isEmpty() ||
+                         (e.getDepartment() != null && scopeIds.contains(e.getDepartment().getId())))
             .collect(Collectors.toMap(com.bosskin.entity.Employee::getEmployeeCode, e -> e, (a, b) -> a));
         Map<String, WorkShift> shiftMap = shiftRepo.findByCompanyIdAndActiveTrue(companyId)
             .stream().collect(Collectors.toMap(WorkShift::getCode, s -> s, (a, b) -> a));
 
-        int created = 0, deleted = 0, skipped = 0;
+        Map<AssignDayKey, List<String>> grouped = groupAssignCells(cells);
+
+        // ── Determine scope for bulk delete ───────────────────────────────────
+        List<java.time.LocalDate> allDates = grouped.keySet().stream()
+            .map(AssignDayKey::getDate).distinct().sorted().toList();
+        java.time.LocalDate minDate = allDates.get(0);
+        java.time.LocalDate maxDate = allDates.get(allDates.size() - 1);
+
+        List<Long> affectedEmpIds = grouped.keySet().stream()
+            .map(k -> empMap.get(k.getEmpCode()))
+            .filter(Objects::nonNull)
+            .map(com.bosskin.entity.Employee::getId)
+            .distinct().toList();
+
+        // ── Bulk soft-delete old assignments (1 query) ────────────────────────
+        int deleted = 0;
+        if (!affectedEmpIds.isEmpty()) {
+            deleted = assignRepo.softDeleteByEmployeeIdsAndDateRange(affectedEmpIds, minDate, maxDate);
+        }
+
+        // ── Build new assignments in memory ───────────────────────────────────
+        List<ShiftAssignment> toCreate = new ArrayList<>();
+        int skipped = 0;
         for (Map.Entry<AssignDayKey, List<String>> entry : grouped.entrySet()) {
             AssignDayKey day = entry.getKey();
             com.bosskin.entity.Employee emp = empMap.get(day.getEmpCode());
             if (emp == null) { skipped++; continue; }
-            try {
-                List<String> desired = entry.getValue().stream()
-                    .filter(Objects::nonNull)
-                    .map(String::trim)
-                    .filter(s -> !s.isBlank())
-                    .toList();
-                List<ShiftDTO.AssignRequest> requests = new ArrayList<>();
-                boolean invalid = false;
-                for (String raw : desired) {
-                    WorkShift shift = shiftMap.get(raw);
-                    if (shift != null) {
-                        requests.add(new ShiftDTO.AssignRequest(
-                            emp.getId(), shift.getId(), day.getDate(), null, null, null, null, null));
-                        continue;
-                    }
+            List<String> desired = entry.getValue().stream()
+                .filter(Objects::nonNull).map(String::trim).filter(s -> !s.isBlank()).toList();
+            boolean invalid = false;
+            for (String raw : desired) {
+                WorkShift shift = shiftMap.get(raw);
+                if (shift != null) {
+                    ShiftAssignment a = ShiftAssignment.builder()
+                        .employee(emp).shift(shift).workDate(day.getDate()).build();
+                    applyAssignSnapshot(a, shift);
+                    toCreate.add(a);
+                } else {
                     LocalTime[] custom = parseCustomTime(raw);
                     if (custom == null) { invalid = true; break; }
-                    requests.add(new ShiftDTO.AssignRequest(
-                        emp.getId(), null, day.getDate(), null,
-                        custom[0], custom[1], custom[2], custom[3]));
+                    toCreate.add(ShiftAssignment.builder()
+                        .employee(emp).workDate(day.getDate())
+                        .customStartTime(custom[0]).customEndTime(custom[1])
+                        .customBreakStart(custom[2]).customBreakEnd(custom[3])
+                        .build());
                 }
-                if (invalid) { skipped++; continue; }
-
-                List<ShiftAssignment> existing = assignRepo.findByEmployeeIdAndWorkDate(emp.getId(), day.getDate());
-
-                deleteOneInNewTx(emp.getId(), day.getDate(), companyId);
-                deleted += existing.size();
-
-                for (ShiftDTO.AssignRequest req : requests) {
-                    assignOneInNewTx(companyId, req);
-                    created++;
-                }
-            } catch (Exception ignored) { skipped++; }
+            }
+            if (invalid) skipped++;
         }
-        return Map.of(
-            "created", createdShifts,
-            "updated", updatedShifts,
-            "assigned", created,
-            "deleted", deleted,
-            "skipped", skipped
-        );
+
+        // ── Batch insert (1 query) ─────────────────────────────────────────────
+        assignRepo.saveAll(toCreate);
+
+        return Map.of("created", createdShifts, "updated", updatedShifts,
+                      "assigned", toCreate.size(), "deleted", deleted, "skipped", skipped);
+    }
+
+    private static void applyAssignSnapshot(ShiftAssignment a, WorkShift shift) {
+        if (shift == null) return;
+        a.setSnapshotName(shift.getName());
+        a.setSnapshotCode(shift.getCode());
+        a.setSnapshotStartTime(shift.getStartTime());
+        a.setSnapshotEndTime(shift.getEndTime());
+        a.setSnapshotBreakStart(shift.getBreakStart());
+        a.setSnapshotBreakEnd(shift.getBreakEnd());
+        a.setSnapshotWorkMinutes(shift.getWorkMinutes());
+        a.setSnapshotColor(shift.getColor());
     }
 
     /** Tên cột sheet "Danh sach ca" theo locale — gồm cả cột Phút làm (internal). */

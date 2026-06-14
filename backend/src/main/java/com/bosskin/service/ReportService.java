@@ -7,6 +7,8 @@ import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -604,6 +606,367 @@ public class ReportService {
         }
     }
 
+    // ── Yearly Overview ───────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> reportYearlyOverview(Long companyId, Long userId,
+                                                        int year, Long deptId, Locale locale) {
+        // Payroll: gross, net, deduction, count, dayOt, nightOt, presentDays per month
+        double[] gross = new double[13], net = new double[13], ded = new double[13];
+        int[]    payCount = new int[13];
+        double[] dayOtA = new double[13], nightOtA = new double[13], presDayA = new double[13];
+        for (Object[] r : payrollRepo.findYearlySummary(companyId, year, deptId)) {
+            int m = asInt(r[0]);
+            gross[m]    = asDbl(r[1]);
+            net[m]      = asDbl(r[2]);
+            ded[m]      = asDbl(r[3]);
+            payCount[m] = asInt(r[4]);
+            dayOtA[m]   = asDbl(r[5]);
+            nightOtA[m] = asDbl(r[6]);
+            presDayA[m] = asDbl(r[7]);
+        }
+        double[] otTotal = new double[13];
+        for (int m = 1; m <= 12; m++) otTotal[m] = dayOtA[m] + nightOtA[m];
+
+        // HR: new hires, resigned, headcount per month (computed từ danh sách nhân viên)
+        int[] headcount = new int[13], newHires = new int[13], resigned = new int[13];
+        List<Employee> emps = deptId != null
+            ? employeeRepo.findAllByCompanyIdAndDepartmentIdInFetchDepartment(companyId, List.of(deptId))
+            : employeeRepo.findAllByCompanyIdFetchDepartment(companyId);
+        for (int m = 1; m <= 12; m++) {
+            LocalDate from = LocalDate.of(year, m, 1);
+            LocalDate to   = from.withDayOfMonth(from.lengthOfMonth());
+            for (Employee e : emps) {
+                if (e.getJoinDate() == null) continue;
+                if (!e.getJoinDate().isBefore(from) && !e.getJoinDate().isAfter(to)) newHires[m]++;
+                if (e.getLeaveDate() != null
+                        && !e.getLeaveDate().isBefore(from) && !e.getLeaveDate().isAfter(to)) resigned[m]++;
+                if (!e.getJoinDate().isAfter(to)
+                        && (e.getLeaveDate() == null || e.getLeaveDate().isAfter(to))) headcount[m]++;
+            }
+        }
+
+        // Leave: days used, request count per month
+        double[] leaveDays = new double[13];
+        int[]    leaveCount = new int[13];
+        for (Object[] r : leaveRequestRepo.findMonthlyLeaveUsageByYear(
+                companyId, year, deptId, LeaveRequest.Status.APPROVED)) {
+            int m = asInt(r[0]);
+            leaveDays[m]  = asDbl(r[1]);
+            leaveCount[m] = asInt(r[2]);
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            buildYearSummarySheet(wb, year, locale, gross, net, ded, newHires, resigned, headcount, otTotal, leaveDays);
+            buildYearHrSheet(wb, year, locale, newHires, resigned, headcount);
+            buildYearPayrollSheet(wb, year, locale, gross, net, ded, payCount);
+            buildYearAttendanceSheet(wb, year, locale, presDayA, otTotal, payCount);
+            buildYearLeaveSheet(wb, year, locale, leaveDays, leaveCount);
+            byte[] bytes = toBytes(wb);
+            String filename = "yearly-overview-" + year + ".xlsx";
+            return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .header("Content-Type",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(bytes);
+        } catch (IOException e) {
+            throw new RuntimeException("error.excel.export_failed", e);
+        }
+    }
+
+    /** Sheet 1 — Tổng quan: tất cả chỉ số chính theo tháng + 2 biểu đồ */
+    private void buildYearSummarySheet(XSSFWorkbook wb, int year, Locale locale,
+            double[] gross, double[] net, double[] ded,
+            int[] newHires, int[] resigned, int[] headcount,
+            double[] otTotal, double[] leaveDays) {
+        XSSFSheet sheet = wb.createSheet(i18n("excel.sheet.yearly.summary", locale));
+        XSSFCellStyle hdr = headerStyle(wb), data = dataStyle(wb), num = numStyle(wb);
+        XSSFCellStyle money = moneyIntStyle(wb), hrs = hrsStyle(wb), pct = pctStyle(wb);
+        String[] headers = {
+            i18n("excel.col.yearly.month",       locale),
+            i18n("excel.col.yearly.headcount",    locale),
+            i18n("excel.col.yearly.newHires",     locale),
+            i18n("excel.col.yearly.resigned",     locale),
+            i18n("excel.col.yearly.netChange",    locale),
+            i18n("excel.col.yearly.turnoverRate", locale),
+            i18n("excel.col.payroll.gross",       locale),
+            i18n("excel.col.payroll.net",         locale),
+            i18n("excel.col.yearly.deduction",    locale),
+            i18n("excel.col.yearly.otHours",      locale),
+            i18n("excel.col.yearly.leaveDays",    locale),
+        };
+        writeHeader(sheet, hdr, headers);
+        int tNH = 0, tRs = 0;
+        double tGross = 0, tNet = 0, tDed = 0, tOt = 0, tLeave = 0;
+        for (int m = 1; m <= 12; m++) {
+            Row row = sheet.createRow(m);
+            double turnover = headcount[m] > 0 ? (resigned[m] * 100.0 / headcount[m]) : 0;
+            setCell(row, 0, String.format("%02d", m), data);
+            setCell(row, 1, headcount[m], num);
+            setCell(row, 2, newHires[m], num);
+            setCell(row, 3, resigned[m], num);
+            setCell(row, 4, newHires[m] - resigned[m], num);
+            setCellD(row, 5, turnover, pct, pct);
+            setCellD(row, 6, gross[m], money, money);
+            setCellD(row, 7, net[m], money, money);
+            setCellD(row, 8, ded[m], money, money);
+            setCellD(row, 9, otTotal[m], hrs, num);
+            setCellD(row, 10, leaveDays[m], hrs, num);
+            tNH += newHires[m]; tRs += resigned[m];
+            tGross += gross[m]; tNet += net[m]; tDed += ded[m];
+            tOt += otTotal[m]; tLeave += leaveDays[m];
+        }
+        Row tot = sheet.createRow(13);
+        XSSFCellStyle bold = boldStyle(wb);
+        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 1, headcount[12], bold);
+        setCell(tot, 2, tNH, bold); setCell(tot, 3, tRs, bold);
+        setCell(tot, 4, tNH - tRs, bold);
+        setCellD(tot, 6, tGross, money, money); setCellD(tot, 7, tNet, money, money);
+        setCellD(tot, 8, tDed, money, money);
+        setCellD(tot, 9, tOt, hrs, num); setCellD(tot, 10, tLeave, hrs, num);
+        autoSizeColumns(sheet, headers.length);
+        sheet.createFreezePane(1, 1);
+        addBarChart(sheet,
+            i18n("excel.chart.yearly.grossVsNet", locale) + " " + year,
+            1, 12, 0, new int[]{6, 7},
+            new String[]{i18n("excel.col.payroll.gross", locale), i18n("excel.col.payroll.net", locale)},
+            0, 15, 8, 33);
+        addLineChart(sheet,
+            i18n("excel.chart.yearly.headcountTrend", locale) + " " + year,
+            1, 12, 0, new int[]{1, 2, 3},
+            new String[]{
+                i18n("excel.col.yearly.headcount", locale),
+                i18n("excel.col.yearly.newHires", locale),
+                i18n("excel.col.yearly.resigned", locale)},
+            8, 15, 16, 33);
+    }
+
+    /** Sheet 2 — Nhân sự: biến động nhân sự + tỷ lệ thôi việc + 2 biểu đồ */
+    private void buildYearHrSheet(XSSFWorkbook wb, int year, Locale locale,
+            int[] newHires, int[] resigned, int[] headcount) {
+        XSSFSheet sheet = wb.createSheet(i18n("excel.sheet.yearly.hr", locale));
+        XSSFCellStyle hdr = headerStyle(wb), data = dataStyle(wb), num = numStyle(wb), pct = pctStyle(wb);
+        String[] headers = {
+            i18n("excel.col.yearly.month",       locale),
+            i18n("excel.col.yearly.headcount",    locale),
+            i18n("excel.col.yearly.newHires",     locale),
+            i18n("excel.col.yearly.resigned",     locale),
+            i18n("excel.col.yearly.netChange",    locale),
+            i18n("excel.col.yearly.turnoverRate", locale),
+        };
+        writeHeader(sheet, hdr, headers);
+        int tNH = 0, tRs = 0;
+        for (int m = 1; m <= 12; m++) {
+            Row row = sheet.createRow(m);
+            double turnover = headcount[m] > 0 ? (resigned[m] * 100.0 / headcount[m]) : 0;
+            setCell(row, 0, String.format("%02d", m), data);
+            setCell(row, 1, headcount[m], num);
+            setCell(row, 2, newHires[m], num);
+            setCell(row, 3, resigned[m], num);
+            setCell(row, 4, newHires[m] - resigned[m], num);
+            setCellD(row, 5, turnover, pct, pct);
+            tNH += newHires[m]; tRs += resigned[m];
+        }
+        Row tot = sheet.createRow(13);
+        XSSFCellStyle bold = boldStyle(wb);
+        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 1, headcount[12], bold);
+        setCell(tot, 2, tNH, bold); setCell(tot, 3, tRs, bold);
+        setCell(tot, 4, tNH - tRs, bold);
+        autoSizeColumns(sheet, headers.length);
+        sheet.createFreezePane(1, 1);
+        addBarChart(sheet,
+            i18n("excel.chart.yearly.hrMovement", locale) + " " + year,
+            1, 12, 0, new int[]{2, 3},
+            new String[]{i18n("excel.col.yearly.newHires", locale), i18n("excel.col.yearly.resigned", locale)},
+            0, 15, 8, 33);
+        addLineChart(sheet,
+            i18n("excel.chart.yearly.headcountTrend", locale) + " " + year,
+            1, 12, 0, new int[]{1},
+            new String[]{i18n("excel.col.yearly.headcount", locale)},
+            0, 34, 8, 52);
+    }
+
+    /** Sheet 3 — Chi phí lương: gross/net/khấu trừ, avg, MoM% + 2 biểu đồ */
+    private void buildYearPayrollSheet(XSSFWorkbook wb, int year, Locale locale,
+            double[] gross, double[] net, double[] ded, int[] payCount) {
+        XSSFSheet sheet = wb.createSheet(i18n("excel.sheet.yearly.payroll", locale));
+        XSSFCellStyle hdr = headerStyle(wb), data = dataStyle(wb), num = numStyle(wb);
+        XSSFCellStyle money = moneyIntStyle(wb), pct = pctStyle(wb);
+        String[] headers = {
+            i18n("excel.col.yearly.month",       locale),
+            i18n("excel.col.yearly.payslipCount", locale),
+            i18n("excel.col.payroll.gross",       locale),
+            i18n("excel.col.payroll.net",         locale),
+            i18n("excel.col.yearly.deduction",    locale),
+            i18n("excel.col.yearly.avgNet",       locale),
+            i18n("excel.col.yearly.momChange",    locale),
+        };
+        writeHeader(sheet, hdr, headers);
+        int tCount = 0; double tGross = 0, tNet = 0, tDed = 0;
+        for (int m = 1; m <= 12; m++) {
+            Row row = sheet.createRow(m);
+            double avgNet = payCount[m] > 0 ? net[m] / payCount[m] : 0;
+            double prevNet = m > 1 ? net[m - 1] : 0;
+            double mom = prevNet > 0 ? ((net[m] - prevNet) / prevNet * 100) : 0;
+            setCell(row, 0, String.format("%02d", m), data);
+            setCell(row, 1, payCount[m], num);
+            setCellD(row, 2, gross[m], money, money);
+            setCellD(row, 3, net[m], money, money);
+            setCellD(row, 4, ded[m], money, money);
+            setCellD(row, 5, avgNet, money, money);
+            if (m > 1) setCellD(row, 6, mom, pct, pct);
+            tCount += payCount[m]; tGross += gross[m]; tNet += net[m]; tDed += ded[m];
+        }
+        Row tot = sheet.createRow(13);
+        XSSFCellStyle bold = boldStyle(wb);
+        setCell(tot, 0, "TOTAL", bold); setCell(tot, 1, tCount, bold);
+        setCellD(tot, 2, tGross, money, money); setCellD(tot, 3, tNet, money, money);
+        setCellD(tot, 4, tDed, money, money);
+        autoSizeColumns(sheet, headers.length);
+        sheet.createFreezePane(1, 1);
+        addBarChart(sheet,
+            i18n("excel.chart.yearly.payrollCost", locale) + " " + year,
+            1, 12, 0, new int[]{2, 3, 4},
+            new String[]{
+                i18n("excel.col.payroll.gross", locale),
+                i18n("excel.col.payroll.net", locale),
+                i18n("excel.col.yearly.deduction", locale)},
+            0, 15, 8, 33);
+        addLineChart(sheet,
+            i18n("excel.chart.yearly.avgSalary", locale) + " " + year,
+            1, 12, 0, new int[]{5},
+            new String[]{i18n("excel.col.yearly.avgNet", locale)},
+            0, 34, 8, 52);
+    }
+
+    /** Sheet 4 — Chấm công & OT: ngày công, giờ OT + 2 biểu đồ */
+    private void buildYearAttendanceSheet(XSSFWorkbook wb, int year, Locale locale,
+            double[] presDay, double[] otTotal, int[] payCount) {
+        XSSFSheet sheet = wb.createSheet(i18n("excel.sheet.yearly.attendance", locale));
+        XSSFCellStyle hdr = headerStyle(wb), data = dataStyle(wb), num = numStyle(wb), hrs = hrsStyle(wb);
+        String[] headers = {
+            i18n("excel.col.yearly.month",          locale),
+            i18n("excel.col.yearly.presentDays",     locale),
+            i18n("excel.col.yearly.avgPresentDays",  locale),
+            i18n("excel.col.yearly.otHours",         locale),
+            i18n("excel.col.yearly.avgOtHours",      locale),
+        };
+        writeHeader(sheet, hdr, headers);
+        double tPres = 0, tOt = 0;
+        for (int m = 1; m <= 12; m++) {
+            Row row = sheet.createRow(m);
+            double avgPres = payCount[m] > 0 ? presDay[m] / payCount[m] : 0;
+            double avgOt   = payCount[m] > 0 ? otTotal[m] / payCount[m] : 0;
+            setCell(row, 0, String.format("%02d", m), data);
+            setCellD(row, 1, presDay[m], num, num);
+            setCellD(row, 2, avgPres, hrs, num);
+            setCellD(row, 3, otTotal[m], hrs, num);
+            setCellD(row, 4, avgOt, hrs, num);
+            tPres += presDay[m]; tOt += otTotal[m];
+        }
+        Row tot = sheet.createRow(13);
+        XSSFCellStyle bold = boldStyle(wb);
+        setCell(tot, 0, "TOTAL", bold);
+        setCellD(tot, 1, tPres, num, num); setCellD(tot, 3, tOt, hrs, num);
+        autoSizeColumns(sheet, headers.length);
+        sheet.createFreezePane(1, 1);
+        addBarChart(sheet,
+            i18n("excel.chart.yearly.otTrend", locale) + " " + year,
+            1, 12, 0, new int[]{3},
+            new String[]{i18n("excel.col.yearly.otHours", locale)},
+            0, 15, 8, 33);
+        addLineChart(sheet,
+            i18n("excel.chart.yearly.presentTrend", locale) + " " + year,
+            1, 12, 0, new int[]{2},
+            new String[]{i18n("excel.col.yearly.avgPresentDays", locale)},
+            0, 34, 8, 52);
+    }
+
+    /** Sheet 5 — Nghỉ phép: số đơn và ngày phép đã dùng + biểu đồ */
+    private void buildYearLeaveSheet(XSSFWorkbook wb, int year, Locale locale,
+            double[] leaveDays, int[] leaveCount) {
+        XSSFSheet sheet = wb.createSheet(i18n("excel.sheet.yearly.leave", locale));
+        XSSFCellStyle hdr = headerStyle(wb), data = dataStyle(wb), num = numStyle(wb), hrs = hrsStyle(wb);
+        String[] headers = {
+            i18n("excel.col.yearly.month",      locale),
+            i18n("excel.col.yearly.leaveCount", locale),
+            i18n("excel.col.yearly.leaveDays",  locale),
+        };
+        writeHeader(sheet, hdr, headers);
+        int tCount = 0; double tDays = 0;
+        for (int m = 1; m <= 12; m++) {
+            Row row = sheet.createRow(m);
+            setCell(row, 0, String.format("%02d", m), data);
+            setCell(row, 1, leaveCount[m], num);
+            setCellD(row, 2, leaveDays[m], hrs, num);
+            tCount += leaveCount[m]; tDays += leaveDays[m];
+        }
+        Row tot = sheet.createRow(13);
+        XSSFCellStyle bold = boldStyle(wb);
+        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 1, tCount, bold); setCellD(tot, 2, tDays, hrs, num);
+        autoSizeColumns(sheet, headers.length);
+        sheet.createFreezePane(1, 1);
+        addBarChart(sheet,
+            i18n("excel.chart.yearly.leaveTrend", locale) + " " + year,
+            1, 12, 0, new int[]{2},
+            new String[]{i18n("excel.col.yearly.leaveDays", locale)},
+            0, 15, 7, 33);
+    }
+
+    /** Column bar chart nhúng vào sheet, tham chiếu dữ liệu từ cell range. */
+    private static void addBarChart(XSSFSheet sheet, String title,
+            int r1, int r2, int catCol, int[] valCols, String[] names,
+            int ancC1, int ancR1, int ancC2, int ancR2) {
+        XSSFDrawing d = sheet.createDrawingPatriarch();
+        XSSFChart chart = d.createChart(d.createAnchor(0, 0, 0, 0, ancC1, ancR1, ancC2, ancR2));
+        chart.setTitleText(title); chart.setTitleOverlay(false);
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.BOTTOM);
+        XDDFCategoryAxis catAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis valAxis = chart.createValueAxis(AxisPosition.LEFT);
+        valAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+        XDDFBarChartData data = (XDDFBarChartData) chart.createData(ChartTypes.BAR, catAxis, valAxis);
+        data.setBarDirection(BarDirection.COL);
+        XDDFCategoryDataSource cats = XDDFDataSourcesFactory.fromStringCellRange(
+            sheet, new CellRangeAddress(r1, r2, catCol, catCol));
+        for (int i = 0; i < valCols.length; i++) {
+            XDDFNumericalDataSource<Double> vals = XDDFDataSourcesFactory.fromNumericCellRange(
+                sheet, new CellRangeAddress(r1, r2, valCols[i], valCols[i]));
+            XDDFBarChartData.Series s = (XDDFBarChartData.Series) data.addSeries(cats, vals);
+            s.setTitle(names[i], null);
+        }
+        chart.plot(data);
+    }
+
+    /** Line chart nhúng vào sheet, tham chiếu dữ liệu từ cell range. */
+    private static void addLineChart(XSSFSheet sheet, String title,
+            int r1, int r2, int catCol, int[] valCols, String[] names,
+            int ancC1, int ancR1, int ancC2, int ancR2) {
+        XSSFDrawing d = sheet.createDrawingPatriarch();
+        XSSFChart chart = d.createChart(d.createAnchor(0, 0, 0, 0, ancC1, ancR1, ancC2, ancR2));
+        chart.setTitleText(title); chart.setTitleOverlay(false);
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.BOTTOM);
+        XDDFCategoryAxis catAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis valAxis = chart.createValueAxis(AxisPosition.LEFT);
+        valAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+        XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, catAxis, valAxis);
+        XDDFCategoryDataSource cats = XDDFDataSourcesFactory.fromStringCellRange(
+            sheet, new CellRangeAddress(r1, r2, catCol, catCol));
+        for (int i = 0; i < valCols.length; i++) {
+            XDDFNumericalDataSource<Double> vals = XDDFDataSourcesFactory.fromNumericCellRange(
+                sheet, new CellRangeAddress(r1, r2, valCols[i], valCols[i]));
+            XDDFLineChartData.Series s = (XDDFLineChartData.Series) data.addSeries(cats, vals);
+            s.setTitle(names[i], null);
+            s.setSmooth(false);
+            s.setMarkerStyle(MarkerStyle.CIRCLE);
+        }
+        chart.plot(data);
+    }
+
     // ─── HELPERS ─────────────────────────────────────────────────────────────
 
     private void writeHeader(XSSFSheet sheet, XSSFCellStyle hdrStyle, String[] headers) {
@@ -716,6 +1079,15 @@ public class ReportService {
         return style;
     }
 
+    private static XSSFCellStyle pctStyle(XSSFWorkbook wb) {
+        XSSFCellStyle style = wb.createCellStyle();
+        style.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("0.0"));
+        style.setAlignment(HorizontalAlignment.RIGHT);
+        style.setBorderRight(BorderStyle.HAIR);
+        style.setBorderBottom(BorderStyle.HAIR);
+        return style;
+    }
+
     private static XSSFCellStyle boldStyle(XSSFWorkbook wb) {
         XSSFCellStyle style = wb.createCellStyle();
         XSSFFont font = wb.createFont();
@@ -735,6 +1107,10 @@ public class ReportService {
     private double nvl(Double v) { return v != null ? v : 0.0; }
 
     private static BigDecimal bdNvl(BigDecimal v) { return v != null ? v : BigDecimal.ZERO; }
+
+    private static int asInt(Object o) { return o == null ? 0 : ((Number) o).intValue(); }
+    private static double asDbl(Object o) { return o == null ? 0.0 : ((Number) o).doubleValue(); }
+    private String i18n(String key, Locale locale) { return excelI18n.resolve(key, locale); }
 
     private static BigDecimal sumPayrollEntries(Map<String, Payroll.DeductionEntry> m) {
         if (m == null || m.isEmpty()) return BigDecimal.ZERO;

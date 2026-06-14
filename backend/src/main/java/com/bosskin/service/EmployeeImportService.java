@@ -210,6 +210,7 @@ public class EmployeeImportService {
     // ─── IMPORT ──────────────────────────────────────────────────────────────
 
     @Transactional
+    @SuppressWarnings("null")
     public void importFromExcel(Long companyId, Long userId, List<EmployeeDTO.ImportRow> rows) {
         Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
         Company company = companyRepo.findById(companyId)
@@ -228,10 +229,13 @@ public class EmployeeImportService {
             .filter(r -> r.getName().equalsIgnoreCase("employee"))
             .findFirst();
 
+        List<Employee> toUpdate = new ArrayList<>();
+        List<com.bosskin.entity.User> toCreateUsers = new ArrayList<>();
+
         for (EmployeeDTO.ImportRow row : rows) {
             if (isBlank(row.getFullName()) && isBlank(row.getEmployeeCode())) continue;
 
-            // Scope check: bỏ qua row thuộc dept ngoài phạm vi
+            // Scope check
             if (!scopeIds.isEmpty() && row.getDepartmentCode() != null) {
                 Department dept = deptMap.get(row.getDepartmentCode().trim().toUpperCase());
                 if (dept == null || !scopeIds.contains(dept.getId())) continue;
@@ -241,7 +245,7 @@ public class EmployeeImportService {
             Employee emp = code == null ? null : existing.get(code);
 
             if (emp == null) {
-                // ── CREATE ──────────────────────────────────────────────────
+                // ── CREATE — cần save ngay để lấy ID gắn vào User ───────────
                 if (isBlank(row.getEmail()))
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Nhân viên \"" + row.getFullName() + "\" thiếu email");
@@ -255,7 +259,7 @@ public class EmployeeImportService {
                 Position   pos  = resolvePos(posMap, row.getPositionCode(), code);
                 SalaryGrade grade = resolveGrade(gradeMap, row.getSalaryGradeCode());
 
-                emp = Employee.builder()
+                Employee newEmp = Employee.builder()
                     .company(company)
                     .employeeCode(code != null ? code : generateCode(companyId))
                     .fullName(row.getFullName().trim())
@@ -266,9 +270,7 @@ public class EmployeeImportService {
                     .joinDate(parseDate(row.getJoinDate()) != null
                         ? parseDate(row.getJoinDate()) : LocalDate.now())
                     .leaveDate(parseDate(row.getLeaveDate()))
-                    .department(dept)
-                    .position(pos)
-                    .salaryGrade(grade)
+                    .department(dept).position(pos).salaryGrade(grade)
                     .address(row.getAddress())
                     .personalEmail(row.getPersonalEmail())
                     .identityCard(row.getIdentityCard())
@@ -277,45 +279,43 @@ public class EmployeeImportService {
                     .contractSalary(parseMoney(row.getContractSalary()))
                     .status(Employee.Status.ACTIVE)
                     .build();
-                emp = employeeRepo.save(emp);
+                Employee savedEmp = employeeRepo.save(newEmp);
 
-                // Tạo user account
                 String pwd = isBlank(row.getDefaultPassword())
                     ? DEFAULT_PASSWORD : row.getDefaultPassword().trim();
                 var user = com.bosskin.entity.User.builder()
                     .email(email).password(passwordEncoder.encode(pwd))
-                    .company(company).employee(emp).enabled(true).build();
+                    .company(company).employee(savedEmp).enabled(true).build();
                 defaultRole.ifPresent(r -> user.getRoles().add(r));
-                userRepo.save(user);
+                toCreateUsers.add(user);
 
             } else {
-                // ── UPDATE ──────────────────────────────────────────────────
-                if (!isBlank(row.getFullName()))    emp.setFullName(row.getFullName().trim());
-                if (!isBlank(row.getPhone()))       emp.setPhone(row.getPhone().trim());
-                if (!isBlank(row.getGender()))      emp.setGender(parseGender(row.getGender()));
-                if (!isBlank(row.getDateOfBirth())) emp.setDateOfBirth(parseDate(row.getDateOfBirth()));
-                if (!isBlank(row.getJoinDate()))    emp.setJoinDate(parseDate(row.getJoinDate()));
-                if (!isBlank(row.getLeaveDate()))   emp.setLeaveDate(parseDate(row.getLeaveDate()));
-                if (!isBlank(row.getAddress()))     emp.setAddress(row.getAddress().trim());
+                // ── UPDATE — collect, batch save sau ────────────────────────
+                if (!isBlank(row.getFullName()))     emp.setFullName(row.getFullName().trim());
+                if (!isBlank(row.getPhone()))        emp.setPhone(row.getPhone().trim());
+                if (!isBlank(row.getGender()))       emp.setGender(parseGender(row.getGender()));
+                if (!isBlank(row.getDateOfBirth()))  emp.setDateOfBirth(parseDate(row.getDateOfBirth()));
+                if (!isBlank(row.getJoinDate()))     emp.setJoinDate(parseDate(row.getJoinDate()));
+                if (!isBlank(row.getLeaveDate()))    emp.setLeaveDate(parseDate(row.getLeaveDate()));
+                if (!isBlank(row.getAddress()))      emp.setAddress(row.getAddress().trim());
                 if (!isBlank(row.getPersonalEmail()))emp.setPersonalEmail(row.getPersonalEmail().trim());
                 if (!isBlank(row.getIdentityCard())) emp.setIdentityCard(row.getIdentityCard().trim());
                 if (!isBlank(row.getBankAccount()))  emp.setBankAccount(row.getBankAccount().trim());
                 if (!isBlank(row.getBankName()))     emp.setBankName(row.getBankName().trim());
                 if (!isBlank(row.getContractSalary()))emp.setContractSalary(parseMoney(row.getContractSalary()));
                 if (!isBlank(row.getStatus()))       emp.setStatus(parseStatus(row.getStatus()));
-
-                if (!isBlank(row.getDepartmentCode())) {
+                if (!isBlank(row.getDepartmentCode()))
                     emp.setDepartment(resolveDept(deptMap, row.getDepartmentCode(), code));
-                }
-                if (!isBlank(row.getPositionCode())) {
+                if (!isBlank(row.getPositionCode()))
                     emp.setPosition(resolvePos(posMap, row.getPositionCode(), code));
-                }
-                if (!isBlank(row.getSalaryGradeCode())) {
+                if (!isBlank(row.getSalaryGradeCode()))
                     emp.setSalaryGrade(resolveGrade(gradeMap, row.getSalaryGradeCode()));
-                }
-                employeeRepo.save(emp);
+                toUpdate.add(emp);
             }
         }
+
+        employeeRepo.saveAll(toUpdate);
+        userRepo.saveAll(toCreateUsers);
     }
 
     // ─── PER-ROW IMPORT / PREVIEW ────────────────────────────────────────────
