@@ -4395,6 +4395,12 @@ abstract class AppLocalizations {
   /// **'Ca làm việc'**
   String get excelModuleShift;
 
+  /// No description provided for @excelModuleShiftAssignment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phân công ca'**
+  String get excelModuleShiftAssignment;
+
   /// No description provided for @excelImportTitle.
   ///
   /// In vi, this message translates to:
@@ -4635,6 +4641,216 @@ abstract class AppLocalizations {
   /// **'Biến công thức'**
   String get excelModuleFormulaVariable;
 
+  /// No description provided for @excelModuleLeaveType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại nghỉ phép'**
+  String get excelModuleLeaveType;
+
+  /// No description provided for @excelModuleLeaveGrant.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số dư phép'**
+  String get excelModuleLeaveGrant;
+
+  /// No description provided for @reportScreenTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo nhân sự'**
+  String get reportScreenTitle;
+
+  /// No description provided for @reportScreenSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất báo cáo kinh doanh ra Excel'**
+  String get reportScreenSubtitle;
+
+  /// No description provided for @reportGroupEmployee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo nhân sự'**
+  String get reportGroupEmployee;
+
+  /// No description provided for @reportGroupAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo chấm công'**
+  String get reportGroupAttendance;
+
+  /// No description provided for @reportGroupPayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo lương'**
+  String get reportGroupPayroll;
+
+  /// No description provided for @reportGroupLeave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo nghỉ phép'**
+  String get reportGroupLeave;
+
+  /// No description provided for @reportEmployee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thống kê nhân sự'**
+  String get reportEmployee;
+
+  /// No description provided for @reportEmployeeDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đang làm / đã nghỉ theo phòng ban'**
+  String get reportEmployeeDesc;
+
+  /// No description provided for @reportNewHires.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên mới'**
+  String get reportNewHires;
+
+  /// No description provided for @reportNewHiresDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên vào làm trong kỳ được chọn'**
+  String get reportNewHiresDesc;
+
+  /// No description provided for @reportResigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên nghỉ việc'**
+  String get reportResigned;
+
+  /// No description provided for @reportResignedDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đã nghỉ trong kỳ được chọn'**
+  String get reportResignedDesc;
+
+  /// No description provided for @reportAttendanceSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng hợp chấm công'**
+  String get reportAttendanceSummary;
+
+  /// No description provided for @reportAttendanceSummaryDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số ngày có mặt, vắng mặt, trễ theo từng nhân viên mỗi tháng'**
+  String get reportAttendanceSummaryDesc;
+
+  /// No description provided for @reportLateCheckin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo đi trễ'**
+  String get reportLateCheckin;
+
+  /// No description provided for @reportLateCheckinDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên có tần suất đi trễ cao'**
+  String get reportLateCheckinDesc;
+
+  /// No description provided for @reportOvertimeSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng hợp tăng ca'**
+  String get reportOvertimeSummary;
+
+  /// No description provided for @reportOvertimeSummaryDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng giờ OT của từng nhân viên trong tháng'**
+  String get reportOvertimeSummaryDesc;
+
+  /// No description provided for @reportPayrollSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng hợp chi phí lương'**
+  String get reportPayrollSummary;
+
+  /// No description provided for @reportPayrollSummaryDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi phí lương tháng phân theo phòng ban'**
+  String get reportPayrollSummaryDesc;
+
+  /// No description provided for @reportPayrollDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết bảng lương'**
+  String get reportPayrollDetail;
+
+  /// No description provided for @reportPayrollDetailDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết lương của tất cả nhân viên trong tháng được chọn'**
+  String get reportPayrollDetailDesc;
+
+  /// No description provided for @reportLeaveBalance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng hợp số dư phép'**
+  String get reportLeaveBalance;
+
+  /// No description provided for @reportLeaveBalanceDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số ngày phép còn lại của từng nhân viên theo loại phép'**
+  String get reportLeaveBalanceDesc;
+
+  /// No description provided for @reportLeaveUsage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thống kê sử dụng phép'**
+  String get reportLeaveUsage;
+
+  /// No description provided for @reportLeaveUsageDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các đơn nghỉ phép và số ngày đã dùng trong kỳ'**
+  String get reportLeaveUsageDesc;
+
+  /// No description provided for @reportFilterYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm'**
+  String get reportFilterYear;
+
+  /// No description provided for @reportFilterMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng'**
+  String get reportFilterMonth;
+
+  /// No description provided for @reportFilterDepartment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban'**
+  String get reportFilterDepartment;
+
+  /// No description provided for @reportFilterAllDepts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả phòng ban'**
+  String get reportFilterAllDepts;
+
+  /// No description provided for @reportExportBtn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất Excel'**
+  String get reportExportBtn;
+
+  /// No description provided for @reportExporting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xuất...'**
+  String get reportExporting;
+
+  /// No description provided for @reportExportSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất báo cáo thành công'**
+  String get reportExportSuccess;
+
   /// No description provided for @dashboardErrorLoad.
   ///
   /// In vi, this message translates to:
@@ -4856,6 +5072,144 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tổng'**
   String get dashboardTooltipTotal;
+
+  /// No description provided for @dashboardTabOverview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng quan'**
+  String get dashboardTabOverview;
+
+  /// No description provided for @dashboardTabAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công'**
+  String get dashboardTabAttendance;
+
+  /// No description provided for @dashboardKpiNewHires.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuyển mới'**
+  String get dashboardKpiNewHires;
+
+  /// No description provided for @dashboardKpiResigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ việc'**
+  String get dashboardKpiResigned;
+
+  /// No description provided for @dashboardKpiAttendanceRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tỷ lệ đi làm'**
+  String get dashboardKpiAttendanceRate;
+
+  /// No description provided for @dashboardKpiAttritionRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tỷ lệ nghỉ việc'**
+  String get dashboardKpiAttritionRate;
+
+  /// No description provided for @dashboardKpiCurrentPayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương (MTD)'**
+  String get dashboardKpiCurrentPayroll;
+
+  /// No description provided for @dashboardKpiThisMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'tháng này'**
+  String get dashboardKpiThisMonth;
+
+  /// No description provided for @dashboardKpiVsLastMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'so tháng trước'**
+  String get dashboardKpiVsLastMonth;
+
+  /// No description provided for @dashboardKpiNoChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'không đổi'**
+  String get dashboardKpiNoChange;
+
+  /// No description provided for @dashboardRisks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo & Rủi ro'**
+  String get dashboardRisks;
+
+  /// No description provided for @dashboardRisksRepeatedLate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi trễ nhiều lần'**
+  String get dashboardRisksRepeatedLate;
+
+  /// No description provided for @dashboardRisksMissingCheckout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa chấm ra'**
+  String get dashboardRisksMissingCheckout;
+
+  /// No description provided for @dashboardRisksProbationEnding.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp hết thử việc'**
+  String get dashboardRisksProbationEnding;
+
+  /// No description provided for @dashboardRisksNoSalaryGrade.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bậc lương'**
+  String get dashboardRisksNoSalaryGrade;
+
+  /// No description provided for @dashboardRisksNoWarnings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có cảnh báo'**
+  String get dashboardRisksNoWarnings;
+
+  /// No description provided for @dashboardRisksTimeThisMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n}× tháng này'**
+  String dashboardRisksTimeThisMonth(int n);
+
+  /// No description provided for @dashboardRisksDaysLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'còn {n} ngày'**
+  String dashboardRisksDaysLeft(int n);
+
+  /// No description provided for @dashboardRisksCheckedInAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào: {time}'**
+  String dashboardRisksCheckedInAt(String time);
+
+  /// No description provided for @dashboardRisksJoinedOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày vào: {date}'**
+  String dashboardRisksJoinedOn(String date);
+
+  /// No description provided for @dashboardAttendancePeriodWeek.
+  ///
+  /// In vi, this message translates to:
+  /// **'7 ngày qua'**
+  String get dashboardAttendancePeriodWeek;
+
+  /// No description provided for @dashboardAttendancePeriodMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng này'**
+  String get dashboardAttendancePeriodMonth;
+
+  /// No description provided for @dashboardAttendancePeriodCustom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng tùy chọn'**
+  String get dashboardAttendancePeriodCustom;
 
   /// No description provided for @unitHour.
   ///

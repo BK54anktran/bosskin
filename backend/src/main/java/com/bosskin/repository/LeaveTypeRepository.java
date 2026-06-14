@@ -11,4 +11,6 @@ public interface LeaveTypeRepository extends JpaRepository<LeaveType, Long> {
     Optional<LeaveType> findByIdAndCompanyIdAndDeletedFalse(Long id, Long companyId);
     boolean existsByCompanyIdAndCodeIgnoreCase(Long companyId, String code);
     boolean existsByCompanyIdAndCodeIgnoreCaseAndIdNot(Long companyId, String code, Long id);
+
+    java.util.Optional<LeaveType> findByCompanyIdAndCodeIgnoreCaseAndDeletedFalse(Long companyId, String code);
 }

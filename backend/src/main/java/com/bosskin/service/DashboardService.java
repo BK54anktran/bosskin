@@ -8,6 +8,7 @@ import com.bosskin.entity.Employee;
 import com.bosskin.entity.SalaryGrade;
 import com.bosskin.entity.Payroll;
 import com.bosskin.entity.User;
+import java.time.LocalTime;
 import com.bosskin.repository.AttendanceRepository;
 import com.bosskin.repository.AttendanceRequestRepository;
 import com.bosskin.repository.CompanyRepository;
@@ -83,7 +84,6 @@ public class DashboardService {
         long absent = Math.max(0, totalEmployees - present - onLeave);
 
         List<DashboardDTO.AttendanceRow> attendanceRows = todayAttendances.stream()
-            .limit(20)
             .map(a -> {
                 Employee emp = a.getEmployee();
                 List<AttendanceRequest> empRequests = requestsByEmployee.getOrDefault(emp.getId(), List.of());
@@ -401,6 +401,147 @@ public class DashboardService {
             .build();
     }
 
+
+    // ── KPI Summary ────────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public DashboardDTO.KpiResponse getKpi(User user, Long departmentId, LocalDate date) {
+        Long companyId = user.getCompanyId();
+        LocalDate today = date != null ? date : LocalDate.now();
+        LocalDate monthStart = today.withDayOfMonth(1);
+        LocalDate lastMonthStart = monthStart.minusMonths(1);
+        LocalDate lastMonthEnd = monthStart.minusDays(1);
+
+        long total = departmentId != null
+            ? employeeRepository.countByCompanyIdAndDepartmentId(companyId, departmentId)
+            : employeeRepository.countByCompanyId(companyId);
+
+        long newHiresThis = employeeRepository.countJoinedBetween(companyId, monthStart, today, departmentId);
+        long newHiresLast = employeeRepository.countJoinedBetween(companyId, lastMonthStart, lastMonthEnd, departmentId);
+        long resignedThis  = employeeRepository.countResignedBetween(companyId, monthStart, today, departmentId);
+
+        long totalAtMonthStart = Math.max(1, total + resignedThis - newHiresThis);
+        double attritionRate = Math.round((double) resignedThis / totalAtMonthStart * 1000.0) / 10.0;
+
+        List<Attendance> todayAtts = departmentId != null
+            ? attendanceRepository.findByCompanyAndDateAndDept(companyId, today, departmentId)
+            : attendanceRepository.findByCompanyAndDate(companyId, today);
+
+        long onLeave = departmentId != null
+            ? leaveRequestRepository.findApprovedByCompanyAndDateAndDept(companyId, today, departmentId).size()
+            : leaveRequestRepository.findApprovedByCompanyAndDate(companyId, today).size();
+
+        long todayPresent = todayAtts.stream().filter(a -> calcSvc.isActuallyPresent(a)).count();
+        long todayLate    = todayAtts.stream().filter(a -> calcSvc.isActuallyPresent(a) && calcSvc.isLate(a)).count();
+        long todayAbsent  = Math.max(0, total - todayPresent - onLeave);
+
+        double attendanceRate = total > onLeave
+            ? Math.round((double) todayPresent / (total - onLeave) * 1000.0) / 10.0
+            : 0.0;
+
+        YearMonth ym = YearMonth.from(today);
+        DashboardDTO.RecentPayroll payroll = buildRecentPayroll(companyId, ym);
+        if (payroll.getEmployeeCount() == 0) {
+            payroll = buildRecentPayroll(companyId, ym.minusMonths(1));
+        }
+
+        return DashboardDTO.KpiResponse.builder()
+            .totalActiveEmployees((int) total)
+            .newHiresThisMonth((int) newHiresThis)
+            .newHiresLastMonth((int) newHiresLast)
+            .resignedThisMonth((int) resignedThis)
+            .attritionRate(attritionRate)
+            .todayPresent(todayPresent)
+            .todayAbsent(todayAbsent)
+            .todayOnLeave(onLeave)
+            .todayLate(todayLate)
+            .todayAttendanceRate(attendanceRate)
+            .currentMonthPayroll(payroll.getTotalNetSalary())
+            .currentMonthPayrollCount(payroll.getEmployeeCount())
+            .currentMonthPayrollStatus(payroll.getStatus())
+            .date(today)
+            .build();
+    }
+
+    // ── Risk & Warnings ────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public DashboardDTO.RiskResponse getRisks(User user, Long departmentId, LocalDate date) {
+        Long companyId = user.getCompanyId();
+        LocalDate today = date != null ? date : LocalDate.now();
+        LocalDate monthStart = today.withDayOfMonth(1);
+
+        // 1. Repeated late this month (>= 3 occurrences)
+        List<DashboardDTO.RepeatedLateRisk> repeatedLate = new ArrayList<>();
+        for (Object[] row : attendanceRepository.findTopLateEmployees(
+                companyId, monthStart, today, departmentId, PageRequest.of(0, 100))) {
+            int late = ((Number) row[4]).intValue();
+            if (late >= 3) {
+                repeatedLate.add(DashboardDTO.RepeatedLateRisk.builder()
+                    .employeeId(((Number) row[0]).longValue())
+                    .employeeCode((String) row[1])
+                    .employeeName((String) row[2])
+                    .departmentName((String) row[3])
+                    .lateDaysThisMonth(late)
+                    .build());
+            }
+        }
+
+        // 2. Checked in today but no checkout yet
+        List<DashboardDTO.MissingCheckoutRisk> missingCheckout = new ArrayList<>();
+        for (Attendance a : attendanceRepository.findMissingCheckout(companyId, today, departmentId)) {
+            Employee emp = a.getEmployee();
+            LocalTime cin = a.getCheckIn() != null ? a.getCheckIn().toLocalTime() : null;
+            missingCheckout.add(DashboardDTO.MissingCheckoutRisk.builder()
+                .employeeId(emp.getId())
+                .employeeCode(emp.getEmployeeCode())
+                .employeeName(emp.getFullName())
+                .departmentName(emp.getDepartment() != null ? emp.getDepartment().getName() : null)
+                .checkInTime(cin)
+                .build());
+        }
+
+        // 3. Probation ending within 30 days (default probation = 60 days from joinDate)
+        // probationEnd = joinDate + 60; want: today <= probationEnd <= today + 30
+        // → joinDate between (today - 60) and (today - 30)
+        List<DashboardDTO.ProbationEndingRisk> probationEnding = new ArrayList<>();
+        for (Employee emp : employeeRepository.findActiveJoinedBetween(
+                companyId, today.minusDays(60), today.minusDays(30), departmentId)) {
+            LocalDate end = emp.getJoinDate().plusDays(60);
+            int daysLeft = (int) (end.toEpochDay() - today.toEpochDay());
+            if (daysLeft >= 0) {
+                probationEnding.add(DashboardDTO.ProbationEndingRisk.builder()
+                    .employeeId(emp.getId())
+                    .employeeCode(emp.getEmployeeCode())
+                    .employeeName(emp.getFullName())
+                    .departmentName(emp.getDepartment() != null ? emp.getDepartment().getName() : null)
+                    .joinDate(emp.getJoinDate())
+                    .probationEnd(end)
+                    .daysLeft(daysLeft)
+                    .build());
+            }
+        }
+
+        // 4. Active employees without salary grade (payroll not configured)
+        List<DashboardDTO.NoSalaryGradeRisk> noSalaryGrade = new ArrayList<>();
+        for (Employee emp : employeeRepository.findActiveMissingSalaryGrade(companyId, departmentId)) {
+            noSalaryGrade.add(DashboardDTO.NoSalaryGradeRisk.builder()
+                .employeeId(emp.getId())
+                .employeeCode(emp.getEmployeeCode())
+                .employeeName(emp.getFullName())
+                .departmentName(emp.getDepartment() != null ? emp.getDepartment().getName() : null)
+                .build());
+        }
+
+        int total = repeatedLate.size() + missingCheckout.size() + probationEnding.size() + noSalaryGrade.size();
+        return DashboardDTO.RiskResponse.builder()
+            .repeatedLate(repeatedLate)
+            .missingCheckout(missingCheckout)
+            .probationEnding(probationEnding)
+            .noSalaryGrade(noSalaryGrade)
+            .totalWarnings(total)
+            .build();
+    }
 
     private List<DashboardDTO.DailyAttendanceGradeBreakdown> buildGradeBreakdown(List<Attendance> attendances, Company company) {
         if (attendances == null || attendances.isEmpty()) {

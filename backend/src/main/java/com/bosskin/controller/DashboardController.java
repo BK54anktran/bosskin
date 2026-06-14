@@ -47,6 +47,30 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getAnalytics(user, departmentId, year));
     }
 
+    @GetMapping("/kpi")
+    public ResponseEntity<DashboardDTO.KpiResponse> getKpi(
+        @AuthenticationPrincipal User user,
+        @RequestParam(required = false) Long departmentId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        if (!user.can("dashboard.view")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        return ResponseEntity.ok(dashboardService.getKpi(user, departmentId, date));
+    }
+
+    @GetMapping("/risks")
+    public ResponseEntity<DashboardDTO.RiskResponse> getRisks(
+        @AuthenticationPrincipal User user,
+        @RequestParam(required = false) Long departmentId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        if (!user.can("dashboard.view")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        return ResponseEntity.ok(dashboardService.getRisks(user, departmentId, date));
+    }
+
     @GetMapping("/range")
     public ResponseEntity<DashboardDTO.RangeResponse> getRangeDashboard(
         @AuthenticationPrincipal User user,

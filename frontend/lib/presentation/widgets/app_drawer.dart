@@ -259,6 +259,8 @@ class _AppDrawerState extends State<AppDrawer> {
             requiredPermission: 'PAYROLL_VIEW'),
         _DrawerItem(s.selfPayroll, Icons.receipt_long_outlined, AppRoutes.selfPayroll,
             requiredPermission: 'ATTENDANCE_SELF'),
+        _DrawerItem(s.reportScreenTitle, Icons.analytics_outlined, AppRoutes.reports,
+            requiredPermission: 'REPORT_VIEW'),
       ];
 }
 

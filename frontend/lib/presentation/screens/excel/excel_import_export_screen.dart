@@ -45,14 +45,18 @@ class _ExcelImportExportScreenState extends State<ExcelImportExportScreen> {
   }
 
   List<_TypeEntry> _buildTypes(AppLocalizations s) => [
-    _TypeEntry('employee',       s.excelModuleEmployee,       Icons.people_outline),
-    _TypeEntry('department',     s.excelModuleDepartment,     Icons.account_tree_outlined),
-    _TypeEntry('position',       s.excelModulePosition,       Icons.work_outline),
-    _TypeEntry('shift',          s.excelModuleShift,          Icons.schedule_outlined),
-    _TypeEntry('salary_grade',     s.excelModuleSalaryGrade,     Icons.bar_chart_outlined),
-    _TypeEntry('salary_formula',   s.excelModuleSalaryFormula,   Icons.functions_outlined),
-    _TypeEntry('formula_variable', s.excelModuleFormulaVariable, Icons.data_object_outlined),
-    _TypeEntry('payroll',          s.excelModulePayroll,          Icons.payments_outlined),
+    _TypeEntry('employee',          s.excelModuleEmployee,          Icons.people_outline),
+    _TypeEntry('department',        s.excelModuleDepartment,        Icons.account_tree_outlined),
+    _TypeEntry('position',          s.excelModulePosition,          Icons.work_outline),
+    _TypeEntry('shift',             s.excelModuleShift,             Icons.schedule_outlined),
+    _TypeEntry('shift_assignment',  s.excelModuleShiftAssignment,   Icons.calendar_month_outlined),
+    _TypeEntry('attendance',        s.excelModuleAttendance,        Icons.fingerprint_outlined),
+    _TypeEntry('salary_grade',      s.excelModuleSalaryGrade,       Icons.bar_chart_outlined),
+    _TypeEntry('salary_formula',    s.excelModuleSalaryFormula,     Icons.functions_outlined),
+    _TypeEntry('formula_variable',  s.excelModuleFormulaVariable,   Icons.data_object_outlined),
+    _TypeEntry('payroll',           s.excelModulePayroll,           Icons.payments_outlined),
+    _TypeEntry('leave_type',        s.excelModuleLeaveType,         Icons.event_available_outlined),
+    _TypeEntry('leave_grant',       s.excelModuleLeaveGrant,        Icons.beach_access_outlined),
   ];
 
   Future<void> _loadMeta() async {
@@ -436,6 +440,7 @@ class _DropZone extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 100,
+          width: double.infinity,
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFF),
             borderRadius: BorderRadius.circular(10),
@@ -447,6 +452,7 @@ class _DropZone extends StatelessWidget {
           ),
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(Icons.cloud_download_outlined,
                     size: 32, color: AppTheme.primary.withValues(alpha: 0.6)),
@@ -560,23 +566,22 @@ class _ImportSteps extends StatelessWidget {
               child: Divider(color: AppTheme.border, thickness: 1));
         }
         final (icon, label) = steps[i ~/ 2];
-        return Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            width: 32, height: 32,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
+        return Expanded(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 16, color: AppTheme.primary),
             ),
-            child: Icon(icon, size: 16, color: AppTheme.primary),
-          ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: 80,
-            child: Text(label,
+            const SizedBox(height: 4),
+            Text(label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
-          ),
-        ]);
+          ]),
+        );
       }),
     );
   }
@@ -775,11 +780,15 @@ class _HistoryCardState extends State<_HistoryCard> {
                   DropdownMenuItem(value: 'employee',        child: Text(s.excelModuleEmployee,          style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'department',      child: Text(s.excelModuleDepartment,        style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'position',        child: Text(s.excelModulePosition,          style: const TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: 'shift',           child: Text(s.excelModuleShift,             style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'shift',            child: Text(s.excelModuleShift,            style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'shift_assignment',child: Text(s.excelModuleShiftAssignment,  style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'attendance',      child: Text(s.excelModuleAttendance,       style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'salary_grade',     child: Text(s.excelModuleSalaryGrade,     style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'salary_formula',   child: Text(s.excelModuleSalaryFormula,   style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'formula_variable', child: Text(s.excelModuleFormulaVariable, style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'payroll',          child: Text(s.excelModulePayroll,          style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'leave_type',       child: Text(s.excelModuleLeaveType,       style: const TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'leave_grant',      child: Text(s.excelModuleLeaveGrant,      style: const TextStyle(fontSize: 12))),
                 ],
                 onChanged: (v) { setState(() { _filterModule = v; _page = 0; }); _load(); },
               ),
@@ -892,11 +901,14 @@ class _HistoryTileState extends State<_HistoryTile> {
       'department':      s.excelModuleDepartment,
       'position':        s.excelModulePosition,
       'shift':           s.excelModuleShift,
+      'shift_assignment': s.excelModuleShiftAssignment,
       'attendance':      s.excelModuleAttendance,
       'payroll':         s.excelModulePayroll,
       'salary_grade':     s.excelModuleSalaryGrade,
       'salary_formula':   s.excelModuleSalaryFormula,
       'formula_variable': s.excelModuleFormulaVariable,
+      'leave_type':       s.excelModuleLeaveType,
+      'leave_grant':      s.excelModuleLeaveGrant,
     };
     return widget.entry.module
         .split(',')
@@ -1058,3 +1070,4 @@ class _TypeEntry {
   final IconData icon;
   const _TypeEntry(this.key, this.label, this.icon);
 }
+

@@ -192,16 +192,17 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
   }
 
   static String _typeLabel(String type) => switch (type) {
-        'employee'       => 'Nhân viên',
-        'department'     => 'Phòng ban',
-        'position'       => 'Chức vụ',
-        'shift'          => 'Ca làm việc',
-        'attendance'     => 'Chấm công',
-        'payroll'        => 'Bảng lương',
-        'salary_grade'     => 'Bậc lương',
-        'salary_formula'   => 'Công thức lương',
-        'formula_variable' => 'Biến công thức',
-        _                  => type,
+        'employee'          => 'Nhân viên',
+        'department'        => 'Phòng ban',
+        'position'          => 'Chức vụ',
+        'shift'             => 'Ca làm việc',
+        'shift_assignment'  => 'Phân công ca',
+        'attendance'        => 'Chấm công',
+        'payroll'           => 'Bảng lương',
+        'salary_grade'      => 'Bậc lương',
+        'salary_formula'    => 'Công thức lương',
+        'formula_variable'  => 'Biến công thức',
+        _                   => type,
       };
 }
 

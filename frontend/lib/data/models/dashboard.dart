@@ -366,3 +366,193 @@ class DashboardData {
             : null,
       );
 }
+
+// ── KPI Summary ───────────────────────────────────────────────────────────────
+
+class DashboardKpiData {
+  final int totalActiveEmployees;
+  final int newHiresThisMonth;
+  final int newHiresLastMonth;
+  final int resignedThisMonth;
+  final double attritionRate;
+  final int todayPresent;
+  final int todayAbsent;
+  final int todayOnLeave;
+  final int todayLate;
+  final double todayAttendanceRate;
+  final double currentMonthPayroll;
+  final int currentMonthPayrollCount;
+  final String currentMonthPayrollStatus;
+  final DateTime date;
+
+  const DashboardKpiData({
+    required this.totalActiveEmployees,
+    required this.newHiresThisMonth,
+    required this.newHiresLastMonth,
+    required this.resignedThisMonth,
+    required this.attritionRate,
+    required this.todayPresent,
+    required this.todayAbsent,
+    required this.todayOnLeave,
+    required this.todayLate,
+    required this.todayAttendanceRate,
+    required this.currentMonthPayroll,
+    required this.currentMonthPayrollCount,
+    required this.currentMonthPayrollStatus,
+    required this.date,
+  });
+
+  factory DashboardKpiData.fromJson(Map<String, dynamic> j) => DashboardKpiData(
+        totalActiveEmployees: (j['totalActiveEmployees'] as num).toInt(),
+        newHiresThisMonth: (j['newHiresThisMonth'] as num).toInt(),
+        newHiresLastMonth: (j['newHiresLastMonth'] as num).toInt(),
+        resignedThisMonth: (j['resignedThisMonth'] as num).toInt(),
+        attritionRate: (j['attritionRate'] as num?)?.toDouble() ?? 0,
+        todayPresent: (j['todayPresent'] as num).toInt(),
+        todayAbsent: (j['todayAbsent'] as num).toInt(),
+        todayOnLeave: (j['todayOnLeave'] as num).toInt(),
+        todayLate: (j['todayLate'] as num).toInt(),
+        todayAttendanceRate: (j['todayAttendanceRate'] as num?)?.toDouble() ?? 0,
+        currentMonthPayroll: (j['currentMonthPayroll'] as num?)?.toDouble() ?? 0,
+        currentMonthPayrollCount: (j['currentMonthPayrollCount'] as num).toInt(),
+        currentMonthPayrollStatus: j['currentMonthPayrollStatus'] ?? 'DRAFT',
+        date: DateTime.parse(j['date']),
+      );
+}
+
+// ── Risk & Warnings ───────────────────────────────────────────────────────────
+
+class DashboardRiskData {
+  final List<DashboardRepeatedLateRisk> repeatedLate;
+  final List<DashboardMissingCheckoutRisk> missingCheckout;
+  final List<DashboardProbationEndingRisk> probationEnding;
+  final List<DashboardNoSalaryGradeRisk> noSalaryGrade;
+  final int totalWarnings;
+
+  const DashboardRiskData({
+    required this.repeatedLate,
+    required this.missingCheckout,
+    required this.probationEnding,
+    required this.noSalaryGrade,
+    required this.totalWarnings,
+  });
+
+  factory DashboardRiskData.fromJson(Map<String, dynamic> j) => DashboardRiskData(
+        repeatedLate: (j['repeatedLate'] as List? ?? const [])
+            .map((e) => DashboardRepeatedLateRisk.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        missingCheckout: (j['missingCheckout'] as List? ?? const [])
+            .map((e) => DashboardMissingCheckoutRisk.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        probationEnding: (j['probationEnding'] as List? ?? const [])
+            .map((e) => DashboardProbationEndingRisk.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        noSalaryGrade: (j['noSalaryGrade'] as List? ?? const [])
+            .map((e) => DashboardNoSalaryGradeRisk.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        totalWarnings: (j['totalWarnings'] as num).toInt(),
+      );
+}
+
+class DashboardRepeatedLateRisk {
+  final int employeeId;
+  final String employeeCode;
+  final String employeeName;
+  final String? departmentName;
+  final int lateDaysThisMonth;
+
+  const DashboardRepeatedLateRisk({
+    required this.employeeId,
+    required this.employeeCode,
+    required this.employeeName,
+    this.departmentName,
+    required this.lateDaysThisMonth,
+  });
+
+  factory DashboardRepeatedLateRisk.fromJson(Map<String, dynamic> j) =>
+      DashboardRepeatedLateRisk(
+        employeeId: (j['employeeId'] as num).toInt(),
+        employeeCode: j['employeeCode'] ?? '',
+        employeeName: j['employeeName'] ?? '',
+        departmentName: j['departmentName'],
+        lateDaysThisMonth: (j['lateDaysThisMonth'] as num).toInt(),
+      );
+}
+
+class DashboardMissingCheckoutRisk {
+  final int employeeId;
+  final String employeeCode;
+  final String employeeName;
+  final String? departmentName;
+  final String? checkInTime;
+
+  const DashboardMissingCheckoutRisk({
+    required this.employeeId,
+    required this.employeeCode,
+    required this.employeeName,
+    this.departmentName,
+    this.checkInTime,
+  });
+
+  factory DashboardMissingCheckoutRisk.fromJson(Map<String, dynamic> j) =>
+      DashboardMissingCheckoutRisk(
+        employeeId: (j['employeeId'] as num).toInt(),
+        employeeCode: j['employeeCode'] ?? '',
+        employeeName: j['employeeName'] ?? '',
+        departmentName: j['departmentName'],
+        checkInTime: j['checkInTime'] as String?,
+      );
+}
+
+class DashboardProbationEndingRisk {
+  final int employeeId;
+  final String employeeCode;
+  final String employeeName;
+  final String? departmentName;
+  final DateTime joinDate;
+  final DateTime probationEnd;
+  final int daysLeft;
+
+  const DashboardProbationEndingRisk({
+    required this.employeeId,
+    required this.employeeCode,
+    required this.employeeName,
+    this.departmentName,
+    required this.joinDate,
+    required this.probationEnd,
+    required this.daysLeft,
+  });
+
+  factory DashboardProbationEndingRisk.fromJson(Map<String, dynamic> j) =>
+      DashboardProbationEndingRisk(
+        employeeId: (j['employeeId'] as num).toInt(),
+        employeeCode: j['employeeCode'] ?? '',
+        employeeName: j['employeeName'] ?? '',
+        departmentName: j['departmentName'],
+        joinDate: DateTime.parse(j['joinDate']),
+        probationEnd: DateTime.parse(j['probationEnd']),
+        daysLeft: (j['daysLeft'] as num).toInt(),
+      );
+}
+
+class DashboardNoSalaryGradeRisk {
+  final int employeeId;
+  final String employeeCode;
+  final String employeeName;
+  final String? departmentName;
+
+  const DashboardNoSalaryGradeRisk({
+    required this.employeeId,
+    required this.employeeCode,
+    required this.employeeName,
+    this.departmentName,
+  });
+
+  factory DashboardNoSalaryGradeRisk.fromJson(Map<String, dynamic> j) =>
+      DashboardNoSalaryGradeRisk(
+        employeeId: (j['employeeId'] as num).toInt(),
+        employeeCode: j['employeeCode'] ?? '',
+        employeeName: j['employeeName'] ?? '',
+        departmentName: j['departmentName'],
+      );
+}

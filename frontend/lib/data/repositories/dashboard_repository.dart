@@ -44,6 +44,26 @@ class DashboardRepository {
     );
   }
 
+  Future<DashboardKpiData> getKpi({int? departmentId, DateTime? date}) async {
+    final params = <String, String>{};
+    if (departmentId != null) params['departmentId'] = departmentId.toString();
+    if (date != null) params['date'] = _fmt(date);
+    return _api.get(
+      '/dashboard/kpi${_buildQuery(params)}',
+      (data) => DashboardKpiData.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  Future<DashboardRiskData> getRisks({int? departmentId, DateTime? date}) async {
+    final params = <String, String>{};
+    if (departmentId != null) params['departmentId'] = departmentId.toString();
+    if (date != null) params['date'] = _fmt(date);
+    return _api.get(
+      '/dashboard/risks${_buildQuery(params)}',
+      (data) => DashboardRiskData.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
   String _fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 

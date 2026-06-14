@@ -185,7 +185,11 @@ public class AttendanceExcelService {
                 case UPDATE -> existing.isEmpty()
                     ? SheetImportResult.RowResult.warn(0, "warning.attendance.not_found")
                     : SheetImportResult.RowResult.ok(0);
-                case MERGE  -> SheetImportResult.RowResult.ok(0);
+                case MERGE  -> existing.isEmpty()
+                    ? SheetImportResult.RowResult.ok(0)
+                    : attendanceNoChange(existing.get(), row)
+                        ? SheetImportResult.RowResult.of(0, "OK", "preview.noChange")
+                        : SheetImportResult.RowResult.ok(0);
                 case DELETE -> existing.isEmpty()
                     ? SheetImportResult.RowResult.warn(0, "warning.attendance.not_found")
                     : SheetImportResult.RowResult.ok(0);
@@ -276,6 +280,29 @@ public class AttendanceExcelService {
     private static boolean notBlank(String s) { return s != null && !s.isBlank(); }
 
     private static String nvlStr(String s) { return s != null ? s : ""; }
+
+    private boolean attendanceNoChange(Attendance a, AttendanceDTO.ImportRow row) {
+        String rowStatus = row.getStatus() != null ? row.getStatus().trim() : "";
+        String curStatus = a.getStatus() != null ? a.getStatus().name() : "";
+        if (!rowStatus.isEmpty() && !rowStatus.equalsIgnoreCase(curStatus)) return false;
+        if (!nvlStr(row.getNote()).equals(nvlStr(a.getNote()))) return false;
+        if (!eqOverrideTime(row.getOverrideCheckIn(),  a.getOverrideCheckIn()))  return false;
+        if (!eqOverrideTime(row.getOverrideCheckOut(), a.getOverrideCheckOut())) return false;
+        if (!eqOverrideInt(row.getOverrideBreakMinutes(),    a.getOverrideBreakMinutes()))    return false;
+        if (!eqOverrideInt(row.getOverrideOtDayMinutes(),    a.getOverrideOtDayMinutes()))    return false;
+        if (!eqOverrideInt(row.getOverrideOtNightMinutes(),  a.getOverrideOtNightMinutes()))  return false;
+        return true;
+    }
+
+    private boolean eqOverrideTime(String rowVal, java.time.LocalTime curVal) {
+        if (rowVal == null || rowVal.isBlank()) return curVal == null;
+        try { return parseTimeStr(rowVal).equals(curVal); } catch (Exception e) { return false; }
+    }
+
+    private boolean eqOverrideInt(String rowVal, Integer curVal) {
+        if (rowVal == null || rowVal.isBlank()) return curVal == null;
+        try { return Integer.parseInt(rowVal.trim()) == (curVal != null ? curVal : 0); } catch (Exception e) { return false; }
+    }
 
     // ── Export ──────────────────────────────────────────────────────────────
 

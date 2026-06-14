@@ -209,6 +209,8 @@ class _AppShellState extends State<AppShell>
         const _NavItem('Import / Export', Icons.import_export_outlined,
             AppRoutes.excelImportExport,
             requiredPermission: 'EMPLOYEE_VIEW'),
+        _NavItem(s.reportScreenTitle, Icons.analytics_outlined, AppRoutes.reports,
+            requiredPermission: 'REPORT_VIEW'),
       ];
 
   static List<_NavItem> _bottomNavItems(AppLocalizations s) => [
@@ -243,6 +245,7 @@ class _AppShellState extends State<AppShell>
       AppRoutes.selfPayroll => s.selfPayroll,
       AppRoutes.profile => s.profile,
       AppRoutes.excelImportExport => 'Import / Export',
+      AppRoutes.reports => s.reportScreenTitle,
       _ => s.appName,
     };
   }

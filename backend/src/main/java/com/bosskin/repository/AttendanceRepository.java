@@ -309,6 +309,24 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         Pageable pageable
     );
 
+    // Nhân viên đã check-in hôm nay nhưng chưa check-out (risk: missing checkout)
+    @Query("""
+        SELECT a FROM Attendance a
+        JOIN FETCH a.employee e
+        JOIN FETCH e.department d
+        WHERE e.company.id = :companyId
+          AND a.date = :date
+          AND a.checkIn IS NOT NULL
+          AND a.checkOut IS NULL
+          AND a.overrideCheckOut IS NULL
+          AND a.deleted = false
+          AND (:deptId IS NULL OR d.id = :deptId)
+        ORDER BY a.checkIn
+        """)
+    List<Attendance> findMissingCheckout(@Param("companyId") Long companyId,
+                                          @Param("date") LocalDate date,
+                                          @Param("deptId") Long deptId);
+
     // Thống kê chấm công theo ngày — [date, presentCount, lateCount, absentCount, totalActualHours]
     @Query("""
         SELECT a.date,

@@ -2236,6 +2236,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get excelModuleShift => 'Ca làm việc';
 
   @override
+  String get excelModuleShiftAssignment => 'Phân công ca';
+
+  @override
   String get excelImportTitle => 'Nhập dữ liệu';
 
   @override
@@ -2370,6 +2373,118 @@ class AppLocalizationsVi extends AppLocalizations {
   String get excelModuleFormulaVariable => 'Biến công thức';
 
   @override
+  String get excelModuleLeaveType => 'Loại nghỉ phép';
+
+  @override
+  String get excelModuleLeaveGrant => 'Số dư phép';
+
+  @override
+  String get reportScreenTitle => 'Báo cáo nhân sự';
+
+  @override
+  String get reportScreenSubtitle => 'Xuất báo cáo kinh doanh ra Excel';
+
+  @override
+  String get reportGroupEmployee => 'Báo cáo nhân sự';
+
+  @override
+  String get reportGroupAttendance => 'Báo cáo chấm công';
+
+  @override
+  String get reportGroupPayroll => 'Báo cáo lương';
+
+  @override
+  String get reportGroupLeave => 'Báo cáo nghỉ phép';
+
+  @override
+  String get reportEmployee => 'Thống kê nhân sự';
+
+  @override
+  String get reportEmployeeDesc =>
+      'Nhân viên đang làm / đã nghỉ theo phòng ban';
+
+  @override
+  String get reportNewHires => 'Nhân viên mới';
+
+  @override
+  String get reportNewHiresDesc => 'Nhân viên vào làm trong kỳ được chọn';
+
+  @override
+  String get reportResigned => 'Nhân viên nghỉ việc';
+
+  @override
+  String get reportResignedDesc => 'Nhân viên đã nghỉ trong kỳ được chọn';
+
+  @override
+  String get reportAttendanceSummary => 'Tổng hợp chấm công';
+
+  @override
+  String get reportAttendanceSummaryDesc =>
+      'Số ngày có mặt, vắng mặt, trễ theo từng nhân viên mỗi tháng';
+
+  @override
+  String get reportLateCheckin => 'Báo cáo đi trễ';
+
+  @override
+  String get reportLateCheckinDesc => 'Nhân viên có tần suất đi trễ cao';
+
+  @override
+  String get reportOvertimeSummary => 'Tổng hợp tăng ca';
+
+  @override
+  String get reportOvertimeSummaryDesc =>
+      'Tổng giờ OT của từng nhân viên trong tháng';
+
+  @override
+  String get reportPayrollSummary => 'Tổng hợp chi phí lương';
+
+  @override
+  String get reportPayrollSummaryDesc =>
+      'Chi phí lương tháng phân theo phòng ban';
+
+  @override
+  String get reportPayrollDetail => 'Chi tiết bảng lương';
+
+  @override
+  String get reportPayrollDetailDesc =>
+      'Chi tiết lương của tất cả nhân viên trong tháng được chọn';
+
+  @override
+  String get reportLeaveBalance => 'Tổng hợp số dư phép';
+
+  @override
+  String get reportLeaveBalanceDesc =>
+      'Số ngày phép còn lại của từng nhân viên theo loại phép';
+
+  @override
+  String get reportLeaveUsage => 'Thống kê sử dụng phép';
+
+  @override
+  String get reportLeaveUsageDesc =>
+      'Các đơn nghỉ phép và số ngày đã dùng trong kỳ';
+
+  @override
+  String get reportFilterYear => 'Năm';
+
+  @override
+  String get reportFilterMonth => 'Tháng';
+
+  @override
+  String get reportFilterDepartment => 'Phòng ban';
+
+  @override
+  String get reportFilterAllDepts => 'Tất cả phòng ban';
+
+  @override
+  String get reportExportBtn => 'Xuất Excel';
+
+  @override
+  String get reportExporting => 'Đang xuất...';
+
+  @override
+  String get reportExportSuccess => 'Xuất báo cáo thành công';
+
+  @override
   String get dashboardErrorLoad => 'Không thể tải dữ liệu tổng quan';
 
   @override
@@ -2486,6 +2601,83 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get dashboardTooltipTotal => 'Tổng';
+
+  @override
+  String get dashboardTabOverview => 'Tổng quan';
+
+  @override
+  String get dashboardTabAttendance => 'Chấm công';
+
+  @override
+  String get dashboardKpiNewHires => 'Tuyển mới';
+
+  @override
+  String get dashboardKpiResigned => 'Nghỉ việc';
+
+  @override
+  String get dashboardKpiAttendanceRate => 'Tỷ lệ đi làm';
+
+  @override
+  String get dashboardKpiAttritionRate => 'Tỷ lệ nghỉ việc';
+
+  @override
+  String get dashboardKpiCurrentPayroll => 'Lương (MTD)';
+
+  @override
+  String get dashboardKpiThisMonth => 'tháng này';
+
+  @override
+  String get dashboardKpiVsLastMonth => 'so tháng trước';
+
+  @override
+  String get dashboardKpiNoChange => 'không đổi';
+
+  @override
+  String get dashboardRisks => 'Cảnh báo & Rủi ro';
+
+  @override
+  String get dashboardRisksRepeatedLate => 'Đi trễ nhiều lần';
+
+  @override
+  String get dashboardRisksMissingCheckout => 'Chưa chấm ra';
+
+  @override
+  String get dashboardRisksProbationEnding => 'Sắp hết thử việc';
+
+  @override
+  String get dashboardRisksNoSalaryGrade => 'Chưa có bậc lương';
+
+  @override
+  String get dashboardRisksNoWarnings => 'Không có cảnh báo';
+
+  @override
+  String dashboardRisksTimeThisMonth(int n) {
+    return '$n× tháng này';
+  }
+
+  @override
+  String dashboardRisksDaysLeft(int n) {
+    return 'còn $n ngày';
+  }
+
+  @override
+  String dashboardRisksCheckedInAt(String time) {
+    return 'Vào: $time';
+  }
+
+  @override
+  String dashboardRisksJoinedOn(String date) {
+    return 'Ngày vào: $date';
+  }
+
+  @override
+  String get dashboardAttendancePeriodWeek => '7 ngày qua';
+
+  @override
+  String get dashboardAttendancePeriodMonth => 'Tháng này';
+
+  @override
+  String get dashboardAttendancePeriodCustom => 'Khoảng tùy chọn';
 
   @override
   String get unitHour => 'giờ';

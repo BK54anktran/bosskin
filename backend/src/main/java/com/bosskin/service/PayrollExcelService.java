@@ -272,10 +272,10 @@ public class PayrollExcelService {
     private static final List<String> PAYSLIP_HEADER_KEYS = List.of(
         "excel.col.payroll.empCode",     "excel.col.payroll.empName",
         "excel.col.payroll.department",  "excel.col.payroll.salaryGrade",
-        "excel.col.payroll.payType",     "excel.col.payroll.presentDays",
-        "excel.col.payroll.dayHours",    "excel.col.payroll.nightHours",
-        "excel.col.payroll.otDay",       "excel.col.payroll.otNight",
-        "excel.col.payroll.baseSalary",  "excel.col.payroll.totalAllowance",
+        "excel.col.payroll.payType",     "excel.col.payroll.baseSalary",
+        "excel.col.payroll.presentDays", "excel.col.payroll.dayHours",
+        "excel.col.payroll.nightHours",  "excel.col.payroll.otDay",
+        "excel.col.payroll.otNight",     "excel.col.payroll.totalAllowance",
         "excel.col.payroll.totalIncome", "excel.col.payroll.gross",
         "excel.col.payroll.totalDeduction", "excel.col.payroll.net",
         "excel.col.payroll.status"
@@ -318,7 +318,7 @@ public class PayrollExcelService {
             CellStyle integerStyle = buildIntegerStyle(wb);
 
             // Column widths
-            int[] widths = {14,24,20,18,12, 10,10,10,10,10, 16,16,16, 16,16,16, 12};
+            int[] widths = {14,24,20,18,12, 16,10,10,10,10,10, 16,16,16, 16,16, 12};
             Row header = sheet.createRow(0);
             for (int i = 0; i < headers.size(); i++) {
                 Cell cell = header.createCell(i);
@@ -343,13 +343,13 @@ public class PayrollExcelService {
                 writeText(row, c++, gradeLabel, textStyle);
                 writeText(row, c++, safeText(p.getPayType()), textStyle);
 
+                writeMoney(row, c++, p.getBaseSalary(), moneyStyle);
+
                 writeInteger(row, c++, p.getPresentDays(), integerStyle);
                 writeDecimal(row, c++, p.getDayHours(), decimalStyle);
                 writeDecimal(row, c++, p.getNightHours(), decimalStyle);
                 writeDecimal(row, c++, p.getDayOt(), decimalStyle);
                 writeDecimal(row, c++, p.getNightOt(), decimalStyle);
-
-                writeMoney(row, c++, p.getBaseSalary(), moneyStyle);
 
                 // Tổng trợ cấp = allowanceEntries + allowance thủ công + bonus
                 BigDecimal totalAllowance = sumEntries(p.getAllowanceEntries())

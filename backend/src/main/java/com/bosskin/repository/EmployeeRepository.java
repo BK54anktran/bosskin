@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -93,4 +94,54 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
         @Param("status")    Employee.Status status,
         Pageable pageable
     );
+
+    // ── Dashboard KPI queries ─────────────────────────────────────────────────
+
+    @Query("""
+        SELECT COUNT(e) FROM Employee e
+        WHERE e.company.id = :companyId
+          AND e.joinDate BETWEEN :from AND :to
+          AND (:deptId IS NULL OR e.department.id = :deptId)
+        """)
+    long countJoinedBetween(@Param("companyId") Long companyId,
+                             @Param("from") LocalDate from,
+                             @Param("to") LocalDate to,
+                             @Param("deptId") Long deptId);
+
+    @Query(value = """
+        SELECT COUNT(*) FROM employees
+        WHERE company_id = :companyId
+          AND leave_date BETWEEN :from AND :to
+          AND (:deptId IS NULL OR department_id = :deptId)
+        """, nativeQuery = true)
+    long countResignedBetween(@Param("companyId") Long companyId,
+                               @Param("from") LocalDate from,
+                               @Param("to") LocalDate to,
+                               @Param("deptId") Long deptId);
+
+    @Query("""
+        SELECT e FROM Employee e
+        JOIN FETCH e.department d
+        WHERE e.company.id = :companyId
+          AND e.salaryGrade IS NULL
+          AND e.status = com.bosskin.entity.Employee.Status.ACTIVE
+          AND (:deptId IS NULL OR d.id = :deptId)
+        ORDER BY e.fullName
+        """)
+    List<Employee> findActiveMissingSalaryGrade(@Param("companyId") Long companyId,
+                                                @Param("deptId") Long deptId);
+
+    @Query("""
+        SELECT e FROM Employee e
+        JOIN FETCH e.department d
+        WHERE e.company.id = :companyId
+          AND e.status = com.bosskin.entity.Employee.Status.ACTIVE
+          AND e.joinDate BETWEEN :from AND :to
+          AND (:deptId IS NULL OR d.id = :deptId)
+        ORDER BY e.joinDate
+        """)
+    List<Employee> findActiveJoinedBetween(@Param("companyId") Long companyId,
+                                           @Param("from") LocalDate from,
+                                           @Param("to") LocalDate to,
+                                           @Param("deptId") Long deptId);
 }

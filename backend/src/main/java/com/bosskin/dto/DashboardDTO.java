@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public class DashboardDTO {
@@ -134,5 +135,73 @@ public class DashboardDTO {
         private String employeeName;
         private String departmentName;
         private long lateDays;
+    }
+
+    // ── KPI Summary (Overview tab) ─────────────────────────────────────────────
+
+    @Getter @Builder
+    public static class KpiResponse {
+        private int totalActiveEmployees;
+        private int newHiresThisMonth;
+        private int newHiresLastMonth;
+        private int resignedThisMonth;
+        private double attritionRate;
+        private long todayPresent;
+        private long todayAbsent;
+        private long todayOnLeave;
+        private long todayLate;
+        private double todayAttendanceRate;
+        private BigDecimal currentMonthPayroll;
+        private long currentMonthPayrollCount;
+        private String currentMonthPayrollStatus;
+        private LocalDate date;
+    }
+
+    // ── Risk & Warning Summary (Overview tab) ──────────────────────────────────
+
+    @Getter @Builder
+    public static class RiskResponse {
+        private List<RepeatedLateRisk> repeatedLate;
+        private List<MissingCheckoutRisk> missingCheckout;
+        private List<ProbationEndingRisk> probationEnding;
+        private List<NoSalaryGradeRisk> noSalaryGrade;
+        private int totalWarnings;
+    }
+
+    @Getter @Builder
+    public static class RepeatedLateRisk {
+        private Long employeeId;
+        private String employeeCode;
+        private String employeeName;
+        private String departmentName;
+        private int lateDaysThisMonth;
+    }
+
+    @Getter @Builder
+    public static class MissingCheckoutRisk {
+        private Long employeeId;
+        private String employeeCode;
+        private String employeeName;
+        private String departmentName;
+        private LocalTime checkInTime;
+    }
+
+    @Getter @Builder
+    public static class ProbationEndingRisk {
+        private Long employeeId;
+        private String employeeCode;
+        private String employeeName;
+        private String departmentName;
+        private LocalDate joinDate;
+        private LocalDate probationEnd;
+        private int daysLeft;
+    }
+
+    @Getter @Builder
+    public static class NoSalaryGradeRisk {
+        private Long employeeId;
+        private String employeeCode;
+        private String employeeName;
+        private String departmentName;
     }
 }

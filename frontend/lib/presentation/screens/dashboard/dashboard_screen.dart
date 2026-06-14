@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -12,12 +12,12 @@ import '../../widgets/department_picker_field.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
-
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-enum _DashTab { day, month, range, analytics }
+enum _DashTab { overview, attendance, analytics }
+enum _AttendancePeriod { week, month, custom }
 
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
@@ -26,26 +26,28 @@ class _DashboardScreenState extends State<DashboardScreen>
   late TabController _tabCtrl;
   int _cutoffDay = 1;
 
-  // Day tab
+  // Overview
   DashboardData? _dayData;
   bool _dayLoading = true;
   String? _dayError;
   DateTime _date = DateTime.now();
 
-  // Month tab
-  DashboardRangeData? _monthData;
-  bool _monthLoading = false;
-  String? _monthError;
-  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  DashboardKpiData? _kpiData;
+  bool _kpiLoading = true;
 
-  // Range tab
-  DashboardRangeData? _rangeData;
-  bool _rangeLoading = false;
-  String? _rangeError;
+  DashboardRiskData? _riskData;
+  bool _riskLoading = true;
+
+  // Attendance
+  _AttendancePeriod _attendancePeriod = _AttendancePeriod.week;
+  DashboardRangeData? _attendanceData;
+  bool _attendanceLoading = false;
+  String? _attendanceError;
   DateTime _rangeFrom = DateTime.now().subtract(const Duration(days: 6));
   DateTime _rangeTo = DateTime.now();
+  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
 
-  // Analytics tab
+  // Analytics
   DashboardAnalyticsData? _analyticsData;
   bool _analyticsLoading = false;
   String? _analyticsError;
@@ -58,11 +60,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 4, vsync: this);
+    _tabCtrl = TabController(length: 3, vsync: this);
     _tabCtrl.addListener(_onTabChanged);
     _loadDepts();
     _loadCutoffDay();
     _loadDay();
+    _loadKpi();
+    _loadRisks();
   }
 
   @override
@@ -73,12 +77,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _onTabChanged() {
-    // Goi ca khi dang va sau khi doi tab de khong bo sot
     final tab = _DashTab.values[_tabCtrl.index];
-    if (tab == _DashTab.month && _monthData == null && !_monthLoading) {
-      _loadMonth();
-    } else if (tab == _DashTab.range && _rangeData == null && !_rangeLoading) {
-      _loadRange();
+    if (tab == _DashTab.attendance && _attendanceData == null && !_attendanceLoading) {
+      _loadAttendance();
     } else if (tab == _DashTab.analytics && _analyticsData == null && !_analyticsLoading) {
       _loadAnalytics();
     }
@@ -101,10 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _loadDay() async {
-    setState(() {
-      _dayLoading = true;
-      _dayError = null;
-    });
+    setState(() { _dayLoading = true; _dayError = null; });
     try {
       final data = await _repo.get(departmentId: _deptId, date: _date);
       if (mounted) setState(() => _dayData = data);
@@ -112,6 +110,28 @@ class _DashboardScreenState extends State<DashboardScreen>
       if (mounted) setState(() => _dayError = e.toString());
     } finally {
       if (mounted) setState(() => _dayLoading = false);
+    }
+  }
+
+  Future<void> _loadKpi() async {
+    setState(() => _kpiLoading = true);
+    try {
+      final data = await _repo.getKpi(departmentId: _deptId, date: _date);
+      if (mounted) setState(() => _kpiData = data);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _kpiLoading = false);
+    }
+  }
+
+  Future<void> _loadRisks() async {
+    setState(() => _riskLoading = true);
+    try {
+      final data = await _repo.getRisks(departmentId: _deptId);
+      if (mounted) setState(() => _riskData = data);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _riskLoading = false);
     }
   }
 
@@ -130,42 +150,27 @@ class _DashboardScreenState extends State<DashboardScreen>
     return (from, to);
   }
 
-  Future<void> _loadMonth() async {
-    setState(() {
-      _monthLoading = true;
-      _monthError = null;
-    });
-    try {
-      final (from, to) = _monthPeriod();
-      final data = await _repo.getRange(from: from, to: to, departmentId: _deptId);
-      if (mounted) setState(() => _monthData = data);
-    } catch (e) {
-      if (mounted) setState(() => _monthError = e.toString());
-    } finally {
-      if (mounted) setState(() => _monthLoading = false);
-    }
-  }
+  (DateTime, DateTime) _currentAttendanceRange() => switch (_attendancePeriod) {
+    _AttendancePeriod.week => (DateTime.now().subtract(const Duration(days: 6)), DateTime.now()),
+    _AttendancePeriod.month => _monthPeriod(),
+    _AttendancePeriod.custom => (_rangeFrom, _rangeTo),
+  };
 
-  Future<void> _loadRange() async {
-    setState(() {
-      _rangeLoading = true;
-      _rangeError = null;
-    });
+  Future<void> _loadAttendance() async {
+    setState(() { _attendanceLoading = true; _attendanceError = null; });
     try {
-      final data = await _repo.getRange(from: _rangeFrom, to: _rangeTo, departmentId: _deptId);
-      if (mounted) setState(() => _rangeData = data);
+      final (from, to) = _currentAttendanceRange();
+      final data = await _repo.getRange(from: from, to: to, departmentId: _deptId);
+      if (mounted) setState(() => _attendanceData = data);
     } catch (e) {
-      if (mounted) setState(() => _rangeError = e.toString());
+      if (mounted) setState(() => _attendanceError = e.toString());
     } finally {
-      if (mounted) setState(() => _rangeLoading = false);
+      if (mounted) setState(() => _attendanceLoading = false);
     }
   }
 
   Future<void> _loadAnalytics() async {
-    setState(() {
-      _analyticsLoading = true;
-      _analyticsError = null;
-    });
+    setState(() { _analyticsLoading = true; _analyticsError = null; });
     try {
       final data = await _repo.getAnalytics(departmentId: _deptId, year: _analyticsYear);
       if (mounted) setState(() => _analyticsData = data);
@@ -180,33 +185,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     final tab = _DashTab.values[_tabCtrl.index];
     setState(() {
       _deptId = id;
-      _dayData = null;        _dayLoading = true;
-      _monthData = null;      _monthLoading = false;
-      _rangeData = null;      _rangeLoading = false;
-      _analyticsData = null;  _analyticsLoading = tab == _DashTab.analytics;
+      _dayData = null; _dayLoading = true;
+      _kpiData = null; _kpiLoading = true;
+      _riskData = null; _riskLoading = true;
+      _attendanceData = null; _attendanceLoading = false;
+      _analyticsData = null; _analyticsLoading = false;
     });
-    if (tab == _DashTab.day) {
-      _loadDay();
-    } else if (tab == _DashTab.month) _loadMonth();
-    else if (tab == _DashTab.range) _loadRange();
-    else _loadAnalytics();
-  }
-
-  Future<void> _pickAnalyticsYear() async {
-    final now = DateTime.now();
-    final picked = await showDialog<int>(
-      context: context,
-      builder: (ctx) => _YearPickerDialog(
-        initialYear: _analyticsYear,
-        minYear: 2020,
-        maxYear: now.year,
-        s: AppLocalizations.of(context),
-      ),
-    );
-    if (picked != null && picked != _analyticsYear) {
-      setState(() { _analyticsYear = picked; _analyticsData = null; });
-      _loadAnalytics();
-    }
+    _loadDay();
+    _loadKpi();
+    _loadRisks();
+    if (tab == _DashTab.attendance) _loadAttendance();
+    if (tab == _DashTab.analytics) _loadAnalytics();
   }
 
   Future<void> _pickDate() async {
@@ -217,26 +206,21 @@ class _DashboardScreenState extends State<DashboardScreen>
       lastDate: DateTime.now(),
     );
     if (picked != null && picked != _date) {
-      setState(() => _date = picked);
+      setState(() { _date = picked; _dayData = null; _kpiData = null; });
       _loadDay();
+      _loadKpi();
     }
   }
 
   Future<void> _pickMonth() async {
     final s = AppLocalizations.of(context);
-    int year = _month.year;
-    int month = _month.month;
     final result = await showDialog<DateTime>(
       context: context,
-      builder: (ctx) => _MonthPickerDialog(
-        initialYear: year,
-        initialMonth: month,
-        s: s,
-      ),
+      builder: (ctx) => _MonthPickerDialog(initialYear: _month.year, initialMonth: _month.month, s: s),
     );
     if (result != null) {
-      setState(() { _month = result; _monthData = null; });
-      _loadMonth();
+      setState(() { _month = result; _attendanceData = null; });
+      _loadAttendance();
     }
   }
 
@@ -248,8 +232,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       lastDate: _rangeTo,
     );
     if (picked != null && picked != _rangeFrom) {
-      setState(() { _rangeFrom = picked; _rangeData = null; });
-      _loadRange();
+      setState(() { _rangeFrom = picked; _attendanceData = null; });
+      _loadAttendance();
     }
   }
 
@@ -261,87 +245,77 @@ class _DashboardScreenState extends State<DashboardScreen>
       lastDate: DateTime.now(),
     );
     if (picked != null && picked != _rangeTo) {
-      setState(() { _rangeTo = picked; _rangeData = null; });
-      _loadRange();
+      setState(() { _rangeTo = picked; _attendanceData = null; });
+      _loadAttendance();
     }
   }
 
-  Widget _datePill(String label, VoidCallback onTap) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.calendar_today_outlined, size: 14),
-              if (label.isNotEmpty) ...[
-                const SizedBox(width: 5),
-                Text(label, style: const TextStyle(fontSize: 13)),
-              ],
-            ],
-          ),
-        ),
+  Future<void> _pickAnalyticsYear() async {
+    final picked = await showDialog<int>(
+      context: context,
+      builder: (ctx) => _YearPickerDialog(
+        initialYear: _analyticsYear,
+        minYear: 2020,
+        maxYear: DateTime.now().year,
+        s: AppLocalizations.of(context),
       ),
     );
+    if (picked != null && picked != _analyticsYear) {
+      setState(() { _analyticsYear = picked; _analyticsData = null; });
+      _loadAnalytics();
+    }
   }
+
+  Widget _datePill(String label, VoidCallback onTap) => MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.calendar_today_outlined, size: 14),
+                if (label.isNotEmpty) ...[
+                  const SizedBox(width: 5),
+                  Text(label, style: const TextStyle(fontSize: 13)),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     return Column(
       children: [
-        // Header row: title + filters
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(s.statistics,
-                  style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary)),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
               const SizedBox(width: 12),
-              // Date controls per tab
               AnimatedBuilder(
                 animation: _tabCtrl,
                 builder: (_, __) {
                   final tab = _DashTab.values[_tabCtrl.index];
-                  if (tab == _DashTab.day) {
+                  if (tab == _DashTab.overview) {
                     final isToday = DateUtils.isSameDay(_date, DateTime.now());
                     return _datePill(
-                        isToday ? s.today : DateFormat('dd/MM/yyyy').format(_date),
-                        _pickDate);
-                  }
-                  if (tab == _DashTab.month) {
-                    final (mFrom, mTo) = _monthPeriod();
-                    final label = _cutoffDay <= 1
-                        ? DateFormat('MM/yyyy').format(_month)
-                        : '${DateFormat('dd/MM').format(mFrom)} → ${DateFormat('dd/MM/yyyy').format(mTo)}';
-                    return _datePill(label, _pickMonth);
+                        isToday ? s.today : DateFormat('dd/MM/yyyy').format(_date), _pickDate);
                   }
                   if (tab == _DashTab.analytics) {
                     return _datePill(_analyticsYear.toString(), _pickAnalyticsYear);
                   }
-                  // range
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _datePill(DateFormat('dd/MM/yyyy').format(_rangeFrom), _pickRangeFrom),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6),
-                        child: Text('→', style: TextStyle(color: AppTheme.textSecondary)),
-                      ),
-                      _datePill(DateFormat('dd/MM/yyyy').format(_rangeTo), _pickRangeTo),
-                    ],
-                  );
+                  return const SizedBox.shrink();
                 },
               ),
               const Spacer(),
@@ -358,7 +332,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
         ),
-        // TabBar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Align(
@@ -368,63 +341,65 @@ class _DashboardScreenState extends State<DashboardScreen>
               isScrollable: true,
               tabAlignment: TabAlignment.start,
               tabs: [
-                Tab(text: s.dashboardTabDay),
-                Tab(text: s.dashboardTabMonth),
-                Tab(text: s.dashboardTabRange),
+                Tab(text: s.dashboardTabOverview),
+                Tab(text: s.dashboardTabAttendance),
                 Tab(text: s.dashboardTabAnalytics),
               ],
             ),
           ),
         ),
-        // Tab content
         Expanded(
           child: TabBarView(
             controller: _tabCtrl,
             children: [
-              // --- DAY ---
+              // OVERVIEW
               RefreshIndicator(
-                onRefresh: _loadDay,
+                onRefresh: () async { await Future.wait([_loadDay(), _loadKpi(), _loadRisks()]); },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                  child: _dayLoading
-                      ? const _LoadingBody()
-                      : _dayError != null
-                          ? _ErrorBody(message: s.dashboardErrorLoad, onRetry: _loadDay)
-                          : _DayBody(data: _dayData!, s: s),
+                  child: _OverviewBody(
+                    dayData: _dayData,
+                    dayLoading: _dayLoading,
+                    dayError: _dayError,
+                    kpiData: _kpiData,
+                    kpiLoading: _kpiLoading,
+                    riskData: _riskData,
+                    riskLoading: _riskLoading,
+                    s: s,
+                    onRetry: () { _loadDay(); _loadKpi(); _loadRisks(); },
+                  ),
                 ),
               ),
-              // --- MONTH ---
+              // ATTENDANCE
               RefreshIndicator(
-                onRefresh: _loadMonth,
+                onRefresh: _loadAttendance,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                  child: _monthLoading
-                      ? const _LoadingBody()
-                      : _monthError != null
-                          ? _ErrorBody(message: s.dashboardErrorLoad, onRetry: _loadMonth)
-                          : _monthData == null
-                              ? const _LoadingBody()
-                              : _RangeBody(data: _monthData!, s: s),
+                  child: _AttendanceBody(
+                    data: _attendanceData,
+                    loading: _attendanceLoading,
+                    error: _attendanceError,
+                    period: _attendancePeriod,
+                    rangeFrom: _rangeFrom,
+                    rangeTo: _rangeTo,
+                    month: _month,
+                    cutoffDay: _cutoffDay,
+                    s: s,
+                    onPeriodChanged: (p) {
+                      setState(() { _attendancePeriod = p; _attendanceData = null; });
+                      _loadAttendance();
+                    },
+                    onPickMonth: _pickMonth,
+                    onPickRangeFrom: _pickRangeFrom,
+                    onPickRangeTo: _pickRangeTo,
+                    onRetry: _loadAttendance,
+                    onAutoLoad: _loadAttendance,
+                  ),
                 ),
               ),
-              // --- RANGE ---
-              RefreshIndicator(
-                onRefresh: _loadRange,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                  child: _rangeLoading
-                      ? const _LoadingBody()
-                      : _rangeError != null
-                          ? _ErrorBody(message: s.dashboardErrorLoad, onRetry: _loadRange)
-                          : _rangeData == null
-                              ? const _LoadingBody()
-                              : _RangeBody(data: _rangeData!, s: s),
-                ),
-              ),
-              // --- ANALYTICS ---
+              // ANALYTICS
               RefreshIndicator(
                 onRefresh: _loadAnalytics,
                 child: SingleChildScrollView(
@@ -442,6 +417,478 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+// ── Overview tab ──────────────────────────────────────────────────────────────
+
+class _OverviewBody extends StatelessWidget {
+  final DashboardData? dayData;
+  final bool dayLoading;
+  final String? dayError;
+  final DashboardKpiData? kpiData;
+  final bool kpiLoading;
+  final DashboardRiskData? riskData;
+  final bool riskLoading;
+  final AppLocalizations s;
+  final VoidCallback onRetry;
+
+  const _OverviewBody({
+    required this.dayData,
+    required this.dayLoading,
+    required this.dayError,
+    required this.kpiData,
+    required this.kpiLoading,
+    required this.riskData,
+    required this.riskLoading,
+    required this.s,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (dayLoading && dayData == null) return const _LoadingBody();
+    if (dayError != null && dayData == null) {
+      return _ErrorBody(message: s.dashboardErrorLoad, onRetry: onRetry);
+    }
+    if (dayData == null) return const _LoadingBody();
+    final data = dayData!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _KpiStrip(kpiData: kpiData, loading: kpiLoading, s: s),
+        const SizedBox(height: 16),
+        _StatsGrid(stats: data.todayStats, s: s),
+        const SizedBox(height: 24),
+        LayoutBuilder(builder: (context, constraints) {
+          final wide = constraints.maxWidth > 700;
+          final right = Column(
+            children: [
+              _DayDonutChart(stats: data.todayStats, s: s),
+              const SizedBox(height: 16),
+              _RiskPanel(riskData: riskData, loading: riskLoading, s: s),
+              const SizedBox(height: 16),
+              _RecentPayrollCard(payroll: data.recentPayroll, s: s),
+            ],
+          );
+          if (wide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 3, child: _AttendanceTodayCard(rows: data.todayAttendance, s: s)),
+                const SizedBox(width: 20),
+                Expanded(flex: 2, child: right),
+              ],
+            );
+          }
+          return Column(children: [
+            _AttendanceTodayCard(rows: data.todayAttendance, s: s),
+            const SizedBox(height: 20),
+            right,
+          ]);
+        }),
+      ],
+    );
+  }
+}
+
+// ── KPI strip ─────────────────────────────────────────────────────────────────
+
+class _KpiStrip extends StatelessWidget {
+  final DashboardKpiData? kpiData;
+  final bool loading;
+  final AppLocalizations s;
+  const _KpiStrip({required this.kpiData, required this.loading, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading && kpiData == null) {
+      return const SizedBox(height: 72, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    }
+    final d = kpiData;
+    if (d == null) return const SizedBox.shrink();
+
+    final hiresChange = d.newHiresThisMonth - d.newHiresLastMonth;
+    final fmtCompact = NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final attrPct = '${d.attritionRate.toStringAsFixed(1)}%';
+    final attendPct = '${d.todayAttendanceRate.toStringAsFixed(0)}%';
+
+    return LayoutBuilder(builder: (context, constraints) {
+      final isNarrow = constraints.maxWidth < 600;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          _KpiCard(
+            label: s.dashboardKpiNewHires,
+            value: d.newHiresThisMonth.toString(),
+            sub: hiresChange == 0
+                ? s.dashboardKpiNoChange
+                : '${hiresChange > 0 ? '+' : ''}$hiresChange ${s.dashboardKpiVsLastMonth}',
+            subColor: hiresChange > 0 ? AppTheme.secondary : hiresChange < 0 ? AppTheme.error : AppTheme.textSecondary,
+            icon: Icons.person_add_outlined,
+            color: AppTheme.secondary,
+            minWidth: isNarrow ? (constraints.maxWidth - 12) / 2 : (constraints.maxWidth - 48) / 5,
+          ),
+          _KpiCard(
+            label: s.dashboardKpiResigned,
+            value: d.resignedThisMonth.toString(),
+            sub: s.dashboardKpiThisMonth,
+            subColor: d.resignedThisMonth > 0 ? AppTheme.error : AppTheme.textSecondary,
+            icon: Icons.logout_outlined,
+            color: d.resignedThisMonth > 0 ? AppTheme.error : AppTheme.textSecondary,
+            minWidth: isNarrow ? (constraints.maxWidth - 12) / 2 : (constraints.maxWidth - 48) / 5,
+          ),
+          _KpiCard(
+            label: s.dashboardKpiAttritionRate,
+            value: attrPct,
+            sub: s.dashboardKpiThisMonth,
+            subColor: AppTheme.textSecondary,
+            icon: Icons.trending_down_outlined,
+            color: d.attritionRate > 5 ? AppTheme.error : AppTheme.warning,
+            minWidth: isNarrow ? (constraints.maxWidth - 12) / 2 : (constraints.maxWidth - 48) / 5,
+          ),
+          _KpiCard(
+            label: s.dashboardKpiAttendanceRate,
+            value: attendPct,
+            sub: s.today,
+            subColor: AppTheme.textSecondary,
+            icon: Icons.how_to_reg_outlined,
+            color: d.todayAttendanceRate >= 80 ? AppTheme.secondary : AppTheme.warning,
+            minWidth: isNarrow ? (constraints.maxWidth - 12) / 2 : (constraints.maxWidth - 48) / 5,
+          ),
+          _KpiCard(
+            label: s.dashboardKpiCurrentPayroll,
+            value: d.currentMonthPayroll > 0 ? fmtCompact.format(d.currentMonthPayroll) : '—',
+            sub: d.currentMonthPayrollStatus,
+            subColor: AppTheme.textSecondary,
+            icon: Icons.payments_outlined,
+            color: AppTheme.primary,
+            minWidth: isNarrow ? constraints.maxWidth : (constraints.maxWidth - 48) / 5,
+          ),
+        ],
+      );
+    });
+  }
+}
+
+class _KpiCard extends StatelessWidget {
+  final String label, value, sub;
+  final Color color, subColor;
+  final IconData icon;
+  final double minWidth;
+  const _KpiCard({
+    required this.label,
+    required this.value,
+    required this.sub,
+    required this.color,
+    required this.subColor,
+    required this.icon,
+    required this.minWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: minWidth),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 38, height: 38,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(value,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: color)),
+                  Text(label,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  if (sub.isNotEmpty)
+                    Text(sub, style: TextStyle(fontSize: 10, color: subColor)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Risk panel ────────────────────────────────────────────────────────────────
+
+class _RiskPanel extends StatelessWidget {
+  final DashboardRiskData? riskData;
+  final bool loading;
+  final AppLocalizations s;
+  const _RiskPanel({required this.riskData, required this.loading, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, size: 18, color: AppTheme.warning),
+                const SizedBox(width: 8),
+                Text(s.dashboardRisks,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                if (riskData != null && riskData!.totalWarnings > 0) ...[
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.error.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text('${riskData!.totalWarnings}',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.error)),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (loading && riskData == null)
+              const Center(child: SizedBox(height: 32, width: 32, child: CircularProgressIndicator(strokeWidth: 2)))
+            else if (riskData == null || riskData!.totalWarnings == 0)
+              Row(children: [
+                const Icon(Icons.check_circle_outline, size: 16, color: AppTheme.secondary),
+                const SizedBox(width: 8),
+                Text(s.dashboardRisksNoWarnings,
+                    style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+              ])
+            else ...[
+              if (riskData!.repeatedLate.isNotEmpty)
+                _RiskSection(
+                  icon: Icons.schedule_outlined,
+                  color: AppTheme.warning,
+                  title: s.dashboardRisksRepeatedLate,
+                  count: riskData!.repeatedLate.length,
+                  items: riskData!.repeatedLate.take(3).map((r) =>
+                      '${r.employeeName} — ${s.dashboardRisksTimeThisMonth(r.lateDaysThisMonth)}').toList(),
+                ),
+              if (riskData!.missingCheckout.isNotEmpty)
+                _RiskSection(
+                  icon: Icons.exit_to_app_outlined,
+                  color: AppTheme.error,
+                  title: s.dashboardRisksMissingCheckout,
+                  count: riskData!.missingCheckout.length,
+                  items: riskData!.missingCheckout.take(3).map((r) =>
+                      r.checkInTime != null
+                          ? '${r.employeeName} — ${s.dashboardRisksCheckedInAt(r.checkInTime!)}'
+                          : r.employeeName).toList(),
+                ),
+              if (riskData!.probationEnding.isNotEmpty)
+                _RiskSection(
+                  icon: Icons.timer_outlined,
+                  color: AppTheme.primary,
+                  title: s.dashboardRisksProbationEnding,
+                  count: riskData!.probationEnding.length,
+                  items: riskData!.probationEnding.take(3).map((r) =>
+                      '${r.employeeName} — ${s.dashboardRisksDaysLeft(r.daysLeft)}').toList(),
+                ),
+              if (riskData!.noSalaryGrade.isNotEmpty)
+                _RiskSection(
+                  icon: Icons.money_off_outlined,
+                  color: AppTheme.error,
+                  title: s.dashboardRisksNoSalaryGrade,
+                  count: riskData!.noSalaryGrade.length,
+                  items: riskData!.noSalaryGrade.take(3).map((r) => r.employeeName).toList(),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RiskSection extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final int count;
+  final List<String> items;
+  const _RiskSection({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.count,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(title,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text('$count', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+              ),
+            ],
+          ),
+          ...items.map((name) => Padding(
+                padding: const EdgeInsets.only(left: 20, top: 3),
+                child: Text(name,
+                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              )),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Attendance tab ────────────────────────────────────────────────────────────
+
+class _AttendanceBody extends StatelessWidget {
+  final DashboardRangeData? data;
+  final bool loading;
+  final String? error;
+  final _AttendancePeriod period;
+  final DateTime rangeFrom, rangeTo, month;
+  final int cutoffDay;
+  final AppLocalizations s;
+  final ValueChanged<_AttendancePeriod> onPeriodChanged;
+  final VoidCallback onPickMonth, onPickRangeFrom, onPickRangeTo, onRetry, onAutoLoad;
+
+  const _AttendanceBody({
+    required this.data,
+    required this.loading,
+    required this.error,
+    required this.period,
+    required this.rangeFrom,
+    required this.rangeTo,
+    required this.month,
+    required this.cutoffDay,
+    required this.s,
+    required this.onPeriodChanged,
+    required this.onPickMonth,
+    required this.onPickRangeFrom,
+    required this.onPickRangeTo,
+    required this.onRetry,
+    required this.onAutoLoad,
+  });
+
+  String _monthLabel() {
+    if (cutoffDay <= 1) return DateFormat('MM/yyyy').format(month);
+    final prev = DateTime(month.year, month.month - 1);
+    final maxPrev = DateTime(prev.year, prev.month + 1, 0).day;
+    final from = DateTime(prev.year, prev.month, cutoffDay.clamp(1, maxPrev));
+    final maxCur = DateTime(month.year, month.month + 1, 0).day;
+    final to = DateTime(month.year, month.month, (cutoffDay - 1).clamp(1, maxCur));
+    return '${DateFormat('dd/MM').format(from)} → ${DateFormat('dd/MM/yyyy').format(to)}';
+  }
+
+  Widget _pill(String label, bool selected, VoidCallback onTap) => MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: selected ? AppTheme.primary : Colors.transparent,
+              border: Border.all(color: selected ? AppTheme.primary : Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(label,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: selected ? Colors.white : AppTheme.textPrimary)),
+          ),
+        ),
+      );
+
+  Widget _datePill(String label, VoidCallback onTap) => MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.calendar_today_outlined, size: 14),
+                const SizedBox(width: 5),
+                Text(label, style: const TextStyle(fontSize: 13)),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Period selector
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _pill(s.dashboardAttendancePeriodWeek, period == _AttendancePeriod.week,
+                () => onPeriodChanged(_AttendancePeriod.week)),
+            _pill(_monthLabel(), period == _AttendancePeriod.month,
+                period == _AttendancePeriod.month ? onPickMonth : () => onPeriodChanged(_AttendancePeriod.month)),
+            _pill(s.dashboardAttendancePeriodCustom, period == _AttendancePeriod.custom,
+                () => onPeriodChanged(_AttendancePeriod.custom)),
+            if (period == _AttendancePeriod.custom) ...[
+              _datePill(DateFormat('dd/MM/yyyy').format(rangeFrom), onPickRangeFrom),
+              const Text('→', style: TextStyle(color: AppTheme.textSecondary)),
+              _datePill(DateFormat('dd/MM/yyyy').format(rangeTo), onPickRangeTo),
+            ],
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Content
+        if (loading && data == null)
+          const _LoadingBody()
+        else if (error != null && data == null)
+          _ErrorBody(message: s.dashboardErrorLoad, onRetry: onRetry)
+        else if (data == null)
+          _AutoLoad(onLoad: onAutoLoad)
+        else
+          _RangeBody(data: data!, s: s),
       ],
     );
   }
@@ -504,54 +951,7 @@ class _ErrorBody extends StatelessWidget {
       );
 }
 
-// ── Day tab ───────────────────────────────────────────────────────────────────
-
-class _DayBody extends StatelessWidget {
-  final DashboardData data;
-  final AppLocalizations s;
-  const _DayBody({required this.data, required this.s});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _StatsGrid(stats: data.todayStats, s: s),
-        const SizedBox(height: 24),
-        LayoutBuilder(builder: (context, constraints) {
-          if (constraints.maxWidth > 700) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 3, child: _AttendanceTodayCard(rows: data.todayAttendance, s: s)),
-                const SizedBox(width: 20),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    children: [
-                      _DayDonutChart(stats: data.todayStats, s: s),
-                      const SizedBox(height: 16),
-                      _RecentPayrollCard(payroll: data.recentPayroll, s: s),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }
-          return Column(children: [
-            _AttendanceTodayCard(rows: data.todayAttendance, s: s),
-            const SizedBox(height: 20),
-            _DayDonutChart(stats: data.todayStats, s: s),
-            const SizedBox(height: 20),
-            _RecentPayrollCard(payroll: data.recentPayroll, s: s),
-          ]);
-        }),
-      ],
-    );
-  }
-}
-
-// ── Donut chart (day tab) ─────────────────────────────────────────────────────
+// ── Donut chart (overview) ────────────────────────────────────────────────────
 
 class _DayDonutChart extends StatelessWidget {
   final DashboardTodayStats stats;
@@ -564,7 +964,6 @@ class _DayDonutChart extends StatelessWidget {
     final onLeave = stats.onLeave.toDouble();
     final absent  = stats.absent.toDouble();
     final total   = present + onLeave + absent;
-
     if (total == 0) return const SizedBox.shrink();
 
     final sections = [
@@ -594,8 +993,7 @@ class _DayDonutChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.statistics,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(s.statistics, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             SizedBox(
               height: 160,
@@ -603,10 +1001,7 @@ class _DayDonutChart extends StatelessWidget {
                 children: [
                   Expanded(
                     child: PieChart(PieChartData(
-                      sections: sections,
-                      centerSpaceRadius: 36,
-                      sectionsSpace: 2,
-                    )),
+                      sections: sections, centerSpaceRadius: 36, sectionsSpace: 2)),
                   ),
                   const SizedBox(width: 16),
                   Column(
@@ -639,7 +1034,7 @@ class _DayDonutChart extends StatelessWidget {
       );
 }
 
-// ── Daily trend line chart (range/month tab) ─────────────────────────────────
+// ── Daily trend line chart (attendance tab) ───────────────────────────────────
 
 class _RangeDailyLineChart extends StatelessWidget {
   final List<DashboardRangeDailyPoint> trend;
@@ -649,7 +1044,6 @@ class _RangeDailyLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (trend.isEmpty) return const SizedBox.shrink();
-
     final maxY = trend
         .map((d) => d.present + d.late + d.absent + d.onLeave)
         .fold(0, (a, b) => a > b ? a : b)
@@ -668,14 +1062,9 @@ class _RangeDailyLineChart extends StatelessWidget {
 
     LineChartBarData makeLine(List<FlSpot> spots, Color color, {bool dashed = false}) =>
         LineChartBarData(
-          spots: spots,
-          isCurved: true,
-          curveSmoothness: 0.3,
-          color: color,
-          barWidth: 2,
+          spots: spots, isCurved: true, curveSmoothness: 0.3, color: color, barWidth: 2,
           dashArray: dashed ? [5, 3] : null,
-          dotData: const FlDotData(show: false),
-          belowBarData: BarAreaData(show: false),
+          dotData: const FlDotData(show: false), belowBarData: BarAreaData(show: false),
         );
 
     Widget legendDot(Color color, String label) => Row(
@@ -697,15 +1086,12 @@ class _RangeDailyLineChart extends StatelessWidget {
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             LayoutBuilder(builder: (context, constraints) {
-              final step = ((trend.length / ((constraints.maxWidth - 28) / 28))
-                  .ceil()).clamp(1, trend.length);
+              final step = ((trend.length / ((constraints.maxWidth - 28) / 28)).ceil()).clamp(1, trend.length);
               return SizedBox(
                 height: 200,
                 child: LineChart(LineChartData(
-                  minX: 0,
-                  maxX: (trend.length - 1).toDouble(),
-                  minY: 0,
-                  maxY: (maxY * 1.25).ceilToDouble(),
+                  minX: 0, maxX: (trend.length - 1).toDouble(),
+                  minY: 0, maxY: (maxY * 1.25).ceilToDouble(),
                   clipData: const FlClipData.all(),
                   gridData: FlGridData(
                     drawVerticalLine: false,
@@ -713,55 +1099,41 @@ class _RangeDailyLineChart extends StatelessWidget {
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 28,
-                        interval: 1,
-                        getTitlesWidget: (v, _) {
-                          final i = v.toInt();
-                          if (i < 0 || i >= trend.length) return const SizedBox.shrink();
-                          if (i % step != 0) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              DateFormat('dd/MM').format(trend[i].date),
-                              style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 28,
-                        getTitlesWidget: (v, _) => Text(
-                          v.toInt().toString(),
-                          style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary),
-                        ),
-                      ),
-                    ),
+                    bottomTitles: AxisTitles(sideTitles: SideTitles(
+                      showTitles: true, reservedSize: 28, interval: 1,
+                      getTitlesWidget: (v, _) {
+                        final i = v.toInt();
+                        if (i < 0 || i >= trend.length || i % step != 0) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(DateFormat('dd/MM').format(trend[i].date),
+                              style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                        );
+                      },
+                    )),
+                    leftTitles: AxisTitles(sideTitles: SideTitles(
+                      showTitles: true, reservedSize: 28,
+                      getTitlesWidget: (v, _) => Text(v.toInt().toString(),
+                          style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                    )),
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: (touchedSpots) {
-                        return touchedSpots.map((spot) {
-                          if (spot.barIndex != 0) return null;
-                          final i = spot.spotIndex;
-                          if (i < 0 || i >= trend.length) return null;
-                          final d = trend[i];
-                          return LineTooltipItem(
-                            '${DateFormat('dd/MM/yyyy').format(d.date)}\n'
-                            '${s.present}: ${d.present + d.late}\n'
-                            '${s.dashboardRangeTotalLate}: ${d.late}\n'
-                            '${s.dashboardRangeTotalAbsent}: ${d.absent}',
-                            const TextStyle(color: Colors.white, fontSize: 11, height: 1.5),
-                          );
-                        }).toList();
-                      },
+                      getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                        if (spot.barIndex != 0) return null;
+                        final i = spot.spotIndex;
+                        if (i < 0 || i >= trend.length) return null;
+                        final d = trend[i];
+                        return LineTooltipItem(
+                          '${DateFormat('dd/MM/yyyy').format(d.date)}\n'
+                          '${s.present}: ${d.present + d.late}\n'
+                          '${s.dashboardRangeTotalLate}: ${d.late}\n'
+                          '${s.dashboardRangeTotalAbsent}: ${d.absent}',
+                          const TextStyle(color: Colors.white, fontSize: 11, height: 1.5),
+                        );
+                      }).toList(),
                     ),
                   ),
                   lineBarsData: [
@@ -790,7 +1162,7 @@ class _RangeDailyLineChart extends StatelessWidget {
   }
 }
 
-// ── Range / Month tab ─────────────────────────────────────────────────────────
+// ── Range body (attendance tab content) ──────────────────────────────────────
 
 class _RangeBody extends StatelessWidget {
   final DashboardRangeData data;
@@ -801,16 +1173,11 @@ class _RangeBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final stats = data.stats;
     final items = [
-      _StatItem(s.employees, stats.totalEmployees.toString(),
-          Icons.people_outline, AppTheme.primary),
-      _StatItem(s.dashboardRangeTotalWorkDays, stats.totalWorkDays.toString(),
-          Icons.check_circle_outline, AppTheme.secondary),
-      _StatItem(s.dashboardRangeTotalLate, stats.totalLateDays.toString(),
-          Icons.schedule_outlined, AppTheme.warning),
-      _StatItem(s.dashboardRangeTotalAbsent, stats.totalAbsentDays.toString(),
-          Icons.cancel_outlined, AppTheme.error),
+      _StatItem(s.employees, stats.totalEmployees.toString(), Icons.people_outline, AppTheme.primary),
+      _StatItem(s.dashboardRangeTotalWorkDays, stats.totalWorkDays.toString(), Icons.check_circle_outline, AppTheme.secondary),
+      _StatItem(s.dashboardRangeTotalLate, stats.totalLateDays.toString(), Icons.schedule_outlined, AppTheme.warning),
+      _StatItem(s.dashboardRangeTotalAbsent, stats.totalAbsentDays.toString(), Icons.cancel_outlined, AppTheme.error),
     ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -855,24 +1222,20 @@ class _RangeTableHeader extends StatelessWidget {
       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary));
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Text(s.employees,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-          ),
-          Expanded(flex: 1, child: _headerCell(s.dashboardRangePresent)),
-          Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalLate)),
-          Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalAbsent)),
-          Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalLeave)),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Expanded(flex: 3,
+                child: Text(s.employees,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary))),
+            Expanded(flex: 1, child: _headerCell(s.dashboardRangePresent)),
+            Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalLate)),
+            Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalAbsent)),
+            Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalLeave)),
+          ],
+        ),
+      );
 }
 
 class _RangeTableRow extends StatelessWidget {
@@ -961,10 +1324,8 @@ class _StatsGridRaw extends StatelessWidget {
       const cardHeight = 88.0;
       return GridView.count(
         crossAxisCount: crossCount,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        crossAxisSpacing: 12, mainAxisSpacing: 12,
+        shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
         childAspectRatio: cardWidth / cardHeight,
         children: items.map(_buildCard).toList(),
       );
@@ -977,8 +1338,7 @@ class _StatsGridRaw extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 44, height: 44,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
@@ -1024,16 +1384,13 @@ class _AttendanceTodayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.todayAttendance,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(s.todayAttendance, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             if (rows.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Center(
-                  child: Text(s.dashboardNoAttendance,
-                      style: const TextStyle(color: AppTheme.textSecondary)),
-                ),
+                child: Center(child: Text(s.dashboardNoAttendance,
+                    style: const TextStyle(color: AppTheme.textSecondary))),
               )
             else
               ...rows.map((r) => _AttendanceRow(row: r, s: s)),
@@ -1119,29 +1476,22 @@ class _RecentPayrollCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt =
-        NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.recentPayroll,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(s.recentPayroll, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             if (payroll != null)
-              Text(
-                DateFormat.yMMMM(s.localeName)
-                    .format(DateTime(payroll!.year, payroll!.month)),
-                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-              ),
+              Text(DateFormat.yMMMM(s.localeName).format(DateTime(payroll!.year, payroll!.month)),
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 16),
             if (payroll == null)
-              Center(
-                child: Text(s.dashboardNoPayroll,
-                    style: const TextStyle(color: AppTheme.textSecondary)),
-              )
+              Center(child: Text(s.dashboardNoPayroll,
+                  style: const TextStyle(color: AppTheme.textSecondary)))
             else ...[
               _buildStat(s.totalSalary, currencyFmt.format(payroll!.totalNetSalary), AppTheme.primary),
               const Divider(height: 24),
@@ -1164,26 +1514,18 @@ class _RecentPayrollCard extends StatelessWidget {
       );
 }
 
-// ── Month picker dialog ───────────────────────────────────────────────────────
+// ── Month / Year pickers ──────────────────────────────────────────────────────
 
 class _MonthPickerDialog extends StatefulWidget {
-  final int initialYear;
-  final int initialMonth;
+  final int initialYear, initialMonth;
   final AppLocalizations s;
-  const _MonthPickerDialog({
-    required this.initialYear,
-    required this.initialMonth,
-    required this.s,
-  });
-
+  const _MonthPickerDialog({required this.initialYear, required this.initialMonth, required this.s});
   @override
   State<_MonthPickerDialog> createState() => _MonthPickerDialogState();
 }
 
 class _MonthPickerDialogState extends State<_MonthPickerDialog> {
-  late int _year;
-  late int _month;
-
+  late int _year, _month;
   @override
   void initState() {
     super.initState();
@@ -1198,10 +1540,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: () => setState(() => _year--),
-          ),
+          IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => setState(() => _year--)),
           Text('$_year', style: const TextStyle(fontWeight: FontWeight.w600)),
           IconButton(
             icon: const Icon(Icons.chevron_right),
@@ -1212,14 +1551,9 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
       content: SizedBox(
         width: 280,
         child: GridView.builder(
-          shrinkWrap: true,
-          itemCount: 12,
+          shrinkWrap: true, itemCount: 12,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            childAspectRatio: 1.4,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-          ),
+            crossAxisCount: 4, childAspectRatio: 1.4, mainAxisSpacing: 8, crossAxisSpacing: 8),
           itemBuilder: (_, i) {
             final m = i + 1;
             final isFuture = _year == now.year && m > now.month;
@@ -1238,11 +1572,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                      color: isSelected
-                          ? Colors.white
-                          : isFuture
-                              ? AppTheme.textSecondary
-                              : AppTheme.textPrimary,
+                      color: isSelected ? Colors.white : isFuture ? AppTheme.textSecondary : AppTheme.textPrimary,
                     ),
                   ),
                 ),
@@ -1252,45 +1582,25 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(widget.s.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, DateTime(_year, _month)),
-          child: Text(widget.s.apply),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.s.cancel)),
+        FilledButton(onPressed: () => Navigator.pop(context, DateTime(_year, _month)), child: Text(widget.s.apply)),
       ],
     );
   }
 }
 
-// ── Year picker dialog ────────────────────────────────────────────────────────
-
 class _YearPickerDialog extends StatefulWidget {
-  final int initialYear;
-  final int minYear;
-  final int maxYear;
+  final int initialYear, minYear, maxYear;
   final AppLocalizations s;
-  const _YearPickerDialog({
-    required this.initialYear,
-    required this.minYear,
-    required this.maxYear,
-    required this.s,
-  });
-
+  const _YearPickerDialog({required this.initialYear, required this.minYear, required this.maxYear, required this.s});
   @override
   State<_YearPickerDialog> createState() => _YearPickerDialogState();
 }
 
 class _YearPickerDialogState extends State<_YearPickerDialog> {
   late int _year;
-
   @override
-  void initState() {
-    super.initState();
-    _year = widget.initialYear;
-  }
+  void initState() { super.initState(); _year = widget.initialYear; }
 
   @override
   Widget build(BuildContext context) {
@@ -1302,11 +1612,7 @@ class _YearPickerDialogState extends State<_YearPickerDialog> {
           shrinkWrap: true,
           itemCount: widget.maxYear - widget.minYear + 1,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            childAspectRatio: 1.6,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-          ),
+            crossAxisCount: 4, childAspectRatio: 1.6, mainAxisSpacing: 8, crossAxisSpacing: 8),
           itemBuilder: (_, i) {
             final y = widget.maxYear - i;
             final isSelected = y == _year;
@@ -1319,14 +1625,12 @@ class _YearPickerDialogState extends State<_YearPickerDialog> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Text(
-                    y.toString(),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
-                    ),
-                  ),
+                  child: Text(y.toString(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                        color: isSelected ? Colors.white : AppTheme.textPrimary,
+                      )),
                 ),
               ),
             );
@@ -1334,14 +1638,8 @@ class _YearPickerDialogState extends State<_YearPickerDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(widget.s.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, _year),
-          child: Text(widget.s.apply),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.s.cancel)),
+        FilledButton(onPressed: () => Navigator.pop(context, _year), child: Text(widget.s.apply)),
       ],
     );
   }
@@ -1423,8 +1721,7 @@ class _SalaryTrendChart extends StatelessWidget {
             SizedBox(
               height: 200,
               child: LineChart(LineChartData(
-                minX: 1, maxX: 12,
-                minY: 0, maxY: maxY * 1.2,
+                minX: 1, maxX: 12, minY: 0, maxY: maxY * 1.2,
                 gridData: FlGridData(
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
@@ -1432,25 +1729,18 @@ class _SalaryTrendChart extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 24,
-                    interval: 1,
+                    showTitles: true, reservedSize: 24, interval: 1,
                     getTitlesWidget: (v, _) {
                       final month = v.toInt();
                       if (month < 1 || month > 12) return const SizedBox.shrink();
-                      return Text(
-                        DateFormat.MMM().format(DateTime(2000, month)),
-                        style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
-                      );
+                      return Text(DateFormat.MMM().format(DateTime(2000, month)),
+                          style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary));
                     },
                   )),
                   leftTitles: AxisTitles(sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 44,
-                    getTitlesWidget: (v, _) => Text(
-                      fmt.format(v),
-                      style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary),
-                    ),
+                    showTitles: true, reservedSize: 44,
+                    getTitlesWidget: (v, _) => Text(fmt.format(v),
+                        style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
                   )),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -1465,22 +1755,12 @@ class _SalaryTrendChart extends StatelessWidget {
                 ),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: AppTheme.primary,
-                    barWidth: 2.5,
+                    spots: spots, isCurved: true, color: AppTheme.primary, barWidth: 2.5,
                     dotData: FlDotData(
                       getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-                        radius: 3.5,
-                        color: AppTheme.primary,
-                        strokeColor: Colors.white,
-                        strokeWidth: 1.5,
-                      ),
+                        radius: 3.5, color: AppTheme.primary, strokeColor: Colors.white, strokeWidth: 1.5),
                     ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: AppTheme.primary.withValues(alpha: 0.08),
-                    ),
+                    belowBarData: BarAreaData(show: true, color: AppTheme.primary.withValues(alpha: 0.08)),
                   ),
                 ],
               )),
@@ -1496,7 +1776,6 @@ class _DailyTimelineChart extends StatefulWidget {
   final List<DashboardDailyAttendanceStat> trend;
   final AppLocalizations s;
   const _DailyTimelineChart({required this.trend, required this.s});
-
   @override
   State<_DailyTimelineChart> createState() => _DailyTimelineChartState();
 }
@@ -1510,58 +1789,33 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
     final s = widget.s;
     if (trend.isEmpty) return const SizedBox.shrink();
 
-    final maxHours  = trend.map((d) => d.totalHours).fold(0.0, (a, b) => a > b ? a : b);
-    final maxCost   = trend.map((d) => d.estimatedCost).fold(0.0, (a, b) => a > b ? a : b);
+    final maxHours = trend.map((d) => d.totalHours).fold(0.0, (a, b) => a > b ? a : b);
+    final maxCost  = trend.map((d) => d.estimatedCost).fold(0.0, (a, b) => a > b ? a : b);
     if (maxHours == 0 && maxCost == 0) return const SizedBox.shrink();
-    // Hien thi toi da 30 ngay, neu nhieu hon thi lay 30 gan nhat
     final display = trend.length > 30 ? trend.sublist(trend.length - 30) : trend;
     final scale = maxCost > 0 && maxHours > 0 ? maxCost / maxHours : 1.0;
-    final hoursSpots = display.asMap().entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.totalHours))
-        .toList();
-    final costSpots = display.asMap().entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.estimatedCost / scale))
-        .toList();
+
+    final hoursSpots = display.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.totalHours)).toList();
+    final costSpots  = display.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.estimatedCost / scale)).toList();
+
     final tooltipIndex = _hoverIndex != null && _hoverIndex! >= 0 && _hoverIndex! < display.length ? _hoverIndex! : null;
     final selectedDay = tooltipIndex == null ? null : display[tooltipIndex];
+
     final hoursBar = LineChartBarData(
-      spots: hoursSpots,
-      isCurved: true,
-      curveSmoothness: 0.3,
-      color: AppTheme.primary,
-      barWidth: 2.5,
-      dotData: FlDotData(
-        getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-          radius: 3,
-          color: AppTheme.primary,
-          strokeColor: Colors.white,
-          strokeWidth: 1.5,
-        ),
-      ),
-      belowBarData: BarAreaData(
-        show: true,
-        color: AppTheme.primary.withValues(alpha: 0.06),
-      ),
+      spots: hoursSpots, isCurved: true, curveSmoothness: 0.3, color: AppTheme.primary, barWidth: 2.5,
+      dotData: FlDotData(getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+          radius: 3, color: AppTheme.primary, strokeColor: Colors.white, strokeWidth: 1.5)),
+      belowBarData: BarAreaData(show: true, color: AppTheme.primary.withValues(alpha: 0.06)),
     );
     final costBar = LineChartBarData(
-      spots: costSpots,
-      isCurved: true,
-      curveSmoothness: 0.3,
-      color: Colors.purple.shade400,
-      barWidth: 2.5,
-      dashArray: [5, 3],
-      dotData: FlDotData(
-        getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-          radius: 3,
-          color: Colors.purple.shade400,
-          strokeColor: Colors.white,
-          strokeWidth: 1.5,
-        ),
-      ),
+      spots: costSpots, isCurved: true, curveSmoothness: 0.3,
+      color: Colors.purple.shade400, barWidth: 2.5, dashArray: [5, 3],
+      dotData: FlDotData(getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+          radius: 3, color: Colors.purple.shade400, strokeColor: Colors.white, strokeWidth: 1.5)),
     );
 
-    final fmtCompact = NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '\u20AB', decimalDigits: 0);
-    final fmtCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '\u20AB', decimalDigits: 0);
+    final fmtCompact  = NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final fmtCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
 
     return Card(
       child: Padding(
@@ -1575,127 +1829,102 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
             Text(s.dashboardAnalyticsDailyTimelineSubtitle,
                 style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
             const SizedBox(height: 16),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                const tooltipWidth = 285.0;
-                final left = selectedDay == null
-                    ? 12.0
-                    : ((tooltipIndex! / (display.length > 1 ? (display.length - 1) : 1)) *
-                            (constraints.maxWidth - tooltipWidth - 24))
-                        .clamp(12.0, constraints.maxWidth - tooltipWidth - 12.0)
-                        .toDouble();
-                return SizedBox(
-                  height: 240,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      LineChart(
-                        LineChartData(
-                  minY: 0,
-                  maxY: maxHours * 1.25,
-                  clipData: const FlClipData.all(),
-                  gridData: FlGridData(
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (_) =>
-                        FlLine(color: Colors.grey.shade100, strokeWidth: 1),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 32,
-                        interval: 1,
-                        getTitlesWidget: (v, _) {
-                          final i = v.toInt();
-                          if (i < 0 || i >= display.length) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              DateFormat('dd/MM/yyyy').format(display[i].date),
-                              style: const TextStyle(fontSize: 8, color: AppTheme.textSecondary),
+            LayoutBuilder(builder: (context, constraints) {
+              const tooltipWidth = 285.0;
+              final left = selectedDay == null
+                  ? 12.0
+                  : ((tooltipIndex! / (display.length > 1 ? (display.length - 1) : 1)) *
+                          (constraints.maxWidth - tooltipWidth - 24))
+                      .clamp(12.0, constraints.maxWidth - tooltipWidth - 12.0)
+                      .toDouble();
+              return SizedBox(
+                height: 240,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    LineChart(LineChartData(
+                      minY: 0, maxY: maxHours * 1.25,
+                      clipData: const FlClipData.all(),
+                      gridData: FlGridData(
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(sideTitles: SideTitles(
+                          showTitles: true, reservedSize: 32, interval: 1,
+                          getTitlesWidget: (v, _) {
+                            final i = v.toInt();
+                            if (i < 0 || i >= display.length) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(DateFormat('dd/MM/yyyy').format(display[i].date),
+                                  style: const TextStyle(fontSize: 8, color: AppTheme.textSecondary)),
+                            );
+                          },
+                        )),
+                        leftTitles: AxisTitles(
+                          axisNameWidget: Text(s.dashboardAnalyticsHours,
+                              style: const TextStyle(fontSize: 9, color: AppTheme.primary)),
+                          sideTitles: SideTitles(
+                            showTitles: true, reservedSize: 64,
+                            getTitlesWidget: (v, meta) => SideTitleWidget(
+                              axisSide: meta.axisSide, space: 2,
+                              child: Text('${v.toInt()}h',
+                                  style: const TextStyle(fontSize: 9, color: AppTheme.primary)),
                             ),
-                          );
+                          ),
+                        ),
+                        rightTitles: AxisTitles(
+                          axisNameWidget: Text(s.totalSalary,
+                              style: TextStyle(fontSize: 9, color: Colors.purple.shade400)),
+                          sideTitles: SideTitles(
+                            showTitles: true, reservedSize: 64,
+                            getTitlesWidget: (v, meta) => SideTitleWidget(
+                              axisSide: meta.axisSide, space: 8,
+                              child: Text(
+                                v.abs() < 0.001 ? '0 ₫' : fmtCompact.format(v * scale),
+                                style: TextStyle(fontSize: 9, color: Colors.purple.shade400),
+                              ),
+                            ),
+                          ),
+                        ),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      lineTouchData: LineTouchData(
+                        enabled: true,
+                        handleBuiltInTouches: false,
+                        mouseCursorResolver: (event, response) {
+                          if (response == null || response.lineBarSpots == null || response.lineBarSpots!.isEmpty) {
+                            return SystemMouseCursors.basic;
+                          }
+                          return SystemMouseCursors.click;
+                        },
+                        touchCallback: (event, response) {
+                          if (event is FlPointerExitEvent) {
+                            if (_hoverIndex != null) setState(() => _hoverIndex = null);
+                            return;
+                          }
+                          final spots = response?.lineBarSpots;
+                          if (spots == null || spots.isEmpty) return;
+                          final index = spots.first.spotIndex;
+                          if (index != _hoverIndex) setState(() => _hoverIndex = index);
                         },
                       ),
-                    ),
-                    leftTitles: AxisTitles(
-                      axisNameWidget: Text(s.dashboardAnalyticsHours,
-                          style: const TextStyle(fontSize: 9, color: AppTheme.primary)),
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 64,
-                        getTitlesWidget: (v, meta) => SideTitleWidget(
-                          axisSide: meta.axisSide,
-                          space: 2,
-                          child: Text(
-                            '${v.toInt()}h',
-                            style: const TextStyle(fontSize: 9, color: AppTheme.primary),
-                          ),
+                      lineBarsData: [hoursBar, costBar],
+                    )),
+                    if (selectedDay != null)
+                      Positioned(
+                        top: -156, left: left,
+                        child: IgnorePointer(
+                          child: _DailyTimelineHoverTooltip(
+                            day: selectedDay, width: tooltipWidth, fmtCurrency: fmtCurrency, s: s),
                         ),
                       ),
-                    ),
-                    rightTitles: AxisTitles(
-                      axisNameWidget: Text(s.totalSalary,
-                          style: TextStyle(fontSize: 9, color: Colors.purple.shade400)),
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 64,
-                        getTitlesWidget: (v, meta) => SideTitleWidget(
-                          axisSide: meta.axisSide,
-                          space: 8,
-                          child: Text(
-                            v.abs() < 0.001 ? '0 \u20AB' : fmtCompact.format(v * scale),
-                            style: TextStyle(fontSize: 9, color: Colors.purple.shade400),
-                          ),
-                        ),
-                      ),
-                    ),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  lineTouchData: LineTouchData(
-                    enabled: true,
-                    handleBuiltInTouches: false,
-                    mouseCursorResolver: (event, response) {
-                      if (response == null || response.lineBarSpots == null || response.lineBarSpots!.isEmpty) {
-                        return SystemMouseCursors.basic;
-                      }
-                      return SystemMouseCursors.click;
-                    },
-                    touchCallback: (event, response) {
-                      if (event is FlPointerExitEvent) {
-                        if (_hoverIndex != null) setState(() => _hoverIndex = null);
-                        return;
-                      }
-                      final spots = response?.lineBarSpots;
-                      if (spots == null || spots.isEmpty) return;
-                      final index = spots.first.spotIndex;
-                      if (index != _hoverIndex) {
-                        setState(() => _hoverIndex = index);
-                      }
-                    },
-                  ),
-                  lineBarsData: [hoursBar, costBar],
+                  ],
                 ),
-              ),
-                      if (selectedDay != null)
-                        Positioned(
-                          top: -156,
-                          left: left,
-                          child: IgnorePointer(
-                            child: _DailyTimelineHoverTooltip(
-                              day: selectedDay,
-                              width: tooltipWidth,
-                              fmtCurrency: fmtCurrency,
-                              s: s,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
-            ),
+              );
+            }),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1711,22 +1940,17 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
     );
   }
 
-  Widget _legendLine(Color color, String label, bool dashed) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 24,
-          height: 2,
-          child: CustomPaint(
-            painter: _DashedLinePainter(color: color, dashed: dashed),
+  Widget _legendLine(Color color, String label, bool dashed) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 24, height: 2,
+            child: CustomPaint(painter: _DashedLinePainter(color: color, dashed: dashed)),
           ),
-        ),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-      ],
-    );
-  }
+          const SizedBox(width: 6),
+          Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        ],
+      );
 }
 
 class _DailyTimelineHoverTooltip extends StatelessWidget {
@@ -1734,53 +1958,21 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
   final double width;
   final NumberFormat fmtCurrency;
   final AppLocalizations s;
-
-  const _DailyTimelineHoverTooltip({
-    required this.day,
-    required this.width,
-    required this.fmtCurrency,
-    required this.s,
-  });
+  const _DailyTimelineHoverTooltip({required this.day, required this.width, required this.fmtCurrency, required this.s});
 
   @override
   Widget build(BuildContext context) {
-    const titleStyle = TextStyle(
-      color: Color(0xFF111827),
-      fontSize: 12,
-      fontWeight: FontWeight.w700,
-      height: 1.25,
-    );
-    const bodyStyle = TextStyle(
-      color: Color(0xFF111827),
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      height: 1.3,
-    );
-    const mutedStyle = TextStyle(
-      color: Color(0xFF6B7280),
-      fontSize: 10,
-      fontWeight: FontWeight.w500,
-      height: 1.25,
-    );
-    const accentStyle = TextStyle(
-      color: Color(0xFF7C3AED),
-      fontSize: 11,
-      fontWeight: FontWeight.w700,
-      height: 1.3,
-    );
+    const titleStyle  = TextStyle(color: Color(0xFF111827), fontSize: 12, fontWeight: FontWeight.w700, height: 1.25);
+    const bodyStyle   = TextStyle(color: Color(0xFF111827), fontSize: 11, fontWeight: FontWeight.w600, height: 1.3);
+    const mutedStyle  = TextStyle(color: Color(0xFF6B7280), fontSize: 10, fontWeight: FontWeight.w500, height: 1.25);
+    const accentStyle = TextStyle(color: Color(0xFF7C3AED), fontSize: 11, fontWeight: FontWeight.w700, height: 1.3);
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 18, offset: const Offset(0, 10))],
       ),
       child: SizedBox(
         width: width,
@@ -1790,7 +1982,7 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-               Text(DateFormat('EEEE, dd/MM/yyyy', 'vi_VN').format(day.date), style: titleStyle),
+              Text(DateFormat('EEEE, dd/MM/yyyy', 'vi_VN').format(day.date), style: titleStyle),
               const SizedBox(height: 4),
               Text('${day.totalHours.toStringAsFixed(1)}h', style: bodyStyle),
               const SizedBox(height: 2),
@@ -1822,44 +2014,22 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: Text(
-                                  title.isNotEmpty ? title : 'N/A',
-                                  style: const TextStyle(
-                                    color: Color(0xFF111827),
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.2,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                child: Text(title.isNotEmpty ? title : 'N/A',
+                                    style: const TextStyle(color: Color(0xFF111827), fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
+                                    maxLines: 1, overflow: TextOverflow.ellipsis),
                               ),
                               SizedBox(
                                 width: 56,
-                                child: Text(
-                                  '${item.totalHours.toStringAsFixed(1)}h / $unit',
-                                  style: const TextStyle(
-                                    color: Color(0xFF111827),
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.2,
-                                  ),
-                                  textAlign: TextAlign.right,
-                                ),
+                                child: Text('${item.totalHours.toStringAsFixed(1)}h / $unit',
+                                    style: const TextStyle(color: Color(0xFF111827), fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
+                                    textAlign: TextAlign.right),
                               ),
                               const SizedBox(width: 8),
                               SizedBox(
                                 width: 92,
-                                child: Text(
-                                  fmtCurrency.format(item.estimatedCost),
-                                  style: const TextStyle(
-                                    color: Color(0xFF111827),
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.2,
-                                  ),
-                                  textAlign: TextAlign.right,
-                                ),
+                                child: Text(fmtCurrency.format(item.estimatedCost),
+                                    style: const TextStyle(color: Color(0xFF111827), fontSize: 10.5, fontWeight: FontWeight.w600, height: 1.2),
+                                    textAlign: TextAlign.right),
                               ),
                             ],
                           ),
@@ -1875,11 +2045,7 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
                   const Spacer(),
                   Text(s.dashboardTooltipTotal, style: accentStyle),
                   const SizedBox(width: 8),
-                  Text(
-                    fmtCurrency.format(day.estimatedCost),
-                    style: accentStyle,
-                    textAlign: TextAlign.right,
-                  ),
+                  Text(fmtCurrency.format(day.estimatedCost), style: accentStyle, textAlign: TextAlign.right),
                 ],
               ),
             ],
@@ -1922,7 +2088,6 @@ class _TopLateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (rows.isEmpty) return const SizedBox.shrink();
     final maxDays = rows.first.lateDays;
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1965,11 +2130,8 @@ class _TopLateCard extends StatelessWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: pct,
-                              backgroundColor: Colors.grey.shade100,
-                              color: AppTheme.warning,
-                              minHeight: 5,
-                            ),
+                              value: pct, backgroundColor: Colors.grey.shade100,
+                              color: AppTheme.warning, minHeight: 5),
                           ),
                           if (r.departmentName != null)
                             Text(r.departmentName!,
@@ -1987,5 +2149,3 @@ class _TopLateCard extends StatelessWidget {
     );
   }
 }
-
-

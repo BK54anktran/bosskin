@@ -604,6 +604,29 @@ public class ShiftExcelService {
                     deptIds
                 );
 
+                // NO_CHANGE check
+                if (existing != null) {
+                    boolean sameName  = req.getName().equals(existing.getName());
+                    boolean sameStart = java.util.Objects.equals(req.getStartTime(), existing.getStartTime());
+                    boolean sameEnd   = java.util.Objects.equals(req.getEndTime(),   existing.getEndTime());
+                    boolean sameGroup = java.util.Objects.equals(req.getGroupName(), existing.getGroupName());
+                    boolean sameColor = java.util.Objects.equals(req.getColor(),     existing.getColor());
+                    if (sameName && sameStart && sameEnd && sameGroup && sameColor) {
+                        results.add(com.bosskin.util.SheetImportResult.RowResult.of(rowNum, "OK", "preview.noChange"));
+                        continue;
+                    }
+                    if (dryRun) {
+                        java.util.List<String> parts = new java.util.ArrayList<>();
+                        if (!sameName)  parts.add("name: " + existing.getName() + " → " + req.getName());
+                        if (!sameStart) parts.add("startTime: " + existing.getStartTime() + " → " + req.getStartTime());
+                        if (!sameEnd)   parts.add("endTime: "   + existing.getEndTime()   + " → " + req.getEndTime());
+                        if (!sameGroup) parts.add("group: " + existing.getGroupName() + " → " + req.getGroupName());
+                        if (!sameColor) parts.add("color: " + existing.getColor() + " → " + req.getColor());
+                        results.add(com.bosskin.util.SheetImportResult.RowResult.of(rowNum, "OK", String.join(" | ", parts)));
+                        continue;
+                    }
+                }
+
                 if (!dryRun) {
                     if (existing != null) shiftService.updateShift(existing.getId(), companyId, req);
                     else shiftService.createShift(companyId, req);
@@ -1086,6 +1109,9 @@ public class ShiftExcelService {
         }
         return sb.toString();
     }
+
+    /** Public wrapper để các descriptor khác gọi được */
+    public LocalTime[] parseCustomTimePublic(String val) { return parseCustomTime(val); }
 
     private LocalTime[] parseCustomTime(String val) {
         if (val == null) return null;

@@ -160,85 +160,6 @@ class _ShiftScreenState extends State<ShiftScreen>
     }
   }
 
-  Future<void> _exportShiftList() async {
-    setState(() => _exporting = true);
-    try {
-      final res = await ApiService.instance.dio.get<List<int>>(
-        '/shifts/export-list',
-        options: Options(responseType: ResponseType.bytes),
-      );
-      final disposition = res.headers.value('content-disposition') ?? '';
-      final match = RegExp(r'filename="([^"]+)"').firstMatch(disposition);
-      final filename = match?.group(1) ?? 'danh_sach_ca.xlsx';
-      await saveFileToDevice(Uint8List.fromList(res.data!), filename);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
-      );
-      }
-    } finally {
-      if (mounted) setState(() => _exporting = false);
-    }
-  }
-
-  Future<void> _import() async {
-    final picked = await pickExcelFile();
-    if (picked == null) return;
-    setState(() => _importing = true);
-    try {
-      // Preview
-      final previewForm = FormData.fromMap({
-        'file': MultipartFile.fromBytes(picked.bytes, filename: picked.filename),
-      });
-      final previewRes = await ApiService.instance.dio.post('/shifts/preview-import', data: previewForm);
-      if (!mounted) return;
-
-      final diffs = (previewRes.data as List).map((d) {
-        final changes = (d['changes'] as List? ?? []).map((c) => ImportFieldChange(
-          field: c['field'] ?? '',
-          oldValue: c['oldValue'] ?? '',
-          newValue: c['newValue'] ?? '',
-        )).toList();
-        return ImportDiffRow(
-          action: d['action'] ?? 'CREATE',
-          code: d['code'] ?? '',
-          name: d['name'] ?? '',
-          changes: changes,
-          warnings: (d['warnings'] as List? ?? []).map((w) => w.toString()).toList(),
-        );
-      }).toList();
-
-      final confirmed = await showInstantDialog<bool>(
-        context,
-        (_) => ImportPreviewDialog(
-          diffs: diffs,
-          onConfirm: () async {
-            final importForm = FormData.fromMap({
-              'file': MultipartFile.fromBytes(picked.bytes, filename: picked.filename),
-            });
-            await ApiService.instance.dio.post('/shifts/import', data: importForm);
-          },
-        ),
-      );
-
-      if (confirmed == true && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).importSuccess)),
-        );
-        _loadShifts();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
-      );
-      }
-    } finally {
-      if (mounted) setState(() => _importing = false);
-    }
-  }
-
   Future<void> _importAssignments() async {
     final picked = await pickExcelFile();
     if (picked == null) return;
@@ -407,35 +328,17 @@ class _ShiftScreenState extends State<ShiftScreen>
                 ),
               ),
             ],
-            if (_tab.index == 1 && (canView || canManage)) ...[
+            if (_tab.index == 1 && canManage) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    OutlinedButton.icon(
-                      onPressed: _exporting ? null : _exportShiftList,
-                      icon: _exporting
-                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.upload_outlined, size: 16),
-                      label: Text(s.exportExcel),
+                    FilledButton.icon(
+                      onPressed: () => _openForm(),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(s.createShift),
                     ),
-                    if (canManage) ...[
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        onPressed: _importing ? null : _import,
-                        icon: _importing
-                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.download_outlined, size: 16),
-                        label: Text(s.importExcel),
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton.icon(
-                        onPressed: () => _openForm(),
-                        icon: const Icon(Icons.add, size: 18),
-                        label: Text(s.createShift),
-                      ),
-                    ],
                   ],
                 ),
               ),

@@ -33,6 +33,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String editRequests = '/profile/edit-requests';
   static const String excelImportExport = '/excel';
+  static const String reports = '/reports';
 
   // Admin routes
   static const String adminLogin = '/admin/login';

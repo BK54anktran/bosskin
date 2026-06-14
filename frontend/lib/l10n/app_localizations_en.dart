@@ -2236,6 +2236,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get excelModuleShift => 'Work Shifts';
 
   @override
+  String get excelModuleShiftAssignment => 'Shift Assignments';
+
+  @override
   String get excelImportTitle => 'Import Data';
 
   @override
@@ -2370,6 +2373,118 @@ class AppLocalizationsEn extends AppLocalizations {
   String get excelModuleFormulaVariable => 'Formula Variables';
 
   @override
+  String get excelModuleLeaveType => 'Leave Types';
+
+  @override
+  String get excelModuleLeaveGrant => 'Leave Balances';
+
+  @override
+  String get reportScreenTitle => 'HR Reports';
+
+  @override
+  String get reportScreenSubtitle => 'Export business reports to Excel';
+
+  @override
+  String get reportGroupEmployee => 'Employee Reports';
+
+  @override
+  String get reportGroupAttendance => 'Attendance Reports';
+
+  @override
+  String get reportGroupPayroll => 'Payroll Reports';
+
+  @override
+  String get reportGroupLeave => 'Leave Reports';
+
+  @override
+  String get reportEmployee => 'Employee Headcount';
+
+  @override
+  String get reportEmployeeDesc => 'Active/inactive employees by department';
+
+  @override
+  String get reportNewHires => 'New Hires';
+
+  @override
+  String get reportNewHiresDesc =>
+      'New employees joined in the selected period';
+
+  @override
+  String get reportResigned => 'Resigned Employees';
+
+  @override
+  String get reportResignedDesc => 'Employees who left in the selected period';
+
+  @override
+  String get reportAttendanceSummary => 'Attendance Summary';
+
+  @override
+  String get reportAttendanceSummaryDesc =>
+      'Present, absent, late counts per employee per month';
+
+  @override
+  String get reportLateCheckin => 'Late Check-in Report';
+
+  @override
+  String get reportLateCheckinDesc => 'Employees with late check-in frequency';
+
+  @override
+  String get reportOvertimeSummary => 'Overtime Summary';
+
+  @override
+  String get reportOvertimeSummaryDesc =>
+      'Total OT hours per employee per month';
+
+  @override
+  String get reportPayrollSummary => 'Payroll Cost Summary';
+
+  @override
+  String get reportPayrollSummaryDesc =>
+      'Monthly payroll cost breakdown by department';
+
+  @override
+  String get reportPayrollDetail => 'Payroll Detail';
+
+  @override
+  String get reportPayrollDetailDesc =>
+      'Full salary detail for all employees in selected month';
+
+  @override
+  String get reportLeaveBalance => 'Leave Balance Summary';
+
+  @override
+  String get reportLeaveBalanceDesc =>
+      'Remaining leave days per employee per leave type';
+
+  @override
+  String get reportLeaveUsage => 'Leave Usage';
+
+  @override
+  String get reportLeaveUsageDesc =>
+      'Leave requests and consumption in the selected period';
+
+  @override
+  String get reportFilterYear => 'Year';
+
+  @override
+  String get reportFilterMonth => 'Month';
+
+  @override
+  String get reportFilterDepartment => 'Department';
+
+  @override
+  String get reportFilterAllDepts => 'All departments';
+
+  @override
+  String get reportExportBtn => 'Export to Excel';
+
+  @override
+  String get reportExporting => 'Exporting...';
+
+  @override
+  String get reportExportSuccess => 'Report exported successfully';
+
+  @override
   String get dashboardErrorLoad => 'Failed to load dashboard data';
 
   @override
@@ -2484,6 +2599,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardTooltipTotal => 'Total';
+
+  @override
+  String get dashboardTabOverview => 'Overview';
+
+  @override
+  String get dashboardTabAttendance => 'Attendance';
+
+  @override
+  String get dashboardKpiNewHires => 'New Hires';
+
+  @override
+  String get dashboardKpiResigned => 'Resigned';
+
+  @override
+  String get dashboardKpiAttendanceRate => 'Attendance Rate';
+
+  @override
+  String get dashboardKpiAttritionRate => 'Attrition';
+
+  @override
+  String get dashboardKpiCurrentPayroll => 'Payroll (MTD)';
+
+  @override
+  String get dashboardKpiThisMonth => 'this month';
+
+  @override
+  String get dashboardKpiVsLastMonth => 'vs last month';
+
+  @override
+  String get dashboardKpiNoChange => 'no change';
+
+  @override
+  String get dashboardRisks => 'Risks & Warnings';
+
+  @override
+  String get dashboardRisksRepeatedLate => 'Repeated Lateness';
+
+  @override
+  String get dashboardRisksMissingCheckout => 'Missing Checkout';
+
+  @override
+  String get dashboardRisksProbationEnding => 'Probation Ending';
+
+  @override
+  String get dashboardRisksNoSalaryGrade => 'No Salary Config';
+
+  @override
+  String get dashboardRisksNoWarnings => 'No active warnings';
+
+  @override
+  String dashboardRisksTimeThisMonth(int n) {
+    return '$n× this month';
+  }
+
+  @override
+  String dashboardRisksDaysLeft(int n) {
+    return '$n days left';
+  }
+
+  @override
+  String dashboardRisksCheckedInAt(String time) {
+    return 'In: $time';
+  }
+
+  @override
+  String dashboardRisksJoinedOn(String date) {
+    return 'Joined: $date';
+  }
+
+  @override
+  String get dashboardAttendancePeriodWeek => 'Last 7 days';
+
+  @override
+  String get dashboardAttendancePeriodMonth => 'This month';
+
+  @override
+  String get dashboardAttendancePeriodCustom => 'Custom range';
 
   @override
   String get unitHour => 'hour';

@@ -89,21 +89,28 @@ public class UniversalExcelService {
         CellStyle integerStyle = buildIntegerStyle(wb);
 
         // Lọc cột theo selectedColumnKeys; null = tất cả defaultVisible
+        // Hidden columns luôn được export (không phụ thuộc selection)
         List<ExcelColumn<T>> allCols = desc.columns();
-        List<ExcelColumn<T>> cols;
+        List<ExcelColumn<T>> hiddenCols = allCols.stream()
+            .filter(ExcelColumn::isHidden)
+            .collect(Collectors.toList());
+        List<ExcelColumn<T>> visibleCols;
         if (selectedColumnKeys != null && !selectedColumnKeys.isEmpty()) {
             Set<String> selected = new HashSet<>(selectedColumnKeys);
-            cols = allCols.stream()
-                .filter(c -> selected.contains(c.getColumnKey()))
+            visibleCols = allCols.stream()
+                .filter(c -> !c.isHidden() && selected.contains(c.getColumnKey()))
                 .collect(Collectors.toList());
-            if (cols.isEmpty()) cols = allCols.stream()
-                .filter(ExcelColumn::isDefaultVisible)
+            if (visibleCols.isEmpty()) visibleCols = allCols.stream()
+                .filter(c -> !c.isHidden() && c.isDefaultVisible())
                 .collect(Collectors.toList());
         } else {
-            cols = allCols.stream()
-                .filter(ExcelColumn::isDefaultVisible)
+            visibleCols = allCols.stream()
+                .filter(c -> !c.isHidden() && c.isDefaultVisible())
                 .collect(Collectors.toList());
         }
+        // Hidden đứng đầu, sau đó mới đến visible
+        List<ExcelColumn<T>> cols = new ArrayList<>(hiddenCols);
+        cols.addAll(visibleCols);
 
         String cmdHeader = excelI18n.resolve("excel.col.command", locale);
 
@@ -194,14 +201,17 @@ public class UniversalExcelService {
 
         Map<String, ExportMeta> result = new LinkedHashMap<>();
         for (ExcelEntityDescriptor<?> desc : descriptors) {
-            List<ColumnMeta> cols = desc.columns().stream().map(col -> new ColumnMeta(
-                col.getColumnKey(),
-                col.isI18n() ? excelI18n.resolve(col.getHeaderKey(), locale) : col.getHeader(),
-                col.getGroup(),
-                col.isDefaultVisible(),
-                col.isImportable(),
-                col.isRequired()
-            )).collect(Collectors.toList());
+            // Hidden columns không hiện trong dialog chọn cột
+            List<ColumnMeta> cols = desc.columns().stream()
+                .filter(col -> !col.isHidden())
+                .map(col -> new ColumnMeta(
+                    col.getColumnKey(),
+                    col.isI18n() ? excelI18n.resolve(col.getHeaderKey(), locale) : col.getHeader(),
+                    col.getGroup(),
+                    col.isDefaultVisible(),
+                    col.isImportable(),
+                    col.isRequired()
+                )).collect(Collectors.toList());
             List<FilterDefinition> filters = desc.filterDefinitions(companyId);
             result.put(desc.type(), new ExportMeta(cols, filters, departments));
         }
