@@ -89,4 +89,19 @@ public class ProfileController {
             @RequestBody ProfileDTO.ProcessRequest body) {
         return ResponseEntity.ok(profileService.rejectRequest(id, user, body));
     }
+
+    /** Lấy trạng thái cài đặt thông báo */
+    @GetMapping("/notification-settings")
+    public ResponseEntity<ProfileDTO.NotificationSettingsResponse> getNotificationSettings(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(profileService.getNotificationSettings(user));
+    }
+
+    /** Cập nhật FCM token và thời gian nhắc ca */
+    @PatchMapping("/notification-settings")
+    public ResponseEntity<ProfileDTO.NotificationSettingsResponse> updateNotificationSettings(
+            @AuthenticationPrincipal User user,
+            @RequestBody ProfileDTO.NotificationSettingsRequest req) {
+        return ResponseEntity.ok(profileService.updateNotificationSettings(user, req));
+    }
 }

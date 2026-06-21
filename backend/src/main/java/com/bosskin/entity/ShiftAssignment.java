@@ -85,6 +85,9 @@ public class ShiftAssignment {
     @Builder.Default
     private boolean deleted = false;
 
+    @Column(name = "reminder_sent_at")
+    private LocalDateTime reminderSentAt;
+
     @PrePersist
     void prePersist() { createdAt = LocalDateTime.now(); }
 

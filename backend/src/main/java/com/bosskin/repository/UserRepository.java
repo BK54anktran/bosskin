@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmployeeId(Long employeeId);
     Optional<User> findFirstByCompanyId(Long companyId);
     List<User> findByCompanyId(Long companyId);
+
+    List<User> findAllByFcmTokenIsNotNullAndShiftReminderMinutesIsNotNull();
 }

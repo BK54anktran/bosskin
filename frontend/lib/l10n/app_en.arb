@@ -1038,4 +1038,11 @@
   ,"excelFilterMonth": "Month"
   ,"excelFilterStatus": "Status"
   ,"excelFilterAll": "All"
+  ,"notificationSettings": "Notification settings"
+  ,"shiftReminderTitle": "Shift reminder"
+  ,"shiftReminderDesc": "Receive a notification before your shift starts"
+  ,"shiftReminderMinutesLabel": "Remind before (minutes)"
+  ,"notificationSaveSuccess": "Notification settings saved"
+  ,"minutesBefore": "{minutes} minutes before"
+  ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
 }

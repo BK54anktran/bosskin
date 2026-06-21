@@ -5762,6 +5762,42 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tất cả'**
   String get excelFilterAll;
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt thông báo'**
+  String get notificationSettings;
+
+  /// No description provided for @shiftReminderTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhắc nhở ca làm'**
+  String get shiftReminderTitle;
+
+  /// No description provided for @shiftReminderDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận thông báo trước khi ca bắt đầu'**
+  String get shiftReminderDesc;
+
+  /// No description provided for @shiftReminderMinutesLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhắc trước (phút)'**
+  String get shiftReminderMinutesLabel;
+
+  /// No description provided for @notificationSaveSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu cài đặt thông báo'**
+  String get notificationSaveSuccess;
+
+  /// No description provided for @minutesBefore.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút trước'**
+  String minutesBefore(int minutes);
 }
 
 class _AppLocalizationsDelegate

@@ -1041,4 +1041,11 @@
   ,"excelFilterMonth": "Tháng"
   ,"excelFilterStatus": "Trạng thái"
   ,"excelFilterAll": "Tất cả"
+  ,"notificationSettings": "Cài đặt thông báo"
+  ,"shiftReminderTitle": "Nhắc nhở ca làm"
+  ,"shiftReminderDesc": "Nhận thông báo trước khi ca bắt đầu"
+  ,"shiftReminderMinutesLabel": "Nhắc trước (phút)"
+  ,"notificationSaveSuccess": "Đã lưu cài đặt thông báo"
+  ,"minutesBefore": "{minutes} phút trước"
+  ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
 }

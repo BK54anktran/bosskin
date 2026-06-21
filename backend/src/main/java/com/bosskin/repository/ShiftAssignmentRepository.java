@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,32 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
     List<WorkShift> findDistinctActiveShiftsByEmployeeAndCompany(
         @org.springframework.data.repository.query.Param("employeeId") Long employeeId,
         @org.springframework.data.repository.query.Param("companyId") Long companyId
+    );
+
+    /**
+     * Tìm ca chưa gửi reminder, có giờ bắt đầu hiệu lực trong khoảng (now, targetTime].
+     * now < effectiveStart <= targetTime đảm bảo ca chưa bắt đầu và đã đến hạn nhắc.
+     */
+    @Query("""
+        SELECT a FROM ShiftAssignment a
+        WHERE a.employee.id = :employeeId
+          AND a.workDate = :workDate
+          AND a.deleted = false
+          AND a.reminderSentAt IS NULL
+          AND (
+            (a.customStartTime IS NOT NULL
+              AND a.customStartTime > :now
+              AND a.customStartTime <= :targetTime)
+            OR (a.customStartTime IS NULL
+              AND a.snapshotStartTime > :now
+              AND a.snapshotStartTime <= :targetTime)
+          )
+        """)
+    List<ShiftAssignment> findForReminder(
+        @org.springframework.data.repository.query.Param("employeeId") Long employeeId,
+        @org.springframework.data.repository.query.Param("workDate") LocalDate workDate,
+        @org.springframework.data.repository.query.Param("now") LocalTime now,
+        @org.springframework.data.repository.query.Param("targetTime") LocalTime targetTime
     );
 
 }

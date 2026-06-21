@@ -8,6 +8,7 @@ import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/file_picker_utils.dart';
 import '../../../data/repositories/upload_repository.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/notification_service.dart';
 import '../../../data/services/profile_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -37,6 +38,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   DateTime? _selectedDob;
 
   bool get _isAdmin => AuthService.instance.currentUser?.isAdmin ?? false;
+
+  // ── Notification settings state ──
+  bool _notifEnabled = false;
+  int _reminderMinutes = 30;
+  bool _notifSaving = false;
+
+  static const _reminderOptions = [15, 30, 60, 90, 120];
 
   @override
   void initState() {
@@ -78,23 +86,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final s = AppLocalizations.of(context);
     setState(() { _loading = true; _error = null; });
     try {
-      final p = await ProfileService.instance.getMyProfile();
+      final results = await Future.wait([
+        ProfileService.instance.getMyProfile(),
+        ProfileService.instance.getNotificationSettings(),
+      ]);
+      final p = results[0] as ProfileData;
+      final n = results[1] as NotificationSettings;
       await AuthService.instance.syncCurrentUserProfile(p);
       setState(() {
         _profile = p;
-        _fullNameCtrl.text     = p.fullName;
-        _phoneCtrl.text        = p.phone ?? '';
+        _fullNameCtrl.text      = p.fullName;
+        _phoneCtrl.text         = p.phone ?? '';
         _personalEmailCtrl.text = p.personalEmail ?? '';
-        _avatarCtrl.text       = p.avatar ?? '';
-        _selectedGender        = p.gender;
+        _avatarCtrl.text        = p.avatar ?? '';
+        _selectedGender         = p.gender;
         _selectedDob = p.dateOfBirth != null
             ? DateTime.tryParse(p.dateOfBirth!)
             : null;
+        _notifEnabled    = n.enabled;
+        _reminderMinutes = n.shiftReminderMinutes ?? 30;
       });
     } catch (e) {
       setState(() => _error = '${s.profileLoadError}: ${serverMsg(e)}');
     } finally {
       setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _saveNotificationSettings() async {
+    final s = AppLocalizations.of(context);
+    setState(() => _notifSaving = true);
+    try {
+      if (_notifEnabled) {
+        await NotificationService.instance.registerToken(_reminderMinutes);
+      } else {
+        await NotificationService.instance.disableNotifications();
+      }
+      if (mounted) _showSnack(s.notificationSaveSuccess, success: true);
+    } catch (e) {
+      if (mounted) _showSnack('${s.errorPrefix}: ${serverMsg(e)}');
+    } finally {
+      if (mounted) setState(() => _notifSaving = false);
     }
   }
 
@@ -448,6 +480,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 16),
+              _NotificationSettingsCard(
+                enabled: _notifEnabled,
+                reminderMinutes: _reminderMinutes,
+                saving: _notifSaving,
+                reminderOptions: _reminderOptions,
+                onToggle: (val) => setState(() => _notifEnabled = val),
+                onMinutesChanged: (val) => setState(() => _reminderMinutes = val),
+                onSave: _saveNotificationSettings,
+              ),
+              const SizedBox(height: 16),
               _InfoCard(
                 title: s.changePassword,
                 subtitle: s.passwordNote,
@@ -489,6 +531,99 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 // ── Sub-widgets ─────────────────────────────────────────────────────────────
+
+class _NotificationSettingsCard extends StatelessWidget {
+  final bool enabled;
+  final int reminderMinutes;
+  final bool saving;
+  final List<int> reminderOptions;
+  final ValueChanged<bool> onToggle;
+  final ValueChanged<int> onMinutesChanged;
+  final VoidCallback onSave;
+
+  const _NotificationSettingsCard({
+    required this.enabled,
+    required this.reminderMinutes,
+    required this.saving,
+    required this.reminderOptions,
+    required this.onToggle,
+    required this.onMinutesChanged,
+    required this.onSave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(s.notificationSettings,
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary)),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.shiftReminderTitle,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w500)),
+                      Text(s.shiftReminderDesc,
+                          style: const TextStyle(
+                              fontSize: 12, color: AppTheme.textSecondary)),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: enabled,
+                  onChanged: saving ? null : onToggle,
+                ),
+              ],
+            ),
+            if (enabled) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                initialValue: reminderMinutes,
+                decoration: InputDecoration(
+                    labelText: s.shiftReminderMinutesLabel,
+                    labelStyle: const TextStyle(
+                        fontSize: 13, color: AppTheme.textSecondary)),
+                items: reminderOptions
+                    .map((m) => DropdownMenuItem(
+                        value: m, child: Text(s.minutesBefore(m))))
+                    .toList(),
+                onChanged: saving ? null : (v) { if (v != null) onMinutesChanged(v); },
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: saving ? null : onSave,
+                icon: saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.notifications_outlined, size: 18),
+                label: Text(s.save),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _AvatarSection extends StatelessWidget {
   final String? avatarUrl;

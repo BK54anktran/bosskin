@@ -2964,4 +2964,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get excelFilterAll => 'All';
+
+  @override
+  String get notificationSettings => 'Notification settings';
+
+  @override
+  String get shiftReminderTitle => 'Shift reminder';
+
+  @override
+  String get shiftReminderDesc =>
+      'Receive a notification before your shift starts';
+
+  @override
+  String get shiftReminderMinutesLabel => 'Remind before (minutes)';
+
+  @override
+  String get notificationSaveSuccess => 'Notification settings saved';
+
+  @override
+  String minutesBefore(int minutes) {
+    return '$minutes minutes before';
+  }
 }

@@ -6,7 +6,7 @@ import com.bosskin.entity.Employee;
 import com.bosskin.entity.Payroll;
 import com.bosskin.entity.Position;
 import com.bosskin.repository.PayrollRepository;
-import org.apache.poi.ss.usermodel.PaneInformation;
+import org.apache.poi.ss.util.PaneInformation;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;

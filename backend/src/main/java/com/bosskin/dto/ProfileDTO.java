@@ -128,4 +128,18 @@ public class ProfileDTO {
     public static class PendingCount {
         private long count;
     }
+
+    /** Cài đặt thông báo push (FCM) */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class NotificationSettingsRequest {
+        private String fcmToken;
+        private Integer shiftReminderMinutes; // null = tắt thông báo
+    }
+
+    /** Trả về trạng thái cài đặt thông báo hiện tại */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class NotificationSettingsResponse {
+        private boolean enabled;
+        private Integer shiftReminderMinutes;
+    }
 }

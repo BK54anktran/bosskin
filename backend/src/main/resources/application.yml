@@ -63,6 +63,9 @@ app:
       - http://localhost:3000
       - http://localhost:8081
 
+  firebase:
+    service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:firebase-service-account.json}
+
 logging:
   level:
     com.bosskin: DEBUG

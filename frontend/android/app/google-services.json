@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "843697700106",
+    "project_id": "bosskin-c574e",
+    "storage_bucket": "bosskin-c574e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843697700106:android:80f54a39e17d9644324ef3",
+        "android_client_info": {
+          "package_name": "com.bosskin.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeZ__m4CZl4T42s_W0r4PBkYDa20fMvcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

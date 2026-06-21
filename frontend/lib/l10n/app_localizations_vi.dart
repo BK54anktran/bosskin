@@ -2967,4 +2967,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get excelFilterAll => 'Tất cả';
+
+  @override
+  String get notificationSettings => 'Cài đặt thông báo';
+
+  @override
+  String get shiftReminderTitle => 'Nhắc nhở ca làm';
+
+  @override
+  String get shiftReminderDesc => 'Nhận thông báo trước khi ca bắt đầu';
+
+  @override
+  String get shiftReminderMinutesLabel => 'Nhắc trước (phút)';
+
+  @override
+  String get notificationSaveSuccess => 'Đã lưu cài đặt thông báo';
+
+  @override
+  String minutesBefore(int minutes) {
+    return '$minutes phút trước';
+  }
 }

@@ -162,6 +162,29 @@ public class ProfileService {
         return toEditRequestResponse(editRequestRepository.save(req));
     }
 
+    @Transactional
+    public ProfileDTO.NotificationSettingsResponse updateNotificationSettings(
+            User user, ProfileDTO.NotificationSettingsRequest req) {
+        User u = userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
+        if (req.getFcmToken() != null) {
+            u.setFcmToken(req.getFcmToken());
+        }
+        u.setShiftReminderMinutes(req.getShiftReminderMinutes());
+        userRepository.save(u);
+        return ProfileDTO.NotificationSettingsResponse.builder()
+                .enabled(u.getFcmToken() != null && u.getShiftReminderMinutes() != null)
+                .shiftReminderMinutes(u.getShiftReminderMinutes())
+                .build();
+    }
+
+    public ProfileDTO.NotificationSettingsResponse getNotificationSettings(User user) {
+        return ProfileDTO.NotificationSettingsResponse.builder()
+                .enabled(user.getFcmToken() != null && user.getShiftReminderMinutes() != null)
+                .shiftReminderMinutes(user.getShiftReminderMinutes())
+                .build();
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────
 
     private Employee getEmployeeOrThrow(User user) {

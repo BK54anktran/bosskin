@@ -64,6 +64,12 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private Set<Permission> directPermissions = new HashSet<>();
 
+    @Column(name = "fcm_token", length = 512)
+    private String fcmToken;
+
+    @Column(name = "shift_reminder_minutes")
+    private Integer shiftReminderMinutes;
+
     @Column(name = "enabled", nullable = false)
     @Builder.Default
     private boolean enabled = true;

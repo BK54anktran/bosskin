@@ -11,6 +11,7 @@ import 'core/localization/language_service.dart';
 import 'core/theme/app_theme.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/device_service.dart';
+import 'data/services/notification_service.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
@@ -40,6 +41,7 @@ void main() async {
   await initializeDateFormatting('vi', null);
   await LanguageService.instance.load();
   await DeviceService.instance.getOrCreateDeviceId();
+  await NotificationService.instance.initialize();
   await AuthService.instance.restoreAndVerify();
   runApp(const ProviderScope(child: BossKinApp()));
 }

@@ -1,4 +1,4 @@
-package com.example.cadena
+package com.bosskin.app
 
 import io.flutter.embedding.android.FlutterActivity
 
