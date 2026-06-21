@@ -5793,6 +5793,24 @@ abstract class AppLocalizations {
   /// **'Đã lưu cài đặt thông báo'**
   String get notificationSaveSuccess;
 
+  /// No description provided for @checkInOutNotifTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông báo check-in / check-out nhanh'**
+  String get checkInOutNotifTitle;
+
+  /// No description provided for @checkInOutNotifDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận nút check-in trước ca và check-out sau ca'**
+  String get checkInOutNotifDesc;
+
+  /// No description provided for @checkInOutNotifMinutesLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng thời gian (phút)'**
+  String get checkInOutNotifMinutesLabel;
+
   /// No description provided for @minutesBefore.
   ///
   /// In vi, this message translates to:

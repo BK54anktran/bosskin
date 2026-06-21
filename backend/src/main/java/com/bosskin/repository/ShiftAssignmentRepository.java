@@ -153,4 +153,46 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
         @org.springframework.data.repository.query.Param("targetTime") LocalTime targetTime
     );
 
+    /**
+     * Ca có giờ bắt đầu hiệu lực = targetStart và chưa gửi thông báo check-in.
+     * Scheduler dùng targetStart = now + checkInOutNotifMinutes.
+     */
+    @Query("""
+        SELECT a FROM ShiftAssignment a
+        WHERE a.employee.id = :employeeId
+          AND a.workDate = :workDate
+          AND a.deleted = false
+          AND a.checkInNotifSentAt IS NULL
+          AND (
+            (a.customStartTime IS NOT NULL AND a.customStartTime = :targetStart)
+            OR (a.customStartTime IS NULL AND a.snapshotStartTime = :targetStart)
+          )
+        """)
+    List<ShiftAssignment> findForCheckInNotif(
+        @org.springframework.data.repository.query.Param("employeeId") Long employeeId,
+        @org.springframework.data.repository.query.Param("workDate") LocalDate workDate,
+        @org.springframework.data.repository.query.Param("targetStart") LocalTime targetStart
+    );
+
+    /**
+     * Ca có giờ kết thúc hiệu lực = targetEnd và chưa gửi thông báo check-out.
+     * Scheduler dùng targetEnd = now - checkInOutNotifMinutes.
+     */
+    @Query("""
+        SELECT a FROM ShiftAssignment a
+        WHERE a.employee.id = :employeeId
+          AND a.workDate = :workDate
+          AND a.deleted = false
+          AND a.checkOutNotifSentAt IS NULL
+          AND (
+            (a.customEndTime IS NOT NULL AND a.customEndTime = :targetEnd)
+            OR (a.customEndTime IS NULL AND a.snapshotEndTime IS NOT NULL AND a.snapshotEndTime = :targetEnd)
+          )
+        """)
+    List<ShiftAssignment> findForCheckOutNotif(
+        @org.springframework.data.repository.query.Param("employeeId") Long employeeId,
+        @org.springframework.data.repository.query.Param("workDate") LocalDate workDate,
+        @org.springframework.data.repository.query.Param("targetEnd") LocalTime targetEnd
+    );
+
 }

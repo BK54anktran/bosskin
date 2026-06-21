@@ -64,10 +64,17 @@ const _routePermissions = <String, String>{
 };
 
 final _router = GoRouter(
+  navigatorKey: rootNavigatorKey,
   initialLocation: AppRoutes.login,
   redirect: (context, state) {
     final path = state.matchedLocation;
     final user = AuthService.instance.currentUser;
+
+    // Notification action button tapped while app was killed → navigate after login
+    final pending = NotificationService.instance.consumePendingRoute();
+    if (pending != null && user != null && _canAccessPath(user, pending)) {
+      return pending;
+    }
 
     if (path == '/') {
       return user != null ? _firstAccessibleRoute(user) : AppRoutes.login;

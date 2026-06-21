@@ -2984,6 +2984,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get notificationSaveSuccess => 'Đã lưu cài đặt thông báo';
 
   @override
+  String get checkInOutNotifTitle => 'Thông báo check-in / check-out nhanh';
+
+  @override
+  String get checkInOutNotifDesc =>
+      'Nhận nút check-in trước ca và check-out sau ca';
+
+  @override
+  String get checkInOutNotifMinutesLabel => 'Khoảng thời gian (phút)';
+
+  @override
   String minutesBefore(int minutes) {
     return '$minutes phút trước';
   }

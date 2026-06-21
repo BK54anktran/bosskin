@@ -133,7 +133,8 @@ public class ProfileDTO {
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class NotificationSettingsRequest {
         private String fcmToken;
-        private Integer shiftReminderMinutes; // null = tắt thông báo
+        private Integer shiftReminderMinutes;    // null = tắt nhắc ca
+        private Integer checkInOutNotifMinutes;  // null = tắt thông báo check-in/out
     }
 
     /** Trả về trạng thái cài đặt thông báo hiện tại */
@@ -141,5 +142,6 @@ public class ProfileDTO {
     public static class NotificationSettingsResponse {
         private boolean enabled;
         private Integer shiftReminderMinutes;
+        private Integer checkInOutNotifMinutes;
     }
 }

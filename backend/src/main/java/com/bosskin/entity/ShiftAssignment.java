@@ -88,6 +88,12 @@ public class ShiftAssignment {
     @Column(name = "reminder_sent_at")
     private LocalDateTime reminderSentAt;
 
+    @Column(name = "check_in_notif_sent_at")
+    private LocalDateTime checkInNotifSentAt;
+
+    @Column(name = "check_out_notif_sent_at")
+    private LocalDateTime checkOutNotifSentAt;
+
     @PrePersist
     void prePersist() { createdAt = LocalDateTime.now(); }
 

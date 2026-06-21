@@ -2982,6 +2982,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationSaveSuccess => 'Notification settings saved';
 
   @override
+  String get checkInOutNotifTitle => 'Quick check-in / check-out notification';
+
+  @override
+  String get checkInOutNotifDesc =>
+      'Get a check-in button before shift and check-out button after shift';
+
+  @override
+  String get checkInOutNotifMinutesLabel => 'Time window (minutes)';
+
+  @override
   String minutesBefore(int minutes) {
     return '$minutes minutes before';
   }

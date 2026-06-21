@@ -221,15 +221,15 @@ class ProfileService {
     return EditRequest.fromJson(res.data as Map<String, dynamic>);
   }
 
-  /// Cập nhật FCM token và thời gian nhắc ca lên server.
-  /// Truyền null cho cả hai để tắt thông báo.
   Future<void> updateNotificationSettings({
     required String? fcmToken,
     required int? shiftReminderMinutes,
+    int? checkInOutNotifMinutes,
   }) async {
     await _dio.patch('/profile/notification-settings', data: {
       'fcmToken': fcmToken,
       'shiftReminderMinutes': shiftReminderMinutes,
+      'checkInOutNotifMinutes': checkInOutNotifMinutes,
     });
   }
 
@@ -242,12 +242,18 @@ class ProfileService {
 class NotificationSettings {
   final bool enabled;
   final int? shiftReminderMinutes;
+  final int? checkInOutNotifMinutes;
 
-  const NotificationSettings({required this.enabled, this.shiftReminderMinutes});
+  const NotificationSettings({
+    required this.enabled,
+    this.shiftReminderMinutes,
+    this.checkInOutNotifMinutes,
+  });
 
   factory NotificationSettings.fromJson(Map<String, dynamic> j) =>
       NotificationSettings(
         enabled: j['enabled'] as bool? ?? false,
         shiftReminderMinutes: (j['shiftReminderMinutes'] as num?)?.toInt(),
+        checkInOutNotifMinutes: (j['checkInOutNotifMinutes'] as num?)?.toInt(),
       );
 }

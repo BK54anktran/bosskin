@@ -70,6 +70,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "shift_reminder_minutes")
     private Integer shiftReminderMinutes;
 
+    @Column(name = "check_in_out_notif_minutes")
+    private Integer checkInOutNotifMinutes;
+
     @Column(name = "enabled", nullable = false)
     @Builder.Default
     private boolean enabled = true;

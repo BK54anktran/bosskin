@@ -7,7 +7,6 @@ import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,43 @@ public class FcmService {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final FcmNotificationLogRepository logRepository;
+
+    public void sendCheckInOutNotif(String fcmToken, Long userId, String shiftName,
+                                    LocalTime shiftTime, LocalDate workDate, boolean isCheckIn) {
+        if (FirebaseApp.getApps().isEmpty()) return;
+
+        String title = isCheckIn ? "Đến giờ check-in" : "Đến giờ check-out";
+        String body  = isCheckIn
+            ? shiftName + " bắt đầu lúc " + shiftTime.format(TIME_FMT) + " — hãy check-in ngay"
+            : shiftName + " đã kết thúc lúc " + shiftTime.format(TIME_FMT) + " — đừng quên check-out";
+
+        FcmNotificationLog.FcmNotificationLogBuilder entry = FcmNotificationLog.builder()
+            .userId(userId)
+            .fcmToken(fcmToken)
+            .shiftName(shiftName)
+            .shiftStart(shiftTime)
+            .workDate(workDate)
+            .minutesBefore(0)
+            .sentAt(LocalDateTime.now());
+
+        try {
+            Message message = Message.builder()
+                .setToken(fcmToken)
+                .setAndroidConfig(AndroidConfig.builder()
+                    .setPriority(AndroidConfig.Priority.HIGH)
+                    .build())
+                .putData("type", isCheckIn ? "CHECK_IN_REMINDER" : "CHECK_OUT_REMINDER")
+                .putData("title", title)
+                .putData("body", body)
+                .putData("workDate", workDate.toString())
+                .putData("shiftTime", shiftTime.format(TIME_FMT))
+                .build();
+            FirebaseMessaging.getInstance().send(message);
+            logRepository.save(entry.status("SUCCESS").build());
+        } catch (FirebaseMessagingException e) {
+            logRepository.save(entry.status("FAILED").errorMessage(e.getMessage()).build());
+        }
+    }
 
     public void sendShiftReminder(String fcmToken, Long userId, String shiftName,
                                   LocalTime startTime, LocalDate workDate, int minutesBefore) {
@@ -49,18 +85,12 @@ public class FcmService {
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
-                    .setNotification(com.google.firebase.messaging.AndroidNotification.builder()
-                        .setChannelId("shift_reminders")
-                        .build())
-                    .build())
-                .setNotification(Notification.builder()
-                    .setTitle("Nhắc nhở ca làm việc")
-                    .setBody(body)
                     .build())
                 .putData("type", "SHIFT_REMINDER")
                 .putData("title", "Nhắc nhở ca làm việc")
                 .putData("body", body)
                 .putData("workDate", workDate.toString())
+                .putData("startTime", startTime.format(TIME_FMT))
                 .build();
             String msgId = FirebaseMessaging.getInstance().send(message);
             log.info("FCM sent → token={}... shift='{}' start={} msgId={}",

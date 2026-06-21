@@ -42,9 +42,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ── Notification settings state ──
   bool _notifEnabled = false;
   int _reminderMinutes = 30;
+  bool _checkInOutEnabled = false;
+  int _checkInOutMinutes = 5;
   bool _notifSaving = false;
 
-  static const _reminderOptions = [15, 30, 60, 90, 120];
+  static const _reminderOptions     = [15, 30, 60, 90, 120];
+  static const _checkInOutOptions   = [5, 10, 15, 30];
 
   @override
   void initState() {
@@ -103,8 +106,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _selectedDob = p.dateOfBirth != null
             ? DateTime.tryParse(p.dateOfBirth!)
             : null;
-        _notifEnabled    = n.enabled;
-        _reminderMinutes = n.shiftReminderMinutes ?? 30;
+        _notifEnabled        = n.enabled;
+        _reminderMinutes     = n.shiftReminderMinutes ?? 30;
+        _checkInOutEnabled   = n.checkInOutNotifMinutes != null;
+        _checkInOutMinutes   = n.checkInOutNotifMinutes ?? 5;
       });
     } catch (e) {
       setState(() => _error = '${s.profileLoadError}: ${serverMsg(e)}');
@@ -117,10 +122,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final s = AppLocalizations.of(context);
     setState(() => _notifSaving = true);
     try {
-      if (_notifEnabled) {
-        await NotificationService.instance.registerToken(_reminderMinutes);
-      } else {
+      final shiftMinutes      = _notifEnabled      ? _reminderMinutes   : null;
+      final checkInOutMinutes = _checkInOutEnabled  ? _checkInOutMinutes : null;
+      if (shiftMinutes == null && checkInOutMinutes == null) {
         await NotificationService.instance.disableNotifications();
+      } else {
+        await NotificationService.instance.registerToken(
+          shiftReminderMinutes: shiftMinutes,
+          checkInOutNotifMinutes: checkInOutMinutes,
+        );
       }
       if (mounted) _showSnack(s.notificationSaveSuccess, success: true);
     } catch (e) {
@@ -483,10 +493,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _NotificationSettingsCard(
                 enabled: _notifEnabled,
                 reminderMinutes: _reminderMinutes,
-                saving: _notifSaving,
                 reminderOptions: _reminderOptions,
+                checkInOutEnabled: _checkInOutEnabled,
+                checkInOutMinutes: _checkInOutMinutes,
+                checkInOutOptions: _checkInOutOptions,
+                saving: _notifSaving,
                 onToggle: (val) => setState(() => _notifEnabled = val),
                 onMinutesChanged: (val) => setState(() => _reminderMinutes = val),
+                onCheckInOutToggle: (val) => setState(() => _checkInOutEnabled = val),
+                onCheckInOutMinutesChanged: (val) => setState(() => _checkInOutMinutes = val),
                 onSave: _saveNotificationSettings,
               ),
               const SizedBox(height: 16),
@@ -535,19 +550,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _NotificationSettingsCard extends StatelessWidget {
   final bool enabled;
   final int reminderMinutes;
-  final bool saving;
   final List<int> reminderOptions;
+  final bool checkInOutEnabled;
+  final int checkInOutMinutes;
+  final List<int> checkInOutOptions;
+  final bool saving;
   final ValueChanged<bool> onToggle;
   final ValueChanged<int> onMinutesChanged;
+  final ValueChanged<bool> onCheckInOutToggle;
+  final ValueChanged<int> onCheckInOutMinutesChanged;
   final VoidCallback onSave;
 
   const _NotificationSettingsCard({
     required this.enabled,
     required this.reminderMinutes,
-    required this.saving,
     required this.reminderOptions,
+    required this.checkInOutEnabled,
+    required this.checkInOutMinutes,
+    required this.checkInOutOptions,
+    required this.saving,
     required this.onToggle,
     required this.onMinutesChanged,
+    required this.onCheckInOutToggle,
+    required this.onCheckInOutMinutesChanged,
     required this.onSave,
   });
 
@@ -566,26 +591,13 @@ class _NotificationSettingsCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary)),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(s.shiftReminderTitle,
-                          style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500)),
-                      Text(s.shiftReminderDesc,
-                          style: const TextStyle(
-                              fontSize: 12, color: AppTheme.textSecondary)),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: enabled,
-                  onChanged: saving ? null : onToggle,
-                ),
-              ],
+
+            // ── Nhắc ca ───────────────────────────────────────────────
+            _NotifRow(
+              title: s.shiftReminderTitle,
+              subtitle: s.shiftReminderDesc,
+              value: enabled,
+              onChanged: saving ? null : onToggle,
             ),
             if (enabled) ...[
               const SizedBox(height: 12),
@@ -603,6 +615,33 @@ class _NotificationSettingsCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ],
+
+            const Divider(height: 28),
+
+            // ── Check-in / Check-out nhanh ────────────────────────────
+            _NotifRow(
+              title: s.checkInOutNotifTitle,
+              subtitle: s.checkInOutNotifDesc,
+              value: checkInOutEnabled,
+              onChanged: saving ? null : onCheckInOutToggle,
+            ),
+            if (checkInOutEnabled) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                initialValue: checkInOutMinutes,
+                decoration: InputDecoration(
+                    labelText: s.checkInOutNotifMinutesLabel,
+                    labelStyle: const TextStyle(
+                        fontSize: 13, color: AppTheme.textSecondary)),
+                items: checkInOutOptions
+                    .map((m) => DropdownMenuItem(
+                        value: m, child: Text(s.minutesBefore(m))))
+                    .toList(),
+                onChanged: saving ? null : (v) { if (v != null) onCheckInOutMinutesChanged(v); },
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ],
+
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
@@ -621,6 +660,42 @@ class _NotificationSettingsCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _NotifRow extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  const _NotifRow({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w500)),
+              Text(subtitle,
+                  style: const TextStyle(
+                      fontSize: 12, color: AppTheme.textSecondary)),
+            ],
+          ),
+        ),
+        Switch(value: value, onChanged: onChanged),
+      ],
     );
   }
 }

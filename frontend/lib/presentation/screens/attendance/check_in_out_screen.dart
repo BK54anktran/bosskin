@@ -14,6 +14,7 @@ import '../../../core/utils/attendance_message_utils.dart';
 import '../../../data/models/attendance.dart';
 import '../../../data/repositories/attendance_repository.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/notification_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
 class CheckInOutScreen extends StatefulWidget {
@@ -35,10 +36,12 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
 
   Position? _position;
   bool _locating = false;
+  String? _autoAction; // set khi mở từ notification → tự submit sau khi GPS load
 
   @override
   void initState() {
     super.initState();
+    _autoAction = NotificationService.instance.consumePendingAutoAction();
     _load();
     _loadLocation();
   }
@@ -62,6 +65,16 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
       if (mounted) setState(() { _position = pos; _locating = false; });
     } catch (_) {
       if (mounted) setState(() => _locating = false);
+    }
+    // Mở từ notification → tự submit (dù GPS thành công hay thất bại)
+    if (mounted && _autoAction != null) {
+      final action = _autoAction!;
+      _autoAction = null;
+      if (action == 'action_check_in') {
+        await _doCheckIn();
+      } else if (action == 'action_check_out') {
+        await _doCheckOut();
+      }
     }
   }
 

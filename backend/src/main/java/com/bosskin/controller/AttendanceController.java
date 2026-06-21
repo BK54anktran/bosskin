@@ -1469,8 +1469,9 @@ public class AttendanceController {
     }
 
     private void validateCheckInLocation(Employee employee, Double lat, Double lng) {
-        if (lat == null || lng == null) return;
-        if (!employee.getCompany().isLocationCheckEnabled()) return; // tính năng bị tắt
+        if (!employee.getCompany().isLocationCheckEnabled()) return; // tính năng tắt → không cần GPS
+        if (lat == null || lng == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.location_required");
 
         // 1. Employee locations (ưu tiên cao nhất)
         List<EmployeeLocation> empLocs = employeeLocationRepository.findByEmployeeId(employee.getId());

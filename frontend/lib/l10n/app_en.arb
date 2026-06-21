@@ -1043,6 +1043,10 @@
   ,"shiftReminderDesc": "Receive a notification before your shift starts"
   ,"shiftReminderMinutesLabel": "Remind before (minutes)"
   ,"notificationSaveSuccess": "Notification settings saved"
+  ,"errorAttendanceLocationRequired": "Company requires GPS for check-in — please open the app"
+  ,"checkInOutNotifTitle": "Quick check-in / check-out notification"
+  ,"checkInOutNotifDesc": "Get a check-in button before shift and check-out button after shift"
+  ,"checkInOutNotifMinutesLabel": "Time window (minutes)"
   ,"minutesBefore": "{minutes} minutes before"
   ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
 }

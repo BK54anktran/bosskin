@@ -171,17 +171,20 @@ public class ProfileService {
             u.setFcmToken(req.getFcmToken());
         }
         u.setShiftReminderMinutes(req.getShiftReminderMinutes());
+        u.setCheckInOutNotifMinutes(req.getCheckInOutNotifMinutes());
         userRepository.save(u);
-        return ProfileDTO.NotificationSettingsResponse.builder()
-                .enabled(u.getFcmToken() != null && u.getShiftReminderMinutes() != null)
-                .shiftReminderMinutes(u.getShiftReminderMinutes())
-                .build();
+        return toNotificationSettingsResponse(u);
     }
 
     public ProfileDTO.NotificationSettingsResponse getNotificationSettings(User user) {
+        return toNotificationSettingsResponse(user);
+    }
+
+    private ProfileDTO.NotificationSettingsResponse toNotificationSettingsResponse(User u) {
         return ProfileDTO.NotificationSettingsResponse.builder()
-                .enabled(user.getFcmToken() != null && user.getShiftReminderMinutes() != null)
-                .shiftReminderMinutes(user.getShiftReminderMinutes())
+                .enabled(u.getFcmToken() != null && u.getShiftReminderMinutes() != null)
+                .shiftReminderMinutes(u.getShiftReminderMinutes())
+                .checkInOutNotifMinutes(u.getCheckInOutNotifMinutes())
                 .build();
     }
 
