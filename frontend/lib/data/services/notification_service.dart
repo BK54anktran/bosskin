@@ -13,6 +13,8 @@ final _local = FlutterLocalNotificationsPlugin();
 @pragma('vm:entry-point')
 Future<void> _onBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp();
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  await _local.initialize(const InitializationSettings(android: androidSettings));
   _showNotification(message);
 }
 
@@ -31,7 +33,7 @@ void _showNotification(RemoteMessage message) {
         _channelName,
         importance: Importance.high,
         priority: Priority.high,
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: DrawableResourceAndroidBitmap('ic_launcher'),
       ),
     ),
   );
@@ -62,6 +64,15 @@ class NotificationService {
     await _local.initialize(
       const InitializationSettings(android: androidSettings),
     );
+
+    // Tạo channel tường minh để notification hiện đúng kể cả khi app bị kill
+    final androidPlugin = _local.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+      _channelId,
+      _channelName,
+      importance: Importance.high,
+    ));
 
     FirebaseMessaging.onMessage.listen(_showNotification);
   }

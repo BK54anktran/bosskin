@@ -7,6 +7,7 @@ import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @Slf4j
@@ -39,12 +41,21 @@ public class FcmService {
             .sentAt(LocalDateTime.now());
 
         try {
+            long actualMinutes = ChronoUnit.MINUTES.between(
+                LocalTime.now().truncatedTo(ChronoUnit.MINUTES), startTime);
             String body = shiftName + " bắt đầu lúc " + startTime.format(TIME_FMT)
-                + " — còn " + minutesBefore + " phút nữa";
+                + " — còn " + actualMinutes + " phút nữa";
             Message message = Message.builder()
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
+                    .setNotification(com.google.firebase.messaging.AndroidNotification.builder()
+                        .setChannelId("shift_reminders")
+                        .build())
+                    .build())
+                .setNotification(Notification.builder()
+                    .setTitle("Nhắc nhở ca làm việc")
+                    .setBody(body)
                     .build())
                 .putData("type", "SHIFT_REMINDER")
                 .putData("title", "Nhắc nhở ca làm việc")
