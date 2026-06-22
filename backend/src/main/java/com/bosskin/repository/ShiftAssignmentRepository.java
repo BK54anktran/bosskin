@@ -127,10 +127,6 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
         @org.springframework.data.repository.query.Param("companyId") Long companyId
     );
 
-    /**
-     * Tìm ca chưa gửi reminder, có giờ bắt đầu hiệu lực trong khoảng (now, targetTime].
-     * now < effectiveStart <= targetTime đảm bảo ca chưa bắt đầu và đã đến hạn nhắc.
-     */
     @Query("""
         SELECT a FROM ShiftAssignment a
         WHERE a.employee.id = :employeeId

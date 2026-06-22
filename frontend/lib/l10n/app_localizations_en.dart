@@ -2982,6 +2982,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationSaveSuccess => 'Notification settings saved';
 
   @override
+  String get errorAttendanceLocationRequired =>
+      'Company requires GPS for check-in — please open the app';
+
+  @override
   String get checkInOutNotifTitle => 'Quick check-in / check-out notification';
 
   @override

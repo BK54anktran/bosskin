@@ -4,6 +4,7 @@ import com.bosskin.entity.FcmNotificationLog;
 import com.bosskin.repository.FcmNotificationLogRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.AndroidConfig;
+import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -49,6 +50,10 @@ public class FcmService {
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
+                    .setNotification(AndroidNotification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
                     .build())
                 .putData("type", isCheckIn ? "CHECK_IN_REMINDER" : "CHECK_OUT_REMINDER")
                 .putData("title", title)
@@ -85,6 +90,10 @@ public class FcmService {
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
+                    .setNotification(AndroidNotification.builder()
+                        .setTitle("Nhắc nhở ca làm việc")
+                        .setBody(body)
+                        .build())
                     .build())
                 .putData("type", "SHIFT_REMINDER")
                 .putData("title", "Nhắc nhở ca làm việc")

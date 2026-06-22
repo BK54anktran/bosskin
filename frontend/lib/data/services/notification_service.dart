@@ -32,8 +32,13 @@ final _local = FlutterLocalNotificationsPlugin();
 @pragma('vm:entry-point')
 Future<void> _onBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp();
+  final type = message.data['type'] as String?;
+  // SHIFT_REMINDER: OS tự hiển thị từ notification payload, không show thêm
+  if (message.notification != null && type != _typeCheckIn && type != _typeCheckOut) return;
+  // CHECK_IN/OUT: show lại bằng flutter_local_notifications để có action button
   await _initLocalPlugin();
-  _showShiftNotification(message);
+  await _ensureResultChannel();
+  await _showShiftNotification(message);
 }
 
 // ── Local notification background action handler ────────────────────────────
@@ -181,7 +186,7 @@ Future<void> _showResultNotif(String message) async {
 
 // ── Show shift / check-in/out notification ──────────────────────────────────
 
-void _showShiftNotification(RemoteMessage message) {
+Future<void> _showShiftNotification(RemoteMessage message) async {
   final title = message.data['title'] ?? message.notification?.title;
   final body  = message.data['body']  ?? message.notification?.body;
   if (title == null && body == null) return;
@@ -192,7 +197,7 @@ void _showShiftNotification(RemoteMessage message) {
       ? (type == _typeCheckIn ? _actionCheckIn : _actionCheckOut)
       : null;
 
-  _local.show(
+  await _local.show(
     message.hashCode,
     title,
     body,
@@ -270,6 +275,17 @@ class NotificationService {
     final a = _pendingAutoAction; _pendingAutoAction = null; return a;
   }
 
+  void _handleFcmTap(RemoteMessage message) {
+    final type = message.data['type'] as String?;
+    if (type == _typeCheckIn) {
+      _pendingAutoAction = _actionCheckIn;
+      _navigateOrPend(AppRoutes.checkInOut);
+    } else if (type == _typeCheckOut) {
+      _pendingAutoAction = _actionCheckOut;
+      _navigateOrPend(AppRoutes.checkInOut);
+    }
+  }
+
   Future<void> initialize() async {
     if (kIsWeb) return;
 
@@ -317,7 +333,14 @@ class NotificationService {
       }
     }
 
-    FirebaseMessaging.onMessage.listen(_showShiftNotification);
+    FirebaseMessaging.onMessage.listen((msg) => _showShiftNotification(msg));
+
+    // Tap vào OS notification khi app đang background → navigate
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleFcmTap);
+
+    // Tap vào OS notification khi app bị kill → pending route
+    final initial = await _fcm.getInitialMessage();
+    if (initial != null) _handleFcmTap(initial);
   }
 
   Future<void> registerToken({

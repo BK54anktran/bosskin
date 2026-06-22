@@ -5793,6 +5793,12 @@ abstract class AppLocalizations {
   /// **'Đã lưu cài đặt thông báo'**
   String get notificationSaveSuccess;
 
+  /// No description provided for @errorAttendanceLocationRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty yêu cầu GPS để check-in — vui lòng mở app'**
+  String get errorAttendanceLocationRequired;
+
   /// No description provided for @checkInOutNotifTitle.
   ///
   /// In vi, this message translates to:

@@ -2984,6 +2984,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get notificationSaveSuccess => 'Đã lưu cài đặt thông báo';
 
   @override
+  String get errorAttendanceLocationRequired =>
+      'Công ty yêu cầu GPS để check-in — vui lòng mở app';
+
+  @override
   String get checkInOutNotifTitle => 'Thông báo check-in / check-out nhanh';
 
   @override
