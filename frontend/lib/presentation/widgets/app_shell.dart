@@ -5,6 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/localization/language_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/notification_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'app_drawer.dart';
 import '../../core/navigation/navigator_keys.dart';
@@ -121,11 +122,7 @@ class _AppShellState extends State<AppShell>
         ),
         title: Text(_titleFor(widget.location, s)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            tooltip: s.notifications,
-            onPressed: () {},
-          ),
+          const _NotificationBell(),
           const SizedBox(width: 4),
           const AppProfileMenu(),
           const SizedBox(width: 8),
@@ -407,6 +404,217 @@ class _NavItem {
   final String route;
   final String? requiredPermission;
   const _NavItem(this.label, this.icon, this.route, {this.requiredPermission});
+}
+
+// ── Notification Bell ────────────────────────────────────────────────────────
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
+    return ValueListenableBuilder<List<AppNotification>>(
+      valueListenable: NotificationService.instance.inbox,
+      builder: (context, notifications, _) {
+        final unread = notifications.where((n) => !n.isRead).length;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              tooltip: s.notifications,
+              onPressed: () => _openPanel(context),
+            ),
+            if (unread > 0)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: IgnorePointer(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: AppTheme.error,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16),
+                    child: Text(
+                      unread > 99 ? '99+' : '$unread',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openPanel(BuildContext context) {
+    NotificationService.instance.markAllRead();
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black26,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440, maxHeight: 520),
+          child: const _NotificationSheet(),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationSheet extends StatelessWidget {
+  const _NotificationSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
+    return ValueListenableBuilder<List<AppNotification>>(
+      valueListenable: NotificationService.instance.inbox,
+      builder: (context, notifications, _) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            child: Row(
+              children: [
+                Text(
+                  s.notifications,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const Spacer(),
+                if (notifications.isNotEmpty)
+                  TextButton(
+                    onPressed: NotificationService.instance.markAllRead,
+                    child: Text(s.markAllAsRead,
+                        style: const TextStyle(fontSize: 13)),
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                  color: AppTheme.textSecondary,
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          if (notifications.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.notifications_none_outlined,
+                      size: 48,
+                      color: AppTheme.textSecondary.withValues(alpha: 0.4)),
+                  const SizedBox(height: 8),
+                  Text(
+                    s.noNotificationsYet,
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 14),
+                  ),
+                ],
+              ),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: notifications.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, indent: 56),
+                itemBuilder: (_, i) => _NotificationTile(notifications[i]),
+              ),
+            ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationTile extends StatelessWidget {
+  final AppNotification notification;
+  const _NotificationTile(this.notification);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: CircleAvatar(
+        radius: 20,
+        backgroundColor: _iconColor.withValues(alpha: 0.12),
+        child: Icon(_icon, color: _iconColor, size: 20),
+      ),
+      title: Text(
+        notification.title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight:
+              notification.isRead ? FontWeight.w400 : FontWeight.w600,
+          color: AppTheme.textPrimary,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (notification.body.isNotEmpty)
+            Text(
+              notification.body,
+              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          const SizedBox(height: 2),
+          Text(
+            _relativeTime(notification.time),
+            style: TextStyle(
+              fontSize: 11,
+              color: AppTheme.textSecondary.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData get _icon {
+    return switch (notification.type) {
+      'CHECK_IN_REMINDER'  => Icons.login_outlined,
+      'CHECK_OUT_REMINDER' => Icons.logout_outlined,
+      _                    => Icons.notifications_outlined,
+    };
+  }
+
+  Color get _iconColor {
+    return switch (notification.type) {
+      'CHECK_IN_REMINDER'  => AppTheme.success,
+      'CHECK_OUT_REMINDER' => AppTheme.warning,
+      _                    => AppTheme.primary,
+    };
+  }
+
+  String _relativeTime(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inMinutes < 1) return 'Vừa xong';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
+    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+    return '${diff.inDays} ngày trước';
+  }
 }
 
 class AppProfileMenu extends StatelessWidget {

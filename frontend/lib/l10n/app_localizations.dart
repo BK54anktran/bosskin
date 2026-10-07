@@ -5822,6 +5822,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{minutes} phút trước'**
   String minutesBefore(int minutes);
+
+  /// No description provided for @markAllAsRead.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đọc hết'**
+  String get markAllAsRead;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thông báo'**
+  String get noNotificationsYet;
 }
 
 class _AppLocalizationsDelegate

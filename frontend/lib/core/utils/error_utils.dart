@@ -11,6 +11,7 @@ const _viMessages = <String, String>{
   'error.payroll.already_generated': 'Bảng lương đã được tạo cho kỳ này',
   'error.excel.import_failed': 'Import file thất bại, vui lòng kiểm tra lại file',
   'error.shift.invalid_sheet_name': 'Tên sheet không đúng định dạng "Phan cong ca MM-yyyy". Vui lòng không đổi tên sheet khi import.',
+  'error.auth.refresh_token_expired': 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
 };
 
 const _enMessages = <String, String>{
@@ -22,6 +23,7 @@ const _enMessages = <String, String>{
   'error.payroll.already_generated': 'Payroll has already been generated for this period',
   'error.excel.import_failed': 'Import failed, please check the file and try again',
   'error.shift.invalid_sheet_name': 'Sheet name must follow the format "Phan cong ca MM-yyyy". Do not rename the sheet before importing.',
+  'error.auth.refresh_token_expired': 'Session expired, please sign in again',
 };
 
 String serverMsg(dynamic e) {

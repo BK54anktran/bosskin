@@ -5,6 +5,9 @@ import com.bosskin.repository.FcmNotificationLogRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
+import com.google.firebase.messaging.ApsAlert;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -55,6 +58,15 @@ public class FcmService {
                         .setBody(body)
                         .build())
                     .build())
+                .setApnsConfig(ApnsConfig.builder()
+                    .setAps(Aps.builder()
+                        .setAlert(ApsAlert.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build())
+                        .setSound("default")
+                        .build())
+                    .build())
                 .putData("type", isCheckIn ? "CHECK_IN_REMINDER" : "CHECK_OUT_REMINDER")
                 .putData("title", title)
                 .putData("body", body)
@@ -93,6 +105,15 @@ public class FcmService {
                     .setNotification(AndroidNotification.builder()
                         .setTitle("Nhắc nhở ca làm việc")
                         .setBody(body)
+                        .build())
+                    .build())
+                .setApnsConfig(ApnsConfig.builder()
+                    .setAps(Aps.builder()
+                        .setAlert(ApsAlert.builder()
+                            .setTitle("Nhắc nhở ca làm việc")
+                            .setBody(body)
+                            .build())
+                        .setSound("default")
                         .build())
                     .build())
                 .putData("type", "SHIFT_REMINDER")

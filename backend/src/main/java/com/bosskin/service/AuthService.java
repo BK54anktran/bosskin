@@ -10,6 +10,7 @@ import com.bosskin.repository.UserPermDeptScopeRepository;
 import com.bosskin.repository.UserRepository;
 import com.bosskin.repository.UserSessionRepository;
 import com.bosskin.security.JwtUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -91,13 +92,14 @@ public class AuthService {
     public AuthDTO.LoginResponse refresh(AuthDTO.RefreshRequest req) {
         String token = req.getRefreshToken();
 
-        if (jwtUtil.isTokenExpired(token)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token đã hết hạn");
+        Claims claims = jwtUtil.extractAllClaimsIgnoreExpiry(token);
+        if (claims.getExpiration().before(new java.util.Date())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.refresh_token_expired");
         }
 
-        String jti      = jwtUtil.extractJti(token);
-        String deviceId = jwtUtil.extractDeviceId(token);
-        String email    = jwtUtil.extractUsername(token);
+        String jti      = (String) claims.get("jti");
+        String deviceId = (String) claims.get("deviceId");
+        String email    = claims.getSubject();
 
         UserSession session = userSessionRepository.findByJti(jti)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session không hợp lệ"));

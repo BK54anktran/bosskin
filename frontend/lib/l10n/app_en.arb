@@ -1049,4 +1049,6 @@
   ,"checkInOutNotifMinutesLabel": "Time window (minutes)"
   ,"minutesBefore": "{minutes} minutes before"
   ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
+  ,"markAllAsRead": "Mark all as read"
+  ,"noNotificationsYet": "No notifications yet"
 }

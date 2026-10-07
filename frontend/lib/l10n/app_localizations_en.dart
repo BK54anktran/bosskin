@@ -2999,4 +2999,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String minutesBefore(int minutes) {
     return '$minutes minutes before';
   }
+
+  @override
+  String get markAllAsRead => 'Mark all as read';
+
+  @override
+  String get noNotificationsYet => 'No notifications yet';
 }

@@ -1052,4 +1052,6 @@
   ,"checkInOutNotifMinutesLabel": "Khoảng thời gian (phút)"
   ,"minutesBefore": "{minutes} phút trước"
   ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
+  ,"markAllAsRead": "Đọc hết"
+  ,"noNotificationsYet": "Chưa có thông báo"
 }

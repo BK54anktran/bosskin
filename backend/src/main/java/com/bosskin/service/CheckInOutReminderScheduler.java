@@ -40,31 +40,35 @@ public class CheckInOutReminderScheduler {
             int minutes = user.getCheckInOutNotifMinutes();
 
             // Check-in: tìm ca có effectiveStart = now + minutes
+            // Nếu targetStart vượt qua 00:00 (wrap) → ca thuộc ngày mai
             LocalTime targetStart = nowMinute.plusMinutes(minutes);
+            LocalDate checkInDate = targetStart.isBefore(nowMinute) ? today.plusDays(1) : today;
             List<ShiftAssignment> checkIns = shiftAssignmentRepository
-                    .findForCheckInNotif(user.getEmployeeId(), today, targetStart);
+                    .findForCheckInNotif(user.getEmployeeId(), checkInDate, targetStart);
             for (ShiftAssignment sa : checkIns) {
                 LocalTime effectiveStart = sa.getCustomStartTime() != null
                         ? sa.getCustomStartTime() : sa.getSnapshotStartTime();
                 if (effectiveStart == null) continue;
                 String name = sa.getSnapshotName() != null ? sa.getSnapshotName() : "Ca làm việc";
                 fcmService.sendCheckInOutNotif(
-                        user.getFcmToken(), user.getId(), name, effectiveStart, today, true);
+                        user.getFcmToken(), user.getId(), name, effectiveStart, checkInDate, true);
                 sa.setCheckInNotifSentAt(LocalDateTime.now());
                 shiftAssignmentRepository.save(sa);
             }
 
             // Check-out: tìm ca có effectiveEnd = now - minutes
+            // Nếu targetEnd vượt qua 00:00 ngược lại (wrap) → ca thuộc ngày hôm qua
             LocalTime targetEnd = nowMinute.minusMinutes(minutes);
+            LocalDate checkOutDate = targetEnd.isAfter(nowMinute) ? today.minusDays(1) : today;
             List<ShiftAssignment> checkOuts = shiftAssignmentRepository
-                    .findForCheckOutNotif(user.getEmployeeId(), today, targetEnd);
+                    .findForCheckOutNotif(user.getEmployeeId(), checkOutDate, targetEnd);
             for (ShiftAssignment sa : checkOuts) {
                 LocalTime effectiveEnd = sa.getCustomEndTime() != null
                         ? sa.getCustomEndTime() : sa.getSnapshotEndTime();
                 if (effectiveEnd == null) continue;
                 String name = sa.getSnapshotName() != null ? sa.getSnapshotName() : "Ca làm việc";
                 fcmService.sendCheckInOutNotif(
-                        user.getFcmToken(), user.getId(), name, effectiveEnd, today, false);
+                        user.getFcmToken(), user.getId(), name, effectiveEnd, checkOutDate, false);
                 sa.setCheckOutNotifSentAt(LocalDateTime.now());
                 shiftAssignmentRepository.save(sa);
             }

@@ -15,33 +15,97 @@ const _channelName       = 'Nhắc nhở ca làm';
 const _channelResultId   = 'check_results';
 const _channelResultName = 'Kết quả check-in/out';
 
-// Action IDs cho notification buttons
-const _actionCheckIn      = 'action_check_in';       // thử silent
-const _actionCheckOut     = 'action_check_out';      // thử silent
-const _actionOpenCheckIn  = 'action_open_check_in';  // cần GPS → mở app
-const _actionOpenCheckOut = 'action_open_check_out'; // cần GPS → mở app
+const _actionCheckIn      = 'action_check_in';
+const _actionCheckOut     = 'action_check_out';
+const _actionOpenCheckIn  = 'action_open_check_in';
+const _actionOpenCheckOut = 'action_open_check_out';
 
-// Type từ FCM data
 const _typeCheckIn  = 'CHECK_IN_REMINDER';
 const _typeCheckOut = 'CHECK_OUT_REMINDER';
 
 final _local = FlutterLocalNotificationsPlugin();
 
-// ── FCM background handler ──────────────────────────────────────────────────
+// ── AppNotification ──────────────────────────────────────────────────────────
+
+class AppNotification {
+  final String id;
+  final String title;
+  final String body;
+  final String? type;
+  final DateTime time;
+  final bool isRead;
+
+  const AppNotification({
+    required this.id,
+    required this.title,
+    required this.body,
+    this.type,
+    required this.time,
+    this.isRead = false,
+  });
+
+  AppNotification copyWith({bool? isRead}) => AppNotification(
+        id: id,
+        title: title,
+        body: body,
+        type: type,
+        time: time,
+        isRead: isRead ?? this.isRead,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'body': body,
+        'type': type,
+        'time': time.toIso8601String(),
+        'isRead': isRead,
+      };
+
+  factory AppNotification.fromJson(Map<String, dynamic> m) => AppNotification(
+        id: m['id'] as String,
+        title: m['title'] as String,
+        body: m['body'] as String? ?? '',
+        type: m['type'] as String?,
+        time: DateTime.parse(m['time'] as String),
+        isRead: m['isRead'] as bool? ?? false,
+      );
+}
+
+// ── FCM background handler ───────────────────────────────────────────────────
 
 @pragma('vm:entry-point')
 Future<void> _onBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp();
   final type = message.data['type'] as String?;
-  // SHIFT_REMINDER: OS tự hiển thị từ notification payload, không show thêm
   if (message.notification != null && type != _typeCheckIn && type != _typeCheckOut) return;
-  // CHECK_IN/OUT: show lại bằng flutter_local_notifications để có action button
   await _initLocalPlugin();
   await _ensureResultChannel();
   await _showShiftNotification(message);
+  await _saveNotificationToPrefs(message);
 }
 
-// ── Local notification background action handler ────────────────────────────
+Future<void> _saveNotificationToPrefs(RemoteMessage message) async {
+  try {
+    final title = message.data['title'] as String? ?? message.notification?.title;
+    final body  = message.data['body']  as String? ?? message.notification?.body;
+    if (title == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getStringList('notification_inbox') ?? [];
+
+    final n = AppNotification(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      body: body ?? '',
+      type: message.data['type'] as String?,
+      time: DateTime.now(),
+    );
+
+    final updated = [jsonEncode(n.toJson()), ...stored].take(50).toList();
+    await prefs.setStringList('notification_inbox', updated);
+  } catch (_) {}
+}
 
 @pragma('vm:entry-point')
 void _onBackgroundActionResponse(NotificationResponse response) {
@@ -56,26 +120,23 @@ Future<void> _handleBackgroundAction(NotificationResponse response) async {
   await _callCheckInOut(actionId!);
 }
 
-// ── Foreground action / tap handler ────────────────────────────────────────
+// ── Foreground action / tap handler ─────────────────────────────────────────
 
 void _onForegroundResponse(NotificationResponse response) {
   final actionId = response.actionId;
 
   if (actionId == _actionCheckIn || actionId == _actionCheckOut) {
-    // Thử silent — không mở app
     _callCheckInOut(actionId!);
     return;
   }
 
   if (actionId == _actionOpenCheckIn || actionId == _actionOpenCheckOut) {
-    // Cần GPS → mở app + auto-submit
     NotificationService.instance._pendingAutoAction =
         actionId == _actionOpenCheckIn ? _actionCheckIn : _actionCheckOut;
     _navigateOrPend(AppRoutes.checkInOut);
     return;
   }
 
-  // Tap vào thân notification
   final payload = response.payload;
   if (payload == _actionCheckIn || payload == _actionCheckOut) {
     NotificationService.instance._pendingAutoAction = payload;
@@ -93,7 +154,7 @@ void _navigateOrPend(String? route) {
   }
 }
 
-// ── Core: gọi API check-in / check-out (silent) ────────────────────────────
+// ── Core: gọi API check-in / check-out (silent) ──────────────────────────────
 
 Future<void> _callCheckInOut(String actionId) async {
   final prefs = await SharedPreferences.getInstance();
@@ -126,10 +187,8 @@ Future<void> _callCheckInOut(String actionId) async {
       return;
     }
 
-    // Kiểm tra lỗi GPS bắt buộc
     final errorKey = _parseErrorKey(body);
     if (errorKey == 'error.attendance.location_required') {
-      // Phải có GPS → hiện notification để user mở app, auto-submit khi vào
       await _showOpenAppNotif(isCheckIn);
     } else {
       await _showResultNotif(_parseMsg(body, isCheckIn));
@@ -139,7 +198,6 @@ Future<void> _callCheckInOut(String actionId) async {
   }
 }
 
-/// Notification "Cần xác nhận vị trí" có nút mở app → auto-submit sau khi GPS load
 Future<void> _showOpenAppNotif(bool isCheckIn) async {
   final openAction = isCheckIn ? _actionOpenCheckIn : _actionOpenCheckOut;
   final label      = isCheckIn ? 'Mở & Check-in' : 'Mở & Check-out';
@@ -162,6 +220,10 @@ Future<void> _showOpenAppNotif(bool isCheckIn) async {
           AndroidNotificationAction(openAction, label, showsUserInterface: true),
         ],
       ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+      ),
     ),
     payload: isCheckIn ? _actionCheckIn : _actionCheckOut,
   );
@@ -180,11 +242,13 @@ Future<void> _showResultNotif(String message) async {
         priority: Priority.high,
         largeIcon: DrawableResourceAndroidBitmap('ic_launcher'),
       ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+      ),
     ),
   );
 }
-
-// ── Show shift / check-in/out notification ──────────────────────────────────
 
 Future<void> _showShiftNotification(RemoteMessage message) async {
   final title = message.data['title'] ?? message.notification?.title;
@@ -210,6 +274,11 @@ Future<void> _showShiftNotification(RemoteMessage message) async {
         largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
         actions: actions,
       ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     ),
     payload: payload,
   );
@@ -224,14 +293,19 @@ List<AndroidNotificationAction> _actionsFor(String? type) {
     return const [AndroidNotificationAction(
         _actionCheckOut, 'Check-out', showsUserInterface: false)];
   }
-  return const []; // SHIFT_REMINDER — chỉ thông báo
+  return const [];
 }
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
 
 Future<void> _initLocalPlugin() async {
   const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-  await _local.initialize(const InitializationSettings(android: androidSettings));
+  const iosSettings = DarwinInitializationSettings(
+    requestAlertPermission: false,
+    requestBadgePermission: false,
+    requestSoundPermission: false,
+  );
+  await _local.initialize(
+    const InitializationSettings(android: androidSettings, iOS: iosSettings),
+  );
 }
 
 Future<void> _ensureResultChannel() async {
@@ -245,7 +319,9 @@ Future<void> _ensureResultChannel() async {
 String _parseErrorKey(String body) {
   try {
     return (jsonDecode(body) as Map<String, dynamic>)['message'] as String? ?? '';
-  } catch (_) { return ''; }
+  } catch (_) {
+    return '';
+  }
 }
 
 String _parseMsg(String body, bool isCheckIn) {
@@ -256,7 +332,7 @@ String _parseMsg(String body, bool isCheckIn) {
   return isCheckIn ? 'Không thể check-in' : 'Không thể check-out';
 }
 
-// ── Service class ───────────────────────────────────────────────────────────
+// ── Service class ────────────────────────────────────────────────────────────
 
 class NotificationService {
   static final NotificationService instance = NotificationService._();
@@ -266,13 +342,20 @@ class NotificationService {
   String? _pendingRoute;
   String? _pendingAutoAction;
 
+  final inbox = ValueNotifier<List<AppNotification>>([]);
+
+  int get unreadCount => inbox.value.where((n) => !n.isRead).length;
+
   String? consumePendingRoute() {
-    final r = _pendingRoute; _pendingRoute = null; return r;
+    final r = _pendingRoute;
+    _pendingRoute = null;
+    return r;
   }
 
-  /// Trả về '_actionCheckIn' hoặc '_actionCheckOut', sau đó xoá
   String? consumePendingAutoAction() {
-    final a = _pendingAutoAction; _pendingAutoAction = null; return a;
+    final a = _pendingAutoAction;
+    _pendingAutoAction = null;
+    return a;
   }
 
   void _handleFcmTap(RemoteMessage message) {
@@ -286,12 +369,52 @@ class NotificationService {
     }
   }
 
+  void _addToInbox(String title, String body, String? type) {
+    final n = AppNotification(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      body: body,
+      type: type,
+      time: DateTime.now(),
+    );
+    inbox.value = [n, ...inbox.value].take(50).toList();
+    _saveInbox();
+  }
+
+  Future<void> _saveInbox() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+        'notification_inbox',
+        inbox.value.map((n) => jsonEncode(n.toJson())).toList(),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _loadInbox() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getStringList('notification_inbox') ?? [];
+      inbox.value = stored
+          .map((s) => AppNotification.fromJson(jsonDecode(s) as Map<String, dynamic>))
+          .toList();
+    } catch (_) {}
+  }
+
+  void markAllRead() {
+    if (inbox.value.every((n) => n.isRead)) return;
+    inbox.value = inbox.value.map((n) => n.copyWith(isRead: true)).toList();
+    _saveInbox();
+  }
+
   Future<void> initialize() async {
     if (kIsWeb) return;
 
     try {
       await Firebase.initializeApp();
-    } catch (_) { return; }
+    } catch (_) {
+      return;
+    }
 
     FirebaseMessaging.onBackgroundMessage(_onBackgroundMessage);
 
@@ -300,8 +423,13 @@ class NotificationService {
     }
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     await _local.initialize(
-      const InitializationSettings(android: androidSettings),
+      const InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: _onForegroundResponse,
       onDidReceiveBackgroundNotificationResponse: _onBackgroundActionResponse,
     );
@@ -315,7 +443,6 @@ class NotificationService {
       _channelResultId, _channelResultName, importance: Importance.high,
     ));
 
-    // App bị kill + user tap notification body → pending route / auto action
     final launch = await _local.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp == true) {
       final response = launch!.notificationResponse;
@@ -333,12 +460,17 @@ class NotificationService {
       }
     }
 
-    FirebaseMessaging.onMessage.listen((msg) => _showShiftNotification(msg));
+    await _loadInbox();
 
-    // Tap vào OS notification khi app đang background → navigate
+    FirebaseMessaging.onMessage.listen((msg) {
+      _showShiftNotification(msg);
+      final title = msg.data['title'] as String? ?? msg.notification?.title;
+      final body  = msg.data['body']  as String? ?? msg.notification?.body;
+      if (title != null) _addToInbox(title, body ?? '', msg.data['type'] as String?);
+    });
+
     FirebaseMessaging.onMessageOpenedApp.listen(_handleFcmTap);
 
-    // Tap vào OS notification khi app bị kill → pending route
     final initial = await _fcm.getInitialMessage();
     if (initial != null) _handleFcmTap(initial);
   }

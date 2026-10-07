@@ -3001,4 +3001,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String minutesBefore(int minutes) {
     return '$minutes phút trước';
   }
+
+  @override
+  String get markAllAsRead => 'Đọc hết';
+
+  @override
+  String get noNotificationsYet => 'Chưa có thông báo';
 }

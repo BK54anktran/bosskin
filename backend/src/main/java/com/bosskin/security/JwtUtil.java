@@ -115,7 +115,20 @@ public class JwtUtil {
     }
 
     public boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+        try {
+            return extractClaim(token, Claims::getExpiration).before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
+    }
+
+    public Claims extractAllClaimsIgnoreExpiry(String token) {
+        try {
+            return Jwts.parser().verifyWith(key()).build()
+                .parseSignedClaims(token).getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
     public long getExpiration() { return expiration; }
