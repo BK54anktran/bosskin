@@ -1,5 +1,21 @@
 # Bosskin — Claude Context
 
+## Quy tắc làm việc (chủ dự án đặt — luôn áp dụng)
+
+1. **Môi trường dev — toàn quyền.** Được tự commit, gộp và **push lên `main`** mà không cần hỏi.
+   Database local (dev) được toàn quyền tạo / sửa / xoá dữ liệu và schema.
+   Commit đứng tên `bk54anktran <ankankbk54@gmail.com>`, **không** thêm chữ ký Claude
+   (`Co-Authored-By`, `Claude-Session`...). Production (khi có) vẫn phải hỏi trước.
+2. **Tài liệu – design – code – database luôn đi cùng nhau.** Sửa một trong bốn mà ảnh hưởng
+   đến cái khác thì **bắt buộc** sửa theo trong cùng đợt:
+   - code đổi API/nghiệp vụ → cập nhật `docs/` (kế hoạch, đánh giá, tài liệu hệ thống);
+   - đổi schema → migration Flyway mới + entity/DTO + tài liệu;
+   - đổi giao diện/luồng → cập nhật design và chuỗi l10n;
+   - tiến độ kế hoạch → cập nhật `docs/review-2026-10/ke-hoach.html` (và bản artifact).
+3. **Giới hạn sử dụng.** Mỗi đợt làm việc, kiểm tra thời điểm reset hạn mức tiếp theo.
+   Khi mức dùng chạm ~99%: dừng, commit/push phần đã xong, tổng hợp tiến độ, và hẹn lịch
+   tiếp tục đúng giờ reset (được tạo phiên mới nếu cần).
+
 ## Stack
 - **Frontend**: Flutter (Dart) — Riverpod + GoRouter + Dio
 - **Backend**: Spring Boot 3.3 + Java 17 — JPA + JWT + Flyway + MySQL 8.0
@@ -279,8 +295,8 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V105** (`V105__attendance_soft_delete.sql`)
-→ Migration tiếp theo phải là **V106**
+Cao nhất: **V4** (`V4__payroll_audit.sql`) — V1 là baseline gộp V1–V117 cũ
+→ Migration tiếp theo phải là **V5**
 
 ## Màn hình Flutter
 | Screen | Path |
