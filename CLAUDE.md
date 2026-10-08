@@ -6,6 +6,8 @@
    Database local (dev) được toàn quyền tạo / sửa / xoá dữ liệu và schema.
    Commit đứng tên `bk54anktran <ankankbk54@gmail.com>`, **không** thêm chữ ký Claude
    (`Co-Authored-By`, `Claude-Session`...). Production (khi có) vẫn phải hỏi trước.
+   Push từ thư mục repo trên máy chủ dự án (D:\bosskin): git ở đó đã có token qua
+   `credential.helper store --file=.git/.git-credentials` (file trong `.git`, không commit).
 2. **Tài liệu – design – code – database luôn đi cùng nhau.** Sửa một trong bốn mà ảnh hưởng
    đến cái khác thì **bắt buộc** sửa theo trong cùng đợt:
    - code đổi API/nghiệp vụ → cập nhật `docs/` (kế hoạch, đánh giá, tài liệu hệ thống);
