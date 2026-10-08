@@ -191,4 +191,7 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
         @org.springframework.data.repository.query.Param("targetEnd") LocalTime targetEnd
     );
 
+
+    /** Phân ca của một ca mẫu từ ngày {@code from} trở đi (để cập nhật snapshot khi sửa ca). */
+    List<ShiftAssignment> findByShift_IdAndWorkDateGreaterThanEqual(Long shiftId, LocalDate from);
 }

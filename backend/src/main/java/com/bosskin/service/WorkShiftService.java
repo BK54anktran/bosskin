@@ -22,6 +22,7 @@ import java.util.Set;
 public class WorkShiftService {
 
     private final WorkShiftRepository     shiftRepo;
+    private final PeriodLockService periodLockService;
     private final ShiftAssignmentRepository assignRepo;
     private final DepartmentRepository    deptRepo;
     private final EmployeeRepository      employeeRepo;
@@ -131,7 +132,17 @@ public class WorkShiftService {
         if (req.getColor() != null) shift.setColor(req.getColor());
 
         applyDepartments(shift, req.getDepartmentIds(), companyId);
-        return toResponse(shiftRepo.save(shift));
+        WorkShift saved = shiftRepo.save(shift);
+
+        // A11: phân ca từ hôm nay trở đi chưa có dữ liệu chấm công nhận giờ mới của ca;
+        // ngày đã qua / đã chấm giữ nguyên ảnh chụp giờ cũ để không đổi công hồi tố.
+        for (ShiftAssignment a : assignRepo.findByShift_IdAndWorkDateGreaterThanEqual(saved.getId(), LocalDate.now())) {
+            if (a.isDeleted() || a.isApproved()
+                || hasAttendanceData(a.getEmployee().getId(), a.getWorkDate(), a.getId())) continue;
+            applySnapshot(a, saved);
+            assignRepo.save(a);
+        }
+        return toResponse(saved);
     }
 
     @Transactional
@@ -169,6 +180,7 @@ public class WorkShiftService {
 
     @Transactional
     public ShiftDTO.AssignResponse assign(Long companyId, ShiftDTO.AssignRequest req, Long createdBy) {
+        periodLockService.requireOpen(companyId, req.getWorkDate());
         Employee employee = employeeRepo.findByIdAndCompanyId(req.getEmployeeId(), companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
 
@@ -279,18 +291,18 @@ public class WorkShiftService {
         if (!a.getEmployee().getCompany().getId().equals(companyId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
+        periodLockService.requireOpen(companyId, a.getWorkDate());
         if (a.isApproved()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.approved_cannot_delete");
         }
-        // Xóa attendance requests liên quan đến ca này
-        List<AttendanceRequest> requests = attendanceRequestRepository.findByShiftAssignment_Id(id);
-        if (!requests.isEmpty()) {
-            attendanceRequestRepository.deleteAll(requests);
-        }
-        // Xóa attendance record liên quan đến ca này
-        attendanceRepository.findByEmployeeIdAndDateAndShift(
-            a.getEmployee().getId(), a.getWorkDate(), id
-        ).ifPresent(attendanceRepository::delete);
+        requireNoAttendanceData(a.getEmployee().getId(), a.getWorkDate(), id);
+        // Dòng công rỗng (chưa check-in, chưa duyệt) được xoá mềm cùng phân ca
+        attendanceRepository.findByEmployeeIdAndDateAndShift(a.getEmployee().getId(), a.getWorkDate(), id)
+            .ifPresent(att -> {
+                att.setDeleted(true);
+                att.setDeletedAt(java.time.LocalDateTime.now());
+                attendanceRepository.save(att);
+            });
 
         assignRepo.softDeleteById(id);
     }
@@ -309,7 +321,45 @@ public class WorkShiftService {
     }
 
     @Transactional
+    /**
+     * Xếp một ca cho một ngày trong phân ca hàng loạt (A8). Dùng chung kiểm tra với phân ca đơn
+     * (chồng giờ, tối đa ca/ngày, ca qua đêm); không đè lên phân ca đã có dữ liệu chấm công.
+     * Trả về true nếu ngày đó được xếp/đổi ca.
+     */
+    private boolean applyBulkDay(Long companyId, Employee emp, WorkShift shift, LocalDate d,
+                                 String note, Long createdBy) {
+        List<ShiftAssignment> existing = assignRepo.findByEmployeeIdAndWorkDate(emp.getId(), d);
+        if (existing.stream().anyMatch(a -> a.getShift() != null && a.getShift().getId().equals(shift.getId()))) {
+            return false; // đã có đúng ca này
+        }
+        if (existing.size() == 1) {
+            ShiftAssignment only = existing.get(0);
+            if (only.isApproved() || hasAttendanceData(emp.getId(), d, only.getId())) return false;
+            // Đổi ca của ngày (giữ id phân ca để không mất liên kết)
+            only.setShift(shift);
+            only.setCustomStartTime(null); only.setCustomEndTime(null);
+            only.setCustomBreakStart(null); only.setCustomBreakEnd(null);
+            applySnapshot(only, shift);
+            only.setNote(note);
+            assignRepo.save(only);
+            return true;
+        }
+        if (!existing.isEmpty()) return false; // nhiều ca trong ngày: không tự đè
+        ShiftDTO.AssignRequest one = new ShiftDTO.AssignRequest();
+        one.setEmployeeId(emp.getId());
+        one.setShiftId(shift.getId());
+        one.setWorkDate(d);
+        one.setNote(note);
+        try {
+            assign(companyId, one, createdBy);
+            return true;
+        } catch (ResponseStatusException e) {
+            return false; // trùng giờ với ca đêm hôm trước/sau…: bỏ qua ngày này
+        }
+    }
+
     public int bulkAssign(Long companyId, ShiftDTO.BulkAssignRequest req, Long createdBy) {
+        periodLockService.requireOpen(companyId, req.getStartDate(), req.getEndDate());
         WorkShift shift = shiftRepo.findById(req.getShiftId())
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
@@ -324,35 +374,7 @@ public class WorkShiftService {
             LocalDate d = req.getStartDate();
             while (!d.isAfter(req.getEndDate())) {
                 int dow = d.getDayOfWeek().getValue(); // 1=Mon…7=Sun
-                if (!excluded.contains(dow)) {
-                    List<ShiftAssignment> existingList = assignRepo.findByEmployeeIdAndWorkDate(empId, d);
-                    ShiftAssignment existing = existingList.isEmpty() ? null : existingList.get(0);
-                    ShiftAssignment archived = assignRepo.findAllByEmployeeIdAndWorkDateIncludingDeleted(empId, d)
-                        .stream()
-                        .filter(ShiftAssignment::isDeleted)
-                        .findFirst()
-                        .orElse(null);
-                    if (existing != null) {
-                        existing.setShift(shift);
-                        applySnapshot(existing, shift);
-                        existing.setNote(req.getNote());
-                        assignRepo.save(existing);
-                    } else if (archived != null) {
-                        archived.setDeleted(false);
-                        archived.setEmployee(emp);
-                        archived.setShift(shift);
-                        applySnapshot(archived, shift);
-                        archived.setWorkDate(d);
-                        archived.setNote(req.getNote());
-                        archived.setCreatedBy(createdBy);
-                        assignRepo.save(archived);
-                    } else {
-                        ShiftAssignment bulk = ShiftAssignment.builder()
-                            .employee(emp).shift(shift).workDate(d)
-                            .note(req.getNote()).createdBy(createdBy).build();
-                        applySnapshot(bulk, shift);
-                        assignRepo.save(bulk);
-                    }
+                if (!excluded.contains(dow) && applyBulkDay(companyId, emp, shift, d, req.getNote(), createdBy)) {
                     count++;
                 }
                 d = d.plusDays(1);
@@ -365,7 +387,31 @@ public class WorkShiftService {
     public void deleteAssignment(Long employeeId, LocalDate workDate, Long companyId) {
         employeeRepo.findByIdAndCompanyId(employeeId, companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+        periodLockService.requireOpen(companyId, workDate);
+        for (ShiftAssignment a : assignRepo.findByEmployeeIdAndWorkDate(employeeId, workDate)) {
+            requireNoAttendanceData(employeeId, workDate, a.getId());
+        }
         assignRepo.softDeleteByEmployeeIdAndWorkDate(employeeId, workDate);
+    }
+
+    /**
+     * A7: không xoá phân ca khi đã có dữ liệu chấm công (check-in/out, đã duyệt, hoặc đơn
+     * chấm công) — trước đây xoá cứng làm mất bằng chứng chấm công.
+     */
+    private void requireNoAttendanceData(Long employeeId, LocalDate workDate, Long assignmentId) {
+        if (hasAttendanceData(employeeId, workDate, assignmentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_attendance");
+        }
+    }
+
+    /** Phân ca đã có check-in/out, đã duyệt, hoặc có đơn chấm công. */
+    public boolean hasAttendanceData(Long employeeId, LocalDate workDate, Long assignmentId) {
+        boolean hasAttendance = attendanceRepository.findByEmployeeIdAndDateAndShift(employeeId, workDate, assignmentId)
+            .filter(att -> att.isApproved() || att.getCheckIn() != null || att.getCheckOut() != null
+                || att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null)
+            .isPresent();
+        boolean hasRequests = !attendanceRequestRepository.findByShiftAssignment_Id(assignmentId).isEmpty();
+        return hasAttendance || hasRequests;
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────

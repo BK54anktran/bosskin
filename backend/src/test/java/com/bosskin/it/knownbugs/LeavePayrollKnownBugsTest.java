@@ -30,7 +30,6 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     @Autowired PayrollService payrollService;
 
     @Test
-    @Tag("known-bug")
     @DisplayName("L1 · Ngày nghỉ phép có lương đã duyệt được ghi công là LEAVE, không phải vắng")
     void l1_approvedPaidLeaveDay_isLeaveNotAbsent() {
         var c = fixture.standardCompany();

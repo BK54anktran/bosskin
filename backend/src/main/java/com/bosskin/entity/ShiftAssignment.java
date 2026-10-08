@@ -108,4 +108,33 @@ public class ShiftAssignment {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
+
+    // ── Giờ hiệu lực của phân ca (A11) ───────────────────────────────────────
+    // Ưu tiên: giờ tuỳ chỉnh → ảnh chụp ca lúc phân (snapshot) → ca mẫu hiện tại.
+    // Dùng snapshot để sửa ca mẫu không làm đổi hồi tố công các ngày đã phân.
+
+    public LocalTime effectiveStartTime() {
+        if (customStartTime != null) return customStartTime;
+        if (snapshotStartTime != null) return snapshotStartTime;
+        return shift != null ? shift.getStartTime() : null;
+    }
+
+    public LocalTime effectiveEndTime() {
+        if (customEndTime != null) return customEndTime;
+        if (snapshotEndTime != null) return snapshotEndTime;
+        return shift != null ? shift.getEndTime() : null;
+    }
+
+    public LocalTime effectiveBreakStart() {
+        if (customBreakStart != null) return customBreakStart;
+        if (snapshotBreakStart != null) return snapshotBreakStart;
+        return shift != null ? shift.getBreakStart() : null;
+    }
+
+    public LocalTime effectiveBreakEnd() {
+        if (customBreakEnd != null) return customBreakEnd;
+        if (snapshotBreakEnd != null) return snapshotBreakEnd;
+        return shift != null ? shift.getBreakEnd() : null;
+    }
+
 }

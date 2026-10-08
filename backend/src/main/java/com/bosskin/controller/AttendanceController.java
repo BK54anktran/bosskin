@@ -72,6 +72,8 @@ public class AttendanceController {
     private final EmployeeLocationRepository employeeLocationRepository;
     private final AttendanceExcelService attendanceExcelService;
     private final AttendanceCalculationService calc;
+    private final java.time.Clock clock;
+    private final com.bosskin.service.PeriodLockService periodLockService;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -643,11 +645,7 @@ public class AttendanceController {
     private LocalTime assignmentEndTime(ShiftAssignment assignment) {
         if (assignment == null) return null;
         if (assignment.isCustom()) return assignment.getCustomEndTime();
-        if (assignment.getShift() != null) {
-            return assignment.getCustomEndTime() != null
-                ? assignment.getCustomEndTime()
-                : assignment.getShift().getEndTime();
-        }
+        if (assignment.getShift() != null) return assignment.effectiveEndTime();
         return null;
     }
 
@@ -661,11 +659,7 @@ public class AttendanceController {
         if (assignment.isCustom()) {
             return assignment.getCustomStartTime();
         }
-        if (assignment.getShift() != null) {
-            return assignment.getCustomStartTime() != null
-                ? assignment.getCustomStartTime()
-                : assignment.getShift().getStartTime();
-        }
+        if (assignment.getShift() != null) return assignment.effectiveStartTime();
         return null;
     }
 
@@ -767,6 +761,7 @@ public class AttendanceController {
             date = att.getDate();
             sa = att.getShiftAssignment();
             requireCanApprove(user, att.getEmployee());
+            periodLockService.requireOpen(user.getCompany().getId(), date);
         } else {
             employeeId = body.get("employeeId") instanceof Number n ? n.longValue() : null;
             String dateStr = body.get("date") instanceof String s ? s : null;
@@ -777,6 +772,7 @@ public class AttendanceController {
             Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
             requireCanApprove(user, employee);
+            periodLockService.requireOpen(user.getCompany().getId(), date);
             // A2: phân ca phải thuộc đúng nhân viên và đúng ngày (chặn gắn phân ca công ty khác)
             final Long empIdForSa = employeeId;
             final LocalDate dateForSa = date;
@@ -829,7 +825,7 @@ public class AttendanceController {
         var snap = computeHours(att, data, policy, dayStart, dayEnd, false);
 
         att.setApproved(true);
-        att.setApprovedAt(LocalDateTime.now());
+        att.setApprovedAt(LocalDateTime.now(clock));
         att.setApprovedBy(user);
         att.setSnapActualHours(snap.actualHours());
         att.setSnapDayHours(snap.regularDayHours());
@@ -843,11 +839,7 @@ public class AttendanceController {
             || snap.regularNightHours() > 0 || snap.otNightHours() > 0;
         boolean hasCheckInData = data.checkIn() != null || data.checkOut() != null
             || (att.getOverrideCheckIn() != null) || (att.getOverrideCheckOut() != null);
-        if (!hasActualHours && !hasCheckInData && slotLeave == null) {
-            att.setStatus(Attendance.Status.ABSENT);
-        } else if (att.getStatus() == Attendance.Status.ABSENT && (hasActualHours || hasCheckInData)) {
-            att.setStatus(Attendance.Status.PRESENT);
-        }
+        att.setStatus(approvedStatus(att, hasActualHours, hasCheckInData, slotLeave, data, policy));
 
         var workFlags = WorkFlagCalculator.calculate(
             data.shiftStart(), data.shiftEnd(),
@@ -898,6 +890,7 @@ public class AttendanceController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
         requireViewScope(user, att.getEmployee().getDepartment().getId());
         requireNotOwnAttendance(user, att.getEmployee());
+        periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
 
         att.setOverrideCheckIn(req.getOverrideCheckIn());
         att.setOverrideCheckOut(req.getOverrideCheckOut());
@@ -933,6 +926,7 @@ public class AttendanceController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
         requireNotOwnAttendance(user, employee);
+        periodLockService.requireOpen(user.getCompany().getId(), LocalDate.parse(dateStr));
 
         LocalDate date = LocalDate.parse(dateStr);
         // Find or create attendance record for this employee + date
@@ -960,6 +954,7 @@ public class AttendanceController {
 
         attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId()).ifPresent(att -> {
             requireCanApprove(user, att.getEmployee());
+            periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
             att.setApproved(false);
             att.setApprovedAt(null);
             att.setApprovedBy(null);
@@ -969,7 +964,7 @@ public class AttendanceController {
             att.setSnapNightHours(null);
             att.setSnapNightOt(null);
             att.setWorkFlags(null);
-            att.setStatus(null);
+            // A5: giữ nguyên trạng thái; lần duyệt sau sẽ tính lại
             attendanceRepository.save(att);
         });
         return ResponseEntity.ok().build();
@@ -984,12 +979,13 @@ public class AttendanceController {
         requirePermission(user, "ATTENDANCE_MANAGE");
         var att = attendanceRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
+        periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
         if (att.isApproved())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_approved");
         if (att.isDeleted())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_deleted");
         att.setDeleted(true);
-        att.setDeletedAt(java.time.LocalDateTime.now());
+        att.setDeletedAt(java.time.LocalDateTime.now(clock));
         att.setDeletedBy(user);
         attendanceRepository.save(att);
         return ResponseEntity.noContent().build();
@@ -1001,19 +997,17 @@ public class AttendanceController {
         @RequestBody Map<String, Long> body) {
         requirePermission(user, "ATTENDANCE_MANAGE");
         Long employeeId = body.get("employeeId");
-        LocalDate today = LocalDate.now(ATTENDANCE_ZONE);
+        LocalDate today = LocalDate.now(clock);
 
         var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
 
-        List<ShiftWindow> shifts = getShiftWindows(employeeId, today);
-        LocalDateTime now = LocalDateTime.now(ATTENDANCE_ZONE);
-        ShiftTarget target = resolveCheckInTarget(employee, today, shifts, now.toLocalTime());
-        Attendance.Status status = target.shift().startTime().plusMinutes(15).isBefore(now.toLocalTime())
-            ? Attendance.Status.LATE : Attendance.Status.PRESENT;
+        LocalDateTime now = LocalDateTime.now(clock);
+        ShiftTarget target = requireCheckInTarget(employee, getSelfCompany(user), now);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         target.attendance().setCheckIn(now);
-        target.attendance().setStatus(status);
+        target.attendance().setStatus(checkInStatus(employee, target, now));
         return ResponseEntity.status(HttpStatus.CREATED).body(AttendanceDTO.Response.from(attendanceRepository.save(target.attendance())));
     }
 
@@ -1061,19 +1055,18 @@ public class AttendanceController {
     @PostMapping("/self/check-in")
     public ResponseEntity<AttendanceDTO.SelfTodayResponse> selfCheckIn(
             @AuthenticationPrincipal User user,
-            @RequestBody(required = false) Map<String, Double> body,
+            @RequestBody(required = false) Map<String, Object> body,
             Locale locale) {
         requirePermission(user, "ATTENDANCE_SELF");
         var employee = getSelfEmployee(user);
         validateSelfAttendanceEnabled(user);
-        LocalDate today = resolveEffectiveDateForSelf(employee.getId());
-        List<ShiftWindow> shifts = getShiftWindows(employee.getId(), today);
-        LocalDateTime now = LocalDateTime.now(ATTENDANCE_ZONE);
-        ShiftTarget target = resolveCheckInTarget(employee, today, shifts, now.toLocalTime());
-        Attendance.Status status = target.shift().startTime().plusMinutes(15).isBefore(now.toLocalTime())
-            ? Attendance.Status.LATE : Attendance.Status.PRESENT;
-        Double lat = body != null ? body.get("latitude") : null;
-        Double lng = body != null ? body.get("longitude") : null;
+        LocalDateTime now = LocalDateTime.now(clock);
+        ShiftTarget target = requireCheckInTarget(employee, getSelfCompany(user), now);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
+        Attendance.Status status = checkInStatus(employee, target, now);
+        Double lat = numberOrNull(body, "latitude");
+        Double lng = numberOrNull(body, "longitude");
+        validateGpsSignal(employee, body);
         validateCheckInLocation(employee, lat, lng);
         target.attendance().setCheckIn(now);
         target.attendance().setStatus(status);
@@ -1087,17 +1080,17 @@ public class AttendanceController {
     @PostMapping("/self/check-out")
     public ResponseEntity<AttendanceDTO.SelfTodayResponse> selfCheckOut(
             @AuthenticationPrincipal User user,
-            @RequestBody(required = false) Map<String, Double> body,
+            @RequestBody(required = false) Map<String, Object> body,
             Locale locale) {
         requirePermission(user, "ATTENDANCE_SELF");
         var employee = getSelfEmployee(user);
         validateSelfAttendanceEnabled(user);
-        LocalDate today = resolveEffectiveDateForSelf(employee.getId());
-        List<ShiftWindow> shifts = getShiftWindows(employee.getId(), today);
-        ShiftTarget target = resolveCheckOutTarget(employee, today, shifts, LocalTime.now(ATTENDANCE_ZONE));
-        LocalDateTime checkOut = LocalDateTime.now(ATTENDANCE_ZONE);
-        Double lat = body != null ? body.get("latitude") : null;
-        Double lng = body != null ? body.get("longitude") : null;
+        LocalDateTime checkOut = LocalDateTime.now(clock);
+        ShiftTarget target = requireCheckOutTarget(employee, getSelfCompany(user), checkOut);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
+        Double lat = numberOrNull(body, "latitude");
+        Double lng = numberOrNull(body, "longitude");
+        validateGpsSignal(employee, body);
         validateCheckInLocation(employee, lat, lng);
         target.attendance().setCheckOut(checkOut);
         target.attendance().setCheckOutLatitude(lat);
@@ -1112,15 +1105,16 @@ public class AttendanceController {
         @RequestBody Map<String, Long> body) {
         requirePermission(user, "ATTENDANCE_MANAGE");
         Long employeeId = body.get("employeeId");
-        LocalDate today = LocalDate.now(ATTENDANCE_ZONE);
+        LocalDate today = LocalDate.now(clock);
 
         var employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
 
-        List<ShiftWindow> shifts = getShiftWindows(employeeId, today);
-        ShiftTarget target = resolveCheckOutTarget(employee, today, shifts, LocalTime.now(ATTENDANCE_ZONE));
-        target.attendance().setCheckOut(LocalDateTime.now(ATTENDANCE_ZONE));
+        LocalDateTime now = LocalDateTime.now(clock);
+        ShiftTarget target = requireCheckOutTarget(employee, getSelfCompany(user), now);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
+        target.attendance().setCheckOut(now);
         return ResponseEntity.ok(AttendanceDTO.Response.from(attendanceRepository.save(target.attendance())));
     }
 
@@ -1142,10 +1136,10 @@ public class AttendanceController {
         }
 
         var employee = getSelfEmployee(user);
-        LocalDate today = LocalDate.now(ATTENDANCE_ZONE);
+        LocalDate today = LocalDate.now(clock);
         LocalDate date = targetDate != null ? targetDate : today;
         boolean enabled = company.isSelfAttendanceEnabled();
-        LocalTime now = LocalTime.now(ATTENDANCE_ZONE);
+        LocalTime now = LocalTime.now(clock);
         boolean isToday = date.equals(today);
 
         // Load shifts của ngày hiện tại
@@ -1160,37 +1154,25 @@ public class AttendanceController {
         Attendance noShiftAtt = attendances.stream().filter(a -> a.getShiftAssignment() == null).findFirst().orElse(null);
         Attendance attendance = attendances.isEmpty() ? null : attendances.get(0);
 
-        // Nếu đang xem hôm nay, kiểm tra thêm ca hôm qua tràn qua
-        if (isToday) {
-            LocalDate yesterday = date.minusDays(1);
-            List<ShiftWindow> prevShifts = getShiftWindows(employee.getId(), yesterday, company);
-            List<ShiftWindow> overnightShifts = prevShifts.stream()
-                .filter(sw -> sw.endTime().isBefore(sw.startTime()))
-                .filter(sw -> isWithinWindow(now, sw.checkInFrom(), sw.checkOutTo()))
-                .toList();
-            if (!overnightShifts.isEmpty()) {
-                shifts = overnightShifts;
-                List<Attendance> prevAtts = attendanceRepository.findByEmployeeIdAndDate(employee.getId(), yesterday);
-                attendance = prevAtts.isEmpty() ? null : prevAtts.get(0);
-                date = yesterday;
-            }
-        }
-
+        // Hôm nay: ca qua đêm của hôm qua còn trong khung giờ thì hiển thị ca đó (A3/A4).
+        // Nút check-in/out tính theo thời gian tuyệt đối của từng ca, giống endpoint check-in/out.
         ShiftWindow shift = shifts.isEmpty() ? null : shifts.get(0);
         boolean canCheckIn = false;
         boolean canCheckOut = false;
-        for (int i = 0; i < shifts.size(); i++) {
-            ShiftWindow sw = shifts.get(i);
-            ShiftAssignment sa = i < assignments.size() ? assignments.get(i) : null;
-            Attendance slotAtt = sa != null ? attByShift.getOrDefault(sa.getId(), noShiftAtt) : noShiftAtt;
-            if ((slotAtt == null || slotAtt.getCheckIn() == null)
-                && isWithinWindow(now, sw.checkInFrom(), sw.checkInTo())) {
-                canCheckIn = true;
+        if (isToday) {
+            LocalDateTime nowDt = LocalDateTime.now(clock);
+            Slot activeOvernight = candidateSlots(employee, company, today).stream()
+                .filter(sl -> sl.workDate().isBefore(today))
+                .filter(sl -> !nowDt.isBefore(sl.checkInFrom()) && !nowDt.isAfter(sl.checkOutTo()))
+                .findFirst().orElse(null);
+            if (activeOvernight != null) {
+                shifts = List.of(activeOvernight.sw());
+                shift = activeOvernight.sw();
+                date = activeOvernight.workDate();
+                attendance = findExistingAttendance(employee, date, activeOvernight.sa());
             }
-            if (slotAtt != null && slotAtt.getCheckIn() != null && slotAtt.getCheckOut() == null
-                && isWithinWindow(now, sw.checkOutFrom(), sw.checkOutTo())) {
-                canCheckOut = true;
-            }
+            canCheckIn = findCheckInTarget(employee, company, nowDt) != null;
+            canCheckOut = findCheckOutTarget(employee, company, nowDt) != null;
         }
 
         String message = null;
@@ -1285,19 +1267,6 @@ public class AttendanceController {
                 .build());
     }
 
-    // Trả về ngày hiệu lực để check-in/out: nếu giờ hiện tại nằm trong cửa sổ của ca tràn đêm
-    // từ hôm qua (endTime < startTime và giờ hiện tại < 12:00), thì dùng ngày hôm qua.
-    private LocalDate resolveEffectiveDateForSelf(Long employeeId) {
-        LocalDate today = LocalDate.now(ATTENDANCE_ZONE);
-        LocalTime now = LocalTime.now(ATTENDANCE_ZONE);
-        LocalDate yesterday = today.minusDays(1);
-        List<ShiftWindow> prevShifts = getShiftWindows(employeeId, yesterday);
-        boolean hasOvernightWindow = prevShifts.stream()
-            .filter(sw -> sw.endTime().isBefore(sw.startTime()))
-            .anyMatch(sw -> isWithinWindow(now, sw.checkInFrom(), sw.checkOutTo()));
-        return hasOvernightWindow ? yesterday : today;
-    }
-
     private Comparator<ShiftAssignment> saComparator() {
         return (a, b) -> compareAssignments(a, b);
     }
@@ -1318,44 +1287,140 @@ public class AttendanceController {
             .toList();
     }
 
-    private ShiftTarget resolveCheckInTarget(Employee employee, LocalDate date, List<ShiftWindow> shifts, LocalTime now) {
-        if (shifts.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hôm nay chưa được xếp ca");
-        }
-        List<ShiftAssignment> assignments = shiftAssignmentRepository
-            .findByEmployeeIdAndWorkDateWithShift(employee.getId(), date)
-            .stream().sorted(this::compareAssignments).toList();
-        for (int i = 0; i < shifts.size(); i++) {
-            ShiftWindow sw = shifts.get(i);
-            ShiftAssignment sa = i < assignments.size() ? assignments.get(i) : null;
-            Attendance att = getOrCreateAttendanceForShift(employee, date, sa);
-            if (att.getCheckIn() == null && isWithinWindow(now, sw.checkInFrom(), sw.checkInTo())) {
-                return new ShiftTarget(att, sa, sw);
+    /**
+     * Một ca cụ thể theo thời gian tuyệt đối. Ca qua đêm (giờ kết thúc <= giờ bắt đầu)
+     * kết thúc vào ngày hôm sau; ngày công ({@code workDate}) luôn là ngày bắt đầu ca.
+     */
+    private record Slot(LocalDate workDate, ShiftAssignment sa, ShiftWindow sw,
+                        LocalDateTime start, LocalDateTime end) {
+        LocalDateTime checkInFrom() { return start.minusMinutes(sw.checkInBeforeMinutes()); }
+        LocalDateTime checkInTo()   { return start.plusMinutes(sw.checkInAfterMinutes()); }
+        LocalDateTime checkOutTo()  { return end.plusMinutes(sw.checkOutAfterMinutes()); }
+    }
+
+    private record ShiftTarget(Attendance attendance, ShiftAssignment shiftAssignment, ShiftWindow shift,
+                               LocalDateTime shiftStart) {}
+
+    /** Các ca của hôm qua và hôm nay (đủ để bắt ca qua đêm), sắp theo giờ bắt đầu. */
+    private List<Slot> candidateSlots(Employee employee, Company company, LocalDate today) {
+        List<Slot> slots = new ArrayList<>();
+        for (LocalDate d : List.of(today.minusDays(1), today)) {
+            for (ShiftAssignment sa : shiftAssignmentRepository.findByEmployeeIdAndWorkDateWithShift(employee.getId(), d)) {
+                ShiftWindow sw = toShiftWindow(sa, company);
+                if (sw == null) continue;
+                LocalDateTime start = d.atTime(sw.startTime());
+                LocalDateTime end = sw.endTime().isAfter(sw.startTime())
+                    ? d.atTime(sw.endTime())
+                    : d.plusDays(1).atTime(sw.endTime());
+                slots.add(new Slot(d, sa, sw, start, end));
             }
+        }
+        slots.sort(Comparator.comparing(Slot::start));
+        return slots;
+    }
+
+    private Attendance findExistingAttendance(Employee employee, LocalDate date, ShiftAssignment sa) {
+        if (sa != null) {
+            return attendanceRepository.findByEmployeeIdAndDateAndShift(employee.getId(), date, sa.getId()).orElse(null);
+        }
+        return attendanceRepository.findByEmployeeIdAndDate(employee.getId(), date).stream()
+            .filter(a -> a.getShiftAssignment() == null).findFirst().orElse(null);
+    }
+
+    /** Ca đầu tiên đang trong khung check-in mà chưa check-in; null nếu không có. */
+    /**
+     * Trạng thái công khi duyệt — luôn tính lại, không để rỗng (A5).
+     * Không có giờ công/check-in: nghỉ phép đã duyệt → LEAVE (L1), còn lại → ABSENT.
+     * Có giờ công: so giờ vào với giờ bắt đầu ca + dung sai → PRESENT / LATE.
+     */
+    private Attendance.Status approvedStatus(Attendance att, boolean hasHours, boolean hasCheckIn,
+                                             LeaveRequest slotLeave, AttendanceRowData data, AttendancePolicy policy) {
+        if (!hasHours && !hasCheckIn) {
+            return slotLeave != null ? Attendance.Status.LEAVE : Attendance.Status.ABSENT;
+        }
+        if (att.getStatus() == Attendance.Status.HALF_DAY) return Attendance.Status.HALF_DAY;
+        LocalTime in = data.checkIn();
+        LocalTime start = data.shiftStart();
+        if (in == null || start == null) return Attendance.Status.PRESENT;
+        int tolerance = policy.checkInToleranceMinutes() != null ? policy.checkInToleranceMinutes() : 15;
+        int diff = (in.toSecondOfDay() / 60 - start.toSecondOfDay() / 60 + 1440) % 1440;
+        if (diff > 720) diff -= 1440; // vào trước giờ bắt đầu (kể cả ca qua nửa đêm)
+        return diff > tolerance ? Attendance.Status.LATE : Attendance.Status.PRESENT;
+    }
+
+    private static Double numberOrNull(Map<String, Object> body, String key) {
+        Object v = body != null ? body.get(key) : null;
+        return v instanceof Number n ? n.doubleValue() : null;
+    }
+
+    /** Sai số GPS tối đa (mét) khi công ty bật kiểm vị trí. */
+    private static final double MAX_GPS_ACCURACY_METERS = 150;
+
+    /**
+     * Chống gian lận vị trí (A19): từ chối toạ độ giả lập (app báo isMocked) và toạ độ
+     * quá thiếu chính xác khi công ty bật kiểm vị trí.
+     */
+    private void validateGpsSignal(Employee employee, Map<String, Object> body) {
+        if (body != null && Boolean.TRUE.equals(body.get("isMocked"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.mock_location");
+        }
+        Double accuracy = numberOrNull(body, "accuracy");
+        if (accuracy != null && accuracy > MAX_GPS_ACCURACY_METERS
+            && employee.getCompany().isLocationCheckEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.gps_inaccurate");
+        }
+    }
+
+    private ShiftTarget findCheckInTarget(Employee employee, Company company, LocalDateTime now) {
+        for (Slot sl : candidateSlots(employee, company, now.toLocalDate())) {
+            if (now.isBefore(sl.checkInFrom()) || now.isAfter(sl.checkInTo())) continue;
+            Attendance att = getOrCreateAttendanceForShift(employee, sl.workDate(), sl.sa());
+            if (att.getCheckIn() == null) return new ShiftTarget(att, sl.sa(), sl.sw(), sl.start());
+        }
+        return null;
+    }
+
+    /**
+     * Ca đã check-in, chưa check-out, và chưa quá hạn check-out (giờ kết thúc + khung sau).
+     * Cho phép check-out bất kỳ lúc nào sau check-in — về sớm được ghi nhận, không bị chặn (A14).
+     */
+    private ShiftTarget findCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
+        for (Slot sl : candidateSlots(employee, company, now.toLocalDate())) {
+            if (now.isAfter(sl.checkOutTo())) continue;
+            Attendance att = findExistingAttendance(employee, sl.workDate(), sl.sa());
+            if (att != null && att.getCheckIn() != null && att.getCheckOut() == null
+                && !now.isBefore(att.getCheckIn())) {
+                return new ShiftTarget(att, sl.sa(), sl.sw(), sl.start());
+            }
+        }
+        return null;
+    }
+
+    private ShiftTarget requireCheckInTarget(Employee employee, Company company, LocalDateTime now) {
+        ShiftTarget t = findCheckInTarget(employee, company, now);
+        if (t != null) return t;
+        if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hôm nay chưa được xếp ca");
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chưa tới hoặc đã quá giờ check-in");
     }
 
-    private ShiftTarget resolveCheckOutTarget(Employee employee, LocalDate date, List<ShiftWindow> shifts, LocalTime now) {
-        if (shifts.isEmpty()) {
+    private ShiftTarget requireCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
+        ShiftTarget t = findCheckOutTarget(employee, company, now);
+        if (t != null) return t;
+        if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hôm nay chưa được xếp ca");
-        }
-        List<ShiftAssignment> assignments = shiftAssignmentRepository
-            .findByEmployeeIdAndWorkDateWithShift(employee.getId(), date)
-            .stream().sorted(this::compareAssignments).toList();
-        for (int i = 0; i < shifts.size(); i++) {
-            ShiftWindow sw = shifts.get(i);
-            ShiftAssignment sa = i < assignments.size() ? assignments.get(i) : null;
-            Attendance att = getOrCreateAttendanceForShift(employee, date, sa);
-            if (att.getCheckIn() != null && att.getCheckOut() == null
-                && isWithinWindow(now, sw.checkOutFrom(), sw.checkOutTo())) {
-                return new ShiftTarget(att, sa, sw);
-            }
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chưa tới hoặc đã quá giờ check-out");
     }
 
-    private record ShiftTarget(Attendance attendance, ShiftAssignment shiftAssignment, ShiftWindow shift) {}
+    /** Đi muộn khi check-in sau giờ bắt đầu ca + dung sai (phòng ban → công ty → mặc định 15 phút) (A13). */
+    private Attendance.Status checkInStatus(Employee employee, ShiftTarget target, LocalDateTime now) {
+        Integer tol = resolveAttendancePolicy(employee).checkInToleranceMinutes();
+        int tolerance = tol != null ? tol : 15;
+        return now.isAfter(target.shiftStart().plusMinutes(tolerance))
+            ? Attendance.Status.LATE : Attendance.Status.PRESENT;
+    }
 
     private ShiftWindow toShiftWindow(ShiftAssignment sa, Company company) {
         LocalTime start;
@@ -1371,8 +1436,8 @@ public class AttendanceController {
             color = "#1976D2";
         } else if (sa.getShift() != null) {
             var shift = sa.getShift();
-            start = sa.getCustomStartTime() != null ? sa.getCustomStartTime() : shift.getStartTime();
-            end = sa.getCustomEndTime() != null ? sa.getCustomEndTime() : shift.getEndTime();
+            start = sa.effectiveStartTime();
+            end = sa.effectiveEndTime();
             name = shift.getName();
             color = shift.getColor();
         } else {
@@ -1701,7 +1766,6 @@ public class AttendanceController {
                     att.setSnapActualHours(null); att.setSnapDayHours(null);
                     att.setSnapDayOt(null); att.setSnapNightHours(null);
                     att.setSnapNightOt(null); att.setWorkFlags(null);
-                    att.setStatus(null);
                     attendanceRepository.save(att);
                 }
                 approved++;
@@ -1739,7 +1803,7 @@ public class AttendanceController {
         var snap = computeHours(att, data, policy, dayStart, dayEnd, false);
 
         att.setApproved(true);
-        att.setApprovedAt(LocalDateTime.now());
+        att.setApprovedAt(LocalDateTime.now(clock));
         att.setApprovedBy(user);
         att.setSnapActualHours(snap.actualHours());
         att.setSnapDayHours(snap.regularDayHours());
@@ -1751,11 +1815,7 @@ public class AttendanceController {
             || snap.otDayHours() > 0 || snap.regularNightHours() > 0 || snap.otNightHours() > 0;
         boolean hasCheckInData2 = data.checkIn() != null || data.checkOut() != null
             || att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null;
-        if (!hasActualHours2 && !hasCheckInData2 && slotLeave == null) {
-            att.setStatus(Attendance.Status.ABSENT);
-        } else if (att.getStatus() == Attendance.Status.ABSENT && (hasActualHours2 || hasCheckInData2)) {
-            att.setStatus(Attendance.Status.PRESENT);
-        }
+        att.setStatus(approvedStatus(att, hasActualHours2, hasCheckInData2, slotLeave, data, policy));
 
         var workFlags = WorkFlagCalculator.calculate(
             data.shiftStart(), data.shiftEnd(),

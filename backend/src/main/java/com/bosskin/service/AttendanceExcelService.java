@@ -43,6 +43,7 @@ import java.util.Arrays;
 public class AttendanceExcelService {
 
     private final AttendanceRepository attendanceRepo;
+    private final PeriodLockService periodLockService;
     private final EmployeeRepository employeeRepo;
     private final DepartmentRepository deptRepo;
     private final DeptScopeService deptScopeService;
@@ -205,6 +206,7 @@ public class AttendanceExcelService {
         validateUniversalRow(row);
         Employee emp  = resolveEmployee(companyId, row.getEmployeeCode());
         LocalDate date = parseDateStr(row.getDate());
+        periodLockService.requireOpen(companyId, date);
         Optional<Attendance> existing = attendanceRepo.findByEmployeeIdAndDate(emp.getId(), date)
             .stream().findFirst();
 
@@ -1014,6 +1016,7 @@ public class AttendanceExcelService {
         if (dates.isEmpty()) return Map.of("created", 0, "updated", 0, "skipped", 0);
         LocalDate minDate = dates.stream().min(Comparator.naturalOrder()).orElseThrow();
         LocalDate maxDate = dates.stream().max(Comparator.naturalOrder()).orElseThrow();
+        periodLockService.requireOpen(companyId, minDate, maxDate);
 
         List<Attendance> existing = attendanceRepo.findByCompanyAndDateRange(companyId, minDate, maxDate);
         Map<Long, Map<LocalDate, Attendance>> existingMap = new HashMap<>();
@@ -1481,6 +1484,7 @@ public class AttendanceExcelService {
         Set<LocalDate> dates = rows.stream().map(r -> r.date).collect(Collectors.toSet());
         LocalDate minDate = dates.stream().min(Comparator.naturalOrder()).orElseThrow();
         LocalDate maxDate = dates.stream().max(Comparator.naturalOrder()).orElseThrow();
+        periodLockService.requireOpen(companyId, minDate, maxDate);
         List<Attendance> existing = attendanceRepo.findByCompanyAndDateRange(companyId, minDate, maxDate);
         Map<Long, Map<LocalDate, Attendance>> existingMap = new HashMap<>();
         for (Attendance a : existing) {
@@ -1539,7 +1543,7 @@ public class AttendanceExcelService {
                         att.setSnapActualHours(null); att.setSnapDayHours(null);
                         att.setSnapDayOt(null); att.setSnapNightHours(null);
                         att.setSnapNightOt(null); att.setWorkFlags(null);
-                        att.setStatus(null);
+                        // A5: giữ trạng thái; duyệt lại sẽ tính lại
                     }
                     applyTimesheetRowToExisting(att, row);
                     boolean shouldApprove = row.approved != null ? row.approved : wasApproved;

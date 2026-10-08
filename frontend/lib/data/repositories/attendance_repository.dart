@@ -124,24 +124,28 @@ class AttendanceRepository {
     );
   }
 
-  Future<SelfTodayAttendance> selfCheckIn({double? lat, double? lng}) async {
+  Future<SelfTodayAttendance> selfCheckIn({double? lat, double? lng, bool? isMocked, double? accuracy}) async {
     return _api.post(
       '/attendances/self/check-in',
       (data) => SelfTodayAttendance.fromJson(data as Map<String, dynamic>),
       {
         if (lat != null) 'latitude': lat,
         if (lng != null) 'longitude': lng,
+        if (isMocked != null) 'isMocked': isMocked,
+        if (accuracy != null) 'accuracy': accuracy,
       },
     );
   }
 
-  Future<SelfTodayAttendance> selfCheckOut({double? lat, double? lng}) async {
+  Future<SelfTodayAttendance> selfCheckOut({double? lat, double? lng, bool? isMocked, double? accuracy}) async {
     return _api.post(
       '/attendances/self/check-out',
       (data) => SelfTodayAttendance.fromJson(data as Map<String, dynamic>),
       {
         if (lat != null) 'latitude': lat,
         if (lng != null) 'longitude': lng,
+        if (isMocked != null) 'isMocked': isMocked,
+        if (accuracy != null) 'accuracy': accuracy,
       },
     );
   }

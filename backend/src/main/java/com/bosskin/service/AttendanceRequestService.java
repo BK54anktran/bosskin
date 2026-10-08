@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class AttendanceRequestService {
 
     private final AttendanceRequestRepository requestRepository;
+    private final PeriodLockService periodLockService;
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
@@ -68,6 +69,7 @@ public class AttendanceRequestService {
     public List<AttendanceRequestDTO.Response> createRequest(User user, AttendanceRequestDTO.CreateRequest req) {
         Employee emp = getEmployeeOrThrow(user);
         validateRequest(req);
+        periodLockService.requireOpen(emp.getCompany().getId(), req.getRequestDate());
 
         ShiftAssignment shift = resolveShiftAssignment(emp, req);
         List<AttendanceRequest> created = new java.util.ArrayList<>();
@@ -115,6 +117,7 @@ public class AttendanceRequestService {
     @Transactional
     public AttendanceRequestDTO.Response updateApplied(Long requestId, User admin, boolean applied) {
         AttendanceRequest request = getRequestOrThrow(requestId, admin.getCompany().getId());
+        periodLockService.requireOpen(admin.getCompany().getId(), request.getRequestDate());
         requireAttendanceViewScope(admin, request.getEmployee());
         requireApproved(request);
         request.setApplied(applied);
@@ -129,6 +132,7 @@ public class AttendanceRequestService {
     @Transactional
     public AttendanceRequestDTO.Response cancelRequest(Long requestId, User user) {
         AttendanceRequest request = getRequestOrThrow(requestId, user.getCompany().getId());
+        periodLockService.requireOpen(user.getCompany().getId(), request.getRequestDate());
         Employee emp = getEmployeeOrThrow(user);
         if (request.getEmployee() == null || !request.getEmployee().getId().equals(emp.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ được hủy yêu cầu của chính mình");
@@ -147,6 +151,7 @@ public class AttendanceRequestService {
     public AttendanceRequestDTO.Response approveRequest(Long requestId, User admin, AttendanceRequestDTO.ProcessRequest body) {
         requireApprovePermission(admin);
         AttendanceRequest request = getRequestOrThrow(requestId, admin.getCompany().getId());
+        periodLockService.requireOpen(admin.getCompany().getId(), request.getRequestDate());
         requireAttendanceViewScope(admin, request.getEmployee());
         requirePending(request);
         request.setStatus(AttendanceRequest.Status.APPROVED);
@@ -165,6 +170,7 @@ public class AttendanceRequestService {
     public AttendanceRequestDTO.Response rejectRequest(Long requestId, User admin, AttendanceRequestDTO.ProcessRequest body) {
         requireApprovePermission(admin);
         AttendanceRequest request = getRequestOrThrow(requestId, admin.getCompany().getId());
+        periodLockService.requireOpen(admin.getCompany().getId(), request.getRequestDate());
         requireAttendanceViewScope(admin, request.getEmployee());
         requirePending(request);
         request.setStatus(AttendanceRequest.Status.REJECTED);

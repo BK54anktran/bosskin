@@ -131,7 +131,9 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   Future<void> _doCheckIn() async {
     final s = AppLocalizations.of(context);
     await _runAction(
-      () => _repo.selfCheckIn(lat: _position?.latitude, lng: _position?.longitude),
+      () => _repo.selfCheckIn(
+          lat: _position?.latitude, lng: _position?.longitude,
+          isMocked: _position?.isMocked, accuracy: _position?.accuracy),
       s.checkInSuccess,
     );
   }
@@ -139,7 +141,9 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   Future<void> _doCheckOut() async {
     final s = AppLocalizations.of(context);
     await _runAction(
-      () => _repo.selfCheckOut(lat: _position?.latitude, lng: _position?.longitude),
+      () => _repo.selfCheckOut(
+          lat: _position?.latitude, lng: _position?.longitude,
+          isMocked: _position?.isMocked, accuracy: _position?.accuracy),
       s.checkOutSuccess,
     );
   }
