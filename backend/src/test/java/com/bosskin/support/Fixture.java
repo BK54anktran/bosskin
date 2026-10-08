@@ -35,7 +35,7 @@ public class Fixture {
     public static final List<String> PERMS_NHAN_VIEN = List.copyOf(CompanyService.DEFAULT_EMPLOYEE_PERMISSIONS);
     public static final List<String> PERMS_QUAN_LY_CONG = List.of(
         "ATTENDANCE_VIEW", "ATTENDANCE_MANAGE", "ATTENDANCE_APPROVE", "ATTENDANCE_REQUEST_APPROVE",
-        "SHIFT_VIEW", "SHIFT_MANAGE", "EMPLOYEE_VIEW", "DEPARTMENT_VIEW",
+        "SHIFT_VIEW", "SHIFT_MANAGE", "SHIFT_SWAP_APPROVE", "EMPLOYEE_VIEW", "DEPARTMENT_VIEW",
         "LEAVE_VIEW", "LEAVE_REQUEST_APPROVE");
     public static final List<String> PERMS_KE_TOAN = List.of(
         "PAYROLL_VIEW", "PAYROLL_CREATE", "PAYROLL_APPROVE", "PAYROLL_PAY",

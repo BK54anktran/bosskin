@@ -851,6 +851,8 @@ public class AttendanceController {
             policy.checkOutToleranceMinutes()
         );
         att.setWorkFlags(WorkFlagCalculator.serialize(workFlags));
+        var flex = calc.flexibleOutcome(data, snap, slotLeave != null, att.getStatus(), policy);
+        if (flex != null) { att.setStatus(flex.status()); att.setWorkFlags(flex.workFlags()); }
         attendanceRepository.save(att);
 
         // Snapshot leave cho slot này
@@ -1295,7 +1297,15 @@ public class AttendanceController {
     private record Slot(LocalDate workDate, ShiftAssignment sa, ShiftWindow sw,
                         LocalDateTime start, LocalDateTime end) {
         LocalDateTime checkInFrom() { return start.minusMinutes(sw.checkInBeforeMinutes()); }
-        LocalDateTime checkInTo()   { return start.plusMinutes(sw.checkInAfterMinutes()); }
+        LocalDateTime checkInTo()   {
+            // Ca linh hoạt: vào muộn nhất là lúc còn vừa đủ số phút phải làm trước giờ đóng khung (Mốc 2b)
+            Integer req = sa != null ? sa.flexibleRequiredMinutes() : null;
+            if (req != null) {
+                LocalDateTime latest = end.minusMinutes(req);
+                return latest.isAfter(start) ? latest : start.plusMinutes(sw.checkInAfterMinutes());
+            }
+            return start.plusMinutes(sw.checkInAfterMinutes());
+        }
         LocalDateTime checkOutTo()  { return end.plusMinutes(sw.checkOutAfterMinutes()); }
     }
 
@@ -1417,6 +1427,10 @@ public class AttendanceController {
 
     /** Đi muộn khi check-in sau giờ bắt đầu ca + dung sai (phòng ban → công ty → mặc định 15 phút) (A13). */
     private Attendance.Status checkInStatus(Employee employee, ShiftTarget target, LocalDateTime now) {
+        // Ca linh hoạt: vào lúc nào trong khung cũng đúng giờ; thiếu giờ xét khi duyệt (Mốc 2b)
+        if (target.shiftAssignment() != null && target.shiftAssignment().flexibleRequiredMinutes() != null) {
+            return Attendance.Status.PRESENT;
+        }
         Integer tol = resolveAttendancePolicy(employee).checkInToleranceMinutes();
         int tolerance = tol != null ? tol : 15;
         return now.isAfter(target.shiftStart().plusMinutes(tolerance))
@@ -1836,6 +1850,8 @@ public class AttendanceController {
             policy.checkInToleranceMinutes(), policy.checkOutToleranceMinutes()
         );
         att.setWorkFlags(WorkFlagCalculator.serialize(workFlags));
+        var flex = calc.flexibleOutcome(data, snap, slotLeave != null, att.getStatus(), policy);
+        if (flex != null) { att.setStatus(flex.status()); att.setWorkFlags(flex.workFlags()); }
         attendanceRepository.save(att);
 
         attendanceApproveLeaveRepository.deleteByAttendanceId(att.getId());

@@ -68,7 +68,9 @@ public class AttendanceCalculationService {
         double regularDayHours,
         double otDayHours,
         double regularNightHours,
-        double otNightHours
+        double otNightHours,
+        /** Ca linh hoạt: số phút phải làm; null = ca cố định (Mốc 2b). */
+        Integer flexRequiredMinutes
     ) {}
 
     // ── Policy ────────────────────────────────────────────────────────────────
@@ -332,8 +334,9 @@ public class AttendanceCalculationService {
         LocalTime flagCheckIn       = roundUp  (req.appliedCheckInRequest()  != null ? req.appliedCheckInRequest().getRequestedCheckIn()   : actualCheckIn,  policy.roundingCheckInMinutes());
         LocalTime flagCheckOut      = roundDown(req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : actualCheckOut, policy.roundingCheckOutMinutes());
 
-        ComputedHours workHours = computeWorkHours(shift, roundedCheckIn, roundedCheckOut,
-            dayStart, dayEnd, leaveFrom, leaveTo, req, otEnabled, policy);
+        ComputedHours workHours = capFlexible(computeWorkHours(shift, roundedCheckIn, roundedCheckOut,
+            dayStart, dayEnd, leaveFrom, leaveTo, req, otEnabled, policy),
+            assignment != null ? assignment.flexibleRequiredMinutes() : null);
 
         List<AttendanceRequest> otRequests = req.overtimeRequests();
         return new AttendanceRowData(
@@ -350,7 +353,8 @@ public class AttendanceCalculationService {
             otRequests.isEmpty() ? null : otRequests.get(0).getStatus(),
             att != null ? att.getId() : null,
             workHours.actualHours(), workHours.regularDayHours(), workHours.otDayHours(),
-            workHours.regularNightHours(), workHours.otNightHours()
+            workHours.regularNightHours(), workHours.otNightHours(),
+            assignment != null ? assignment.flexibleRequiredMinutes() : null
         );
     }
 
@@ -395,10 +399,54 @@ public class AttendanceCalculationService {
                 otDay    = roundDownHours(otDay,    policy.roundingWorkMinutes());
                 otNight  = roundDownHours(otNight,  policy.roundingWorkMinutes());
             }
-            return new ComputedHours(actual, regDay, otDay, regNight, otNight);
+            return capFlexible(new ComputedHours(actual, regDay, otDay, regNight, otNight), data.flexRequiredMinutes());
         }
         return new ComputedHours(data.actualHours(), data.regularDayHours(), data.otDayHours(), data.regularNightHours(), data.otNightHours());
     }
+
+    // ── Ca linh hoạt (Mốc 2b) ───────────────────────────────────────────────
+
+    /**
+     * Ca linh hoạt: giờ công thường không vượt quá số phút phải làm (phần dư trong khung không
+     * tự thành tăng ca — tăng ca vẫn cần đơn). Chia lại tỉ lệ ngày/đêm theo phần được tính.
+     */
+    public static ComputedHours capFlexible(ComputedHours h, Integer requiredMinutes) {
+        if (requiredMinutes == null || requiredMinutes <= 0) return h;
+        double regular = h.regularDayHours() + h.regularNightHours();
+        double cap = requiredMinutes / 60.0;
+        if (regular <= cap || regular <= 0) return h;
+        double f = cap / regular;
+        return new ComputedHours(h.actualHours(), h.regularDayHours() * f, h.otDayHours(),
+            h.regularNightHours() * f, h.otNightHours());
+    }
+
+    /** Ca linh hoạt thiếu giờ quá dung sai vào ca → coi là đi muộn (thiếu giờ). */
+    public static boolean flexibleShort(double regularHours, Integer requiredMinutes, Integer toleranceMinutes) {
+        if (requiredMinutes == null) return false;
+        int tol = toleranceMinutes != null ? toleranceMinutes : 15;
+        return regularHours * 60 < requiredMinutes - tol - 0.5;
+    }
+
+    /**
+     * Trạng thái + cờ khi duyệt cho ca linh hoạt: không so giờ vào với giờ bắt đầu khung,
+     * chỉ xét đủ số phút. Trả null nếu không phải ca linh hoạt (giữ cách tính ca cố định).
+     */
+    public FlexOutcome flexibleOutcome(AttendanceRowData data, ComputedHours snap, boolean onLeave,
+                                       Attendance.Status computedStatus, AttendancePolicy policy) {
+        if (data.flexRequiredMinutes() == null) return null;
+        double regular = snap.regularDayHours() + snap.regularNightHours();
+        boolean shortHours = flexibleShort(regular, data.flexRequiredMinutes(), policy.checkInToleranceMinutes());
+        java.util.Set<WorkFlagCalculator.Flag> flags = java.util.EnumSet.noneOf(WorkFlagCalculator.Flag.class);
+        if (snap.otDayHours() + snap.otNightHours() > 0) flags.add(WorkFlagCalculator.Flag.OVERTIME);
+        Attendance.Status status = computedStatus;
+        if (computedStatus == Attendance.Status.PRESENT || computedStatus == Attendance.Status.LATE) {
+            status = shortHours && !onLeave ? Attendance.Status.LATE : Attendance.Status.PRESENT;
+            flags.add(status == Attendance.Status.LATE ? WorkFlagCalculator.Flag.LATE_IN : WorkFlagCalculator.Flag.ON_TIME);
+        }
+        return new FlexOutcome(status, WorkFlagCalculator.serialize(flags));
+    }
+
+    public record FlexOutcome(Attendance.Status status, String workFlags) {}
 
     // ── Work flags ────────────────────────────────────────────────────────────
 
@@ -423,6 +471,10 @@ public class AttendanceCalculationService {
         }
         double otDay   = att != null && att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
         double otNight = att != null && att.getOverrideOtNightMinutes() != null ? att.getOverrideOtNightMinutes() / 60.0 : data.otNightHours();
+        if (data.flexRequiredMinutes() != null) {
+            var h = new ComputedHours(data.actualHours(), data.regularDayHours(), otDay, data.regularNightHours(), otNight);
+            return flexibleOutcome(data, h, leave != null, Attendance.Status.PRESENT, policy).workFlags();
+        }
         var flags = WorkFlagCalculator.calculate(
             data.shiftStart(), data.shiftEnd(), flagCheckIn, flagCheckOut,
             otDay, otNight, leave != null, policy.checkInToleranceMinutes(), policy.checkOutToleranceMinutes());

@@ -75,6 +75,9 @@ public class WorkShiftService {
             .toList();
     }
 
+    /** Số ca tối đa trong một ngày của một nhân viên (Mốc 2b: trước đây 2). Các ca không được chồng giờ. */
+    public static final int MAX_SHIFTS_PER_DAY = 4;
+
     @Transactional
     public ShiftDTO.ShiftResponse createShift(Long companyId, ShiftDTO.ShiftRequest req) {
         boolean codeExists = shiftRepo.findAll().stream().anyMatch(s ->
@@ -99,6 +102,7 @@ public class WorkShiftService {
             .groupName(req.getGroupName() != null && !req.getGroupName().isBlank() ? req.getGroupName().trim() : null)
             .color(req.getColor() != null ? req.getColor() : "#1976D2")
             .build();
+        applyShiftType(shift, req);
 
         applyDepartments(shift, req.getDepartmentIds(), companyId);
         return toResponse(shiftRepo.save(shift));
@@ -130,6 +134,7 @@ public class WorkShiftService {
         shift.setWorkMinutes(calcWorkMinutes(req));
         shift.setGroupName(req.getGroupName() != null && !req.getGroupName().isBlank() ? req.getGroupName().trim() : null);
         if (req.getColor() != null) shift.setColor(req.getColor());
+        applyShiftType(shift, req);
 
         applyDepartments(shift, req.getDepartmentIds(), companyId);
         WorkShift saved = shiftRepo.save(shift);
@@ -217,19 +222,45 @@ public class WorkShiftService {
             return toAssignResponse(assignRepo.save(archived));
         }
 
-        if (existing.size() >= 2) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tối đa 2 ca mỗi ngày");
+        validatePlacement(req.getEmployeeId(), req.getWorkDate(),
+            shift != null ? shift.getStartTime() : req.getCustomStartTime(),
+            shift != null ? shift.getEndTime()   : req.getCustomEndTime(),
+            java.util.Set.of());
+
+        ShiftAssignment a = ShiftAssignment.builder()
+            .employee(employee)
+            .shift(shift)
+            .workDate(req.getWorkDate())
+            .note(req.getNote())
+            .customStartTime(req.getCustomStartTime())
+            .customEndTime(req.getCustomEndTime())
+            .customBreakStart(req.getCustomBreakStart())
+            .customBreakEnd(req.getCustomBreakEnd())
+            .createdBy(createdBy)
+            .build();
+        applySnapshot(a, shift);
+        return toAssignResponse(assignRepo.save(a));
+    }
+
+    /**
+     * Kiểm tra đặt một ca [newStart, newEnd] cho nhân viên vào ngày workDate: tối đa
+     * MAX_SHIFTS_PER_DAY ca, không chồng giờ với ca cùng ngày, ca đêm hôm trước kéo sang,
+     * hay ca hôm sau. ignoreIds: phân ca bỏ qua khi so (vd. ca đang được đổi đi).
+     */
+    public void validatePlacement(Long employeeId, LocalDate workDate, LocalTime newStart, LocalTime newEnd,
+                                  java.util.Set<Long> ignoreIds) {
+        List<ShiftAssignment> existing = assignRepo.findByEmployeeIdAndWorkDate(employeeId, workDate).stream()
+            .filter(x -> !ignoreIds.contains(x.getId())).toList();
+        if (existing.size() >= MAX_SHIFTS_PER_DAY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.shift.too_many_per_day");
         }
 
-        // Resolve new shift's time range
-        LocalTime newStart = shift != null ? shift.getStartTime() : req.getCustomStartTime();
-        LocalTime newEnd   = shift != null ? shift.getEndTime()   : req.getCustomEndTime();
 
         // Validate no overlap with existing assignments on same day
         if (newStart != null && newEnd != null) {
             for (ShiftAssignment ex : existing) {
-                LocalTime exStart = ex.getShift() != null ? ex.getShift().getStartTime() : ex.getCustomStartTime();
-                LocalTime exEnd   = ex.getShift() != null ? ex.getShift().getEndTime()   : ex.getCustomEndTime();
+                LocalTime exStart = ex.effectiveStartTime();
+                LocalTime exEnd   = ex.effectiveEndTime();
                 if (exStart != null && exEnd != null && timesOverlap(newStart, newEnd, exStart, exEnd)) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Trùng ca " + exStart.format(TIME_FMT) + "–" + exEnd.format(TIME_FMT) + " trong ngày");
@@ -238,10 +269,11 @@ public class WorkShiftService {
 
             // Check if previous day has an overnight shift that spills into today
             List<ShiftAssignment> prevDay = assignRepo
-                .findByEmployeeIdAndWorkDate(req.getEmployeeId(), req.getWorkDate().minusDays(1));
+                .findByEmployeeIdAndWorkDate(employeeId, workDate.minusDays(1)).stream()
+                .filter(x -> !ignoreIds.contains(x.getId())).toList();
             for (ShiftAssignment prev : prevDay) {
-                LocalTime ps = prev.getShift() != null ? prev.getShift().getStartTime() : prev.getCustomStartTime();
-                LocalTime pe = prev.getShift() != null ? prev.getShift().getEndTime()   : prev.getCustomEndTime();
+                LocalTime ps = prev.effectiveStartTime();
+                LocalTime pe = prev.effectiveEndTime();
                 // Overnight: ends next day (endTime < startTime)
                 if (ps != null && pe != null && pe.isBefore(ps)) {
                     // Spill on today is [00:00, pe]; new shift starts before pe → overlap
@@ -257,9 +289,10 @@ public class WorkShiftService {
             boolean newIsOvernight = newEnd.isBefore(newStart);
             if (newIsOvernight) {
                 List<ShiftAssignment> nextDay = assignRepo
-                    .findByEmployeeIdAndWorkDate(req.getEmployeeId(), req.getWorkDate().plusDays(1));
+                    .findByEmployeeIdAndWorkDate(employeeId, workDate.plusDays(1)).stream()
+                    .filter(x -> !ignoreIds.contains(x.getId())).toList();
                 for (ShiftAssignment next : nextDay) {
-                    LocalTime ns = next.getShift() != null ? next.getShift().getStartTime() : next.getCustomStartTime();
+                    LocalTime ns = next.effectiveStartTime();
                     if (ns != null && toMin(ns) < toMin(newEnd)) {
                         throw new ResponseStatusException(HttpStatus.CONFLICT,
                             "Ca mới kéo sang hôm sau đến " + newEnd.format(TIME_FMT)
@@ -269,19 +302,38 @@ public class WorkShiftService {
             }
         }
 
-        ShiftAssignment a = ShiftAssignment.builder()
-            .employee(employee)
-            .shift(shift)
-            .workDate(req.getWorkDate())
-            .note(req.getNote())
-            .customStartTime(req.getCustomStartTime())
-            .customEndTime(req.getCustomEndTime())
-            .customBreakStart(req.getCustomBreakStart())
-            .customBreakEnd(req.getCustomBreakEnd())
-            .createdBy(createdBy)
-            .build();
-        applySnapshot(a, shift);
-        return toAssignResponse(assignRepo.save(a));
+    }
+
+    /** Kết quả xếp một ngày theo mẫu xoay vòng. */
+    public enum DayResult { UNCHANGED, ASSIGNED, CLEARED }
+
+    /**
+     * Xếp đúng danh sách ca shiftIds cho nhân viên vào một ngày (Mốc 2b, ca xoay vòng). Giao dịch
+     * riêng: lỗi (trùng giờ, đã có công, kỳ khoá) chỉ huỷ ngày này. shiftIds rỗng = ngày nghỉ →
+     * gỡ phân ca chưa có dữ liệu công.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public DayResult applyRotationDay(Long companyId, Long employeeId, LocalDate date, List<Long> shiftIds, Long createdBy) {
+        periodLockService.requireOpen(companyId, date);
+        List<ShiftAssignment> existing = assignRepo.findByEmployeeIdAndWorkDate(employeeId, date);
+        List<Long> current = existing.stream()
+            .map(a -> a.getShift() != null ? a.getShift().getId() : -1L).sorted().toList();
+        List<Long> wanted = shiftIds.stream().sorted().toList();
+        if (current.equals(wanted)) return DayResult.UNCHANGED;
+        for (ShiftAssignment a : existing) {
+            if (a.isApproved() || hasAttendanceData(employeeId, date, a.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_attendance");
+            }
+            deleteAssignmentById(a.getId(), companyId);
+        }
+        for (Long shiftId : shiftIds) {
+            ShiftDTO.AssignRequest req = new ShiftDTO.AssignRequest();
+            req.setEmployeeId(employeeId);
+            req.setShiftId(shiftId);
+            req.setWorkDate(date);
+            assign(companyId, req, createdBy);
+        }
+        return shiftIds.isEmpty() ? DayResult.CLEARED : DayResult.ASSIGNED;
     }
 
     @Transactional
@@ -398,6 +450,11 @@ public class WorkShiftService {
      * A7: không xoá phân ca khi đã có dữ liệu chấm công (check-in/out, đã duyệt, hoặc đơn
      * chấm công) — trước đây xoá cứng làm mất bằng chứng chấm công.
      */
+    /** Phân ca đã có dữ liệu chấm công (check-in/out, override, đã duyệt) — không được đổi/xoá. */
+    public boolean assignmentHasAttendance(ShiftAssignment a) {
+        return a.isApproved() || hasAttendanceData(a.getEmployee().getId(), a.getWorkDate(), a.getId());
+    }
+
     private void requireNoAttendanceData(Long employeeId, LocalDate workDate, Long assignmentId) {
         if (hasAttendanceData(employeeId, workDate, assignmentId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_attendance");
@@ -464,7 +521,32 @@ public class WorkShiftService {
             .active(s.isActive())
             .departments(s.getDepartments().stream()
                 .map(d -> new ShiftDTO.DeptRef(d.getId(), d.getName())).toList())
+            .shiftType(s.getShiftType() != null ? s.getShiftType().name() : "FIXED")
+            .requiredMinutes(s.getRequiredMinutes())
             .build();
+    }
+
+    /**
+     * Ca linh hoạt (Mốc 2b): khung [startTime, endTime] là giờ được phép làm, requiredMinutes là số
+     * phút phải đủ. Khung (trừ nghỉ) phải chứa được số phút yêu cầu.
+     */
+    private void applyShiftType(WorkShift shift, ShiftDTO.ShiftRequest req) {
+        boolean flexible = "FLEXIBLE".equalsIgnoreCase(req.getShiftType());
+        if (!flexible) {
+            shift.setShiftType(WorkShift.ShiftType.FIXED);
+            shift.setRequiredMinutes(null);
+            return;
+        }
+        Integer required = req.getRequiredMinutes();
+        if (required == null || required <= 0 || shift.getStartTime() == null || shift.getEndTime() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.shift.flexible_required_minutes");
+        }
+        Integer window = shift.getWorkMinutes();
+        if (window != null && required > window) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.shift.flexible_window_too_short");
+        }
+        shift.setShiftType(WorkShift.ShiftType.FLEXIBLE);
+        shift.setRequiredMinutes(required);
     }
 
     /** Copy shift template fields into snapshot columns at assign time. */
@@ -478,6 +560,8 @@ public class WorkShiftService {
             a.setSnapshotBreakEnd(null);
             a.setSnapshotWorkMinutes(null);
             a.setSnapshotColor(null);
+            a.setSnapshotShiftType(null);
+            a.setSnapshotRequiredMinutes(null);
             return;
         }
         a.setSnapshotName(shift.getName());
@@ -488,6 +572,8 @@ public class WorkShiftService {
         a.setSnapshotBreakEnd(shift.getBreakEnd());
         a.setSnapshotWorkMinutes(shift.getWorkMinutes());
         a.setSnapshotColor(shift.getColor());
+        a.setSnapshotShiftType(shift.getShiftType().name());
+        a.setSnapshotRequiredMinutes(shift.getRequiredMinutes());
     }
 
     private ShiftDTO.AssignResponse toAssignResponse(ShiftAssignment a) {

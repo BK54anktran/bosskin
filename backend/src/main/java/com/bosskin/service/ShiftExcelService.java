@@ -48,11 +48,13 @@ public class ShiftExcelService {
         ExcelColumn.ofI18n("excel.col.shift.breakEnd",  r -> r.breakEnd,   (r, v) -> r.breakEnd = v),
         ExcelColumn.ofI18n("excel.col.shift.groupName", r -> r.groupName,  (r, v) -> r.groupName = v),
         ExcelColumn.ofI18n("excel.col.shift.color",     r -> r.color,      (r, v) -> r.color = v),
-        ExcelColumn.ofI18n("excel.col.shift.deptCodes", r -> r.deptCodes,  (r, v) -> r.deptCodes = v)
+        ExcelColumn.ofI18n("excel.col.shift.deptCodes", r -> r.deptCodes,  (r, v) -> r.deptCodes = v),
+        ExcelColumn.ofI18n("excel.col.shift.shiftType", r -> r.shiftType,  (r, v) -> r.shiftType = v),
+        ExcelColumn.ofI18n("excel.col.shift.requiredMinutes", r -> r.requiredMinutes, (r, v) -> r.requiredMinutes = v)
     );
 
     public static class ShiftRow {
-        public String code, name, startTime, endTime, breakStart, breakEnd, groupName, color, deptCodes;
+        public String code, name, startTime, endTime, breakStart, breakEnd, groupName, color, deptCodes, shiftType, requiredMinutes;
     }
 
     private static final DateTimeFormatter SHEET_DATE_FMT = DateTimeFormatter.ofPattern("MM-yyyy");
@@ -335,6 +337,8 @@ public class ShiftExcelService {
                 row.createCell(6).setCellValue(sh.getGroupName() != null ? sh.getGroupName() : "");
                 row.createCell(7).setCellValue(sh.getColor());
                 row.createCell(8).setCellValue(sh.getDepartments().stream().map(Department::getCode).collect(Collectors.joining(",")));
+                row.createCell(10).setCellValue(sh.isFlexible() ? "FLEXIBLE" : "FIXED");
+                if (sh.getRequiredMinutes() != null) row.createCell(11).setCellValue(sh.getRequiredMinutes());
                 // Cột J: phút làm tính sẵn từ backend (để SUMIF lấy được ngay)
                 int workMinutes = 0;
                 if (sh.getStartTime() != null && sh.getEndTime() != null) {
@@ -432,6 +436,8 @@ public class ShiftExcelService {
                 row.createCell(6).setCellValue(sh.getGroupName() != null ? sh.getGroupName() : "");
                 row.createCell(7).setCellValue(sh.getColor());
                 row.createCell(8).setCellValue(sh.getDepartments().stream().map(Department::getCode).collect(Collectors.joining(",")));
+                row.createCell(10).setCellValue(sh.isFlexible() ? "FLEXIBLE" : "FIXED");
+                if (sh.getRequiredMinutes() != null) row.createCell(11).setCellValue(sh.getRequiredMinutes());
                 int workMinutes = 0;
                 if (sh.getStartTime() != null && sh.getEndTime() != null) {
                     workMinutes = (int) java.time.Duration.between(sh.getStartTime(), sh.getEndTime()).toMinutes();
@@ -545,7 +551,8 @@ public class ShiftExcelService {
                 row.groupName != null && !row.groupName.isBlank() ? row.groupName.trim() : null,
                 row.color != null && !row.color.isBlank() ? row.color.trim() : "#1976D2",
                 deptIds
-            );
+            ,
+                parseShiftType(row.shiftType), parseIntOrNull(row.requiredMinutes));
 
             WorkShift existing = existingMap.get(row.code.trim());
             if (existing != null) { shiftService.updateShift(existing.getId(), companyId, req); updated++; }
@@ -603,7 +610,8 @@ public class ShiftExcelService {
                     row.groupName != null && !row.groupName.isBlank() ? row.groupName.trim() : null,
                     row.color != null && !row.color.isBlank() ? row.color.trim() : "#1976D2",
                     deptIds
-                );
+                ,
+                parseShiftType(row.shiftType), parseIntOrNull(row.requiredMinutes));
 
                 // NO_CHANGE check
                 if (existing != null) {
@@ -990,6 +998,19 @@ public class ShiftExcelService {
         a.setSnapshotBreakEnd(shift.getBreakEnd());
         a.setSnapshotWorkMinutes(shift.getWorkMinutes());
         a.setSnapshotColor(shift.getColor());
+        a.setSnapshotShiftType(shift.getShiftType().name());
+        a.setSnapshotRequiredMinutes(shift.getRequiredMinutes());
+    }
+
+    private static String parseShiftType(String v) {
+        if (v == null || v.isBlank()) return "FIXED";
+        String t = v.trim().toUpperCase();
+        return t.startsWith("FLEX") || t.startsWith("LINH") ? "FLEXIBLE" : "FIXED";
+    }
+
+    private static Integer parseIntOrNull(String v) {
+        if (v == null || v.isBlank()) return null;
+        try { return (int) Double.parseDouble(v.trim().replace(",", ".")); } catch (NumberFormatException e) { return null; }
     }
 
     /** Tên cột sheet "Danh sach ca" theo locale — gồm cả cột Phút làm (internal). */
@@ -1004,7 +1025,9 @@ public class ShiftExcelService {
             excelI18n.resolve("excel.col.shift.groupName", locale),
             excelI18n.resolve("excel.col.shift.color",     locale),
             excelI18n.resolve("excel.col.shift.deptCodes", locale),
-            "Phut lam" // internal column — not user-facing, kept as fixed key
+            "Phut lam", // internal column — not user-facing, kept as fixed key
+            excelI18n.resolve("excel.col.shift.shiftType", locale),
+            excelI18n.resolve("excel.col.shift.requiredMinutes", locale)
         };
     }
 

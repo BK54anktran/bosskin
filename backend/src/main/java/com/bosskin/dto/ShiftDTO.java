@@ -23,6 +23,10 @@ public class ShiftDTO {
         private String groupName;
         private String color;
         private List<Long> departmentIds;
+        /** FIXED (mặc định) | FLEXIBLE */
+        private String shiftType;
+        /** Ca linh hoạt: số phút phải làm trong khung giờ */
+        private Integer requiredMinutes;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -39,6 +43,8 @@ public class ShiftDTO {
         private String  color;
         private boolean active;
         private List<DeptRef> departments;
+        private String  shiftType;
+        private Integer requiredMinutes;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor

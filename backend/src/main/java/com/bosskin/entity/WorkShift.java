@@ -51,6 +51,20 @@ public class WorkShift extends BaseEntity {
     @Builder.Default
     private boolean active = true;
 
+    /** FIXED: giờ vào/ra cố định. FLEXIBLE: chỉ cần đủ requiredMinutes trong khung [startTime, endTime] (Mốc 2b). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shift_type", nullable = false, length = 20)
+    @Builder.Default
+    private ShiftType shiftType = ShiftType.FIXED;
+
+    /** Số phút phải làm của ca linh hoạt (đã trừ nghỉ). */
+    @Column(name = "required_minutes")
+    private Integer requiredMinutes;
+
+    public enum ShiftType { FIXED, FLEXIBLE }
+
+    public boolean isFlexible() { return shiftType == ShiftType.FLEXIBLE; }
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "department_shifts",

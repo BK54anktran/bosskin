@@ -51,6 +51,12 @@ public class ShiftAssignment {
 
     @Column(name = "snapshot_color", length = 7)
     private String snapshotColor;
+
+    @Column(name = "snapshot_shift_type", length = 20)
+    private String snapshotShiftType;
+
+    @Column(name = "snapshot_required_minutes")
+    private Integer snapshotRequiredMinutes;
     // ─────────────────────────────────────────────────────────────────────────
 
     @Column(name = "work_date", nullable = false)
@@ -135,6 +141,15 @@ public class ShiftAssignment {
         if (customBreakEnd != null) return customBreakEnd;
         if (snapshotBreakEnd != null) return snapshotBreakEnd;
         return shift != null ? shift.getBreakEnd() : null;
+    }
+
+    /** Số phút phải làm nếu phân ca là ca linh hoạt; null nếu ca cố định / giờ tuỳ chỉnh (Mốc 2b). */
+    public Integer flexibleRequiredMinutes() {
+        if (customStartTime != null) return null;
+        if (snapshotShiftType != null) {
+            return WorkShift.ShiftType.FLEXIBLE.name().equals(snapshotShiftType) ? snapshotRequiredMinutes : null;
+        }
+        return shift != null && shift.isFlexible() ? shift.getRequiredMinutes() : null;
     }
 
 }
