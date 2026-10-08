@@ -225,9 +225,7 @@ public class EmployeeImportService {
         Map<String, SalaryGrade>gradeMap   = salaryGradeRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(g -> g.getCode().toUpperCase(), g -> g));
 
-        Optional<Role> defaultRole = roleRepo.findByCompanyId(companyId).stream()
-            .filter(r -> r.getName().equalsIgnoreCase("employee"))
-            .findFirst();
+        Optional<Role> defaultRole = roleRepo.findFirstByCompanyIdAndIsDefaultTrue(companyId);
 
         List<Employee> toUpdate = new ArrayList<>();
         List<com.bosskin.entity.User> toCreateUsers = new ArrayList<>();
@@ -499,8 +497,7 @@ public class EmployeeImportService {
             .build();
         emp = employeeRepo.save(emp);
 
-        Optional<Role> defaultRole = roleRepo.findByCompanyId(company.getId()).stream()
-            .filter(r -> r.getName().equalsIgnoreCase("employee")).findFirst();
+        Optional<Role> defaultRole = roleRepo.findFirstByCompanyIdAndIsDefaultTrue(company.getId());
         String pwd = isBlank(row.getDefaultPassword()) ? DEFAULT_PASSWORD : row.getDefaultPassword().trim();
         var user = com.bosskin.entity.User.builder()
             .email(email).password(passwordEncoder.encode(pwd))

@@ -783,6 +783,7 @@ INSERT INTO permissions (code, description, module, required_rule) VALUES
 ('POSITION_MANAGE', 'Tạo/sửa/xóa chức vụ', 'DEPARTMENT', 'DEPARTMENT_VIEW'),
 ('ATTENDANCE_SELF', 'Tự check-in/check-out', 'ATTENDANCE', 'ATTENDANCE_VIEW'),
 ('ATTENDANCE_REQUEST_APPROVE', 'Duyệt yêu cầu chấm công', 'ATTENDANCE', 'ATTENDANCE_VIEW'),
+('ATTENDANCE_APPROVE', 'Duyệt / bỏ duyệt bảng công', 'ATTENDANCE', 'ATTENDANCE_VIEW'),
 ('LEAVE_VIEW', 'Xem đơn nghỉ và số phép', 'LEAVE', NULL),
 ('LEAVE_REQUEST_CREATE', 'Tạo đơn nghỉ', 'LEAVE', 'LEAVE_VIEW'),
 ('LEAVE_REQUEST_APPROVE', 'Duyệt/Từ chối đơn nghỉ', 'LEAVE', 'LEAVE_VIEW'),

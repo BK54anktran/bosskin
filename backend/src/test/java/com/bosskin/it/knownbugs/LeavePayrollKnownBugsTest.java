@@ -81,7 +81,6 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     }
 
     @Test
-    @Tag("known-bug")
     @DisplayName("S7 · Người không có quyền xem lương không thấy tổng lương trên Dashboard")
     void s7_dashboardHidesSalaryWithoutPayrollView() {
         var c = fixture.standardCompany();

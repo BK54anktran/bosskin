@@ -30,6 +30,7 @@ public class RoleController {
     private final PermissionRepository permissionRepository;
     private final RolePermDeptScopeRepository rolePermDeptScopeRepo;
     private final PermissionConsistencyService permissionConsistencyService;
+    private final com.bosskin.service.GrantGuard grantGuard;
     private final DeptScopeService deptScopeService;
 
     @GetMapping
@@ -82,6 +83,7 @@ public class RoleController {
         Number roleViewDeptIdRaw = (Number) body.get("roleViewDepartmentId");
         Long roleViewDeptId = roleViewDeptIdRaw != null ? roleViewDeptIdRaw.longValue() : null;
         Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(codes);
+        grantGuard.requireCanGrant(user, normalizedCodes);
         @SuppressWarnings("unchecked")
         Map<String, List<Integer>> rawScopes = (Map<String, List<Integer>>) body.get("deptScopes");
         Role role = roleService.create(
@@ -120,6 +122,7 @@ public class RoleController {
         Set<String> normalizedCodes = codes == null
             ? null
             : permissionConsistencyService.normalizePermissionCodes(codes);
+        grantGuard.requireCanGrant(user, normalizedCodes);
         @SuppressWarnings("unchecked")
         Map<String, List<Integer>> rawScopes = (Map<String, List<Integer>>) body.get("deptScopes");
         Role role = roleService.update(
@@ -159,6 +162,7 @@ public class RoleController {
     ) {
         requirePermission(user, "ROLE_MANAGE");
         Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(body.get("permissions"));
+        grantGuard.requireCanGrant(user, normalizedCodes);
         Role role = roleService.updatePermissions(id, user.getCompany().getId(), List.copyOf(normalizedCodes));
         Map<String, Set<Long>> currentScopes = rolePermDeptScopeRepo.findScopesMap(role.getId());
         rolePermDeptScopeRepo.replaceAll(

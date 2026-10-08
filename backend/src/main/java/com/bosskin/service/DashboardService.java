@@ -145,7 +145,7 @@ public class DashboardService {
             .date(today)
             .todayStats(stats)
             .todayAttendance(attendanceRows)
-            .recentPayroll(recentPayroll)
+            .recentPayroll(canSeeSalary(user) ? recentPayroll : null)
             .build();
     }
 
@@ -281,6 +281,11 @@ public class DashboardService {
 
 
     @Transactional(readOnly = true)
+    /** Số liệu lương trên dashboard chỉ hiện cho người có quyền xem lương (S7). */
+    private boolean canSeeSalary(User user) {
+        return user.can("payroll.view");
+    }
+
     public DashboardDTO.AnalyticsResponse getAnalytics(User user, Long departmentId, int year) {
         Long companyId = user.getCompanyId();
         if (companyId == null) throw new org.springframework.web.server.ResponseStatusException(
@@ -291,9 +296,10 @@ public class DashboardService {
         LocalDate yearStart = LocalDate.of(year, 1, 1);
         LocalDate yearEnd   = LocalDate.of(year, 12, 31);
 
-        // Salary trend 12 thang
+        // Salary trend 12 thang — chỉ khi có quyền xem lương (S7)
+        final boolean canSeeSalary = canSeeSalary(user);
         List<DashboardDTO.MonthlySalaryStat> salaryTrend = new ArrayList<>();
-        var salaryTrendRows = departmentId != null
+        List<Object[]> salaryTrendRows = !canSeeSalary ? List.of() : departmentId != null
             ? payrollRepository.findMonthlySalaryTrendByDept(companyId, year, departmentId)
             : payrollRepository.findMonthlySalaryTrend(companyId, year);
         for (Object[] row : salaryTrendRows) {
@@ -349,8 +355,8 @@ public class DashboardService {
                 .late(late)
                 .absent(absent)
                 .totalHours(totalHours)
-                .estimatedCost(estimated)
-                .gradeBreakdown(gradeBreakdown)
+                .estimatedCost(canSeeSalary ? estimated : null)
+                .gradeBreakdown(canSeeSalary ? gradeBreakdown : List.of())
                 .build());
         }
 
@@ -456,9 +462,9 @@ public class DashboardService {
             .todayOnLeave(onLeave)
             .todayLate(todayLate)
             .todayAttendanceRate(attendanceRate)
-            .currentMonthPayroll(payroll.getTotalNetSalary())
-            .currentMonthPayrollCount(payroll.getEmployeeCount())
-            .currentMonthPayrollStatus(payroll.getStatus())
+            .currentMonthPayroll(canSeeSalary(user) ? payroll.getTotalNetSalary() : null)
+            .currentMonthPayrollCount(canSeeSalary(user) ? payroll.getEmployeeCount() : 0)
+            .currentMonthPayrollStatus(canSeeSalary(user) ? payroll.getStatus() : null)
             .date(today)
             .build();
     }

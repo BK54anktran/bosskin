@@ -32,7 +32,6 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     @Autowired JdbcTemplate jdbc;
 
     @Test
-    @Tag("known-bug")
     @DisplayName("A1 · Nhân viên chỉ có quyền xem chấm công không tự duyệt công của mình được")
     void a1_viewOnlyEmployeeCannotApproveOwnAttendance() {
         var c = fixture.standardCompany();
@@ -48,7 +47,6 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     }
 
     @Test
-    @Tag("known-bug")
     @DisplayName("A2 · Không gắn được phân ca của công ty khác khi duyệt công (IDOR)")
     void a2_approveWithOtherCompanyShiftAssignment_isRejected() {
         var a = fixture.standardCompany();

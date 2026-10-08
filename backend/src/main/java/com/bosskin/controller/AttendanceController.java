@@ -132,11 +132,11 @@ public class AttendanceController {
                 deptScope = intersection;
             }
             Long companyId = user.getCompany().getId();
-            com.bosskin.core.PayrollPeriod period = PayrollPeriod.of(year, month, user.getCompany().getPayrollCutoffDay());
+            com.bosskin.core.PayrollPeriod period = PayrollPeriod.of(year, month, getSelfCompany(user).getPayrollCutoffDay());
             result = attendanceRepository.findByPeriodWithDeptScope(period.from(), period.to(), companyId, employeeId, deptScope, pageable);
         } else {
             Long companyId = user.getCompany().getId();
-            com.bosskin.core.PayrollPeriod period = PayrollPeriod.of(year, month, user.getCompany().getPayrollCutoffDay());
+            com.bosskin.core.PayrollPeriod period = PayrollPeriod.of(year, month, getSelfCompany(user).getPayrollCutoffDay());
             if (selectedDeptScope != null) {
                 result = attendanceRepository.findByPeriodWithDeptScope(period.from(), period.to(), companyId, employeeId, selectedDeptScope, pageable);
             } else {
@@ -752,7 +752,7 @@ public class AttendanceController {
         @AuthenticationPrincipal User user,
         @RequestBody Map<String, Object> body
     ) {
-        requirePermission(user, "ATTENDANCE_VIEW");
+        requirePermission(user, "ATTENDANCE_APPROVE");
         Long attendanceId = body.get("attendanceId") instanceof Number n ? n.longValue() : null;
 
         Attendance att;
@@ -766,6 +766,7 @@ public class AttendanceController {
             employeeId = att.getEmployee().getId();
             date = att.getDate();
             sa = att.getShiftAssignment();
+            requireCanApprove(user, att.getEmployee());
         } else {
             employeeId = body.get("employeeId") instanceof Number n ? n.longValue() : null;
             String dateStr = body.get("date") instanceof String s ? s : null;
@@ -775,8 +776,15 @@ public class AttendanceController {
             date = LocalDate.parse(dateStr);
             Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+            requireCanApprove(user, employee);
+            // A2: phân ca phải thuộc đúng nhân viên và đúng ngày (chặn gắn phân ca công ty khác)
+            final Long empIdForSa = employeeId;
+            final LocalDate dateForSa = date;
             sa = shiftAssignmentId != null
-                ? shiftAssignmentRepository.findById(shiftAssignmentId).orElse(null)
+                ? shiftAssignmentRepository.findById(shiftAssignmentId)
+                    .filter(x -> x.getEmployee() != null && x.getEmployee().getId().equals(empIdForSa)
+                        && dateForSa.equals(x.getWorkDate()))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shiftAssignment.not_found"))
                 : null;
             final ShiftAssignment finalSa = sa;
             att = (shiftAssignmentId != null
@@ -889,6 +897,7 @@ public class AttendanceController {
         Attendance att = attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
         requireViewScope(user, att.getEmployee().getDepartment().getId());
+        requireNotOwnAttendance(user, att.getEmployee());
 
         att.setOverrideCheckIn(req.getOverrideCheckIn());
         att.setOverrideCheckOut(req.getOverrideCheckOut());
@@ -923,6 +932,7 @@ public class AttendanceController {
         Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
+        requireNotOwnAttendance(user, employee);
 
         LocalDate date = LocalDate.parse(dateStr);
         // Find or create attendance record for this employee + date
@@ -943,12 +953,13 @@ public class AttendanceController {
         @AuthenticationPrincipal User user,
         @RequestBody Map<String, Object> body
     ) {
-        requirePermission(user, "ATTENDANCE_VIEW");
+        requirePermission(user, "ATTENDANCE_APPROVE");
         Long attendanceId = body.get("attendanceId") instanceof Number n ? n.longValue() : null;
         if (attendanceId == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu attendanceId");
 
         attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId()).ifPresent(att -> {
+            requireCanApprove(user, att.getEmployee());
             att.setApproved(false);
             att.setApprovedAt(null);
             att.setApprovedBy(null);
@@ -1423,6 +1434,21 @@ public class AttendanceController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
+    /**
+     * Người duyệt/bỏ duyệt công (A1): có quyền ATTENDANCE_APPROVE (kiểm ở endpoint),
+     * nhân viên nằm trong phạm vi xem, và không phải công của chính mình.
+     */
+    private void requireCanApprove(User user, Employee employee) {
+        requireViewScope(user, employee.getDepartment().getId());
+        requireNotOwnAttendance(user, employee);
+    }
+
+    private void requireNotOwnAttendance(User user, Employee employee) {
+        if (user.getEmployee() != null && user.getEmployee().getId().equals(employee.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.cannot_approve_own");
+        }
+    }
+
     private void requireViewScope(User user, Long deptId) {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
         if (!scope.isEmpty() && !scope.contains(deptId))
@@ -1656,6 +1682,7 @@ public class AttendanceController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user) {
         requirePermission(user, "ATTENDANCE_MANAGE");
+        requirePermission(user, "ATTENDANCE_APPROVE"); // import bảng công ghi luôn trạng thái đã duyệt
         Map<String, Integer> result = new java.util.HashMap<>(
             attendanceExcelService.importTimesheet(user.getCompany().getId(), user.getId(), file));
 

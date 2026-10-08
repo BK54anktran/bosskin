@@ -31,6 +31,7 @@ public class CompanyService {
     private final UserRepository       userRepository;
     private final EmployeeRepository   employeeRepository;
     private final RoleRepository       roleRepository;
+    private final com.bosskin.repository.RolePermDeptScopeRepository rolePermDeptScopeRepository;
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder      passwordEncoder;
 
@@ -41,6 +42,11 @@ public class CompanyService {
     public CompanyResponse findById(Long id) {
         return toResponse(getOrThrow(id));
     }
+
+    public static final String DEFAULT_EMPLOYEE_ROLE_NAME = "Nhân viên";
+    /** ATTENDANCE_VIEW / LEAVE_VIEW là quyền tiên quyết của module, giới hạn phạm vi "chỉ mình tôi". */
+    public static final java.util.Set<String> DEFAULT_EMPLOYEE_PERMISSIONS = java.util.Set.of(
+        "ATTENDANCE_VIEW", "ATTENDANCE_SELF", "LEAVE_VIEW", "LEAVE_REQUEST_CREATE");
 
     @Transactional
     public CompanyResponse create(CreateCompanyRequest req) {
@@ -68,9 +74,24 @@ public class CompanyService {
         adminRole.setCompany(company);
         adminRole.setName("Admin");
         adminRole.setDescription("Quản trị viên công ty — toàn quyền");
-        adminRole.setDefault(true);
+        // Admin KHÔNG phải vai trò mặc định: vai trò mặc định được gán tự động cho nhân viên mới (D1)
+        adminRole.setDefault(false);
         adminRole.setPermissions(new HashSet<>(allPermissions));
         adminRole = roleRepository.save(adminRole);
+
+        // 2b. Vai trò mặc định cho nhân viên mới: chỉ tự chấm công và xin nghỉ
+        Role employeeRole = new Role();
+        employeeRole.setCompany(company);
+        employeeRole.setName(DEFAULT_EMPLOYEE_ROLE_NAME);
+        employeeRole.setDescription("Vai trò mặc định của nhân viên mới — tự chấm công, xin nghỉ phép");
+        employeeRole.setDefault(true);
+        employeeRole.setPermissions(new HashSet<>(allPermissions.stream()
+            .filter(p -> DEFAULT_EMPLOYEE_PERMISSIONS.contains(p.getCode()))
+            .toList()));
+        employeeRole = roleRepository.save(employeeRole);
+        rolePermDeptScopeRepository.replaceAll(employeeRole.getId(), java.util.Map.of(
+            "ATTENDANCE_VIEW", java.util.List.of(DeptScopeService.SCOPE_SELF_ONLY),
+            "LEAVE_VIEW", java.util.List.of(DeptScopeService.SCOPE_SELF_ONLY)));
 
         // 3. Tạo user admin đầu tiên
         User admin = User.builder()

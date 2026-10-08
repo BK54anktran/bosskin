@@ -102,10 +102,16 @@ class DashboardServiceTest {
             .approved(true)
             .build();
 
+        // Người xem có quyền xem lương (S7: không có quyền thì ẩn chi phí)
+        com.bosskin.entity.Role payrollViewer = com.bosskin.entity.Role.builder()
+            .permissions(new java.util.HashSet<>(java.util.Set.of(com.bosskin.entity.Permission.builder()
+                .code("PAYROLL_VIEW").module("PAYROLL").description("Xem lương").build())))
+            .build();
         User user = User.builder()
             .id(1L)
             .companyId(10L)
             .company(company)
+            .roles(new java.util.HashSet<>(java.util.Set.of(payrollViewer)))
             .build();
 
         when(companyRepository.findById(10L)).thenReturn(Optional.of(company));

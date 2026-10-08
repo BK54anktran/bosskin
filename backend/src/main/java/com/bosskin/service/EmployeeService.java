@@ -358,8 +358,8 @@ public class EmployeeService {
     }
 
     private java.util.Optional<Role> resolveEmployeeRole(Long companyId) {
-        return roleRepository.findByCompanyIdAndName(companyId, "Employee")
-            .or(() -> roleRepository.findFirstByCompanyIdAndIsDefaultTrue(companyId));
+        // Chỉ vai trò được đánh dấu mặc định. Không còn tìm theo tên để tránh nhầm sang vai trò khác.
+        return roleRepository.findFirstByCompanyIdAndIsDefaultTrue(companyId);
     }
 
     private Employee getOrThrow(Long id, Long companyId) {

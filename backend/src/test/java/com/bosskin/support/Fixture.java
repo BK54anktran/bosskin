@@ -1,6 +1,7 @@
 package com.bosskin.support;
 
 import com.bosskin.dto.CreateCompanyRequest;
+import com.bosskin.repository.RoleRepository;
 import com.bosskin.repository.UserRepository;
 import com.bosskin.service.CompanyService;
 import org.springframework.boot.test.context.TestComponent;
@@ -31,10 +32,9 @@ public class Fixture {
     public static final String PASSWORD = "Test@12345";
 
     /** Quyền của vai trò mẫu. Giữ ở đây để test đọc được "ai có quyền gì". */
-    public static final List<String> PERMS_NHAN_VIEN = List.of(
-        "ATTENDANCE_SELF", "LEAVE_VIEW", "LEAVE_REQUEST_CREATE");
+    public static final List<String> PERMS_NHAN_VIEN = List.copyOf(CompanyService.DEFAULT_EMPLOYEE_PERMISSIONS);
     public static final List<String> PERMS_QUAN_LY_CONG = List.of(
-        "ATTENDANCE_VIEW", "ATTENDANCE_MANAGE", "ATTENDANCE_REQUEST_APPROVE",
+        "ATTENDANCE_VIEW", "ATTENDANCE_MANAGE", "ATTENDANCE_APPROVE", "ATTENDANCE_REQUEST_APPROVE",
         "SHIFT_VIEW", "SHIFT_MANAGE", "EMPLOYEE_VIEW", "DEPARTMENT_VIEW",
         "LEAVE_VIEW", "LEAVE_REQUEST_APPROVE");
     public static final List<String> PERMS_KE_TOAN = List.of(
@@ -45,11 +45,14 @@ public class Fixture {
 
     private final CompanyService companyService;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final Api api;
 
-    public Fixture(CompanyService companyService, UserRepository userRepository, Api api) {
+    public Fixture(CompanyService companyService, UserRepository userRepository,
+                   RoleRepository roleRepository, Api api) {
         this.companyService = companyService;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.api = api;
     }
 
@@ -233,7 +236,8 @@ public class Fixture {
         };
         for (String[] p : people) c.createEmployee(p[0], p[1]);
 
-        c.createRole("Nhân viên", PERMS_NHAN_VIEN);
+        // "Nhân viên" là vai trò mặc định tạo sẵn khi onboarding công ty (CompanyService)
+        c.roles.put("Nhân viên", roleRepository.findFirstByCompanyIdAndIsDefaultTrue(c.id).orElseThrow().getId());
         c.createRole("Quản lý chấm công", PERMS_QUAN_LY_CONG);
         c.createRole("Kế toán", PERMS_KE_TOAN);
         for (Emp e : c.employees) c.setRole(e, "Nhân viên");

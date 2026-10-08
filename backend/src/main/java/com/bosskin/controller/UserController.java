@@ -38,6 +38,7 @@ public class UserController {
     private final PermissionConsistencyService permissionConsistencyService;
     private final DeptScopeService deptScopeService;
     private final PasswordEncoder passwordEncoder;
+    private final com.bosskin.service.GrantGuard grantGuard;
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
 
     @GetMapping
@@ -70,6 +71,7 @@ public class UserController {
         @SuppressWarnings("unchecked")
         List<Integer> roleIds = (List<Integer>) body.getOrDefault("roleIds", Collections.emptyList());
         Set<Role> roles = resolveRoles(roleIds, caller.getCompany().getId());
+        grantGuard.requireCanGrantRoles(caller, roles);
 
         Employee employee = null;
         Object empIdObj = body.get("employeeId");
@@ -120,7 +122,10 @@ public class UserController {
         User user = findUserInCompanyAndScope(id, caller);
         @SuppressWarnings("unchecked")
         List<Integer> roleIds = (List<Integer>) body.getOrDefault("roleIds", Collections.emptyList());
-        user.setRoles(resolveRoles(roleIds, caller.getCompany().getId()));
+        grantGuard.requireNotSelf(caller, user.getId());
+        Set<Role> newRoles = resolveRoles(roleIds, caller.getCompany().getId());
+        grantGuard.requireCanGrantRoles(caller, newRoles);
+        user.setRoles(newRoles);
         return ResponseEntity.ok(toUserMap(userRepository.save(user)));
     }
 
@@ -134,7 +139,9 @@ public class UserController {
         User user = findUserInCompanyAndScope(id, caller);
         @SuppressWarnings("unchecked")
         List<String> codes = (List<String>) body.getOrDefault("permissionCodes", Collections.emptyList());
+        grantGuard.requireNotSelf(caller, user.getId());
         Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(codes);
+        grantGuard.requireCanGrant(caller, normalizedCodes);
         Set<Permission> perms = new HashSet<>();
         for (String code : normalizedCodes) {
             permissionRepository.findByCode(code).ifPresent(perms::add);
@@ -165,6 +172,7 @@ public class UserController {
     ) {
         requirePermission(caller, "USER_MANAGE");
         User targetUser = findUserInCompanyAndScope(id, caller);
+        grantGuard.requireNotSelf(caller, targetUser.getId());
         Set<String> directCodes = targetUser.getDirectPermissions().stream()
             .map(Permission::getCode)
             .collect(Collectors.toSet());

@@ -58,6 +58,12 @@ public class DeptScopeService {
         if (selfOnly) {
             resolved.add(SCOPE_SELF_ONLY);
         }
+        // S6: có cấu hình phạm vi nhưng không phân giải ra phòng ban nào (vd. "phòng tôi" mà
+        // người dùng chưa gắn nhân viên/phòng ban). Tập rỗng ở đây bị hiểu là "toàn công ty",
+        // nên thu hẹp về "chỉ mình tôi" thay vì mở toàn quyền.
+        if (resolved.isEmpty()) {
+            resolved.add(SCOPE_SELF_ONLY);
+        }
         return resolved;
     }
 
