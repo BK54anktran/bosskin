@@ -338,6 +338,12 @@ Cao nhất: **V9** (`V9__audit_log.sql`) — V1 là baseline gộp V1–V117 cũ
   Thao tác nhạy cảm mới (sửa công, lương, quyền…) phải ghi nhật ký + thêm nhãn ở `audit_log_screen.dart` và l10n.
   Xem: `/api/v1/audit-logs` (quyền `AUDIT_VIEW`), `/admin/audit-logs` (system admin); FE màn `/audit-logs`.
 
+## Thử nghiệm nội bộ (09/10/2026)
+- Báo cáo `docs/pilot-2026-10.md`. Quy tắc rút ra: không tự duyệt/sửa/trả lương của mình (`error.payroll.cannot_process_own`);
+  không duyệt công ngày không ca + không dữ liệu; đơn nghỉ nhiều ngày chỉ tính ngày có ca; báo cáo cần quyền xem module
+  + phạm vi phòng ban (`ReportController.checkModule`); file báo cáo dùng khoá `excel.report.*`, `excel.enum.*`.
+- S3: không có `AWS_ACCESS_KEY` → DefaultCredentialsProvider (IAM role trên EB).
+
 ## Nghỉ phép & lương (Bước 1)
 - Quỹ phép tách theo loại: `leave_grants.leave_type_id` = loại được dùng; NULL = quỹ chung cho mọi loại trừ quỹ.
   Trừ quỹ riêng trước, rồi quỹ chung (`LeaveGrantRepository.findUsableGrantsForType`).

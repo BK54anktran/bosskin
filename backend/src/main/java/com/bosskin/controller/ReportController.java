@@ -22,6 +22,7 @@ import java.util.Locale;
 public class ReportController {
 
     private final ReportService reportService;
+    private final com.bosskin.service.DeptScopeService deptScopeService;
 
     private void checkPermission(User user) {
         if (!user.can("REPORT_VIEW")) {
@@ -29,13 +30,34 @@ public class ReportController {
         }
     }
 
+    /**
+     * Báo cáo xuất dữ liệu của module → cần thêm quyền xem module đó và tôn trọng phạm vi phòng ban
+     * (trước đây chỉ kiểm REPORT_VIEW: người có quyền báo cáo tải được lương toàn công ty).
+     * Phạm vi giới hạn → bắt buộc chọn một phòng ban trong phạm vi; chỉ-bản-thân → không xuất báo cáo.
+     */
+    private void checkModule(User user, String modulePerm, Long deptId) {
+        checkPermission(user);
+        if (user.getCompanyId() == null || !user.can(modulePerm)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        java.util.Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), modulePerm);
+        if (scope.isEmpty()) return; // toàn công ty
+        if (deptId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.report.department_required");
+        }
+        if (!scope.contains(deptId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
+        }
+    }
+
     /** Employee headcount — all or filtered by department */
     @GetMapping("/employee-headcount")
     public ResponseEntity<byte[]> employeeHeadcount(
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
-        return reportService.reportEmployeeHeadcount(user.getCompanyId(), user.getId(), deptId);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "EMPLOYEE_VIEW", deptId);
+        return reportService.reportEmployeeHeadcount(user.getCompanyId(), user.getId(), deptId, locale);
     }
 
     /** New hires in a date range */
@@ -44,10 +66,11 @@ public class ReportController {
             @RequestParam String from,
             @RequestParam String to,
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "EMPLOYEE_VIEW", deptId);
         return reportService.reportNewHires(user.getCompanyId(), user.getId(),
-                parseDate(from), parseDate(to), deptId);
+                parseDate(from), parseDate(to), deptId, locale);
     }
 
     /** Resigned employees in a date range */
@@ -56,10 +79,11 @@ public class ReportController {
             @RequestParam String from,
             @RequestParam String to,
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "EMPLOYEE_VIEW", deptId);
         return reportService.reportResigned(user.getCompanyId(), user.getId(),
-                parseDate(from), parseDate(to), deptId);
+                parseDate(from), parseDate(to), deptId, locale);
     }
 
     /** Monthly attendance summary */
@@ -68,10 +92,11 @@ public class ReportController {
             @RequestParam int year,
             @RequestParam int month,
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "ATTENDANCE_VIEW", deptId);
         return reportService.reportAttendanceSummary(user.getCompanyId(), user.getId(),
-                year, month, deptId);
+                year, month, deptId, locale);
     }
 
     /** Monthly overtime summary */
@@ -80,10 +105,11 @@ public class ReportController {
             @RequestParam int year,
             @RequestParam int month,
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "ATTENDANCE_VIEW", deptId);
         return reportService.reportOvertimeSummary(user.getCompanyId(), user.getId(),
-                year, month, deptId);
+                year, month, deptId, locale);
     }
 
     /** Monthly payroll cost summary */
@@ -94,7 +120,7 @@ public class ReportController {
             @RequestParam(required = false) Long deptId,
             @AuthenticationPrincipal User user,
             Locale locale) {
-        checkPermission(user);
+        checkModule(user, "PAYROLL_VIEW", deptId);
         return reportService.reportPayrollSummary(user.getCompanyId(), user.getId(),
                 year, month, deptId, locale);
     }
@@ -106,7 +132,7 @@ public class ReportController {
             @RequestParam(required = false) Long deptId,
             @AuthenticationPrincipal User user,
             Locale locale) {
-        checkPermission(user);
+        checkModule(user, "PAYROLL_VIEW", deptId);
         return reportService.reportYearlyOverview(user.getCompanyId(), user.getId(),
                 year, deptId, locale);
     }
@@ -115,9 +141,10 @@ public class ReportController {
     @GetMapping("/leave-balance")
     public ResponseEntity<byte[]> leaveBalance(
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
-        return reportService.reportLeaveBalance(user.getCompanyId(), user.getId(), deptId);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "LEAVE_VIEW", deptId);
+        return reportService.reportLeaveBalance(user.getCompanyId(), user.getId(), deptId, locale);
     }
 
     /** Leave usage in a date range */
@@ -126,10 +153,11 @@ public class ReportController {
             @RequestParam String from,
             @RequestParam String to,
             @RequestParam(required = false) Long deptId,
-            @AuthenticationPrincipal User user) {
-        checkPermission(user);
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "LEAVE_VIEW", deptId);
         return reportService.reportLeaveUsage(user.getCompanyId(), user.getId(),
-                parseDate(from), parseDate(to), deptId);
+                parseDate(from), parseDate(to), deptId, locale);
     }
 
     private LocalDate parseDate(String s) {

@@ -188,7 +188,10 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final s = AppLocalizations.of(context);
     final keys = Set<String>.from(_selectedDates);
     final rows = _mergedRows.where((r) => keys.contains(_dateKey(r.first.date))).toList();
-    final unapprovedRows = rows.expand((r) => r.rows).where((r) => !r.approved).toList();
+    // Bỏ ngày không có ca và chưa có bản ghi công (T7, CN…) — BE từ chối duyệt các ngày này
+    final unapprovedRows = rows.expand((r) => r.rows)
+        .where((r) => !r.approved && (r.shiftAssignmentId != null || r.attendanceId != null))
+        .toList();
     if (unapprovedRows.isEmpty) return;
     final confirm = await showDialog<bool>(
       context: context,
@@ -204,17 +207,18 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     if (confirm != true || !mounted) return;
     setState(() => _bulkLoading = true);
     int success = 0;
+    String? firstError; // lỗi đầu tiên — hiện cho người dùng thay vì bỏ qua
     for (final row in unapprovedRows) {
       try {
         await _repo.approveAttendance(row.attendanceId,
             employeeId: _selected?.id, date: row.date, shiftAssignmentId: row.shiftAssignmentId);
         success++;
-      } catch (_) {}
+      } catch (e) { firstError ??= serverMsg(e); }
     }
     if (mounted) {
       setState(() { _bulkLoading = false; _selectedDates.clear(); _selectionMode = false; });
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bulkActionDone(success, unapprovedRows.length))));
+          SnackBar(content: Text(firstError == null ? s.bulkActionDone(success, unapprovedRows.length) : '${s.bulkActionDone(success, unapprovedRows.length)}\n$firstError')));
       await _loadTimesheet();
     }
   }
@@ -244,13 +248,14 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     if (confirm != true || !mounted) return;
     setState(() => _bulkLoading = true);
     int success = 0;
+    String? firstError; // lỗi đầu tiên — hiện cho người dùng thay vì bỏ qua
     for (final row in approvedRows) {
-      try { await _repo.unapproveAttendance(row.attendanceId!); success++; } catch (_) {}
+      try { await _repo.unapproveAttendance(row.attendanceId!); success++; } catch (e) { firstError ??= serverMsg(e); }
     }
     if (mounted) {
       setState(() { _bulkLoading = false; _selectedDates.clear(); _selectionMode = false; });
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bulkActionDone(success, approvedRows.length))));
+          SnackBar(content: Text(firstError == null ? s.bulkActionDone(success, approvedRows.length) : '${s.bulkActionDone(success, approvedRows.length)}\n$firstError')));
       await _loadTimesheet();
     }
   }
@@ -379,6 +384,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     if (rowMap.isEmpty) return;
     setState(() { _editingRows.clear(); _bulkLoading = true; });
     int success = 0;
+    String? firstError; // lỗi đầu tiên — hiện cho người dùng thay vì bỏ qua
     for (final entry in rowMap.entries) {
       final payload = _buildSavePayload(entry.value, entry.key);
       if (payload == null) continue;
@@ -389,12 +395,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
             breakMinutes: payload.breakMinutes, otDayMinutes: payload.otDayMinutes,
             otNightMinutes: payload.otNightMinutes, note: entry.value.overrideNote);
         success++;
-      } catch (_) {}
+      } catch (e) { firstError ??= serverMsg(e); }
     }
     if (mounted) {
       setState(() => _bulkLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bulkActionDone(success, rowMap.length))));
+          SnackBar(content: Text(firstError == null ? s.bulkActionDone(success, rowMap.length) : '${s.bulkActionDone(success, rowMap.length)}\n$firstError')));
       await _loadTimesheet();
     }
   }

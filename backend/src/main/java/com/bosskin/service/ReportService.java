@@ -49,7 +49,7 @@ public class ReportService {
     // ─── 1. EMPLOYEE HEADCOUNT ───────────────────────────────────────────────
 
     public ResponseEntity<byte[]> reportEmployeeHeadcount(Long companyId, Long userId,
-                                                          Long deptId) {
+                                                          Long deptId, Locale locale) {
         List<Employee> employees = deptId != null
             ? employeeRepo.findAllByCompanyIdFetchDepartment(companyId).stream()
                 .filter(e -> e.getDepartment() != null && e.getDepartment().getId().equals(deptId))
@@ -57,13 +57,13 @@ public class ReportService {
             : employeeRepo.findAllByCompanyIdFetchDepartment(companyId);
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet("Employee Headcount");
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetHeadcount", locale));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
 
-            String[] headers = {"#", "Employee Code", "Full Name", "Department",
-                "Position", "Gender", "Join Date", "Leave Date", "Status"};
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.position", locale), i18n("excel.report.gender", locale), i18n("excel.report.joinDate", locale), i18n("excel.report.leaveDate", locale), i18n("excel.report.status", locale)};
             writeHeader(sheet, hdr, headers);
 
             int row = 1;
@@ -74,27 +74,27 @@ public class ReportService {
                 setCell(r, 2, e.getFullName(), data);
                 setCell(r, 3, e.getDepartment() != null ? e.getDepartment().getName() : "", data);
                 setCell(r, 4, e.getPosition() != null ? e.getPosition().getName() : "", data);
-                setCell(r, 5, e.getGender() != null ? e.getGender().name() : "", data);
+                setCell(r, 5, e.getGender() != null ? i18n("excel.enum.gender." + e.getGender().name(), locale) : "", data);
                 setCell(r, 6, e.getJoinDate() != null ? e.getJoinDate().format(DATE_FMT) : "", data);
                 setCell(r, 7, e.getLeaveDate() != null ? e.getLeaveDate().format(DATE_FMT) : "", data);
-                setCell(r, 8, e.getStatus() != null ? e.getStatus().name() : "", data);
+                setCell(r, 8, e.getStatus() != null ? i18n("excel.enum.empStatus." + e.getStatus().name(), locale) : "", data);
             }
 
             autoSizeColumns(sheet, headers.length);
             sheet.createFreezePane(0, 1);
 
             // Summary sheet
-            XSSFSheet sumSheet = wb.createSheet("Summary");
+            XSSFSheet sumSheet = wb.createSheet(i18n("excel.report.sheetSummary", locale));
             Map<String, Long> byDept = employees.stream()
                 .collect(Collectors.groupingBy(
                     e -> e.getDepartment() != null ? e.getDepartment().getName() : "N/A",
                     Collectors.counting()));
             Map<String, Long> byStatus = employees.stream()
                 .collect(Collectors.groupingBy(
-                    e -> e.getStatus() != null ? e.getStatus().name() : "UNKNOWN",
+                    e -> e.getStatus() != null ? i18n("excel.enum.empStatus." + e.getStatus().name(), locale) : "?",
                     Collectors.counting()));
 
-            writeHeader(sumSheet, hdr, new String[]{"Department", "Count"});
+            writeHeader(sumSheet, hdr, new String[]{i18n("excel.report.department", locale), i18n("excel.report.count", locale)});
             int sr = 1;
             for (Map.Entry<String, Long> entry : byDept.entrySet()) {
                 Row r = sumSheet.createRow(sr++);
@@ -103,10 +103,10 @@ public class ReportService {
             }
             sr++;
             Row total = sumSheet.createRow(sr++);
-            setCell(total, 0, "TOTAL", hdr);
+            setCell(total, 0, i18n("excel.report.total", locale), hdr);
             setCell(total, 1, employees.size(), hdr);
             sr++;
-            writeHeader(sumSheet, hdr, sr, new String[]{"Status", "Count"});
+            writeHeader(sumSheet, hdr, sr, new String[]{i18n("excel.report.status", locale), i18n("excel.report.count", locale)});
             sr++;
             for (Map.Entry<String, Long> entry : byStatus.entrySet()) {
                 Row r = sumSheet.createRow(sr++);
@@ -127,7 +127,7 @@ public class ReportService {
     // ─── 2. NEW HIRES ────────────────────────────────────────────────────────
 
     public ResponseEntity<byte[]> reportNewHires(Long companyId, Long userId,
-                                                  LocalDate from, LocalDate to, Long deptId) {
+                                                  LocalDate from, LocalDate to, Long deptId, Locale locale) {
         List<Employee> employees = employeeRepo.findAllByCompanyIdFetchDepartment(companyId).stream()
             .filter(e -> e.getJoinDate() != null
                 && !e.getJoinDate().isBefore(from)
@@ -138,13 +138,13 @@ public class ReportService {
             .collect(Collectors.toList());
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet("New Hires");
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetNewHires", locale));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
 
-            String[] headers = {"#", "Employee Code", "Full Name", "Department",
-                "Position", "Join Date", "Gender", "Email"};
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.position", locale), i18n("excel.report.joinDate", locale), i18n("excel.report.gender", locale), i18n("excel.report.email", locale)};
             writeHeader(sheet, hdr, headers);
 
             int row = 1;
@@ -156,7 +156,7 @@ public class ReportService {
                 setCell(r, 3, e.getDepartment() != null ? e.getDepartment().getName() : "", data);
                 setCell(r, 4, e.getPosition() != null ? e.getPosition().getName() : "", data);
                 setCell(r, 5, e.getJoinDate() != null ? e.getJoinDate().format(DATE_FMT) : "", data);
-                setCell(r, 6, e.getGender() != null ? e.getGender().name() : "", data);
+                setCell(r, 6, e.getGender() != null ? i18n("excel.enum.gender." + e.getGender().name(), locale) : "", data);
                 setCell(r, 7, e.getEmail(), data);
             }
             autoSizeColumns(sheet, headers.length);
@@ -174,7 +174,7 @@ public class ReportService {
     // ─── 3. RESIGNED EMPLOYEES ───────────────────────────────────────────────
 
     public ResponseEntity<byte[]> reportResigned(Long companyId, Long userId,
-                                                  LocalDate from, LocalDate to, Long deptId) {
+                                                  LocalDate from, LocalDate to, Long deptId, Locale locale) {
         List<Employee> resigned = employeeRepo.findAllByCompanyIdFetchDepartment(companyId).stream()
             .filter(e -> e.getLeaveDate() != null
                 && !e.getLeaveDate().isBefore(from)
@@ -185,13 +185,13 @@ public class ReportService {
             .collect(Collectors.toList());
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet("Resigned");
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetResigned", locale));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
 
-            String[] headers = {"#", "Employee Code", "Full Name", "Department",
-                "Position", "Join Date", "Leave Date", "Tenure (days)"};
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.position", locale), i18n("excel.report.joinDate", locale), i18n("excel.report.leaveDate", locale), i18n("excel.report.tenureDays", locale)};
             writeHeader(sheet, hdr, headers);
 
             int row = 1;
@@ -223,7 +223,7 @@ public class ReportService {
     // ─── 4. ATTENDANCE SUMMARY ───────────────────────────────────────────────
 
     public ResponseEntity<byte[]> reportAttendanceSummary(Long companyId, Long userId,
-                                                           int year, int month, Long deptId) {
+                                                           int year, int month, Long deptId, Locale locale) {
         LocalDate from = LocalDate.of(year, month, 1);
         LocalDate to   = from.withDayOfMonth(from.lengthOfMonth());
 
@@ -239,16 +239,16 @@ public class ReportService {
             .collect(Collectors.groupingBy(a -> a.getEmployee().getId()));
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet(String.format("Attendance %02d-%d", month, year));
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetAttendance", locale) + String.format(" %02d-%d", month, year));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
             XSSFCellStyle money = moneyStyle(wb);
             XSSFCellStyle moneyInt = moneyIntStyle(wb);
 
-            String[] headers = {"#", "Employee Code", "Full Name", "Department",
-                "Present", "Absent", "Late", "Half Day", "Leave",
-                "Day Hours", "Night Hours", "OT Day (h)", "OT Night (h)"};
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.present", locale), i18n("excel.report.absent", locale), i18n("excel.report.late", locale), i18n("excel.report.halfDay", locale), i18n("excel.report.leave", locale),
+                i18n("excel.report.dayHours", locale), i18n("excel.report.nightHours", locale), i18n("excel.report.otDayH", locale), i18n("excel.report.otNightH", locale)};
             writeHeader(sheet, hdr, headers);
 
             int row = 1;
@@ -294,7 +294,7 @@ public class ReportService {
     // ─── 5. OVERTIME SUMMARY ─────────────────────────────────────────────────
 
     public ResponseEntity<byte[]> reportOvertimeSummary(Long companyId, Long userId,
-                                                         int year, int month, Long deptId) {
+                                                         int year, int month, Long deptId, Locale locale) {
         LocalDate from = LocalDate.of(year, month, 1);
         LocalDate to   = from.withDayOfMonth(from.lengthOfMonth());
 
@@ -313,15 +313,15 @@ public class ReportService {
             : employeeRepo.findAllByCompanyIdFetchDepartment(companyId);
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet(String.format("OT Summary %02d-%d", month, year));
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetOt", locale) + String.format(" %02d-%d", month, year));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
             XSSFCellStyle money = moneyStyle(wb);
             XSSFCellStyle moneyInt = moneyIntStyle(wb);
 
-            String[] headers = {"#", "Employee Code", "Full Name", "Department",
-                "OT Days", "OT Day Hours", "OT Night Hours", "Total OT Hours"};
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.otDays", locale), i18n("excel.report.otDayHours", locale), i18n("excel.report.otNightHours", locale), i18n("excel.report.totalOt", locale)};
             writeHeader(sheet, hdr, headers);
 
             int row = 1;
@@ -365,7 +365,7 @@ public class ReportService {
             .getContent();
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet(String.format("Payroll %02d-%d", month, year));
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetPayroll", locale) + String.format(" %02d-%d", month, year));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
@@ -429,7 +429,7 @@ public class ReportService {
             if (!payrolls.isEmpty()) {
                 Row totRow = sheet.createRow(row);
                 XSSFCellStyle bold = boldStyle(wb);
-                for (int i = 0; i < 11; i++) setCell(totRow, i, i == 2 ? "TOTAL" : "", bold);
+                for (int i = 0; i < 11; i++) setCell(totRow, i, i == 2 ? i18n("excel.report.total", locale) : "", bold);
                 setCellBD(totRow, 11,
                     payrolls.stream().map(p -> sumPayrollEntries(p.getAllowanceEntries())
                         .add(bdNvl(p.getAllowance())).add(bdNvl(p.getBonus())))
@@ -449,7 +449,7 @@ public class ReportService {
             sheet.createFreezePane(4, 1);
 
             // Dept summary sheet
-            XSSFSheet sumSheet = wb.createSheet("By Dept");
+            XSSFSheet sumSheet = wb.createSheet(i18n("excel.report.byDept", locale));
             Map<String, List<Payroll>> byDept = payrolls.stream()
                 .collect(Collectors.groupingBy(
                     p -> p.getEmployee().getDepartment() != null
@@ -481,7 +481,7 @@ public class ReportService {
 
     // ─── 7. LEAVE BALANCE SUMMARY ────────────────────────────────────────────
 
-    public ResponseEntity<byte[]> reportLeaveBalance(Long companyId, Long userId, Long deptId) {
+    public ResponseEntity<byte[]> reportLeaveBalance(Long companyId, Long userId, Long deptId, Locale locale) {
         List<LeaveGrant> grants = leaveGrantRepo.findForCompany(companyId, null, null);
         List<LeaveType> types = leaveTypeRepo.findByCompanyIdAndDeletedFalseOrderByNameAsc(companyId);
 
@@ -503,14 +503,14 @@ public class ReportService {
         }
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet("Leave Balances");
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetLeaveBalance", locale));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
             XSSFCellStyle money = moneyStyle(wb);
 
             // Header: Emp Code | Name | Dept | [LeaveType1] | [LeaveType2] | ...
-            String[] baseHdrs = {"#", "Employee Code", "Full Name", "Department"};
+            String[] baseHdrs = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale)};
             Row hRow = sheet.createRow(0);
             hRow.setHeight((short) 500);
             for (int i = 0; i < baseHdrs.length; i++) {
@@ -552,7 +552,7 @@ public class ReportService {
     // ─── 8. LEAVE USAGE ──────────────────────────────────────────────────────
 
     public ResponseEntity<byte[]> reportLeaveUsage(Long companyId, Long userId,
-                                                    LocalDate from, LocalDate to, Long deptId) {
+                                                    LocalDate from, LocalDate to, Long deptId, Locale locale) {
         List<LeaveRequest> requests = leaveRequestRepo
             .findByCompanyAndStatus(companyId, null).stream()
             .filter(lr -> !lr.getFromDate().isAfter(to) && !lr.getToDate().isBefore(from))
@@ -563,14 +563,14 @@ public class ReportService {
             .collect(Collectors.toList());
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            XSSFSheet sheet = wb.createSheet("Leave Usage");
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetLeaveUsage", locale));
             XSSFCellStyle hdr = headerStyle(wb);
             XSSFCellStyle data = dataStyle(wb);
             XSSFCellStyle num = numStyle(wb);
             XSSFCellStyle money = moneyStyle(wb);
 
-            String[] headers = {"#", "Employee Code", "Full Name", "Department",
-                "Leave Type", "From", "To", "Days", "Status", "Reason"};
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale), i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.leaveType", locale), i18n("excel.report.from", locale), i18n("excel.report.to", locale), i18n("excel.report.days", locale), i18n("excel.report.status", locale), i18n("excel.report.reason", locale)};
             writeHeader(sheet, hdr, headers);
 
             int row = 1;
@@ -712,7 +712,7 @@ public class ReportService {
         }
         Row tot = sheet.createRow(13);
         XSSFCellStyle bold = boldStyle(wb);
-        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 0, i18n("excel.report.total", locale), bold);
         setCell(tot, 1, headcount[12], bold);
         setCell(tot, 2, tNH, bold); setCell(tot, 3, tRs, bold);
         setCell(tot, 4, tNH - tRs, bold);
@@ -764,7 +764,7 @@ public class ReportService {
         }
         Row tot = sheet.createRow(13);
         XSSFCellStyle bold = boldStyle(wb);
-        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 0, i18n("excel.report.total", locale), bold);
         setCell(tot, 1, headcount[12], bold);
         setCell(tot, 2, tNH, bold); setCell(tot, 3, tRs, bold);
         setCell(tot, 4, tNH - tRs, bold);
@@ -815,7 +815,7 @@ public class ReportService {
         }
         Row tot = sheet.createRow(13);
         XSSFCellStyle bold = boldStyle(wb);
-        setCell(tot, 0, "TOTAL", bold); setCell(tot, 1, tCount, bold);
+        setCell(tot, 0, i18n("excel.report.total", locale), bold); setCell(tot, 1, tCount, bold);
         setCellD(tot, 2, tGross, money, money); setCellD(tot, 3, tNet, money, money);
         setCellD(tot, 4, tDed, money, money);
         autoSizeColumns(sheet, headers.length);
@@ -862,7 +862,7 @@ public class ReportService {
         }
         Row tot = sheet.createRow(13);
         XSSFCellStyle bold = boldStyle(wb);
-        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 0, i18n("excel.report.total", locale), bold);
         setCellD(tot, 1, tPres, num, num); setCellD(tot, 3, tOt, hrs, num);
         autoSizeColumns(sheet, headers.length);
         sheet.createFreezePane(1, 1);
@@ -899,7 +899,7 @@ public class ReportService {
         }
         Row tot = sheet.createRow(13);
         XSSFCellStyle bold = boldStyle(wb);
-        setCell(tot, 0, "TOTAL", bold);
+        setCell(tot, 0, i18n("excel.report.total", locale), bold);
         setCell(tot, 1, tCount, bold); setCellD(tot, 2, tDays, hrs, num);
         autoSizeColumns(sheet, headers.length);
         sheet.createFreezePane(1, 1);

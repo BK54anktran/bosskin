@@ -155,7 +155,8 @@ foreach ($p in $people) {
     fullName = $p[1]; email = $p[2]; password = $TMP; gender = $p[3]; joinDate = '2025-01-02'
     departmentId = $dept[$p[4]]; positionId = $pos[$p[5]]; phone = '09' + (Get-Random -Minimum 10000000 -Maximum 99999999)
   }
-  Call PUT "/api/v1/employees/$($e.id)" @{ salaryGradeId = $p[6]; contractSalary = $p[7] } | Out-Null
+  # PUT cập nhật cả chức vụ/bậc lương: không gửi positionId thì chức vụ bị xoá
+  Call PUT "/api/v1/employees/$($e.id)" @{ positionId = $pos[$p[5]]; salaryGradeId = $p[6]; contractSalary = $p[7] } | Out-Null
   $emp[$p[0]] = @{ id = $e.id; email = $p[2]; name = $p[1]; grade = $p[6]; userId = $null }
   Activate $p[2]
 }

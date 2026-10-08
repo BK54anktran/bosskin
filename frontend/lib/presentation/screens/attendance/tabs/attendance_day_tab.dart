@@ -134,17 +134,18 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     if (confirm != true || !mounted) return;
     setState(() => _dayBulkLoading = true);
     int success = 0;
+    String? firstError; // lỗi đầu tiên — hiện cho người dùng thay vì bỏ qua
     for (final slot in slots) {
       try {
         await _repo.approveAttendance(slot.attendanceId,
             employeeId: slot.employeeId, date: slot.date, shiftAssignmentId: slot.shiftAssignmentId);
         success++;
-      } catch (_) {}
+      } catch (e) { firstError ??= serverMsg(e); }
     }
     if (mounted) {
       setState(() { _dayBulkLoading = false; _selectedEmployeeIds.clear(); _daySelectionMode = false; });
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bulkActionDone(success, slots.length))));
+          SnackBar(content: Text(firstError == null ? s.bulkActionDone(success, slots.length) : '${s.bulkActionDone(success, slots.length)}\n$firstError')));
       await _loadRows();
     }
   }
@@ -176,13 +177,14 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     if (confirm != true || !mounted) return;
     setState(() => _dayBulkLoading = true);
     int success = 0;
+    String? firstError; // lỗi đầu tiên — hiện cho người dùng thay vì bỏ qua
     for (final slot in slots) {
-      try { await _repo.unapproveAttendance(slot.attendanceId!); success++; } catch (_) {}
+      try { await _repo.unapproveAttendance(slot.attendanceId!); success++; } catch (e) { firstError ??= serverMsg(e); }
     }
     if (mounted) {
       setState(() { _dayBulkLoading = false; _selectedEmployeeIds.clear(); _daySelectionMode = false; });
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bulkActionDone(success, slots.length))));
+          SnackBar(content: Text(firstError == null ? s.bulkActionDone(success, slots.length) : '${s.bulkActionDone(success, slots.length)}\n$firstError')));
       await _loadRows();
     }
   }
@@ -259,6 +261,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     if (slotMap.isEmpty) return;
     setState(() { _editingDaySlotKeys.clear(); _dayBulkLoading = true; });
     int success = 0;
+    String? firstError; // lỗi đầu tiên — hiện cho người dùng thay vì bỏ qua
     for (final entry in slotMap.entries) {
       final slotKey = entry.key;
       final slot = entry.value;
@@ -292,12 +295,12 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
         await _repo.saveOverride(attId, checkIn: nextCI, checkOut: nextCO,
             breakMinutes: nextBr, otDayMinutes: nextOD, otNightMinutes: nextON, note: slot.overrideNote);
         success++;
-      } catch (_) {}
+      } catch (e) { firstError ??= serverMsg(e); }
     }
     if (mounted) {
       setState(() => _dayBulkLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.bulkActionDone(success, slotMap.length))));
+          SnackBar(content: Text(firstError == null ? s.bulkActionDone(success, slotMap.length) : '${s.bulkActionDone(success, slotMap.length)}\n$firstError')));
       await _loadRows();
     }
   }

@@ -785,6 +785,12 @@ public class AttendanceController {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shiftAssignment.not_found"))
                 : null;
             final ShiftAssignment finalSa = sa;
+            // Ngày không có ca và chưa có bản ghi công (T7, CN…): không tạo bản ghi "vắng" đã duyệt
+            if (sa == null
+                    && shiftAssignmentRepository.findByEmployeeIdAndWorkDate(employeeId, date).isEmpty()
+                    && attendanceRepository.findByEmployeeIdAndDate(employeeId, date).isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.nothing_to_approve");
+            }
             att = (shiftAssignmentId != null
                 ? attendanceRepository.findByEmployeeIdAndDateAndShift(employeeId, date, shiftAssignmentId)
                 : attendanceRepository.findByEmployeeIdAndDate(employeeId, date).stream()

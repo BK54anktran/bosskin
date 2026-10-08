@@ -81,7 +81,23 @@ public class DashboardService {
             .filter(a -> calcSvc.isActuallyPresent(a) && calcSvc.isLate(a))
             .count();
 
-        long absent = Math.max(0, totalEmployees - present - onLeave);
+        // Vắng = NV có ca hôm nay nhưng chưa có mặt và không nghỉ phép. NV không có ca (T7/CN, NV mới
+        // chưa xếp ca) không tính là vắng — trước đây lấy tổng NV trừ có mặt trừ nghỉ.
+        java.util.Set<Long> scheduled = shiftAssignmentRepository.findByCompanyAndDate(companyId, today).stream()
+            .filter(sa -> departmentId == null || (sa.getEmployee().getDepartment() != null
+                && departmentId.equals(sa.getEmployee().getDepartment().getId())))
+            .map(sa -> sa.getEmployee().getId())
+            .collect(Collectors.toSet());
+        java.util.Set<Long> presentIds = todayAttendances.stream()
+            .filter(a -> calcSvc.isActuallyPresent(a))
+            .map(a -> a.getEmployee().getId())
+            .collect(Collectors.toSet());
+        java.util.Set<Long> leaveIds = (departmentId != null
+                ? leaveRequestRepository.findApprovedByCompanyAndDateAndDept(companyId, today, departmentId)
+                : leaveRequestRepository.findApprovedByCompanyAndDate(companyId, today)).stream()
+            .map(l -> l.getEmployee().getId())
+            .collect(Collectors.toSet());
+        long absent = scheduled.stream().filter(id -> !presentIds.contains(id) && !leaveIds.contains(id)).count();
 
         List<DashboardDTO.AttendanceRow> attendanceRows = todayAttendances.stream()
             .map(a -> {

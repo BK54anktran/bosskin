@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../localization/language_service.dart';
 
@@ -194,6 +195,10 @@ const _viMessages = <String, String>{
   'error.location.not_found': 'Vị trí chấm công không tồn tại',
   'error.shift.overlap_previous_day': 'Ca {0} ngày hôm trước kéo sang hôm nay, trùng với ca mới',
   'error.shift.overlap_next_day': 'Ca mới kéo sang hôm sau đến {0}, trùng với ca {1} ngày hôm sau',
+  'error.attendance.nothing_to_approve': 'Ngày này không có ca và chưa có dữ liệu chấm công, không cần duyệt',
+  'error.payroll.cannot_process_own': 'Không thể tự sửa, duyệt hoặc trả bảng lương của chính mình',
+  'error.leave.no_shift_days': 'Khoảng ngày đã chọn không có ngày nào có ca làm',
+  'error.report.department_required': 'Bạn chỉ được xem một số phòng ban — hãy chọn phòng ban trước khi xuất báo cáo',
 };
 
 const _enMessages = <String, String>{
@@ -388,6 +393,10 @@ const _enMessages = <String, String>{
   'error.location.not_found': 'Check-in location not found',
   'error.shift.overlap_previous_day': 'Shift {0} from the previous day runs into the new shift',
   'error.shift.overlap_next_day': 'The new shift runs until {0} next day and overlaps the {1} shift',
+  'error.attendance.nothing_to_approve': 'There is no shift and no attendance data on this day, nothing to approve',
+  'error.payroll.cannot_process_own': 'You cannot edit, approve or pay your own payroll',
+  'error.leave.no_shift_days': 'The selected dates contain no scheduled shifts',
+  'error.report.department_required': 'Your access is limited to some departments — choose a department before exporting',
 };
 
 /// Tra bản dịch; key dạng "error.x.y.<chi tiết>" thử lại với phần đầu "error.x.y".
@@ -423,6 +432,12 @@ String serverKeyMsg(String key) => _translateKey(key, LanguageService.instance.i
 
 String serverMsg(dynamic e) {
   final en = LanguageService.instance.isEnglish;
+
+  if (e is DioException && e.response == null) {
+    return en
+        ? 'Unable to connect to server, please check your network'
+        : 'Không thể kết nối server, kiểm tra kết nối mạng';
+  }
 
   if (e is DioException) {
     final status = e.response?.statusCode;
@@ -463,7 +478,9 @@ String serverMsg(dynamic e) {
     };
   }
 
+  // Lỗi trong app (dữ liệu không đúng dạng…), không phải lỗi mạng — trước đây báo nhầm "không kết nối được"
+  debugPrint('serverMsg: lỗi không phải từ server: $e');
   return en
-      ? 'Unable to connect to server, please check your network'
-      : 'Không thể kết nối server, kiểm tra kết nối mạng';
+      ? 'Something went wrong, please try again'
+      : 'Có lỗi xảy ra, vui lòng thử lại';
 }

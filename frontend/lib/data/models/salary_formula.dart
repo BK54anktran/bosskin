@@ -52,7 +52,7 @@ class SalaryFormula {
         id: (j['id'] as num).toInt(),
         salaryGradeId: (j['salaryGradeId'] as num).toInt(),
         salaryGradeCode: j['salaryGradeCode'] as String,
-        salaryGradeName: j['salaryGradeName'] as String,
+        salaryGradeName: j['salaryGradeName'] as String? ?? '',
         name: j['name'] as String? ?? '',
         departmentId: j['departmentId'] != null ? (j['departmentId'] as num).toInt() : null,
         departmentName: j['departmentName'] as String?,

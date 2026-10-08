@@ -111,6 +111,14 @@ public class PayrollController {
         return ResponseEntity.status(HttpStatus.CREATED).body(PayrollDTO.Response.from(p));
     }
 
+    /** Không tự sửa / duyệt / trả lương cho chính mình (giống công và phép). */
+    private static void requireNotOwnPayroll(User user, Payroll p) {
+        if (user.getEmployeeId() != null && p.getEmployee() != null
+                && user.getEmployeeId().equals(p.getEmployee().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.payroll.cannot_process_own");
+        }
+    }
+
     /** Bước 2 — nhật ký thao tác bảng lương. */
     private void auditPayroll(String action, Payroll p, java.util.Map<String, Object> extra) {
         var d = com.bosskin.audit.AuditService.map(
@@ -118,7 +126,7 @@ public class PayrollController {
             "status", p.getStatus(), "gross", p.getGrossSalary(), "net", p.getNetSalary());
         if (extra != null) d.putAll(extra);
         audit.log(action).entity("PAYROLL", p.getId())
-            .summary(p.getEmployee().getFullName() + " · " + p.getMonth() + "/" + p.getYear() + " · NET " + p.getNetSalary())
+            .summary(p.getEmployee().getFullName() + " · " + p.getMonth() + "/" + p.getYear() + " · NET " + String.format("%,.0f", p.getNetSalary()))
             .detail(d).save();
     }
 
@@ -132,6 +140,7 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
+        requireNotOwnPayroll(user, p);
         var before = com.bosskin.audit.AuditService.map("allowance", p.getAllowance(), "bonus", p.getBonus(),
             "otherDeductions", p.getOtherDeductions(), "net", p.getNetSalary());
         Payroll patched = payrollService.patchDraft(id, body.getAllowance(), body.getBonus(), body.getOtherDeductions(), body.getNote(), body.getCustomFormula());
@@ -150,6 +159,7 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
+        requireNotOwnPayroll(user, p);
         Payroll approved = payrollService.approve(id, user.getId());
         auditPayroll("PAYROLL_APPROVE", approved, null);
         return ResponseEntity.ok(PayrollDTO.Response.from(approved));
@@ -164,6 +174,7 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
+        requireNotOwnPayroll(user, p);
         Payroll paid = payrollService.markAsPaid(id, user.getId());
         auditPayroll("PAYROLL_PAY", paid, null);
         return ResponseEntity.ok(PayrollDTO.Response.from(paid));

@@ -581,7 +581,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                     ),
                     const SizedBox(height: 10),
                     Text(
-                        '${s.date}: ${_rangeLabel(r)} • ${r['requestedAmount'] ?? 0} ${(r['leaveUnit'] ?? '').toString().toLowerCase()}'),
+                        '${s.date}: ${_rangeLabel(r)} • ${r['requestedAmount'] ?? 0} ${_unitLabel(s, r['leaveUnit'])}'),
                     const SizedBox(height: 4),
                     Text(
                       '${s.createdAt}: ${_fmtDateTime(r['createdAt']?.toString())}',
@@ -617,7 +617,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                         final cFromTime = cMap['fromTime']?.toString();
                         final cToTime = cMap['toTime']?.toString();
                         final cAmount = cMap['requestedAmount'];
-                        final cUnit = (cMap['leaveUnit'] ?? '').toString().toLowerCase();
+                        final cUnit = _unitLabel(s, cMap['leaveUnit']);
                         final cTimeInfo = (cFromTime != null && cToTime != null)
                             ? '$cFromTime-$cToTime${cAmount != null ? ' • $cAmount $cUnit' : ''}'
                             : (cAmount != null ? '$cAmount $cUnit' : null);
@@ -2385,3 +2385,7 @@ class _EmployeeGrantHistoryDialogState
     );
   }
 }
+
+/// Đơn vị phép theo ngôn ngữ (BE trả DAY/HOUR) — trước đây hiện thô "day".
+String _unitLabel(AppLocalizations s, dynamic unit) =>
+    unit?.toString() == 'HOUR' ? s.leaveUnitHour : s.leaveUnitDay;

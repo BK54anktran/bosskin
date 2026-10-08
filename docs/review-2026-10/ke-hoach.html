@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 08/10/2026 (đêm) — Bước 1, 2 xong</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 09/10/2026 — Bước 1, 2 và thử nghiệm nội bộ xong; AWS để sau</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -89,8 +89,9 @@
           <li>Runbook: deploy, rollback, sao lưu / khôi phục DB.</li>
         </ul>
         <span class="muted">Đã làm: bảng <code>audit_logs</code> (V9) ghi sửa/duyệt/xoá công, nhập công Excel, duyệt đơn sửa giờ, khoá/mở kỳ, mọi thao tác lương, đổi vai trò/quyền/phạm vi, khoá tài khoản, gỡ thiết bị, impersonate; màn "Nhật ký thao tác" (quyền <code>AUDIT_VIEW</code>). <code>/actuator/health</code> công khai, actuator khác chặn; mã request ở header, log và body lỗi. <code>Procfile</code> trỏ đúng jar, gói deploy kèm <code>.ebextensions</code> (health check), profile prod dùng <code>DB_URL</code> và giữ kiểm tra Flyway; deploy chuyển sang chạy tay. Runbook: <code>docs/runbook.md</code>. 92 test xanh.</span></td><td>Không</td><td><span class="st done">Xong 08/10</span></td></tr>
+      <tr><td><b>2b</b> · Thử nghiệm nội bộ</td><td>Chạy thử như vận hành thật trên bản prod + DB riêng + dữ liệu TH company: chốt công, khoá kỳ, lương, nghỉ phép, báo cáo, giao diện desktop và điện thoại.<br><span class="muted">Tìm 12 lỗi, đã sửa cả 12 (5 mức cao: app không chạy khi thiếu khoá S3, duyệt công ngày không ca tạo bản ghi vắng, kế toán tự duyệt lương mình, đơn nghỉ tính cả T7–CN, báo cáo lộ lương ngoài phạm vi). Chi tiết: <code>docs/pilot-2026-10.md</code>. 96 test xanh.</span></td><td>Không</td><td><span class="st done">Xong 09/10</span></td></tr>
       <tr><td><b>3</b> · Mốc 5 – lên AWS</td><td>EB staging + prod, RDS có backup/PITR, HTTPS (ACM), secret trong SSM, CI deploy staging khi test xanh, prod duyệt tay.
-        <br><span class="muted">Cần chủ dự án: cách truy cập AWS, tên miền, staging có DB riêng không.</span></td><td>Có</td><td><span class="st todo">Chờ thông tin</span></td></tr>
+        <br><span class="muted">Cần chủ dự án: cách truy cập AWS, tên miền, staging có DB riêng không.</span></td><td>Có</td><td><span class="st todo">Để sau (chưa có AWS)</span></td></tr>
       <tr><td><b>4</b> · Pilot</td><td>Nhập dữ liệu thật (NV, ca, phép), chạy song song 1 kỳ với cách chấm cũ, đối chiếu công và lương, sửa lỗi rồi chuyển hẳn.</td><td>Có</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
     </tbody>
   </table></div>

@@ -33,6 +33,7 @@ public class LeaveService {
     private final CompanyRepository companyRepository;
     private final DeptScopeService deptScopeService;
     private final AttendanceRepository attendanceRepository;
+    private final ShiftAssignmentRepository shiftAssignmentRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -642,7 +643,20 @@ public class LeaveService {
         boolean isNightShift = req.getMode() == LeaveRequest.Mode.HOUR_RANGE
             && req.getFromTime() != null && req.getToTime() != null
             && req.getToTime().isBefore(req.getFromTime());
-        long totalDays = java.time.temporal.ChronoUnit.DAYS.between(req.getFromDate(), req.getToDate()) + 1;
+        // L11: chỉ tính ngày có ca. NV đã được xếp ca trong khoảng này → bỏ ngày không có ca (T7, CN, ngày nghỉ);
+        // chưa xếp ca ngày nào → giữ cách tính theo lịch như cũ.
+        java.util.Set<LocalDate> shiftDays = shiftAssignmentRepository
+            .findByEmployeeAndDateRange(emp.getId(), req.getFromDate(), req.getToDate()).stream()
+            .map(ShiftAssignment::getWorkDate)
+            .collect(java.util.stream.Collectors.toCollection(java.util.TreeSet::new));
+        java.util.List<LocalDate> leaveDays = new java.util.ArrayList<>();
+        for (LocalDate d = req.getFromDate(); !d.isAfter(req.getToDate()); d = d.plusDays(1)) {
+            if (shiftDays.isEmpty() || shiftDays.contains(d)) leaveDays.add(d);
+        }
+        if (leaveDays.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.no_shift_days");
+        }
+        long totalDays = leaveDays.size();
         BigDecimal amountPerDay;
         if (req.getMode() == LeaveRequest.Mode.HOUR_RANGE
                 && req.getFromTime() != null && req.getToTime() != null) {
@@ -692,8 +706,7 @@ public class LeaveService {
         }
 
         // Tạo đơn con cho từng ngày/ca
-        LocalDate loopEnd = req.getToDate();
-        for (LocalDate d = req.getFromDate(); !d.isAfter(loopEnd); d = d.plusDays(1)) {
+        for (LocalDate d : leaveDays) {
             LocalDate childToDate = isNightShift ? d.plusDays(1) : d;
             LeaveRequest child = LeaveRequest.builder()
                 .company(companyRef(user.getCompanyId()))

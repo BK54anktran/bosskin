@@ -46,8 +46,9 @@ class ProfileData {
         gender: j['gender'] as String? ?? 'MALE',
         dateOfBirth: j['dateOfBirth'] as String?,
         joinDate: j['joinDate'] as String?,
-        departmentName: j['departmentName'] as String,
-        positionName: j['positionName'] as String,
+        departmentName: j['departmentName'] as String? ?? '',
+        // Chức vụ là tuỳ chọn — NV chưa có chức vụ thì BE trả null (trước đây làm hỏng màn hồ sơ)
+        positionName: j['positionName'] as String? ?? '',
         status: j['status'] as String? ?? 'ACTIVE',
         canEdit: j['canEdit'] as bool? ?? false,
       );
@@ -103,7 +104,7 @@ class EditRequest {
         employeeCode: j['employeeCode'] as String,
         employeeName: j['employeeName'] as String,
         departmentId: (j['departmentId'] as num?)?.toInt(),
-        departmentName: j['departmentName'] as String,
+        departmentName: j['departmentName'] as String? ?? '',
         currentFullName: j['currentFullName'] as String?,
         currentGender: j['currentGender'] as String?,
         currentDateOfBirth: j['currentDateOfBirth'] as String?,

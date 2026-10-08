@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -45,7 +47,14 @@ public class S3Config {
         return builder.build();
     }
 
-    private StaticCredentialsProvider credentials() {
+    /**
+     * Có AWS_ACCESS_KEY/AWS_SECRET_KEY (dev, MinIO) → dùng khoá tĩnh. Không có → chuỗi mặc định của AWS SDK
+     * (IAM role của instance EB, biến môi trường chuẩn, ~/.aws). Trước đây thiếu khoá là app không khởi động.
+     */
+    private AwsCredentialsProvider credentials() {
+        if (props.getAccessKey() == null || props.getAccessKey().isBlank()) {
+            return DefaultCredentialsProvider.create();
+        }
         return StaticCredentialsProvider.create(
                 AwsBasicCredentials.create(props.getAccessKey(), props.getSecretKey()));
     }
