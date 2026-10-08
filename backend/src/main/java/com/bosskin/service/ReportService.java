@@ -401,10 +401,7 @@ public class ReportService {
                     .add(bdNvl(p.getAllowance())).add(bdNvl(p.getBonus()));
                 BigDecimal totalIncome = sumPayrollEntries(p.getIncomeEntries())
                     .add(bdNvl(p.getOvertimePay()));
-                BigDecimal totalDeduction = bdNvl(p.getSocialInsurance())
-                    .add(bdNvl(p.getHealthInsurance())).add(bdNvl(p.getUnemploymentInsurance()))
-                    .add(bdNvl(p.getPersonalIncomeTax())).add(bdNvl(p.getOtherDeductions()))
-                    .add(sumPayrollEntries(p.getCustomDeductions()));
+                BigDecimal totalDeduction = p.totalDeduction();
 
                 Employee e = p.getEmployee();
                 Row r = sheet.createRow(row++);
@@ -443,10 +440,7 @@ public class ReportService {
                         .reduce(BigDecimal.ZERO, BigDecimal::add), money, moneyInt);
                 setCellBD(totRow, 13, sum(payrolls, Payroll::getGrossSalary), money, moneyInt);
                 setCellBD(totRow, 14,
-                    payrolls.stream().map(p -> bdNvl(p.getSocialInsurance())
-                        .add(bdNvl(p.getHealthInsurance())).add(bdNvl(p.getUnemploymentInsurance()))
-                        .add(bdNvl(p.getPersonalIncomeTax())).add(bdNvl(p.getOtherDeductions()))
-                        .add(sumPayrollEntries(p.getCustomDeductions())))
+                    payrolls.stream().map(Payroll::totalDeduction)
                         .reduce(BigDecimal.ZERO, BigDecimal::add), money, moneyInt);
                 setCellBD(totRow, 15, sum(payrolls, Payroll::getNetSalary), money, moneyInt);
             }

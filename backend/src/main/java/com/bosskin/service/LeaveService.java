@@ -25,6 +25,7 @@ public class LeaveService {
     private final LeaveTypeRepository leaveTypeRepository;
     private final PeriodLockService periodLockService;
     private final LeaveGrantRepository leaveGrantRepository;
+    private final LeaveLedgerEntryRepository ledgerRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveAccrualRuleRepository leaveAccrualRuleRepository;
     private final EmployeeRepository employeeRepository;
@@ -194,21 +195,13 @@ public class LeaveService {
 
         BigDecimal requestedAmount = calculateRequestedAmount(req, type);
         if (type.isRequiresBalance()) { // L8: loại không trừ quỹ thì không kiểm/trừ số dư
-            List<LeaveGrant> usable = leaveGrantRepository.findUsableGrants(emp.getId(), null, req.getFromDate());
+            List<LeaveGrant> usable = leaveGrantRepository.findUsableGrantsForType(emp.getId(), type.getId(), req.getFromDate());
             BigDecimal available = usable.stream()
                 .map(g -> isHourType ? availableHours(g, hpdReq) : availableDays(g, hpdReq))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             if (available.compareTo(requestedAmount) < 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số dư phép không đủ");
             }
-            BigDecimal remainingNeed = requestedAmount;
-            for (LeaveGrant grant : usable) {
-                if (remainingNeed.compareTo(BigDecimal.ZERO) <= 0) break;
-                remainingNeed = isHourType
-                    ? deductHours(grant, remainingNeed, hpdReq)
-                    : deductDays(grant, remainingNeed, hpdReq);
-            }
-            leaveGrantRepository.saveAll(usable);
         }
 
         LeaveRequest request = LeaveRequest.builder()
@@ -223,6 +216,10 @@ public class LeaveService {
             .requestedAmount(requestedAmount)
             .reason(req.getReason())
             .build();
+        request = leaveRequestRepository.save(request);
+        if (type.isRequiresBalance()) {
+            deductWithLedger(request, emp, isHourType, requestedAmount, hpdReq);
+        }
         return saveAndReload(request, user.getCompanyId());
     }
 
@@ -665,7 +662,7 @@ public class LeaveService {
         BigDecimal totalAmount = amountPerDay.multiply(BigDecimal.valueOf(totalDays));
 
         List<LeaveGrant> usable = type.isRequiresBalance()
-            ? leaveGrantRepository.findUsableGrants(emp.getId(), null, req.getFromDate())
+            ? leaveGrantRepository.findUsableGrantsForType(emp.getId(), type.getId(), req.getFromDate())
             : List.of();
         BigDecimal available = usable.stream()
             .map(g -> isHourType ? availableHours(g, hpd) : availableDays(g, hpd))
@@ -689,13 +686,10 @@ public class LeaveService {
             .build();
         parent = leaveRequestRepository.save(parent);
 
-        // Trừ tổng phép 1 lần cho toàn group
-        BigDecimal remaining = totalAmount;
-        for (LeaveGrant g : usable) {
-            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
-            remaining = isHourType ? deductHours(g, remaining, hpd) : deductDays(g, remaining, hpd);
+        // Trừ tổng phép 1 lần cho toàn group, ghi sổ theo đơn cha (L13)
+        if (type.isRequiresBalance()) {
+            deductWithLedger(parent, emp, isHourType, totalAmount, hpd);
         }
-        leaveGrantRepository.saveAll(usable);
 
         // Tạo đơn con cho từng ngày/ca
         LocalDate loopEnd = req.getToDate();
@@ -775,6 +769,34 @@ public class LeaveService {
             .filter(r -> selectedDeptScope == null
                 || (r.getEmployee().getDepartment() != null
                     && selectedDeptScope.contains(r.getEmployee().getDepartment().getId())))
+            .toList();
+    }
+
+    /** L13 — sổ trừ/hoàn phép của một nhân viên (mới nhất trước). Nhân viên luôn xem được sổ của mình. */
+    @Transactional(readOnly = true)
+    public List<LeaveDTO.LedgerEntryResponse> getLedger(User user, Long employeeId) {
+        Employee emp = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompanyId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        boolean self = user.getEmployeeId() != null && user.getEmployeeId().equals(emp.getId());
+        if (!self) {
+            requirePermission(user, "LEAVE_VIEW");
+            requireLeaveViewScope(user, emp);
+        }
+        return ledgerRepository.findByEmployee(user.getCompanyId(), emp.getId()).stream()
+            .map(e -> LeaveDTO.LedgerEntryResponse.builder()
+                .id(e.getId())
+                .kind(e.getKind().name())
+                .grantId(e.getGrant().getId())
+                .grantLeaveTypeName(e.getGrant().getLeaveType() != null ? e.getGrant().getLeaveType().getName() : null)
+                .grantedAt(e.getGrant().getGrantedAt())
+                .requestId(e.getRequest().getId())
+                .requestLeaveTypeName(e.getRequest().getLeaveType().getName())
+                .requestFromDate(e.getRequest().getFromDate())
+                .requestToDate(e.getRequest().getToDate())
+                .days(e.getDays())
+                .hours(e.getHours())
+                .createdAt(e.getCreatedAt())
+                .build())
             .toList();
     }
 
@@ -932,6 +954,99 @@ public class LeaveService {
             .build();
     }
 
+    /**
+     * L13 — trừ phép trên các quỹ dùng được của loại phép và ghi sổ từng quỹ đã đổi.
+     * {@code source} là đơn gốc (đơn lẻ hoặc đơn cha của nhóm).
+     */
+    private void deductWithLedger(LeaveRequest source, Employee emp, boolean isHourType,
+                                  BigDecimal amount, BigDecimal hpd) {
+        List<LeaveGrant> usable = leaveGrantRepository.findUsableGrantsForType(
+            emp.getId(), source.getLeaveType().getId(), source.getFromDate());
+        BigDecimal remaining = amount;
+        List<LeaveLedgerEntry> entries = new ArrayList<>();
+        for (LeaveGrant g : usable) {
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
+            BigDecimal d0 = g.getUsedDays(), h0 = g.getUsedHours();
+            remaining = isHourType ? deductHours(g, remaining, hpd) : deductDays(g, remaining, hpd);
+            BigDecimal dd = g.getUsedDays().subtract(d0), dh = g.getUsedHours().subtract(h0);
+            if (dd.signum() != 0 || dh.signum() != 0) {
+                entries.add(LeaveLedgerEntry.builder()
+                    .companyId(emp.getCompany().getId()).employeeId(emp.getId())
+                    .grant(g).request(source).kind(LeaveLedgerEntry.Kind.DEDUCT)
+                    .days(dd).hours(dh).build());
+            }
+        }
+        leaveGrantRepository.saveAll(usable);
+        ledgerRepository.saveAll(entries);
+    }
+
+    /**
+     * L13 — hoàn phép theo sổ: đảo ngược đúng các quỹ mà đơn gốc đã trừ (quỹ trừ sau hoàn trước).
+     * Trả false nếu đơn không có dòng sổ (đơn tạo trước V8) để dùng cách hoàn cũ.
+     */
+    private boolean refundFromLedger(LeaveRequest request, BigDecimal amount, boolean isHour, BigDecimal hpd) {
+        LeaveRequest source = request.getParent() != null ? request.getParent() : request;
+        List<LeaveLedgerEntry> entries = ledgerRepository.findByRequestIdFetchGrant(source.getId());
+        if (entries.isEmpty()) return false;
+
+        // Phần còn trừ (chưa hoàn) trên từng quỹ, giữ thứ tự quỹ được trừ
+        Map<Long, BigDecimal[]> net = new LinkedHashMap<>();
+        Map<Long, LeaveGrant> grants = new HashMap<>();
+        for (LeaveLedgerEntry e : entries) {
+            BigDecimal[] n = net.computeIfAbsent(e.getGrant().getId(), k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            int sign = e.getKind() == LeaveLedgerEntry.Kind.DEDUCT ? 1 : -1;
+            n[0] = n[0].add(e.getDays().multiply(BigDecimal.valueOf(sign)));
+            n[1] = n[1].add(e.getHours().multiply(BigDecimal.valueOf(sign)));
+            grants.put(e.getGrant().getId(), e.getGrant());
+        }
+        List<Long> order = new ArrayList<>(net.keySet());
+        Collections.reverse(order);
+
+        BigDecimal remainingH = isHour ? amount : amount.multiply(hpd);
+        List<LeaveLedgerEntry> refunds = new ArrayList<>();
+        for (Long gid : order) {
+            if (remainingH.signum() <= 0) break;
+            BigDecimal[] n = net.get(gid);
+            BigDecimal netH = n[0].multiply(hpd).add(n[1]);
+            if (netH.signum() <= 0) continue;
+            LeaveGrant g = grants.get(gid);
+            BigDecimal rd, rh;
+            if (remainingH.compareTo(netH) >= 0) {
+                rd = n[0]; rh = n[1];
+                remainingH = remainingH.subtract(netH);
+            } else {
+                BigDecimal f = remainingH.divide(netH, 8, RoundingMode.HALF_UP);
+                rd = n[0].multiply(f).setScale(4, RoundingMode.HALF_UP);
+                rh = n[1].multiply(f).setScale(4, RoundingMode.HALF_UP);
+                remainingH = BigDecimal.ZERO;
+            }
+            BigDecimal d0 = g.getUsedDays(), h0 = g.getUsedHours();
+            applyRefund(g, rd, rh, hpd);
+            refunds.add(LeaveLedgerEntry.builder()
+                .companyId(source.getCompany().getId()).employeeId(source.getEmployee().getId())
+                .grant(g).request(source).kind(LeaveLedgerEntry.Kind.REFUND)
+                .days(d0.subtract(g.getUsedDays())).hours(h0.subtract(g.getUsedHours())).build());
+        }
+        leaveGrantRepository.saveAll(grants.values());
+        ledgerRepository.saveAll(refunds);
+        return true;
+    }
+
+    /** Trừ lại usedDays/usedHours; ngày lẻ chuyển sang giờ theo quy ước của deductHours. */
+    private static void applyRefund(LeaveGrant g, BigDecimal days, BigDecimal hours, BigDecimal hpd) {
+        BigDecimal d = g.getUsedDays().subtract(days);
+        BigDecimal h = g.getUsedHours().subtract(hours);
+        BigDecimal frac = d.subtract(d.setScale(0, RoundingMode.FLOOR));
+        boolean wasWhole = g.getUsedDays().stripTrailingZeros().scale() <= 0;
+        if (h.signum() < 0 || (wasWhole && frac.signum() != 0)) {
+            BigDecimal total = d.multiply(hpd).add(h).max(BigDecimal.ZERO);
+            d = total.divideToIntegralValue(hpd);
+            h = total.subtract(d.multiply(hpd));
+        }
+        g.setUsedDays(d.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
+        g.setUsedHours(h.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
+    }
+
     /** Hoàn lại phép khi request bị hủy/từ chối. */
     private void refundBalance(LeaveRequest request, BigDecimal hpd) {
         if (request.getLeaveType() != null && !request.getLeaveType().isRequiresBalance()) return; // L8
@@ -939,6 +1054,7 @@ public class LeaveService {
             && request.getLeaveType().getUnit() == LeaveType.Unit.HOUR;
         BigDecimal amount = request.getRequestedAmount();
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) return;
+        if (refundFromLedger(request, amount, isHour, hpd)) return;
 
         // Lấy các grant đã trừ (ngược chiều deduct: DESC)
         List<LeaveGrant> grants = leaveGrantRepository.findUsableGrantsForRefund(

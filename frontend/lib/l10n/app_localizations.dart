@@ -7113,6 +7113,66 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Mật khẩu mới phải khác mật khẩu hiện tại'**
   String get passwordSameAsCurrent;
+
+  /// No description provided for @leaveCommonPool.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quỹ chung'**
+  String get leaveCommonPool;
+
+  /// No description provided for @leaveGrantTypeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quỹ cho loại phép'**
+  String get leaveGrantTypeLabel;
+
+  /// No description provided for @leaveCommonPoolHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quỹ chung (dùng cho mọi loại trừ quỹ)'**
+  String get leaveCommonPoolHint;
+
+  /// No description provided for @leaveLedgerTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sổ trừ/hoàn'**
+  String get leaveLedgerTab;
+
+  /// No description provided for @leaveGrantsTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các đợt cấp'**
+  String get leaveGrantsTab;
+
+  /// No description provided for @leaveLedgerDeduct.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trừ'**
+  String get leaveLedgerDeduct;
+
+  /// No description provided for @leaveLedgerRefund.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn'**
+  String get leaveLedgerRefund;
+
+  /// No description provided for @leaveLedgerRequest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn {type} {range}'**
+  String leaveLedgerRequest(String type, String range);
+
+  /// No description provided for @leaveLedgerPool.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quỹ: {pool} (cấp {date})'**
+  String leaveLedgerPool(String pool, String date);
+
+  /// No description provided for @formulaDeductionRest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo hiểm, thuế & khoản trừ theo công thức'**
+  String get formulaDeductionRest;
 }
 
 class _AppLocalizationsDelegate

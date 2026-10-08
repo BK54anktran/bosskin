@@ -1375,6 +1375,25 @@ class _ManualGrantDialogState extends State<_ManualGrantDialog> {
                   validator: (v) => v == null ? s.requiredField : null,
                 ),
                 const SizedBox(height: 8),
+                // Quỹ phép tách theo loại: chọn loại, hoặc để trống = quỹ chung
+                DropdownButtonFormField<int?>(
+                  initialValue: _leaveTypeId,
+                  isExpanded: true,
+                  items: [
+                    DropdownMenuItem<int?>(
+                        value: null, child: Text(s.leaveCommonPoolHint)),
+                    ...widget.types
+                        .where((t) => t['requiresBalance'] != false)
+                        .map((t) => DropdownMenuItem<int?>(
+                              value: (t['id'] as num).toInt(),
+                              child: Text('${t['name'] ?? ''}',
+                                  overflow: TextOverflow.ellipsis),
+                            )),
+                  ],
+                  onChanged: (v) => setState(() => _leaveTypeId = v),
+                  decoration: InputDecoration(labelText: s.leaveGrantTypeLabel),
+                ),
+                const SizedBox(height: 8),
                 Row(children: [
                   Expanded(
                     child: TextFormField(
@@ -1883,7 +1902,9 @@ class _EmployeeGrantHistoryDialog extends StatefulWidget {
 class _EmployeeGrantHistoryDialogState
     extends State<_EmployeeGrantHistoryDialog> {
   List<Map<String, dynamic>> _grants = [];
+  List<Map<String, dynamic>> _ledger = [];
   bool _loading = true;
+  bool _showLedger = false;
 
   @override
   void initState() {
@@ -1893,7 +1914,59 @@ class _EmployeeGrantHistoryDialogState
 
   Future<void> _load() async {
     final data = await widget.repo.getGrants(employeeId: widget.employeeId);
-    if (mounted) setState(() { _grants = _sortGrants(data); _loading = false; });
+    List<Map<String, dynamic>> ledger = [];
+    try {
+      ledger = await widget.repo.getLedger(widget.employeeId);
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _grants = _sortGrants(data);
+        _ledger = ledger;
+        _loading = false;
+      });
+    }
+  }
+
+  String _poolName(Map<String, dynamic> g, AppLocalizations s) =>
+      (g['leaveTypeName'] as String?) ?? s.leaveCommonPool;
+
+  Widget _buildLedger(ColorScheme colorScheme) {
+    final s = AppLocalizations.of(context);
+    if (_ledger.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(s.noResults,
+            style: TextStyle(color: colorScheme.onSurfaceVariant)),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: _ledger.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (_, i) {
+        final e = _ledger[i];
+        final deduct = e['kind'] == 'DEDUCT';
+        final color = deduct ? AppTheme.error : AppTheme.secondary;
+        final from = _fmtDate(e['requestFromDate']);
+        final to = _fmtDate(e['requestToDate']);
+        final range = from == to ? from : '$from → $to';
+        final pool = (e['grantLeaveTypeName'] as String?) ?? s.leaveCommonPool;
+        return ListTile(
+          dense: true,
+          leading: Icon(deduct ? Icons.remove_circle_outline : Icons.add_circle_outline,
+              color: color),
+          title: Text(
+              '${deduct ? s.leaveLedgerDeduct : s.leaveLedgerRefund} ${_fmtAmt(e['days'], e['hours'], s)}',
+              style: TextStyle(fontWeight: FontWeight.w600, color: color)),
+          subtitle: Text(
+              '${s.leaveLedgerRequest('${e['requestLeaveTypeName'] ?? ''}', range)}\n'
+              '${s.leaveLedgerPool(pool, _fmtDate(e['grantedAt']))}',
+              style: const TextStyle(fontSize: 12)),
+          trailing: Text(_fmtDate(e['createdAt']),
+              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+        );
+      },
+    );
   }
 
   List<Map<String, dynamic>> _sortGrants(List<Map<String, dynamic>> grants) {
@@ -1982,6 +2055,12 @@ class _EmployeeGrantHistoryDialogState
     double d = (days as num?)?.toDouble() ?? 0;
     double h = (hours as num?)?.toDouble() ?? 0;
     final hpd = widget.hoursPerDay;
+    if (hpd > 0 && (d < 0 || h < 0)) {
+      // Dòng sổ có thể mang giờ âm khi giờ lẻ gộp thành ngày → quy về tổng giờ
+      final total = (d * hpd + h).abs();
+      d = (total / hpd).floorToDouble();
+      h = total - d * hpd;
+    }
     if (hpd > 0 && h >= hpd) {
       final extra = (h / hpd).floor();
       d += extra;
@@ -2008,7 +2087,7 @@ class _EmployeeGrantHistoryDialogState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: isMobile ? double.infinity : 760,
+          maxWidth: isMobile ? double.infinity : 860,
           maxHeight: isMobile ? screenW * 1.5 : 520,
         ),
         child: Column(
@@ -2025,6 +2104,15 @@ class _EmployeeGrantHistoryDialogState
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
+                  SegmentedButton<bool>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(value: false, label: Text(s.leaveGrantsTab)),
+                      ButtonSegment(value: true, label: Text(s.leaveLedgerTab)),
+                    ],
+                    selected: {_showLedger},
+                    onSelectionChanged: (v) => setState(() => _showLedger = v.first),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -2039,6 +2127,8 @@ class _EmployeeGrantHistoryDialogState
                       padding: EdgeInsets.all(40),
                       child: Center(child: CircularProgressIndicator()),
                     )
+                  : _showLedger
+                      ? _buildLedger(colorScheme)
                   : _grants.isEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(24),
@@ -2070,7 +2160,7 @@ class _EmployeeGrantHistoryDialogState
   Widget _buildDesktopTable(ColorScheme colorScheme) {
     final s = AppLocalizations.of(context);
     final zebraColor = colorScheme.surfaceContainerHighest.withValues(alpha: 0.35);
-    const colWidths = [90.0, 120.0, 110.0, 110.0, 110.0, 170.0];
+    const colWidths = [90.0, 190.0, 110.0, 110.0, 110.0, 170.0];
     final headers = [s.uiGrantDate, s.uiSource, s.uiGranted, s.uiUsed, s.uiRemaining, s.leaveValidity];
 
     return Column(
@@ -2103,7 +2193,7 @@ class _EmployeeGrantHistoryDialogState
               final depleted = _isDepleted(g);
               final dimmed = expired || depleted;
               final sourceLabel =
-                  (g['source'] ?? '') == 'MANUAL' ? s.uiManual : s.uiAutomatic;
+                  '${(g['source'] ?? '') == 'MANUAL' ? s.uiManual : s.uiAutomatic} · ${_poolName(g, s)}';
               return Opacity(
                 opacity: dimmed ? 0.45 : 1.0,
                 child: Container(
@@ -2123,8 +2213,8 @@ class _EmployeeGrantHistoryDialogState
                       width: colWidths[1],
                       child: Row(
                         children: [
-                          Text(sourceLabel,
-                              style: const TextStyle(fontSize: 13)),
+                          Flexible(child: Text(sourceLabel, overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 13))),
                           if (expired) ...[
                             const SizedBox(width: 6),
                             Container(
@@ -2203,7 +2293,7 @@ class _EmployeeGrantHistoryDialogState
         final depleted = _isDepleted(g);
         final dimmed = expired || depleted;
         final sourceLabel =
-            (g['source'] ?? '') == 'MANUAL' ? s.uiManual : s.uiAutomatic;
+            '${(g['source'] ?? '') == 'MANUAL' ? s.uiManual : s.uiAutomatic} · ${_poolName(g, s)}';
         return Opacity(
           opacity: dimmed ? 0.45 : 1.0,
           child: Padding(
@@ -2216,9 +2306,9 @@ class _EmployeeGrantHistoryDialogState
                   children: [
                     Row(
                       children: [
-                        Text(sourceLabel,
+                        Flexible(child: Text(sourceLabel, overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 13)),
+                                fontWeight: FontWeight.w600, fontSize: 13))),
                         if (expired) ...[
                           const SizedBox(width: 6),
                           Container(

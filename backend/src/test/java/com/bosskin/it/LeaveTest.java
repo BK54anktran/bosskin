@@ -3,6 +3,7 @@ package com.bosskin.it;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.LeaveGrantRepository;
 import com.bosskin.service.LeaveService;
+import com.bosskin.support.Fixture;
 import com.bosskin.support.IntegrationTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
@@ -145,5 +146,71 @@ class LeaveTest extends IntegrationTest {
         var mine = api.get(c.tokenOf(c.emp(6)), "/api/v1/leaves/requests/page").expectOk().body();
         assertThat(mine.path("totalElements").asInt()).isEqualTo(1);
         assertThat(mine.path("content").get(0).path("employeeId").asLong()).isEqualTo(c.emp(6).id());
+    }
+
+    private double usedDays(Fixture.TestCompany c, Fixture.Emp e, String validTo) {
+        for (var g : api.get(c.adminToken, "/api/v1/leaves/grants?employeeId=" + e.id()).expectOk().body()) {
+            if (validTo.equals(g.path("validTo").asText())) return g.path("usedDays").asDouble();
+        }
+        throw new AssertionError("không thấy quỹ hết hạn " + validTo);
+    }
+
+    @Test
+    @DisplayName("Quỹ phép tách theo loại: quỹ loại nào dùng cho loại đó, quỹ chung dùng cho mọi loại")
+    void leavePools_areSeparatedByType() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        long pb = c.createLeaveType("PB", "Phép bù", true);
+        c.grantLeaveDays(e, "PN", 5);
+        String token = c.tokenOf(e);
+
+        assertThat(api.post(token, "/api/v1/leaves/requests", dayLeave(pb, "2026-11-02", "2026-11-02")).status())
+            .as("quỹ PN không dùng cho PB").isEqualTo(400);
+
+        api.post(c.adminToken, "/api/v1/leaves/grants/manual", Map.of(
+            "employeeId", e.id(), "grantDays", 1, "validFrom", "2020-01-01", "validTo", "2099-12-30",
+            "note", "Quỹ chung")).expectOk();
+        assertThat(api.post(token, "/api/v1/leaves/requests", dayLeave(pb, "2026-11-02", "2026-11-02")).status())
+            .as("quỹ chung dùng được").isEqualTo(201);
+        assertThat(api.post(token, "/api/v1/leaves/requests", dayLeave(pb, "2026-11-03", "2026-11-03")).status())
+            .as("quỹ chung đã hết").isEqualTo(400);
+        assertThat(api.post(token, "/api/v1/leaves/requests",
+            dayLeave(c.leaveTypes.get("PN"), "2026-11-09", "2026-11-13")).status())
+            .as("PN vẫn đủ 5 ngày").isEqualTo(201);
+    }
+
+    @Test
+    @DisplayName("L13 · Hoàn phép theo sổ: trả đúng quỹ đã trừ, huỷ một ngày của đơn nhiều ngày hoàn đúng một ngày")
+    void ledger_refundsExactGrants() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        c.grantLeaveDays(e, "PN", 5); // hết hạn 2099-12-31
+        api.post(c.adminToken, "/api/v1/leaves/grants/manual", Map.of(
+            "employeeId", e.id(), "leaveTypeId", c.leaveTypes.get("PN"), "grantDays", 1,
+            "validFrom", "2020-01-01", "validTo", "2026-12-31", "note", "Sắp hết hạn")).expectOk();
+        String token = c.tokenOf(e);
+
+        var group = api.post(token, "/api/v1/leaves/requests",
+            dayLeave(c.leaveTypes.get("PN"), "2026-11-16", "2026-11-18")).expectOk();
+        assertThat(usedDays(c, e, "2026-12-31")).as("quỹ sắp hết hạn trừ trước").isEqualTo(1.0);
+        assertThat(usedDays(c, e, "2099-12-31")).isEqualTo(2.0);
+
+        long lastChild = -1;
+        for (var ch : group.body().path("children")) {
+            if ("2026-11-18".equals(ch.path("fromDate").asText())) lastChild = ch.path("id").asLong();
+        }
+        api.post(token, "/api/v1/leaves/requests/" + lastChild + "/cancel", null).expectOk();
+        assertThat(usedDays(c, e, "2099-12-31")).as("hoàn 1 ngày vào quỹ trừ sau cùng").isEqualTo(1.0);
+        assertThat(usedDays(c, e, "2026-12-31")).isEqualTo(1.0);
+
+        api.put(c.tokenOf(c.emp(1)), "/api/v1/leaves/requests/" + group.id() + "/reject", Map.of()).expectOk();
+        assertThat(usedDays(c, e, "2099-12-31")).isEqualTo(0.0);
+        assertThat(usedDays(c, e, "2026-12-31")).isEqualTo(0.0);
+
+        var ledger = api.get(token, "/api/v1/leaves/ledger?employeeId=" + e.id()).expectOk().body();
+        long deducts = 0, refunds = 0;
+        for (var row : ledger) { if ("DEDUCT".equals(row.path("kind").asText())) deducts++; else refunds++; }
+        assertThat(deducts).isEqualTo(2);
+        assertThat(refunds).isEqualTo(3);
     }
 }

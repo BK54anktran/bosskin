@@ -1312,4 +1312,16 @@
   ,"forceChangePasswordDesc": "Your password was set by an administrator. Please choose a new password to continue."
   ,"passwordPolicyHint": "At least 8 characters, with letters and digits"
   ,"passwordSameAsCurrent": "New password must differ from the current one"
+  ,"leaveCommonPool": "Shared pool"
+  ,"leaveGrantTypeLabel": "Pool for leave type"
+  ,"leaveCommonPoolHint": "Shared pool (any balance-based type)"
+  ,"leaveLedgerTab": "Deduction ledger"
+  ,"leaveGrantsTab": "Grants"
+  ,"leaveLedgerDeduct": "Deducted"
+  ,"leaveLedgerRefund": "Refunded"
+  ,"leaveLedgerRequest": "Request {type} {range}"
+  ,"@leaveLedgerRequest": { "placeholders": { "type": { "type": "String" }, "range": { "type": "String" } } }
+  ,"leaveLedgerPool": "Pool: {pool} (granted {date})"
+  ,"@leaveLedgerPool": { "placeholders": { "pool": { "type": "String" }, "date": { "type": "String" } } }
+  ,"formulaDeductionRest": "Insurance, tax & formula deductions"
 }

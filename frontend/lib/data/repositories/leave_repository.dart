@@ -119,6 +119,13 @@ class LeaveRepository {
     );
   }
 
+  /// L13 — sổ trừ/hoàn phép theo từng đơn của một nhân viên (mới nhất trước).
+  Future<List<Map<String, dynamic>>> getLedger(int employeeId) => _api.get(
+        '/leaves/ledger',
+        (data) => (data as List).map((e) => Map<String, dynamic>.from(e)).toList(),
+        queryParams: {'employeeId': employeeId},
+      );
+
   Future<Map<String, dynamic>> manualGrant(Map<String, dynamic> body) async {
     return _api.post('/leaves/grants/manual',
         (data) => Map<String, dynamic>.from(data), body);

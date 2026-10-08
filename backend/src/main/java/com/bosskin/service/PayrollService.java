@@ -189,7 +189,7 @@ public class PayrollService {
             vars.put("ALLOWANCE_MANUAL", manual.allowanceOrZero());
             vars.put("BONUS", manual.bonusOrZero());
             vars.put("OTHER_DEDUCTIONS", manual.otherDeductionsOrZero());
-            grossSalary = formulaEngine.evaluate(formula.getExpressionGross(), vars)
+            grossSalary = labeled("GROSS", formula.getExpressionGross(), vars)
                 .add(manual.allowanceOrZero()).add(manual.bonusOrZero());
             vars.put("GROSS", grossSalary);
             // Giai đoạn 2: biến phụ thuộc GROSS (trừ bảo hiểm/thuế hệ thống)
@@ -227,12 +227,14 @@ public class PayrollService {
             evaluateVarGroup(sortedByOrder(formula.getIncomeVars()),    vars, incomeEntries);
             evaluateVarGroup(sortedByOrder(formula.getAllowanceVars()), vars, allowanceEntries);
 
-            netSalary = formulaEngine.evaluate(formula.getExpressionNet(), vars)
+            netSalary = labeled("NET", formula.getExpressionNet(), vars)
                 .subtract(manual.otherDeductionsOrZero());
         } catch (FormulaEngine.FormulaEvaluationException e) {
             log.warn("Tính lương NV {} kỳ {}/{} lỗi công thức: {}", employeeId, month, year, e.getMessage());
+            // Lỗi chi tiết cho FE: "key|tên NV|[biến] lý do"
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "error.payroll.formula_evaluation_failed");
+                "error.payroll.formula_evaluation_failed|" + employee.getFullName() + "|"
+                    + e.getMessage().replace('|', '/'));
         }
         overtimePay = vars.getOrDefault("DAY_OT", BigDecimal.ZERO)
             .add(vars.getOrDefault("NIGHT_OT", BigDecimal.ZERO));
@@ -433,10 +435,21 @@ public class PayrollService {
                 dv = objectMapper.convertValue(entry.getValue(), SalaryFormula.DeductionVar.class);
             }
             if (dv == null || dv.getExpression() == null) continue;
-            BigDecimal amount = formulaEngine.evaluate(dv.getExpression(), vars)
+            BigDecimal amount = labeled(entry.getKey(), dv.getExpression(), vars)
                 .setScale(2, RoundingMode.HALF_UP);
             target.put(entry.getKey(), new Payroll.DeductionEntry(dv.getLabel(), amount, dv.getSortOrder()));
             vars.put(entry.getKey(), amount);
+        }
+    }
+
+    /** Gắn tên biến/biểu thức vào lỗi công thức để FE chỉ ra chỗ sai. */
+    private BigDecimal labeled(String name, String expression, Map<String, BigDecimal> vars) {
+        try {
+            return formulaEngine.evaluate(expression, vars);
+        } catch (FormulaEngine.FormulaEvaluationException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.startsWith("[")) throw e;
+            throw new FormulaEngine.FormulaEvaluationException("[" + name + "] " + msg);
         }
     }
 

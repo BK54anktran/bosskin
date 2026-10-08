@@ -3769,4 +3769,39 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get passwordSameAsCurrent =>
       'Mật khẩu mới phải khác mật khẩu hiện tại';
+
+  @override
+  String get leaveCommonPool => 'Quỹ chung';
+
+  @override
+  String get leaveGrantTypeLabel => 'Quỹ cho loại phép';
+
+  @override
+  String get leaveCommonPoolHint => 'Quỹ chung (dùng cho mọi loại trừ quỹ)';
+
+  @override
+  String get leaveLedgerTab => 'Sổ trừ/hoàn';
+
+  @override
+  String get leaveGrantsTab => 'Các đợt cấp';
+
+  @override
+  String get leaveLedgerDeduct => 'Trừ';
+
+  @override
+  String get leaveLedgerRefund => 'Hoàn';
+
+  @override
+  String leaveLedgerRequest(String type, String range) {
+    return 'Đơn $type $range';
+  }
+
+  @override
+  String leaveLedgerPool(String pool, String date) {
+    return 'Quỹ: $pool (cấp $date)';
+  }
+
+  @override
+  String get formulaDeductionRest =>
+      'Bảo hiểm, thuế & khoản trừ theo công thức';
 }

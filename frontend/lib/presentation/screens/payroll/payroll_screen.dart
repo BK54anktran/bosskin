@@ -1532,9 +1532,8 @@ class _PayslipDialogState extends State<_PayslipDialog> {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final p = widget.payroll;
-    final totalDed =
-        p.customDeductions.values.fold(0.0, (s, e) => s + e.amount) +
-            p.otherDeductions;
+    final totalDed = p.totalDeduction;
+    final formulaRest = p.formulaDeductionRemainder;
 
     return Dialog(
       child: ConstrainedBox(
@@ -1615,6 +1614,9 @@ class _PayslipDialogState extends State<_PayslipDialog> {
                   _Row(d.label, '-${_fmt(d.amount)}', color: AppTheme.error)),
               if (p.otherDeductions > 0)
                 _Row(s.otherDeductions, '-${_fmt(p.otherDeductions)}',
+                    color: AppTheme.error),
+              if (formulaRest.abs() >= 1)
+                _Row(s.formulaDeductionRest, '-${_fmt(formulaRest)}',
                     color: AppTheme.error),
               _Row(s.totalDeductions, '-${_fmt(totalDed)}',
                   bold: true, color: AppTheme.error),

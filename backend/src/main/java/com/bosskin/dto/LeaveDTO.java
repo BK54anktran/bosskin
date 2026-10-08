@@ -66,6 +66,23 @@ public class LeaveDTO {
         private String note;
     }
 
+    /** L13 — một dòng sổ trừ/hoàn phép. */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class LedgerEntryResponse {
+        private Long id;
+        private String kind;              // DEDUCT | REFUND
+        private Long grantId;
+        private String grantLeaveTypeName; // null = quỹ chung
+        private LocalDate grantedAt;
+        private Long requestId;
+        private String requestLeaveTypeName;
+        private LocalDate requestFromDate;
+        private LocalDate requestToDate;
+        private BigDecimal days;
+        private BigDecimal hours;
+        private java.time.LocalDateTime createdAt;
+    }
+
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class ManualGrantRequest {
         @NotNull private Long employeeId;

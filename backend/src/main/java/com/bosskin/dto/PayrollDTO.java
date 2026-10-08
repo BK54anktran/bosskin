@@ -29,6 +29,8 @@ public class PayrollDTO {
         private BigDecimal healthInsurance;
         private BigDecimal unemploymentInsurance;
         private BigDecimal personalIncomeTax;
+        /** Tổng khấu trừ thống nhất = GROSS − NET (Payroll.totalDeduction). */
+        private BigDecimal totalDeduction;
         private BigDecimal otherDeductions;
         private Map<String, Payroll.DeductionEntry> customDeductions;
         private Map<String, Payroll.DeductionEntry> incomeEntries;
@@ -78,6 +80,7 @@ public class PayrollDTO {
                     .healthInsurance(p.getHealthInsurance())
                     .unemploymentInsurance(p.getUnemploymentInsurance())
                     .personalIncomeTax(p.getPersonalIncomeTax())
+                    .totalDeduction(p.totalDeduction())
                     .otherDeductions(p.getOtherDeductions())
                     .customDeductions(p.getCustomDeductions() != null ? p.getCustomDeductions() : Map.of())
                     .incomeEntries(p.getIncomeEntries() != null ? p.getIncomeEntries() : Map.of())
@@ -153,6 +156,6 @@ public class PayrollDTO {
         private String nightOt;                // read-only
         private String totalAllowance;         // read-only: allowanceEntries + allowance + bonus
         private String totalIncome;            // read-only: incomeEntries + overtimePay
-        private String totalDeduction;         // read-only: BHXH + BHYT + BHTN + TNCN + others + customDed
+        private String totalDeduction;         // read-only: GROSS − NET (Payroll.totalDeduction)
     }
 }

@@ -1315,4 +1315,16 @@
   ,"forceChangePasswordDesc": "Mật khẩu của bạn do quản trị viên đặt. Vui lòng đặt mật khẩu mới để tiếp tục sử dụng."
   ,"passwordPolicyHint": "Ít nhất 8 ký tự, gồm cả chữ và số"
   ,"passwordSameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại"
+  ,"leaveCommonPool": "Quỹ chung"
+  ,"leaveGrantTypeLabel": "Quỹ cho loại phép"
+  ,"leaveCommonPoolHint": "Quỹ chung (dùng cho mọi loại trừ quỹ)"
+  ,"leaveLedgerTab": "Sổ trừ/hoàn"
+  ,"leaveGrantsTab": "Các đợt cấp"
+  ,"leaveLedgerDeduct": "Trừ"
+  ,"leaveLedgerRefund": "Hoàn"
+  ,"leaveLedgerRequest": "Đơn {type} {range}"
+  ,"@leaveLedgerRequest": { "placeholders": { "type": { "type": "String" }, "range": { "type": "String" } } }
+  ,"leaveLedgerPool": "Quỹ: {pool} (cấp {date})"
+  ,"@leaveLedgerPool": { "placeholders": { "pool": { "type": "String" }, "date": { "type": "String" } } }
+  ,"formulaDeductionRest": "Bảo hiểm, thuế & khoản trừ theo công thức"
 }

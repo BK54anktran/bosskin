@@ -252,10 +252,7 @@ public class PayrollExcelService {
             .add(nvl(p.getAllowance())).add(nvl(p.getBonus()));
         BigDecimal totalIncome = sumEntries(p.getIncomeEntries())
             .add(nvl(p.getOvertimePay()));
-        BigDecimal totalDeduction = nvl(p.getSocialInsurance())
-            .add(nvl(p.getHealthInsurance())).add(nvl(p.getUnemploymentInsurance()))
-            .add(nvl(p.getPersonalIncomeTax())).add(nvl(p.getOtherDeductions()))
-            .add(sumEntries(p.getCustomDeductions()));
+        BigDecimal totalDeduction = p.totalDeduction();
         row.setTotalAllowance(fmtMoney(totalAllowance));
         row.setTotalIncome(fmtMoney(totalIncome));
         row.setTotalDeduction(fmtMoney(totalDeduction));
@@ -371,13 +368,8 @@ public class PayrollExcelService {
 
                 writeMoney(row, c++, p.getGrossSalary(), moneyStyle);
 
-                // Tổng khấu trừ = BHXH + BHYT + BHTN + TNCN + customDeductions + otherDeductions
-                BigDecimal totalDed = nvl(p.getSocialInsurance())
-                    .add(nvl(p.getHealthInsurance()))
-                    .add(nvl(p.getUnemploymentInsurance()))
-                    .add(nvl(p.getPersonalIncomeTax()))
-                    .add(nvl(p.getOtherDeductions()))
-                    .add(sumEntries(p.getCustomDeductions()));
+                // Tổng khấu trừ thống nhất = GROSS − NET (Payroll.totalDeduction)
+                BigDecimal totalDed = p.totalDeduction();
                 writeMoney(row, c++, totalDed, moneyStyle);
 
                 writeMoney(row, c++, p.getNetSalary(), moneyStyle);

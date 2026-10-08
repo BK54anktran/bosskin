@@ -3772,4 +3772,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get passwordSameAsCurrent =>
       'New password must differ from the current one';
+
+  @override
+  String get leaveCommonPool => 'Shared pool';
+
+  @override
+  String get leaveGrantTypeLabel => 'Pool for leave type';
+
+  @override
+  String get leaveCommonPoolHint => 'Shared pool (any balance-based type)';
+
+  @override
+  String get leaveLedgerTab => 'Deduction ledger';
+
+  @override
+  String get leaveGrantsTab => 'Grants';
+
+  @override
+  String get leaveLedgerDeduct => 'Deducted';
+
+  @override
+  String get leaveLedgerRefund => 'Refunded';
+
+  @override
+  String leaveLedgerRequest(String type, String range) {
+    return 'Request $type $range';
+  }
+
+  @override
+  String leaveLedgerPool(String pool, String date) {
+    return 'Pool: $pool (granted $date)';
+  }
+
+  @override
+  String get formulaDeductionRest => 'Insurance, tax & formula deductions';
 }

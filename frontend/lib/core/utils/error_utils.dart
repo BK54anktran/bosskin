@@ -66,7 +66,7 @@ const _viMessages = <String, String>{
   'error.excel.history_no_file': 'Bản ghi này không còn file gốc',
   'error.excel.history_not_found': 'Không tìm thấy lịch sử nhập/xuất',
   'error.excel.invalid_format': 'File không đúng định dạng Excel',
-  'error.formula.invalid': 'Công thức không hợp lệ',
+  'error.formula.invalid': 'Công thức không hợp lệ: {0}',
   'error.formula.invalid_date': 'Ngày hiệu lực không hợp lệ',
   'error.formula.name_duplicate': 'Tên công thức đã tồn tại',
   'error.formula.name_required': 'Thiếu tên công thức',
@@ -77,7 +77,7 @@ const _viMessages = <String, String>{
   'error.payroll.approve_non_draft': 'Chỉ duyệt được bảng lương nháp',
   'error.payroll.delete_non_draft': 'Chỉ xoá được bảng lương nháp',
   'error.payroll.edit_non_draft': 'Chỉ sửa được bảng lương nháp',
-  'error.payroll.formula_evaluation_failed': 'Không tính được công thức lương — kiểm tra lại biến và công thức',
+  'error.payroll.formula_evaluation_failed': 'Không tính được lương của {0}: {1} — kiểm tra lại biến và công thức',
   'error.payroll.formula_not_configured': 'Bậc lương chưa có công thức',
   'error.payroll.import_not_supported': 'Không hỗ trợ nhập bảng lương từ Excel',
   'error.payroll.not_found': 'Không tìm thấy bảng lương',
@@ -185,7 +185,7 @@ const _enMessages = <String, String>{
   'error.excel.history_no_file': 'This history entry has no file',
   'error.excel.history_not_found': 'Import/export history not found',
   'error.excel.invalid_format': 'The file is not a valid Excel file',
-  'error.formula.invalid': 'Invalid formula',
+  'error.formula.invalid': 'Invalid formula: {0}',
   'error.formula.invalid_date': 'Invalid effective date',
   'error.formula.name_duplicate': 'A formula with this name already exists',
   'error.formula.name_required': 'Formula name is required',
@@ -196,7 +196,7 @@ const _enMessages = <String, String>{
   'error.payroll.approve_non_draft': 'Only draft payrolls can be approved',
   'error.payroll.delete_non_draft': 'Only draft payrolls can be deleted',
   'error.payroll.edit_non_draft': 'Only draft payrolls can be edited',
-  'error.payroll.formula_evaluation_failed': 'The salary formula could not be evaluated — check variables and formula',
+  'error.payroll.formula_evaluation_failed': 'Could not compute pay for {0}: {1} — check variables and formula',
   'error.payroll.formula_not_configured': 'No salary formula configured for this grade',
   'error.payroll.import_not_supported': 'Importing payroll from Excel is not supported',
   'error.payroll.not_found': 'Payroll not found',
@@ -250,7 +250,10 @@ String? _translateKey(String raw, bool en) {
   for (var i = 1; i < parts.length; i++) {
     out = out.replaceAll('{${i - 1}}', parts[i]);
   }
-  return out.replaceAll(RegExp(r'\{\d+\}'), '').trim();
+  // Thiếu tham số (BE cũ không gửi chi tiết) → bỏ chỗ trống và dấu nối trước nó
+  return out
+      .replaceAll(RegExp(r'\s*(?:[:—-]\s*)?(?:của\s+|for\s+)?\{\d+\}'), '')
+      .trim();
 }
 
 String? _lookupKey(String key, bool en) {

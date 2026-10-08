@@ -322,8 +322,17 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V7** (`V7__must_change_password.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị chấm công
-→ Migration tiếp theo phải là **V8**
+Cao nhất: **V8** (`V8__leave_ledger.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu
+→ Migration tiếp theo phải là **V9**
+
+## Nghỉ phép & lương (Bước 1)
+- Quỹ phép tách theo loại: `leave_grants.leave_type_id` = loại được dùng; NULL = quỹ chung cho mọi loại trừ quỹ.
+  Trừ quỹ riêng trước, rồi quỹ chung (`LeaveGrantRepository.findUsableGrantsForType`).
+- L13 sổ trừ/hoàn `leave_ledger_entries`: mỗi lần trừ ghi phần đổi trên từng quỹ theo đơn gốc (đơn lẻ / đơn cha);
+  hoàn phép đảo đúng các dòng đó (quỹ trừ sau hoàn trước). Đơn trước V8 không có sổ → hoàn theo cách cũ.
+  API `GET /api/v1/leaves/ledger?employeeId=`; FE: hộp "Lịch sử phép" → tab "Sổ trừ/hoàn".
+- Tổng khấu trừ thống nhất = GROSS − NET (`Payroll.totalDeduction`) cho phiếu lương, Excel, báo cáo.
+- Lỗi công thức trả chi tiết: `error.formula.invalid|<chi tiết>`, `error.payroll.formula_evaluation_failed|<NV>|[biến] lý do`.
 
 ## Bảo mật tài khoản (Bước 1)
 - Access token 30 phút (`JWT_EXPIRATION_MS`, mặc định 1800000), refresh 7 ngày; FE tự refresh khi 401.

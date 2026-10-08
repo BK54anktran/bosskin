@@ -196,8 +196,9 @@ public class SalaryFormulaController {
         all.addAll(formulaEngine.validate(gross, allowed));
         all.addAll(formulaEngine.validate(net, allowed));
         if (!all.isEmpty()) {
+            // Lỗi chi tiết cho FE: "error.formula.invalid|lỗi 1; lỗi 2"
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "error.formula.invalid");
+                    "error.formula.invalid|" + String.join("; ", all).replace('|', '/'));
         }
     }
 

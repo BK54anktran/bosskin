@@ -179,4 +179,15 @@ public class Payroll extends BaseEntity {
         private Map<String, SalaryFormula.DeductionVar> incomeVars;
         private Map<String, SalaryFormula.DeductionVar> allowanceVars;
     }
+
+    /**
+     * Tổng khấu trừ thống nhất cho phiếu lương, màn hình, Excel và báo cáo: GROSS − NET.
+     * Bao gồm mọi khoản công thức NET trừ (bảo hiểm, thuế, khoản khấu trừ tuỳ chỉnh) và khấu trừ khác nhập tay,
+     * nên luôn khớp với NET thực nhận, không cộng trùng khi công ty tự định nghĩa biến bảo hiểm.
+     */
+    public BigDecimal totalDeduction() {
+        BigDecimal gross = grossSalary != null ? grossSalary : BigDecimal.ZERO;
+        BigDecimal net = netSalary != null ? netSalary : BigDecimal.ZERO;
+        return gross.subtract(net);
+    }
 }

@@ -182,8 +182,8 @@ class _SelfPayslipDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final p = payroll;
-    final totalDed = p.customDeductions.values.fold(0.0, (s, e) => s + e.amount)
-        + p.otherDeductions;
+    final totalDed = p.totalDeduction;
+    final formulaRest = p.formulaDeductionRemainder;
 
     return Dialog(
       child: ConstrainedBox(
@@ -241,6 +241,8 @@ class _SelfPayslipDialog extends StatelessWidget {
                 _Row(d.label, '-${_fmt2(d.amount)}', color: AppTheme.error)),
               if (p.otherDeductions > 0)
                 _Row(s.otherDeductions, '-${_fmt2(p.otherDeductions)}', color: AppTheme.error),
+              if (formulaRest.abs() >= 1)
+                _Row(s.formulaDeductionRest, '-${_fmt2(formulaRest)}', color: AppTheme.error),
               _Row(s.totalDeductions, '-${_fmt2(totalDed)}', bold: true, color: AppTheme.error),
               const Divider(height: 20),
               _Row(s.netSalary, _fmt2(p.netSalary),

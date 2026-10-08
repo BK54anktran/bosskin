@@ -130,6 +130,15 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.updateApplied(id, user, body.isApplied()));
     }
 
+    /** L13 — sổ trừ/hoàn phép theo từng đơn của một nhân viên. */
+    @GetMapping("/ledger")
+    public ResponseEntity<List<LeaveDTO.LedgerEntryResponse>> getLedger(
+        @AuthenticationPrincipal User user,
+        @RequestParam Long employeeId
+    ) {
+        return ResponseEntity.ok(leaveService.getLedger(user, employeeId));
+    }
+
     @GetMapping("/grants")
     public ResponseEntity<List<LeaveDTO.LeaveGrantResponse>> getGrants(
         @AuthenticationPrincipal User user,

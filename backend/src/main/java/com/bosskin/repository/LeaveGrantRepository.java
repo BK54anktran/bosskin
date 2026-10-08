@@ -46,6 +46,29 @@ public interface LeaveGrantRepository extends JpaRepository<LeaveGrant, Long> {
         @Param("date") LocalDate date
     );
 
+    /**
+     * Quỹ dùng được cho một loại phép: quỹ riêng của loại đó trước, rồi quỹ chung (không gắn loại).
+     * Thứ tự trong mỗi nhóm như {@link #findUsableGrants}.
+     */
+    @Query("""
+        SELECT g FROM LeaveGrant g
+        WHERE g.employee.id = :employeeId
+          AND (g.leaveType IS NULL OR g.leaveType.id = :leaveTypeId)
+          AND (g.grantDays > g.usedDays OR g.grantHours > g.usedHours)
+          AND (g.validFrom IS NULL OR g.validFrom <= :date)
+          AND (g.validTo IS NULL OR g.validTo >= :date)
+        ORDER BY CASE WHEN g.leaveType IS NULL THEN 1 ELSE 0 END ASC,
+                 CASE WHEN g.validTo IS NULL THEN 1 ELSE 0 END ASC,
+                 g.validTo ASC,
+                 g.validFrom ASC,
+                 g.id ASC
+        """)
+    List<LeaveGrant> findUsableGrantsForType(
+        @Param("employeeId") Long employeeId,
+        @Param("leaveTypeId") Long leaveTypeId,
+        @Param("date") LocalDate date
+    );
+
     @Query("""
         SELECT g FROM LeaveGrant g
         WHERE g.employee.id = :employeeId

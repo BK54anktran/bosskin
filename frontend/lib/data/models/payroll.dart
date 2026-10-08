@@ -81,6 +81,15 @@ class Payroll {
   final Map<String, PayrollDeductionEntry> incomeEntries;
   final Map<String, PayrollDeductionEntry> allowanceEntries;
   final double netSalary;
+
+  /// Tổng khấu trừ thống nhất (khớp backend Payroll.totalDeduction, Excel, báo cáo): GROSS − NET.
+  double get totalDeduction => grossSalary - netSalary;
+
+  /// Phần khấu trừ công thức NET tự trừ (bảo hiểm, thuế…) ngoài các khoản liệt kê riêng.
+  double get formulaDeductionRemainder =>
+      totalDeduction -
+      customDeductions.values.fold(0.0, (s, e) => s + e.amount) -
+      otherDeductions;
   final int? salaryGradeId;
   final String? salaryGradeCode;
   final String? salaryGradeName;

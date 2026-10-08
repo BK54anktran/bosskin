@@ -150,6 +150,38 @@ class PayrollTest extends IntegrationTest {
         assertThat(recalculated.body().path("grossSalary").asDouble()).isEqualTo(25_000_000d);
     }
 
+    @Test
+    @DisplayName("Tổng khấu trừ thống nhất = GROSS − NET; lỗi công thức chỉ rõ nhân viên và biến")
+    void totalDeduction_andDetailedFormulaError() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        String accountant = c.tokenOf(c.emp(2));
+        long ok = api.post(c.adminToken, "/api/v1/salary-formulas", Map.of(
+            "salaryGradeId", c.salaryGrades.get("NGAY300"), "name", "Cố định 20tr",
+            "effectiveDate", "2026-01-01",
+            "expressionGross", "20000000", "expressionNet", "GROSS - PIT - TOTAL_INSURANCE")).expectOk().id();
+        api.post(accountant, "/api/v1/payrolls/generate", Map.of(
+            "employeeId", e.id(), "year", 2026, "month", 11, "formulaId", ok)).expectOk();
+        var p = api.get(accountant, "/api/v1/payrolls/by-employee/" + e.id()).expectOk().body().get(0);
+        assertThat(p.path("totalDeduction").asDouble())
+            .isEqualTo(p.path("grossSalary").asDouble() - p.path("netSalary").asDouble());
+        assertThat(p.path("totalDeduction").asDouble()).isGreaterThan(0);
+
+        String invalid = api.post(c.adminToken, "/api/v1/salary-formulas", Map.of(
+            "salaryGradeId", c.salaryGrades.get("NGAY300"), "name", "Sai cú pháp",
+            "effectiveDate", "2026-01-01",
+            "expressionGross", "20000000 / (PRESENT_DAYS - PRESENT_DAYS)", "expressionNet", "GROSS")).raw();
+        assertThat(invalid).as("lỗi lưu công thức kèm chi tiết").contains("error.formula.invalid|");
+
+        long bad = api.post(c.adminToken, "/api/v1/salary-formulas", Map.of(
+            "salaryGradeId", c.salaryGrades.get("NGAY300"), "name", "Chia theo ngày công",
+            "effectiveDate", "2026-01-01",
+            "expressionGross", "20000000 / PRESENT_DAYS", "expressionNet", "GROSS")).expectOk().id();
+        String raw = api.post(accountant, "/api/v1/payrolls/generate", Map.of(
+            "employeeId", c.emp(7).id(), "year", 2026, "month", 11, "formulaId", bad)).raw();
+        assertThat(raw).contains("error.payroll.formula_evaluation_failed|").contains("[GROSS]");
+    }
+
     private static Company companyRef(long id) {
         Company co = new Company();
         co.setId(id);
