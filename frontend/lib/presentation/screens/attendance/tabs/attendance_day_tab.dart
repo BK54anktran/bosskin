@@ -13,6 +13,7 @@ import '../../../../data/repositories/company_setting_repository.dart';
 import '../../../../data/repositories/leave_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../../data/services/department_service.dart';
+import '../../../../data/services/auth_service.dart';
 import '../../../widgets/department_picker_field.dart';
 import '../attendance_shared.dart';
 import '../widgets/attendance_grid.dart';
@@ -1165,6 +1166,12 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     ]));
   }
 
+  /// Quyền duyệt / bỏ duyệt công tách riêng khỏi quyền xem (BE: ATTENDANCE_APPROVE).
+  bool get _canApprove {
+    final user = AuthService.instance.currentUser;
+    return (user?.isSystemAdmin ?? false) || (user?.can('ATTENDANCE_APPROVE') ?? false);
+  }
+
   Widget _daySlotActionCell(DayViewRow? slot, double width, Color bg) {
     final s = AppLocalizations.of(context);
     if (slot == null) return _dayCell(width: width, bg: bg, child: const SizedBox.shrink());
@@ -1176,10 +1183,12 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
             message: slot.approvedByName != null ? '${s.approved}: ${slot.approvedByName}' : s.approved,
             child: const Icon(Icons.check_circle, color: AppTheme.secondary, size: 18),
           ),
-          const SizedBox(width: 2),
-          SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 15,
-              icon: const Icon(Icons.lock_open_outlined, color: AppTheme.warning),
-              tooltip: 'Bỏ phê duyệt', onPressed: () => _unapproveAttendance(slot))),
+          if (_canApprove) ...[
+            const SizedBox(width: 2),
+            SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 15,
+                icon: const Icon(Icons.lock_open_outlined, color: AppTheme.warning),
+                tooltip: 'Bỏ phê duyệt', onPressed: () => _unapproveAttendance(slot))),
+          ],
         ],
       ));
     }
@@ -1206,10 +1215,12 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
                 icon: const Icon(Icons.delete_outline, color: AppTheme.error),
                 tooltip: s.delete, onPressed: () => _confirmDelete(slot))),
           ],
-          const SizedBox(width: 2),
-          SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
-              icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
-              tooltip: s.approve, onPressed: () => _approveAttendance(slot))),
+          if (_canApprove) ...[
+            const SizedBox(width: 2),
+            SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
+                icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
+                tooltip: s.approve, onPressed: () => _approveAttendance(slot))),
+          ],
         ],
       ],
     ));

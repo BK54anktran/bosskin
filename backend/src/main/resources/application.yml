@@ -41,8 +41,10 @@ spring:
 server:
   port: 8080
   error:
-    include-message: always
-    include-binding-errors: always
+    # Lỗi nghiệp vụ trả mã lỗi qua ApiExceptionHandler; trang lỗi mặc định không lộ chi tiết
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
   tomcat:
     connection-timeout: 120000   # 2 phút cho import file lớn
 
@@ -67,12 +69,16 @@ app:
     endpoint: ${AWS_S3_ENDPOINT:}   # để trống nếu dùng AWS thật, điền nếu dùng MinIO
 
   cors:
-    allowed-origins:
-      - http://localhost:3000
-      - http://localhost:8081
+    # Origin được gọi API từ trình duyệt (bản web). Prod: đặt CORS_ALLOWED_ORIGINS=https://app.ten-mien.vn
+    # Hỗ trợ pattern, vd http://localhost:* cho flutter run -d chrome (cổng ngẫu nhiên)
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
 
   firebase:
-    service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:firebase-service-account.json}
+    # Khoá service account KHÔNG nằm trong git. Chọn một trong hai:
+    #  - FIREBASE_SERVICE_ACCOUNT_JSON: nội dung JSON (hoặc base64 của JSON)
+    #  - FIREBASE_SERVICE_ACCOUNT_PATH: đường dẫn file trên máy chủ
+    service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
+    service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:}
 
   # Ô bản đồ OSM đi qua BE (MapTileController) — FE không gọi thẳng tile.openstreetmap.org
   map-tiles:

@@ -38,3 +38,9 @@ frontend/.env
 
 # Docker
 *.override.yml
+
+# Bí mật và gói build — không commit (Mốc 1)
+/backend/firebase-service-account.json
+**/*service-account*.json
+/backend/deploy.zip
+/backend/BOOT-INF/

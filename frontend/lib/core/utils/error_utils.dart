@@ -12,6 +12,17 @@ const _viMessages = <String, String>{
   'error.excel.import_failed': 'Import file thất bại, vui lòng kiểm tra lại file',
   'error.shift.invalid_sheet_name': 'Tên sheet không đúng định dạng "Phan cong ca MM-yyyy". Vui lòng không đổi tên sheet khi import.',
   'error.auth.refresh_token_expired': 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+  'error.auth.invalid_refresh_token': 'Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại',
+  'error.auth.account_disabled': 'Tài khoản đã bị khoá',
+  'error.user.cannot_disable_self': 'Không thể tự khoá tài khoản của chính mình',
+  'error.permission.cannot_change_own': 'Không thể tự thay đổi vai trò hoặc quyền của chính mình',
+  'error.permission.grant_exceeds_own': 'Không thể cấp quyền mà bạn không có',
+  'error.attendance.cannot_approve_own': 'Không thể duyệt hoặc sửa công của chính mình',
+  'error.shiftAssignment.not_found': 'Không tìm thấy phân ca của nhân viên trong ngày này',
+  'error.data.conflict': 'Dữ liệu bị trùng hoặc đang được sử dụng',
+  'error.not_found': 'Không tìm thấy dữ liệu',
+  'error.bad_request': 'Yêu cầu không hợp lệ',
+  'error.internal': 'Có lỗi hệ thống, vui lòng thử lại sau',
 };
 
 const _enMessages = <String, String>{
@@ -24,6 +35,17 @@ const _enMessages = <String, String>{
   'error.excel.import_failed': 'Import failed, please check the file and try again',
   'error.shift.invalid_sheet_name': 'Sheet name must follow the format "Phan cong ca MM-yyyy". Do not rename the sheet before importing.',
   'error.auth.refresh_token_expired': 'Session expired, please sign in again',
+  'error.auth.invalid_refresh_token': 'Invalid session, please sign in again',
+  'error.auth.account_disabled': 'The account has been locked',
+  'error.user.cannot_disable_self': 'You cannot lock your own account',
+  'error.permission.cannot_change_own': 'You cannot change your own roles or permissions',
+  'error.permission.grant_exceeds_own': 'You cannot grant permissions you do not have',
+  'error.attendance.cannot_approve_own': 'You cannot approve or edit your own attendance',
+  'error.shiftAssignment.not_found': 'Shift assignment not found for this employee and date',
+  'error.data.conflict': 'The data is duplicated or still in use',
+  'error.not_found': 'Not found',
+  'error.bad_request': 'Invalid request',
+  'error.internal': 'A system error occurred, please try again later',
 };
 
 String serverMsg(dynamic e) {

@@ -10,6 +10,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class BosskinApplication {
     public static void main(String[] args) {
+        // Mọi LocalDate.now()/LocalDateTime.now() và lịch @Scheduled chạy theo giờ Việt Nam,
+        // không phụ thuộc múi giờ của máy chủ (EB mặc định UTC)
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SpringApplication.run(BosskinApplication.class, args);
     }
 }

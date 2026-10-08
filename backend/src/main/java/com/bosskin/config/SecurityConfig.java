@@ -85,11 +85,15 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins}")
+    private List<String> corsAllowedOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();
-        // Dùng allowedOriginPatterns thay vì "*" để tương thích allowCredentials=true
-        config.setAllowedOriginPatterns(List.of("*"));
+        // Chỉ các origin trong whitelist (CORS_ALLOWED_ORIGINS, phân tách bằng dấu phẩy).
+        // App Android không bị CORS chi phối; whitelist chỉ áp cho bản web.
+        config.setAllowedOriginPatterns(corsAllowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
