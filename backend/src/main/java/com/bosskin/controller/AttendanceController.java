@@ -645,11 +645,7 @@ public class AttendanceController {
     private LocalTime assignmentEndTime(ShiftAssignment assignment) {
         if (assignment == null) return null;
         if (assignment.isCustom()) return assignment.getCustomEndTime();
-        if (assignment.getShift() != null) {
-            return assignment.getCustomEndTime() != null
-                ? assignment.getCustomEndTime()
-                : assignment.getShift().getEndTime();
-        }
+        if (assignment.getShift() != null) return assignment.effectiveEndTime();
         return null;
     }
 
@@ -663,11 +659,7 @@ public class AttendanceController {
         if (assignment.isCustom()) {
             return assignment.getCustomStartTime();
         }
-        if (assignment.getShift() != null) {
-            return assignment.getCustomStartTime() != null
-                ? assignment.getCustomStartTime()
-                : assignment.getShift().getStartTime();
-        }
+        if (assignment.getShift() != null) return assignment.effectiveStartTime();
         return null;
     }
 
@@ -1444,8 +1436,8 @@ public class AttendanceController {
             color = "#1976D2";
         } else if (sa.getShift() != null) {
             var shift = sa.getShift();
-            start = sa.getCustomStartTime() != null ? sa.getCustomStartTime() : shift.getStartTime();
-            end = sa.getCustomEndTime() != null ? sa.getCustomEndTime() : shift.getEndTime();
+            start = sa.effectiveStartTime();
+            end = sa.effectiveEndTime();
             name = shift.getName();
             color = shift.getColor();
         } else {

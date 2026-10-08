@@ -127,10 +127,10 @@ public class AttendanceCalculationService {
             shiftName  = "Tuy chinh";
         } else if (assignment.getShift() != null) {
             var s = assignment.getShift();
-            shiftStart = assignment.getCustomStartTime()  != null ? assignment.getCustomStartTime()  : s.getStartTime();
-            shiftEnd   = assignment.getCustomEndTime()    != null ? assignment.getCustomEndTime()    : s.getEndTime();
-            breakStart = assignment.getCustomBreakStart() != null ? assignment.getCustomBreakStart() : s.getBreakStart();
-            breakEnd   = assignment.getCustomBreakEnd()   != null ? assignment.getCustomBreakEnd()   : s.getBreakEnd();
+            shiftStart = assignment.effectiveStartTime();
+            shiftEnd   = assignment.effectiveEndTime();
+            breakStart = assignment.effectiveBreakStart();
+            breakEnd   = assignment.effectiveBreakEnd();
             shiftName  = s.getName();
             shiftColor = s.getColor();
         } else {

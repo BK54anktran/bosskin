@@ -132,7 +132,17 @@ public class WorkShiftService {
         if (req.getColor() != null) shift.setColor(req.getColor());
 
         applyDepartments(shift, req.getDepartmentIds(), companyId);
-        return toResponse(shiftRepo.save(shift));
+        WorkShift saved = shiftRepo.save(shift);
+
+        // A11: phân ca từ hôm nay trở đi chưa có dữ liệu chấm công nhận giờ mới của ca;
+        // ngày đã qua / đã chấm giữ nguyên ảnh chụp giờ cũ để không đổi công hồi tố.
+        for (ShiftAssignment a : assignRepo.findByShift_IdAndWorkDateGreaterThanEqual(saved.getId(), LocalDate.now())) {
+            if (a.isDeleted() || a.isApproved()
+                || hasAttendanceData(a.getEmployee().getId(), a.getWorkDate(), a.getId())) continue;
+            applySnapshot(a, saved);
+            assignRepo.save(a);
+        }
+        return toResponse(saved);
     }
 
     @Transactional

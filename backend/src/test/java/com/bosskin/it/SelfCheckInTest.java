@@ -25,6 +25,7 @@ class SelfCheckInTest extends IntegrationTest {
     private static final LocalDate MON = LocalDate.of(2026, 11, 2);
 
     @Autowired AttendanceRepository attendanceRepository;
+    @Autowired com.bosskin.repository.ShiftAssignmentRepository assignRepo;
 
     private int checkIn(String token, LocalDateTime at) {
         clock.set(at);
@@ -150,5 +151,26 @@ class SelfCheckInTest extends IntegrationTest {
 
         assertThat(res.status()).isEqualTo(403);
         assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("A11 · Sửa giờ ca mẫu không đổi giờ của ngày đã phân trong quá khứ")
+    void editingShiftTemplate_doesNotChangePastAssignments() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        LocalDate past = LocalDate.now().minusDays(10);
+        c.assign(e, "HC", past);
+        String token = c.tokenOf(e);
+        clock.set(past.atTime(7, 58));
+        assertThat(api.post(token, "/api/v1/attendances/self/check-in", Map.of()).status()).isEqualTo(201);
+
+        api.put(c.adminToken, "/api/v1/shifts/" + c.shifts.get("HC"), Map.of(
+            "code", "HC", "name", "Hành chính", "startTime", "09:00", "endTime", "18:00",
+            "breakStart", "12:00", "breakEnd", "13:00")).expectOk();
+
+        long saId = attendanceRepository.findByEmployeeIdAndDate(e.id(), past).get(0).getShiftAssignment().getId();
+        assertThat(assignRepo.findById(saId).orElseThrow().effectiveStartTime()).isEqualTo(LocalTime.of(8, 0));
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), past).get(0).getStatus())
+            .isEqualTo(Attendance.Status.PRESENT);
     }
 }
