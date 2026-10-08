@@ -23,6 +23,8 @@ const _viMessages = <String, String>{
   'error.not_found': 'Không tìm thấy dữ liệu',
   'error.bad_request': 'Yêu cầu không hợp lệ',
   'error.internal': 'Có lỗi hệ thống, vui lòng thử lại sau',
+  'error.auth.too_many_attempts': 'Sai mật khẩu quá nhiều lần, vui lòng thử lại sau 15 phút',
+  'error.upload.invalid_folder': 'Thư mục tải lên không hợp lệ',
 };
 
 const _enMessages = <String, String>{
@@ -46,6 +48,8 @@ const _enMessages = <String, String>{
   'error.not_found': 'Not found',
   'error.bad_request': 'Invalid request',
   'error.internal': 'A system error occurred, please try again later',
+  'error.auth.too_many_attempts': 'Too many failed attempts, please try again in 15 minutes',
+  'error.upload.invalid_folder': 'Invalid upload folder',
 };
 
 String serverMsg(dynamic e) {

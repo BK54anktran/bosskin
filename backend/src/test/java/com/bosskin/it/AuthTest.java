@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AuthTest extends IntegrationTest {
 
     @Autowired JwtUtil jwtUtil;
+    @Autowired org.springframework.test.web.servlet.MockMvc mvc;
 
     @Test
     @DisplayName("D4 · Nhân viên bị xoá: token cũ hết tác dụng và không đăng nhập lại được")
@@ -84,5 +85,31 @@ class AuthTest extends IntegrationTest {
         var res = api.patch(c.adminToken, "/api/v1/users/" + adminUserId + "/enabled", Map.of("enabled", false));
 
         assertThat(res.status()).isEqualTo(400);
+    }
+
+    @Test
+    @DisplayName("S10 · Sai mật khẩu 5 lần thì tạm khoá đăng nhập, kể cả khi nhập đúng")
+    void s10_tooManyFailedLogins_temporarilyLocked() {
+        var c = fixture.newCompany();
+        for (int i = 0; i < 5; i++) {
+            assertThat(api.login(c.adminEmail, "sai-mat-khau-" + i).status()).isEqualTo(401);
+        }
+
+        assertThat(api.login(c.adminEmail, Fixture.PASSWORD).status()).isEqualTo(429);
+    }
+
+    @Test
+    @DisplayName("S12 · Thư mục upload không cho chứa ../")
+    void s12_uploadFolderTraversal_isRejected() throws Exception {
+        var c = fixture.newCompany();
+        var file = new org.springframework.mock.web.MockMultipartFile(
+            "file", "a.png", "image/png", new byte[]{(byte) 0x89, 'P', 'N', 'G'});
+
+        var res = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .multipart("/api/v1/upload/image").file(file).param("folder", "../company-1")
+                .header("Authorization", "Bearer " + c.adminToken))
+            .andReturn().getResponse();
+
+        assertThat(res.getStatus()).isEqualTo(400);
     }
 }

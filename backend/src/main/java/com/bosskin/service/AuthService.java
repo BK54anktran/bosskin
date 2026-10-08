@@ -34,17 +34,20 @@ public class AuthService {
     private final CompanyRepository           companyRepository;
     private final JwtUtil                     jwtUtil;
     private final PasswordEncoder             passwordEncoder;
+    private final com.bosskin.security.LoginAttemptService loginAttemptService;
 
     // ── Company user login ──────────────────────────────────────────────
     @Transactional
     public AuthDTO.LoginResponse login(AuthDTO.LoginRequest req) {
-        User user = userRepository.findByEmail(req.getEmail())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng"));
+        loginAttemptService.checkNotLocked(req.getEmail());
+        User user = userRepository.findByEmail(req.getEmail()).orElse(null);
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+        if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            loginAttemptService.recordFailure(req.getEmail());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng");
         }
-        if (!user.isEnabled()) {
+        loginAttemptService.recordSuccess(req.getEmail());
+        if (!user.isEnabled() || user.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị khóa");
         }
         if (!companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
@@ -182,12 +185,15 @@ public class AuthService {
     }
 
     public AuthDTO.LoginResponse systemLogin(AuthDTO.LoginRequest req) {
-        SystemAdmin admin = systemAdminRepository.findByEmail(req.getEmail())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng"));
+        String attemptKey = "system:" + req.getEmail();
+        loginAttemptService.checkNotLocked(attemptKey);
+        SystemAdmin admin = systemAdminRepository.findByEmail(req.getEmail()).orElse(null);
 
-        if (!passwordEncoder.matches(req.getPassword(), admin.getPassword())) {
+        if (admin == null || !passwordEncoder.matches(req.getPassword(), admin.getPassword())) {
+            loginAttemptService.recordFailure(attemptKey);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng");
         }
+        loginAttemptService.recordSuccess(attemptKey);
         if (!admin.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị khóa");
         }
