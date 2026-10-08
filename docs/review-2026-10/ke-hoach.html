@@ -64,7 +64,7 @@
       <tr><td><b>3</b> · Phép & lương</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m3-leave-payroll</code></td>
         <td>71 test xanh, không còn test <code>known-bug</code> nào đỏ. Phép: quỹ theo loại phép, chồng ngày, mode theo đơn vị, huỷ đơn theo quyền, cộng phép tự động hằng ngày (L8–L12, L14). Lương: biến hệ thống, thứ tự tính trước/sau GROSS, IF/ROUND, BH/thuế dùng được trong NET, chỉnh tay và tính lại tại chỗ, lưu người duyệt/trả (L1–L3, L5–L7, L15, L16, L18).
           <br><span class="muted">Còn lại: sổ ghi trừ/hoàn phép theo từng đơn (L13), quỹ phép tách theo loại; FE: màn loại phép (cờ trừ quỹ), lỗi công thức chi tiết, phiếu lương thống nhất tổng khấu trừ.</span></td></tr>
-      <tr><td><b>4</b> · Frontend</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td>Đã làm trước: bản dịch mã lỗi mới, nút duyệt công theo quyền <code>ATTENDANCE_APPROVE</code>.</td></tr>
+      <tr><td><b>4</b> · Frontend</td><td><span class="st doing">4a xong 08/10</span></td><td><code>golive/m4-frontend</code></td><td>F1 check-in từ thông báo gọi đúng API; F2/F3 refresh token chỉ khi 401, dùng chung một lần refresh, hết phiên thì đăng xuất; F4 không "ghi nhớ" vẫn dùng được; F5 banner impersonate + nút thoát; F7 địa chỉ server qua <code>--dart-define=API_HOST</code>, ô đổi server chỉ ở bản debug. Đã làm trước: bản dịch mã lỗi mới, nút duyệt công theo quyền <code>ATTENDANCE_APPROVE</code>.<br><span class="muted">Còn lại (4b): F6 l10n ~300 chuỗi, F8 cấu hình menu/quyền dùng chung, F9 phân trang phía server, F10 vòng đời FCM, F12 cache web; màn khoá/mở kỳ công, bật/tắt "trừ quỹ phép".</span></td></tr>
       <tr><td><b>5</b> · Vận hành & UAT</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
     </tbody>
   </table></div>
@@ -260,7 +260,7 @@ gantt
   </div>
 
   <div class="card ms" style="margin-top:14px">
-    <div class="when"><b>Mốc 4</b>10 ngày · FE<br>(song song)</div>
+    <div class="when"><b>Mốc 4</b>10 ngày · FE<br>(song song)<br><span class="st doing">4a xong</span></div>
     <div>
       <h3 style="margin-top:0">Frontend</h3>
       <ul class="clean">
