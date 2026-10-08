@@ -1,3 +1,4 @@
+import '../../core/config/server_config.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
@@ -159,7 +160,8 @@ void _navigateOrPend(String? route) {
 Future<void> _callCheckInOut(String actionId) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString(AppConstants.tokenKey);
-  final host  = prefs.getString('server_host') ?? 'http://192.168.0.12:8080';
+  await ServerConfig.load();
+  final host  = ServerConfig.host;
 
   if (token == null) {
     await _showResultNotif('Phiên đăng nhập hết hạn — vui lòng mở app');
@@ -168,8 +170,8 @@ Future<void> _callCheckInOut(String actionId) async {
 
   final isCheckIn = actionId == _actionCheckIn;
   final path = isCheckIn
-      ? '/api/v1/attendance/self/check-in'
-      : '/api/v1/attendance/self/check-out';
+      ? '/api/v1/attendances/self/check-in'   // F1: trước đây sai đường dẫn (/attendance)
+      : '/api/v1/attendances/self/check-out';
 
   try {
     final client = HttpClient();

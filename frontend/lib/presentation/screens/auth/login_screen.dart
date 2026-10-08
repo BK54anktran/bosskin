@@ -247,12 +247,13 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.settings_ethernet, size: 20,
-              color: AppTheme.textSecondary),
-          tooltip: s.serverSettings,
-          onPressed: _showServerDialog,
-        ),
+        if (ServerConfig.canOverride)
+          IconButton(
+            icon: const Icon(Icons.settings_ethernet, size: 20,
+                color: AppTheme.textSecondary),
+            tooltip: s.serverSettings,
+            onPressed: _showServerDialog,
+          ),
       ],
     );
   }

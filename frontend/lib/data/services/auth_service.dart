@@ -124,6 +124,15 @@ class AuthService extends ChangeNotifier {
   AuthUser? _adminUser; // giữ sysadmin khi đang impersonate
   String? _currentRefreshToken;
 
+  /// false khi đăng nhập không chọn "ghi nhớ": token chỉ giữ trong bộ nhớ (F4).
+  bool _persistSession = true;
+
+  /// Đang refresh token — các request 401 cùng lúc dùng chung một lần refresh (F2).
+  Future<bool>? _refreshInFlight;
+
+  /// Access token đang dùng cho API (token công ty khi đang impersonate).
+  String? get activeToken => _currentUser?.token;
+
   /// User hiển thị trên UI — luôn là sysadmin nếu đang impersonate
   AuthUser? get currentUser => _adminUser ?? _currentUser;
 
@@ -290,6 +299,7 @@ class AuthService extends ChangeNotifier {
     } else if (adminUser != null) {
       _currentUser = adminUser;
     }
+    if (_currentUser != null) _persistSession = true;
   }
 
   // =========================================================
@@ -344,6 +354,7 @@ class AuthService extends ChangeNotifier {
       permissions: perms,
     );
 
+    _persistSession = rememberMe;
     if (rememberMe) {
       await Future.wait([
         _safeWrite(AppConstants.tokenKey, token),
@@ -424,8 +435,23 @@ class AuthService extends ChangeNotifier {
   // REFRESH TOKEN
   // =========================================================
 
-  Future<bool> refreshToken() async {
-    final storedRefresh = await _safeRead(
+  /// Đổi refresh token lấy access token mới. Nhiều lời gọi đồng thời dùng chung một
+  /// request (refresh token chỉ dùng được 1 lần vì backend xoay vòng) (F2).
+  Future<bool> refreshToken() {
+    return _refreshInFlight ??= _doRefresh().whenComplete(() => _refreshInFlight = null);
+  }
+
+  /// Phiên hết hạn và không refresh được: đăng xuất (đang impersonate thì về lại sysadmin) (F3).
+  Future<void> handleSessionExpired() async {
+    if (isImpersonating) {
+      await logoutCompany();
+    } else {
+      await logout();
+    }
+  }
+
+  Future<bool> _doRefresh() async {
+    final storedRefresh = _currentRefreshToken ?? await _safeRead(
       AppConstants.refreshTokenKey,
     );
 
@@ -477,21 +503,23 @@ class AuthService extends ChangeNotifier {
         permissions: perms,
       );
 
-      await Future.wait([
-        _safeWrite(
-          AppConstants.tokenKey,
-          token,
-        ),
-        _safeWrite(
-          AppConstants.userKey,
-          jsonEncode(_currentUser!.toJson()),
-        ),
-        if (refreshToken != null)
+      if (_persistSession) {
+        await Future.wait([
           _safeWrite(
-            AppConstants.refreshTokenKey,
-            refreshToken,
+            AppConstants.tokenKey,
+            token,
           ),
-      ]);
+          _safeWrite(
+            AppConstants.userKey,
+            jsonEncode(_currentUser!.toJson()),
+          ),
+          if (refreshToken != null)
+            _safeWrite(
+              AppConstants.refreshTokenKey,
+              refreshToken,
+            ),
+        ]);
+      }
       _currentRefreshToken = refreshToken;
 
       notifyListeners();
@@ -635,6 +663,15 @@ class AuthService extends ChangeNotifier {
   // =========================================================
 
   Future<void> logout() async {
+    // Thu hồi phiên ở backend (bỏ qua lỗi mạng)
+    final refresh = _currentRefreshToken ?? await _safeRead(AppConstants.refreshTokenKey);
+    if (refresh != null) {
+      try {
+        await _dio.post('/api/v1/auth/logout',
+            data: {'refreshToken': refresh},
+            options: Options(headers: _requestHeaders()));
+      } catch (_) {}
+    }
     _currentUser = null;
     _currentRefreshToken = null;
 

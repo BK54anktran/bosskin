@@ -3007,4 +3007,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get noNotificationsYet => 'Chưa có thông báo';
+
+  @override
+  String impersonationBanner(String company) {
+    return 'Đang xem công ty $company với quyền quản trị hệ thống';
+  }
+
+  @override
+  String get impersonationExit => 'Thoát';
 }

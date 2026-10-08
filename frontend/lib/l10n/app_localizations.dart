@@ -5834,6 +5834,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chưa có thông báo'**
   String get noNotificationsYet;
+
+  /// No description provided for @impersonationBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xem công ty {company} với quyền quản trị hệ thống'**
+  String impersonationBanner(String company);
+
+  /// No description provided for @impersonationExit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thoát'**
+  String get impersonationExit;
 }
 
 class _AppLocalizationsDelegate

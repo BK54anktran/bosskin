@@ -66,6 +66,34 @@ class _AppShellState extends State<AppShell>
     }
   }
 
+  PreferredSizeWidget _impersonationBanner(BuildContext context, AppLocalizations s) {
+    final company = AuthService.instance.impersonatingUser?.companyName ?? '';
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(36),
+      child: Container(
+        height: 36,
+        color: AppTheme.warning.withValues(alpha: 0.18),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(children: [
+          const Icon(Icons.admin_panel_settings_outlined, size: 18, color: AppTheme.warning),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(s.impersonationBanner(company),
+                maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () async {
+              await AuthService.instance.logoutCompany();
+              if (context.mounted) context.go(AppRoutes.adminDashboard);
+            },
+            child: Text(s.impersonationExit),
+          ),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
@@ -126,7 +154,8 @@ class _AppShellState extends State<AppShell>
           const SizedBox(width: 4),
           const AppProfileMenu(),
           const SizedBox(width: 8),
-        ],
+        ],        // F5: luôn hiện rõ khi system admin đang xem với quyền một công ty
+        bottom: AuthService.instance.isImpersonating ? _impersonationBanner(context, s) : null,
       ),
       drawer: isWide ? null : const AppDrawer(),
       bottomNavigationBar: isWide || visibleBottomItems.isEmpty

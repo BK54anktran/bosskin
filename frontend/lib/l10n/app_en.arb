@@ -1051,4 +1051,7 @@
   ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
   ,"markAllAsRead": "Mark all as read"
   ,"noNotificationsYet": "No notifications yet"
+  ,"impersonationBanner": "Viewing company {company} as system administrator"
+  ,"@impersonationBanner": { "placeholders": { "company": { "type": "String" } } }
+  ,"impersonationExit": "Exit"
 }

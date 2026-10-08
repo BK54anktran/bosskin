@@ -1054,4 +1054,7 @@
   ,"@minutesBefore": { "placeholders": { "minutes": { "type": "int" } } }
   ,"markAllAsRead": "Đọc hết"
   ,"noNotificationsYet": "Chưa có thông báo"
+  ,"impersonationBanner": "Đang xem công ty {company} với quyền quản trị hệ thống"
+  ,"@impersonationBanner": { "placeholders": { "company": { "type": "String" } } }
+  ,"impersonationExit": "Thoát"
 }

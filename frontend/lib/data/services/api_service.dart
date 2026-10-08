@@ -54,6 +54,11 @@ class ApiService {
   // =========================================================
 
   Future<String?> _safeRead(String key) async {
+    // Ưu tiên token trong bộ nhớ: phiên không "ghi nhớ" vẫn gọi API được (F4)
+    if (key == AppConstants.tokenKey) {
+      final mem = AuthService.instance.activeToken;
+      if (mem != null) return mem;
+    }
     if (_isLinuxDev) {
       if (key == AppConstants.tokenKey) {
         // Khi impersonate, dùng token của company user, không phải sysadmin
@@ -109,17 +114,23 @@ class ApiService {
         onError: (error, handler) async {
           final statusCode = error.response?.statusCode;
           final isUnauthorized = statusCode == 401;
-          final isForbidden = statusCode == 403;
           final alreadyRetried =
               error.requestOptions.extra['__refreshed_after_permission_error'] ==
                   true;
 
-          final shouldRefresh = isUnauthorized || isForbidden;
+          // F2: chỉ refresh khi 401 (token hết hạn/không hợp lệ). 403 là thiếu quyền,
+          // refresh không giúp gì mà còn xoay vòng refresh token vô ích.
+          final shouldRefresh = isUnauthorized;
 
           if (shouldRefresh &&
               !_isAuthEndpoint(error.requestOptions.path) &&
               !alreadyRetried) {
             final refreshed = await AuthService.instance.refreshToken();
+
+            if (!refreshed) {
+              // F3: refresh thất bại → phiên hết hạn, đưa về màn đăng nhập
+              await AuthService.instance.handleSessionExpired();
+            }
 
             if (refreshed) {
               final token = await _safeRead(

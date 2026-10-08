@@ -3005,4 +3005,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noNotificationsYet => 'No notifications yet';
+
+  @override
+  String impersonationBanner(String company) {
+    return 'Viewing company $company as system administrator';
+  }
+
+  @override
+  String get impersonationExit => 'Exit';
 }
