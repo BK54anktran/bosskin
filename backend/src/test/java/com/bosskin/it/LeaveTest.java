@@ -120,4 +120,30 @@ class LeaveTest extends IntegrationTest {
         assertThat(leaveService.runAccrualForCompany(c.id, LocalDate.of(2026, 11, 29)).get("created"))
             .as("chưa tới ngày").isZero();
     }
+
+    @Test
+    @DisplayName("F9 · Danh sách đơn phân trang + tìm kiếm phía server; nhân viên chỉ thấy đơn của mình")
+    void requestList_serverPaging() {
+        var c = fixture.standardCompany();
+        String kl = String.valueOf(c.leaveTypes.get("KL"));
+        for (int i = 5; i <= 9; i++) {
+            var e = c.emp(i);
+            api.post(c.tokenOf(e), "/api/v1/leaves/requests",
+                dayLeave(Long.parseLong(kl), "2026-11-1" + i, "2026-11-1" + i)).expectOk();
+        }
+        String manager = c.tokenOf(c.emp(1));
+
+        var p0 = api.get(manager, "/api/v1/leaves/requests/page?page=0&size=2").expectOk().body();
+        assertThat(p0.path("totalElements").asInt()).isEqualTo(5);
+        assertThat(p0.path("content").size()).isEqualTo(2);
+        var p2 = api.get(manager, "/api/v1/leaves/requests/page?page=2&size=2").expectOk().body();
+        assertThat(p2.path("content").size()).isEqualTo(1);
+
+        var byName = api.get(manager, "/api/v1/leaves/requests/page?q=hung").expectOk().body();
+        assertThat(byName.path("totalElements").asInt()).as("tìm không dấu 'hung' ra Đặng Văn Hùng").isEqualTo(1);
+
+        var mine = api.get(c.tokenOf(c.emp(6)), "/api/v1/leaves/requests/page").expectOk().body();
+        assertThat(mine.path("totalElements").asInt()).isEqualTo(1);
+        assertThat(mine.path("content").get(0).path("employeeId").asLong()).isEqualTo(c.emp(6).id());
+    }
 }

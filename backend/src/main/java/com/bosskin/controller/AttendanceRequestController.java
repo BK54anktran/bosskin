@@ -29,6 +29,24 @@ public class AttendanceRequestController {
         return ResponseEntity.ok(requestService.getRequests(user, status, type, departmentId));
     }
 
+    /** Danh sách đơn có phân trang + tìm kiếm phía server (F9). status = PENDING | RESOLVED | rỗng. */
+    @GetMapping("/page")
+    public ResponseEntity<com.bosskin.dto.PageResponse<AttendanceRequestDTO.Response>> searchRequests(
+        @AuthenticationPrincipal User user,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) Long departmentId,
+        @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+        @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate to,
+        @RequestParam(required = false) String q,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        requireAnyPermission(user, "ATTENDANCE_SELF", "ATTENDANCE_MANAGE", "ATTENDANCE_REQUEST_APPROVE");
+        Boolean pendingOnly = status == null || status.isBlank() ? null : "PENDING".equalsIgnoreCase(status);
+        return ResponseEntity.ok(requestService.searchRequests(user, pendingOnly, type, departmentId, from, to, q, page, size));
+    }
+
     @GetMapping("/pending-count")
     public ResponseEntity<AttendanceRequestDTO.PendingCount> pendingCount(@AuthenticationPrincipal User user) {
         requireAnyPermission(user, "ATTENDANCE_SELF", "ATTENDANCE_MANAGE", "ATTENDANCE_REQUEST_APPROVE");

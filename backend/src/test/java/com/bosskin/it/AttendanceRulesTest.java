@@ -74,4 +74,33 @@ class AttendanceRulesTest extends IntegrationTest {
 
         assertThat(res.status()).isEqualTo(403);
     }
+
+    @Test
+    @DisplayName("F9 · Đơn chấm công phân trang phía server: tách chờ duyệt / đã xử lý, nhân viên chỉ thấy đơn mình")
+    void requestList_serverPaging() {
+        var c = fixture.standardCompany();
+        String manager = c.tokenOf(c.emp(1));
+        long first = 0;
+        for (int i = 5; i <= 8; i++) {
+            var e = c.emp(i);
+            c.assign(e, "HC", MON);
+            long id = createRequest(c.tokenOf(e), Map.of(
+                "requestDate", MON.toString(), "requestType", "CHECK_IN",
+                "requestedCheckIn", "08:00", "note", "Quên check-in " + i));
+            if (first == 0) first = id;
+        }
+        api.put(manager, "/api/v1/attendance-requests/" + first + "/approve", Map.of()).expectOk();
+
+        var pending = api.get(manager, "/api/v1/attendance-requests/page?status=PENDING&size=2").expectOk().body();
+        assertThat(pending.path("totalElements").asInt()).isEqualTo(3);
+        assertThat(pending.path("content").size()).isEqualTo(2);
+        var resolved = api.get(manager, "/api/v1/attendance-requests/page?status=RESOLVED").expectOk().body();
+        assertThat(resolved.path("totalElements").asInt()).isEqualTo(1);
+
+        var byName = api.get(manager, "/api/v1/attendance-requests/page?q=lan").expectOk().body();
+        assertThat(byName.path("totalElements").asInt()).as("Bùi Thị Lan").isEqualTo(1);
+
+        var mine = api.get(c.tokenOf(c.emp(6)), "/api/v1/attendance-requests/page").expectOk().body();
+        assertThat(mine.path("totalElements").asInt()).isEqualTo(1);
+    }
 }

@@ -1,6 +1,8 @@
 package com.bosskin.repository;
 
 import com.bosskin.entity.LeaveRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +29,48 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     );
 
     List<LeaveRequest> findByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
+
+    /**
+     * Danh sách đơn (chỉ đơn cha / đơn lẻ) có lọc + phân trang ở DB (F9).
+     * anyDept = true → không lọc phòng ban; ngược lại chỉ phòng ban trong deptIds.
+     * q đã ở dạng '%từ khoá%' chữ thường (collation utf8mb4_unicode_ci bỏ qua dấu).
+     */
+    @Query(value = """
+        SELECT r FROM LeaveRequest r
+        JOIN r.employee e
+        LEFT JOIN e.department d
+        JOIN r.leaveType t
+        WHERE r.company.id = :companyId
+          AND r.parent IS NULL
+          AND (:status IS NULL OR r.status = :status)
+          AND (:employeeId IS NULL OR e.id = :employeeId)
+          AND (:anyDept = TRUE OR d.id IN :deptIds)
+          AND (:q IS NULL OR LOWER(e.fullName) LIKE :q OR LOWER(e.employeeCode) LIKE :q
+               OR LOWER(t.name) LIKE :q OR LOWER(d.name) LIKE :q)
+        ORDER BY r.createdAt DESC, r.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(r) FROM LeaveRequest r
+        JOIN r.employee e
+        LEFT JOIN e.department d
+        JOIN r.leaveType t
+        WHERE r.company.id = :companyId
+          AND r.parent IS NULL
+          AND (:status IS NULL OR r.status = :status)
+          AND (:employeeId IS NULL OR e.id = :employeeId)
+          AND (:anyDept = TRUE OR d.id IN :deptIds)
+          AND (:q IS NULL OR LOWER(e.fullName) LIKE :q OR LOWER(e.employeeCode) LIKE :q
+               OR LOWER(t.name) LIKE :q OR LOWER(d.name) LIKE :q)
+        """)
+    Page<LeaveRequest> searchPage(
+        @Param("companyId") Long companyId,
+        @Param("status") LeaveRequest.Status status,
+        @Param("employeeId") Long employeeId,
+        @Param("anyDept") boolean anyDept,
+        @Param("deptIds") java.util.Collection<Long> deptIds,
+        @Param("q") String q,
+        Pageable pageable
+    );
 
     @Query("""
         SELECT r FROM LeaveRequest r

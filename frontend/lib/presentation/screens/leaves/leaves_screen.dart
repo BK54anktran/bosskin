@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
-import '../../../core/utils/text_utils.dart';
 import '../../../data/models/department_model.dart';
 import '../../../data/models/employee.dart';
 import '../../../data/repositories/company_setting_repository.dart';
@@ -44,6 +44,9 @@ class _LeavesScreenState extends State<LeavesScreen>
   List<DepartmentFlat> _depts = [];
 
   List<Map<String, dynamic>> _requests = [];
+  int _reqTotal = 0;
+  bool _reqLoading = false;
+  Timer? _searchDebounce;
   List<Map<String, dynamic>> _grants = [];
   List<Map<String, dynamic>> _types = [];
   List<Map<String, dynamic>> _rules = [];
@@ -99,6 +102,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   void dispose() {
     _tabs.dispose();
     _searchCtrl.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -118,7 +122,7 @@ class _LeavesScreenState extends State<LeavesScreen>
     });
     try {
       final futures = await Future.wait([
-        _repo.getRequests(departmentId: _filterDeptId),
+        _fetchRequests(),
         _repo.getGrants(departmentId: _filterDeptId),
         _repo.getTypes(),
         _repo.getAccrualRules(),
@@ -126,7 +130,9 @@ class _LeavesScreenState extends State<LeavesScreen>
       ]);
       if (!mounted) return;
       setState(() {
-        _requests = List<Map<String, dynamic>>.from(futures[0] as List);
+        final req = futures[0] as ({List<Map<String, dynamic>> items, int total});
+        _requests = req.items;
+        _reqTotal = req.total;
         _grants = List<Map<String, dynamic>>.from(futures[1] as List);
         _types = List<Map<String, dynamic>>.from(futures[2] as List);
         _rules = List<Map<String, dynamic>>.from(futures[3] as List);
@@ -141,6 +147,40 @@ class _LeavesScreenState extends State<LeavesScreen>
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<({List<Map<String, dynamic>> items, int total})> _fetchRequests() =>
+      _repo.searchRequests(
+        status: _filterStatus,
+        departmentId: _filterDeptId,
+        q: _searchCtrl.text.trim(),
+        page: _reqPage,
+        size: _reqPageSize,
+      );
+
+  /// Chỉ tải lại tab đơn (đổi trang / lọc / tìm kiếm) — F9 phân trang phía server.
+  Future<void> _loadRequests() async {
+    setState(() => _reqLoading = true);
+    try {
+      final res = await _fetchRequests();
+      if (!mounted) return;
+      setState(() {
+        _requests = res.items;
+        _reqTotal = res.total;
+      });
+    } catch (e) {
+      if (mounted) _snack(serverMsg(e), false);
+    } finally {
+      if (mounted) setState(() => _reqLoading = false);
+    }
+  }
+
+  void _onSearchChanged() {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      _reqPage = 0;
+      _loadRequests();
+    });
   }
 
   Future<void> _run(Future<void> Function() action, {String? okMsg}) async {
@@ -169,7 +209,7 @@ class _LeavesScreenState extends State<LeavesScreen>
     final s = AppLocalizations.of(context);
     final canPickEmployee = _canCreateForOthers;
     final employees = canPickEmployee
-        ? (await _empRepo.getAll(page: 0, size: 500, departmentId: _filterDeptId)).items
+        ? await _empRepo.getAllForPicker(departmentId: _filterDeptId)
         : <Employee>[];
     if (!mounted) return;
     final res = await showDialog<bool>(
@@ -191,7 +231,7 @@ class _LeavesScreenState extends State<LeavesScreen>
   Future<void> _openManualGrant() async {
     final s = AppLocalizations.of(context);
     final employees =
-        (await _empRepo.getAll(page: 0, size: 500, departmentId: _filterDeptId)).items;
+        await _empRepo.getAllForPicker(departmentId: _filterDeptId);
     if (!mounted) return;
     final res = await showDialog<bool>(
       context: context,
@@ -444,19 +484,8 @@ class _LeavesScreenState extends State<LeavesScreen>
       'REJECTED': s.rejected,
       'CANCELLED': s.cancelled,
     };
-    final q = foldSearchText(_searchCtrl.text.trim());
-    final filtered = _requests.where((r) {
-      if (_filterStatus != null && r['status'] != _filterStatus) return false;
-      if (q.isNotEmpty) {
-        final name = foldSearchText((r['employeeName'] ?? '').toString());
-        final type = foldSearchText((r['leaveTypeName'] ?? '').toString());
-        final dept = foldSearchText((r['departmentName'] ?? '').toString());
-        if (!name.contains(q) && !type.contains(q) && !dept.contains(q)) return false;
-      }
-      return true;
-    }).toList();
-    final totalPages = filtered.isEmpty ? 1 : (filtered.length / _reqPageSize).ceil();
-    final paged = filtered.skip(_reqPage * _reqPageSize).take(_reqPageSize).toList();
+    final totalPages = _reqTotal == 0 ? 1 : (_reqTotal / _reqPageSize).ceil();
+    final paged = _requests;
     return Column(
       children: [
         Expanded(child: ListView(
@@ -467,8 +496,8 @@ class _LeavesScreenState extends State<LeavesScreen>
             Expanded(
               child: SearchTextField(
                 controller: _searchCtrl,
-                onChanged: (_) => setState(() => _reqPage = 0),
-                onClear: () => setState(() => _reqPage = 0),
+                onChanged: (_) => _onSearchChanged(),
+                onClear: () { _reqPage = 0; _loadRequests(); },
               ),
             ),
             const SizedBox(width: 8),
@@ -481,7 +510,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                   value: e.key,
                   child: Text(e.value, style: const TextStyle(fontSize: 13)),
                 )).toList(),
-                onChanged: (v) => setState(() { _filterStatus = v; _reqPage = 0; }),
+                onChanged: (v) { _filterStatus = v; _reqPage = 0; _loadRequests(); },
               ),
             ),
           ],
@@ -652,13 +681,14 @@ class _LeavesScreenState extends State<LeavesScreen>
           }),
           ],
         )),
+        if (_reqLoading) const LinearProgressIndicator(minHeight: 2),
         PaginationBar(
-          total: filtered.length,
+          total: _reqTotal,
           page: _reqPage,
           pageSize: _reqPageSize,
-          onPageSizeChanged: (s) => setState(() { _reqPageSize = s; _reqPage = 0; }),
-          onPrev: _reqPage > 0 ? () => setState(() => _reqPage--) : null,
-          onNext: _reqPage < totalPages - 1 ? () => setState(() => _reqPage++) : null,
+          onPageSizeChanged: (s) { _reqPageSize = s; _reqPage = 0; _loadRequests(); },
+          onPrev: _reqPage > 0 && !_reqLoading ? () { _reqPage--; _loadRequests(); } : null,
+          onNext: _reqPage < totalPages - 1 && !_reqLoading ? () { _reqPage++; _loadRequests(); } : null,
         ),
       ],
     );

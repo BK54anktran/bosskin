@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/navigation/nav_access.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -85,23 +86,7 @@ class _AppDrawerState extends State<AppDrawer> {
             child: ListView(
               padding: const EdgeInsets.only(top: 4),
               children: [
-                ...items.where((item) {
-                  if (item.requiredPermission == null) return true;
-                  if (user == null) return false;
-                  if (item.route == AppRoutes.attendanceRequests) {
-                    return user.isSystemAdmin ||
-                        user.can('ATTENDANCE_SELF') ||
-                        user.can('ATTENDANCE_MANAGE') ||
-                        user.can('ATTENDANCE_REQUEST_APPROVE');
-                  }
-                  if (item.route == AppRoutes.shifts) {
-                    return user.isSystemAdmin ||
-                        user.can('SHIFT_VIEW') ||
-                        user.can('SHIFT_MANAGE');
-                  }
-                  return user.isSystemAdmin ||
-                      user.can(item.requiredPermission!);
-                }).map((item) {
+                ...items.where((item) => showInMenu(user, item.route)).map((item) {
                   bool isActive;
                   if (location == item.route) {
                     isActive = true;

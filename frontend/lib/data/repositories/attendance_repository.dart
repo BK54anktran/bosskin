@@ -160,6 +160,40 @@ class AttendanceRepository {
     );
   }
 
+  /// Đơn chấm công phân trang phía server (F9). status: 'PENDING' | 'RESOLVED' | null.
+  Future<({List<AttendanceChangeRequest> items, int total})> searchRequests({
+    String? status,
+    String? type,
+    int? departmentId,
+    DateTime? from,
+    DateTime? to,
+    String? q,
+    int page = 0,
+    int size = 20,
+  }) {
+    String d(DateTime x) =>
+        '${x.year.toString().padLeft(4, '0')}-${x.month.toString().padLeft(2, '0')}-${x.day.toString().padLeft(2, '0')}';
+    return _api.get(
+      '/attendance-requests/page',
+      (data) => (
+        items: (data['content'] as List)
+            .map((e) => AttendanceChangeRequest.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        total: (data['totalElements'] as num?)?.toInt() ?? 0,
+      ),
+      queryParams: {
+        'page': page,
+        'size': size,
+        if (status != null) 'status': status,
+        if (type != null) 'type': type,
+        if (departmentId != null) 'departmentId': departmentId,
+        if (from != null) 'from': d(from),
+        if (to != null) 'to': d(to),
+        if (q != null && q.isNotEmpty) 'q': q,
+      },
+    );
+  }
+
   Future<List<AttendanceChangeRequest>> getRequests({
     String? status,
     String? type,

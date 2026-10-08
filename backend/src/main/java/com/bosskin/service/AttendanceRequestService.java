@@ -65,6 +65,42 @@ public class AttendanceRequestService {
         return requests.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    /** Như {@link #getRequests} nhưng lọc + phân trang ở DB (F9). */
+    @Transactional(readOnly = true)
+    public com.bosskin.dto.PageResponse<AttendanceRequestDTO.Response> searchRequests(
+            User user, Boolean pendingOnly, String typeStr, Long departmentId,
+            java.time.LocalDate from, java.time.LocalDate to, String q, int page, int size) {
+        AttendanceRequest.Type type = parseType(typeStr);
+        var pageable = org.springframework.data.domain.PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200));
+        var empty = com.bosskin.dto.PageResponse.of(
+            org.springframework.data.domain.Page.<AttendanceRequestDTO.Response>empty(pageable));
+
+        Long employeeId = null;
+        Set<Long> deptIds = Set.of();
+        boolean anyDept = true;
+        if (!isManager(user)) {
+            employeeId = getEmployeeOrThrow(user).getId();
+        } else {
+            Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
+            if (scope.contains(-1L)) {
+                employeeId = getEmployeeOrThrow(user).getId();
+            }
+            deptIds = scope.stream().filter(id -> id > 0).collect(Collectors.toSet());
+            anyDept = deptIds.isEmpty() || employeeId != null;
+        }
+        if (departmentId != null) {
+            Set<Long> selected = new java.util.HashSet<>(deptScopeService.expandDepartmentsWithDescendants(Set.of(departmentId)));
+            if (!anyDept) selected.retainAll(deptIds);
+            deptIds = selected;
+            anyDept = false;
+            if (deptIds.isEmpty()) return empty;
+        }
+        String like = q == null || q.isBlank() ? null : "%" + q.trim().toLowerCase() + "%";
+        var result = requestRepository.searchPage(user.getCompany().getId(), pendingOnly, type, employeeId,
+            anyDept, anyDept ? Set.of(-1L) : deptIds, from, to, like, pageable);
+        return com.bosskin.dto.PageResponse.of(result.map(this::toResponse));
+    }
+
     @Transactional
     public List<AttendanceRequestDTO.Response> createRequest(User user, AttendanceRequestDTO.CreateRequest req) {
         Employee emp = getEmployeeOrThrow(user);

@@ -116,6 +116,41 @@ public class LeaveService {
             .map(this::toLeaveRequestResponse).toList();
     }
 
+    /** Như {@link #getRequests} nhưng lọc, tìm kiếm và phân trang ở DB (F9). */
+    @Transactional(readOnly = true)
+    public com.bosskin.dto.PageResponse<LeaveDTO.LeaveRequestResponse> searchRequests(
+            User user, String statusStr, Long departmentId, String q, int page, int size) {
+        LeaveRequest.Status status = statusStr == null || statusStr.isBlank() ? null : LeaveRequest.Status.valueOf(statusStr.toUpperCase());
+        var pageable = org.springframework.data.domain.PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200));
+
+        Long employeeId = null;
+        if (!isManager(user)) employeeId = getEmployeeOrThrow(user).getId();
+
+        Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "LEAVE_VIEW");
+        if (scope.contains(DeptScopeService.SCOPE_SELF_ONLY)) {
+            Long mine = employeeRepository.findByUserIdFetch(user.getId()).map(Employee::getId).orElse(null);
+            if (mine == null || (employeeId != null && !employeeId.equals(mine))) {
+                return com.bosskin.dto.PageResponse.of(org.springframework.data.domain.Page.empty(pageable));
+            }
+            employeeId = mine;
+        }
+        Set<Long> deptIds = scope.stream().filter(id -> id > 0).collect(Collectors.toSet());
+        boolean anyDept = deptIds.isEmpty();
+        if (departmentId != null) {
+            Set<Long> selected = new java.util.HashSet<>(deptScopeService.expandDepartmentsWithDescendants(Set.of(departmentId)));
+            if (!anyDept) selected.retainAll(deptIds);
+            deptIds = selected;
+            anyDept = false;
+        }
+        if (!anyDept && deptIds.isEmpty()) {
+            return com.bosskin.dto.PageResponse.of(org.springframework.data.domain.Page.empty(pageable));
+        }
+        String like = q == null || q.isBlank() ? null : "%" + q.trim().toLowerCase() + "%";
+        var result = leaveRequestRepository.searchPage(user.getCompanyId(), status, employeeId,
+                anyDept, anyDept ? Set.of(-1L) : deptIds, like, pageable);
+        return com.bosskin.dto.PageResponse.of(result.map(this::toLeaveRequestResponse));
+    }
+
     @Transactional
     public LeaveDTO.LeaveRequestResponse createRequest(User user, LeaveDTO.CreateLeaveRequest req) {
         Employee emp;

@@ -26,6 +26,30 @@ class LeaveRepository {
     await _api.delete('/leaves/types/$id');
   }
 
+  /// Danh sách đơn có phân trang + tìm kiếm phía server (F9).
+  Future<({List<Map<String, dynamic>> items, int total})> searchRequests({
+    String? status,
+    int? departmentId,
+    String? q,
+    int page = 0,
+    int size = 20,
+  }) {
+    return _api.get(
+      '/leaves/requests/page',
+      (data) => (
+        items: (data['content'] as List).map((e) => Map<String, dynamic>.from(e)).toList(),
+        total: (data['totalElements'] as num?)?.toInt() ?? 0,
+      ),
+      queryParams: {
+        'page': page,
+        'size': size,
+        if (status != null) 'status': status,
+        if (departmentId != null) 'departmentId': departmentId,
+        if (q != null && q.isNotEmpty) 'q': q,
+      },
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getRequests(
       {String? status, int? departmentId}) async {
     return _api.get(

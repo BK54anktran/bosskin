@@ -1,6 +1,8 @@
 package com.bosskin.repository;
 
 import com.bosskin.entity.AttendanceRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,51 @@ import java.util.Optional;
 
 @Repository
 public interface AttendanceRequestRepository extends JpaRepository<AttendanceRequest, Long> {
+
+    /** Lọc + phân trang ở DB cho màn Đơn chấm công (F9). pendingOnly null = mọi trạng thái. */
+    @Query(value = """
+        SELECT r FROM AttendanceRequest r
+        JOIN r.employee e
+        LEFT JOIN e.department d
+        WHERE e.company.id = :companyId
+          AND (:pendingOnly IS NULL OR (:pendingOnly = TRUE AND r.status = com.bosskin.entity.AttendanceRequest.Status.PENDING)
+               OR (:pendingOnly = FALSE AND r.status <> com.bosskin.entity.AttendanceRequest.Status.PENDING))
+          AND (:type IS NULL OR r.requestType = :type)
+          AND (:employeeId IS NULL OR e.id = :employeeId)
+          AND (:anyDept = TRUE OR d.id IN :deptIds)
+          AND (:fromDate IS NULL OR r.requestDate >= :fromDate)
+          AND (:toDate IS NULL OR r.requestDate <= :toDate)
+          AND (:q IS NULL OR LOWER(e.fullName) LIKE :q OR LOWER(e.employeeCode) LIKE :q
+               OR LOWER(d.name) LIKE :q OR LOWER(r.note) LIKE :q)
+        ORDER BY r.requestDate DESC, r.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(r) FROM AttendanceRequest r
+        JOIN r.employee e
+        LEFT JOIN e.department d
+        WHERE e.company.id = :companyId
+          AND (:pendingOnly IS NULL OR (:pendingOnly = TRUE AND r.status = com.bosskin.entity.AttendanceRequest.Status.PENDING)
+               OR (:pendingOnly = FALSE AND r.status <> com.bosskin.entity.AttendanceRequest.Status.PENDING))
+          AND (:type IS NULL OR r.requestType = :type)
+          AND (:employeeId IS NULL OR e.id = :employeeId)
+          AND (:anyDept = TRUE OR d.id IN :deptIds)
+          AND (:fromDate IS NULL OR r.requestDate >= :fromDate)
+          AND (:toDate IS NULL OR r.requestDate <= :toDate)
+          AND (:q IS NULL OR LOWER(e.fullName) LIKE :q OR LOWER(e.employeeCode) LIKE :q
+               OR LOWER(d.name) LIKE :q OR LOWER(r.note) LIKE :q)
+        """)
+    Page<AttendanceRequest> searchPage(
+        @Param("companyId") Long companyId,
+        @Param("pendingOnly") Boolean pendingOnly,
+        @Param("type") AttendanceRequest.Type type,
+        @Param("employeeId") Long employeeId,
+        @Param("anyDept") boolean anyDept,
+        @Param("deptIds") java.util.Collection<Long> deptIds,
+        @Param("fromDate") LocalDate fromDate,
+        @Param("toDate") LocalDate toDate,
+        @Param("q") String q,
+        Pageable pageable
+    );
 
     @Query("""
         SELECT r FROM AttendanceRequest r

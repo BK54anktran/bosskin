@@ -405,12 +405,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     try {
       final results = await Future.wait([
         DepartmentService.instance.getFlat(permission: 'ATTENDANCE_VIEW'),
-        _empRepo.getAll(page: 0, size: 500),
+        _empRepo.getAllForPicker(),
         _settingRepo.get(),
       ]);
       if (!mounted) return;
       final depts = results[0] as List<DepartmentFlat>;
-      final emps = (results[1] as ({List<Employee> items, int total})).items;
+      final emps = results[1] as List<Employee>;
       final settings = results[2] as Map<String, dynamic>;
       final att = settings['attendance'] as Map<String, dynamic>? ?? {};
       final payroll = settings['payroll'] as Map<String, dynamic>? ?? {};

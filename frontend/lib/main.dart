@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/navigation/nav_access.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -68,23 +69,6 @@ void _wireNotificationLifecycle() {
     lastUserKey = key;
   });
 }
-
-// Routes that require a specific permission to access
-const _routePermissions = <String, String>{
-  AppRoutes.dashboard: 'DASHBOARD_VIEW',
-  AppRoutes.employees: 'EMPLOYEE_VIEW',
-  AppRoutes.departments: 'DEPARTMENT_VIEW',
-  AppRoutes.shifts: 'SHIFT_VIEW',
-  AppRoutes.attendance: 'ATTENDANCE_VIEW',
-  AppRoutes.checkInOut: 'ATTENDANCE_SELF',
-  AppRoutes.payroll: 'PAYROLL_VIEW',
-  AppRoutes.selfPayroll: 'ATTENDANCE_SELF',
-  AppRoutes.roles: 'ROLE_VIEW',
-  AppRoutes.leaves: 'LEAVE_VIEW',
-  AppRoutes.companySettings: 'COMPANY_SETTING_VIEW',
-  AppRoutes.excelImportExport: 'EMPLOYEE_VIEW',
-  AppRoutes.reports: 'REPORT_VIEW',
-};
 
 final _router = GoRouter(
   navigatorKey: rootNavigatorKey,
@@ -229,23 +213,7 @@ final _router = GoRouter(
   ],
 );
 
-bool _canAccessPath(dynamic user, String path) {
-  if (user == null) return false;
-  if (user.isSystemAdmin) return true;
-
-  if (path == AppRoutes.attendanceRequests) {
-    return user.can('ATTENDANCE_SELF') ||
-        user.can('ATTENDANCE_MANAGE') ||
-        user.can('ATTENDANCE_REQUEST_APPROVE');
-  }
-
-  if (path == AppRoutes.shifts) {
-    return user.can('SHIFT_VIEW') || user.can('SHIFT_MANAGE');
-  }
-
-  final required = _routePermissions[path];
-  return required == null || user.can(required);
-}
+bool _canAccessPath(AuthUser? user, String path) => canAccessRoute(user, path);
 
 String _firstAccessibleRoute(dynamic user) {
   if (user == null) return AppRoutes.login;

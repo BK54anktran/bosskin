@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
-import '../../../core/utils/text_utils.dart';
 import '../../../core/utils/attendance_message_utils.dart';
 import '../../../data/models/attendance.dart';
 import '../../../data/models/department_model.dart';
@@ -45,8 +45,15 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   String? _error;
   List<DepartmentFlat> _depts = [];
   int? _filterDept;
+  // F9 — phân trang phía server, mỗi tab một trang riêng
   List<AttendanceChangeRequest> _pending = [];
   List<AttendanceChangeRequest> _resolved = [];
+  int _pendingTotal = 0;
+  int _resolvedTotal = 0;
+  int _pendingPage = 0;
+  int _resolvedPage = 0;
+  int _pageSize = 20;
+  Timer? _searchDebounce;
   bool _otEnabled = true;
 
   bool get _canApprove {
@@ -66,6 +73,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
   @override
   void dispose() {
     _tabs.dispose();
+    _searchDebounce?.cancel();
     _searchCtrl.dispose();
     _noteCtrl.dispose();
     _checkInCtrl.dispose();
@@ -93,17 +101,62 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
     } catch (_) {}
   }
 
+  Future<({List<AttendanceChangeRequest> items, int total})> _fetch(String status, int page) =>
+      _repo.searchRequests(
+        status: status,
+        type: _filterType == 'ALL' ? null : _filterType,
+        departmentId: _filterDept,
+        from: _filterFrom,
+        to: _filterTo,
+        q: _searchCtrl.text.trim(),
+        page: page,
+        size: _pageSize,
+      );
+
+  /// Đổi trang một tab: chỉ tải lại tab đó.
+  Future<void> _loadTab(bool pending) async {
+    try {
+      final r = await _fetch(pending ? 'PENDING' : 'RESOLVED', pending ? _pendingPage : _resolvedPage);
+      if (!mounted) return;
+      setState(() {
+        if (pending) {
+          _pending = r.items;
+          _pendingTotal = r.total;
+        } else {
+          _resolved = r.items;
+          _resolvedTotal = r.total;
+        }
+      });
+    } catch (e) {
+      if (mounted) _showSnack(serverMsg(e));
+    }
+  }
+
+  /// Bộ lọc đổi → về trang đầu cả hai tab.
+  void _reloadFromFirstPage() {
+    _pendingPage = 0;
+    _resolvedPage = 0;
+    _load();
+  }
+
+  void _onSearchChanged() {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), _reloadFromFirstPage);
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final all = await _repo.getRequests(departmentId: _filterDept);
+      final res = await Future.wait([_fetch('PENDING', _pendingPage), _fetch('RESOLVED', _resolvedPage)]);
       if (!mounted) return;
       setState(() {
-        _pending = all.where((r) => r.status == 'PENDING').toList();
-        _resolved = all.where((r) => r.status != 'PENDING').toList();
+        _pending = res[0].items;
+        _pendingTotal = res[0].total;
+        _resolved = res[1].items;
+        _resolvedTotal = res[1].total;
       });
     } catch (e) {
       if (!mounted) return;
@@ -213,6 +266,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
         _filterTo = picked;
       }
     });
+    _reloadFromFirstPage();
   }
 
   void _clearFilters() {
@@ -223,61 +277,13 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
       _filterTo = null;
       _filterDept = null;
     });
-    _load();
-  }
-
-  List<AttendanceChangeRequest> _applyFilters(
-    List<AttendanceChangeRequest> items,
-  ) {
-    final s = AppLocalizations.of(context);
-    final q = foldSearchText(_searchCtrl.text);
-    final from = _filterFrom == null
-        ? null
-        : DateTime(_filterFrom!.year, _filterFrom!.month, _filterFrom!.day);
-    final to = _filterTo == null
-        ? null
-        : DateTime(_filterTo!.year, _filterTo!.month, _filterTo!.day);
-
-    return items.where((r) {
-      if (_filterType != 'ALL' && r.requestType != _filterType) return false;
-
-      if (from != null || to != null) {
-        final requestDate = DateTime.tryParse(r.requestDate);
-        if (requestDate != null) {
-          final d = DateTime(
-            requestDate.year,
-            requestDate.month,
-            requestDate.day,
-          );
-          if (from != null && d.isBefore(from)) return false;
-          if (to != null && d.isAfter(to)) return false;
-        }
-      }
-
-      if (q.isEmpty) return true;
-      final haystack = foldSearchText([
-        r.employeeCode,
-        r.employeeName,
-        r.departmentName,
-        r.requestDate,
-        _requestTypeLabel(s, r.requestType),
-        _periodLabel(s, r.requestedOvertimePeriod),
-        _scopeLabel(s, r.requestedOvertimeScope),
-        r.note ?? '',
-        r.adminNote ?? '',
-        r.processedByName ?? '',
-        r.status,
-      ].join(' '));
-      return haystack.contains(q);
-    }).toList();
+    _reloadFromFirstPage();
   }
 
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final isImpersonating = AuthService.instance.isImpersonating;
-    final pending = _applyFilters(_pending);
-    final resolved = _applyFilters(_resolved);
     final currentEmployeeId = AuthService.instance.currentUser?.employeeId;
 
     return Column(
@@ -331,13 +337,16 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
                         departments: _depts,
                         filterDepartmentId: _filterDept,
                         otEnabled: _otEnabled,
-                        onSearchChanged: (_) => setState(() {}),
-                        onTypeChanged: (v) => setState(() => _filterType = v),
+                        onSearchChanged: (_) => _onSearchChanged(),
+                        onTypeChanged: (v) {
+                          setState(() => _filterType = v);
+                          _reloadFromFirstPage();
+                        },
                         onPickFrom: () => _pickFilterDate(true),
                         onPickTo: () => _pickFilterDate(false),
                         onDepartmentChanged: (v) async {
                           setState(() => _filterDept = v);
-                          await _load();
+                          _reloadFromFirstPage();
                         },
                         onClear: _clearFilters,
                       ),
@@ -353,9 +362,9 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(s.pendingTab),
-                                if (pending.isNotEmpty) ...[
+                                if (_pendingTotal > 0) ...[
                                   const SizedBox(width: 6),
-                                  _Badge(pending.length),
+                                  _Badge(_pendingTotal),
                                 ],
                               ],
                             ),
@@ -370,7 +379,12 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
                         controller: _tabs,
                         children: [
                           _RequestList(
-                            requests: pending,
+                            requests: _pending,
+                            total: _pendingTotal,
+                            page: _pendingPage,
+                            pageSize: _pageSize,
+                            onPage: (p) { _pendingPage = p; _loadTab(true); },
+                            onPageSize: (v) { _pageSize = v; _reloadFromFirstPage(); },
                             canApprove: _canApprove,
                             acting: _acting,
                             currentEmployeeId: currentEmployeeId,
@@ -380,7 +394,12 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
                             emptyMessage: s.noPendingRequests,
                           ),
                           _RequestList(
-                            requests: resolved,
+                            requests: _resolved,
+                            total: _resolvedTotal,
+                            page: _resolvedPage,
+                            pageSize: _pageSize,
+                            onPage: (p) { _resolvedPage = p; _loadTab(false); },
+                            onPageSize: (v) { _pageSize = v; _reloadFromFirstPage(); },
                             canApprove: false,
                             acting: _acting,
                             currentEmployeeId: currentEmployeeId,
@@ -1485,8 +1504,19 @@ class _RequestList extends StatefulWidget {
   final Future<void> Function(AttendanceChangeRequest)? onCancel;
   final String emptyMessage;
 
+  final int total;
+  final int page;
+  final int pageSize;
+  final ValueChanged<int> onPage;
+  final ValueChanged<int> onPageSize;
+
   const _RequestList({
     required this.requests,
+    required this.total,
+    required this.page,
+    required this.pageSize,
+    required this.onPage,
+    required this.onPageSize,
     required this.canApprove,
     required this.acting,
     required this.currentEmployeeId,
@@ -1501,8 +1531,6 @@ class _RequestList extends StatefulWidget {
 }
 
 class _RequestListState extends State<_RequestList> {
-  int _page = 0;
-  int _pageSize = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -1510,7 +1538,7 @@ class _RequestListState extends State<_RequestList> {
     if (widget.requests.isEmpty) {
       return EmptyState(message: widget.emptyMessage);
     }
-    final paged = widget.requests.skip(_page * _pageSize).take(_pageSize).toList();
+    final paged = widget.requests;
     return Column(
       children: [
         Expanded(
@@ -1671,12 +1699,12 @@ class _RequestListState extends State<_RequestList> {
           ),
         ),
         PaginationBar(
-          total: widget.requests.length,
-          page: _page,
-          pageSize: _pageSize,
-          onPageSizeChanged: (v) => setState(() { _pageSize = v; _page = 0; }),
-          onPrev: _page > 0 ? () => setState(() => _page--) : null,
-          onNext: (_page + 1) * _pageSize < widget.requests.length ? () => setState(() => _page++) : null,
+          total: widget.total,
+          page: widget.page,
+          pageSize: widget.pageSize,
+          onPageSizeChanged: widget.onPageSize,
+          onPrev: widget.page > 0 ? () => widget.onPage(widget.page - 1) : null,
+          onNext: (widget.page + 1) * widget.pageSize < widget.total ? () => widget.onPage(widget.page + 1) : null,
         ),
       ],
     );

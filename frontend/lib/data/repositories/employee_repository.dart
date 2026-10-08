@@ -22,6 +22,19 @@ class EmployeeRepository {
     ));
   }
 
+  /// Toàn bộ nhân viên (cho ô chọn nhân viên) — tải lần lượt từng trang 500,
+  /// không còn bị cắt ở 500 người mà không báo (F9).
+  Future<List<Employee>> getAllForPicker({int? departmentId, EmployeeStatus? status}) async {
+    const pageSize = 500;
+    final out = <Employee>[];
+    for (var page = 0; page < 100; page++) {
+      final r = await getAll(page: page, size: pageSize, departmentId: departmentId, status: status);
+      out.addAll(r.items);
+      if (r.items.length < pageSize || out.length >= r.total) break;
+    }
+    return out;
+  }
+
   Future<({List<Employee> items, int total})> getAll({
     int page = 0,
     int size = 20,

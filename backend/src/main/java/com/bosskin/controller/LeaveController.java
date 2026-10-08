@@ -68,6 +68,20 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.getRequests(user, status, departmentId));
     }
 
+    /** Danh sách đơn có phân trang + tìm kiếm phía server (F9). */
+    @GetMapping("/requests/page")
+    public ResponseEntity<com.bosskin.dto.PageResponse<LeaveDTO.LeaveRequestResponse>> searchRequests(
+        @AuthenticationPrincipal User user,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) Long departmentId,
+        @RequestParam(required = false) String q,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        requirePermission(user, "LEAVE_VIEW");
+        return ResponseEntity.ok(leaveService.searchRequests(user, status, departmentId, q, page, size));
+    }
+
     @PostMapping("/requests")
     public ResponseEntity<LeaveDTO.LeaveRequestResponse> createRequest(
         @AuthenticationPrincipal User user,
