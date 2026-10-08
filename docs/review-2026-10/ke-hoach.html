@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BossKin — Kế hoạch tới go-live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="assets/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default', gantt: { useMaxWidth: false, barHeight: 22, fontSize: 12 }, fontFamily: 'Be Vietnam Pro, Roboto, sans-serif' });
+</script>
+<style>
+.diagram .mermaid{min-width:1100px}
+.ms{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start}
+.ms .when{font-size:13px;color:var(--ink-3)}
+.ms .when b{display:block;font-size:22px;color:var(--brand);line-height:1.2}
+.exit{margin-top:8px;font-size:14px;color:var(--ink-2)}
+.exit b{color:var(--ok)}
+@media (max-width:700px){.ms{grid-template-columns:1fr;gap:6px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="index.html"><span>B</span>BossKin · Review</a>
+  <nav class="nav">
+    <a href="index.html">Tổng quan</a>
+    <a href="kien-truc.html">Kiến trúc</a>
+    <a href="du-lieu.html">Dữ liệu</a>
+    <a href="luong-nghiep-vu.html">Luồng nghiệp vụ</a>
+    <a href="danh-gia.html">Đánh giá</a>
+    <a class="on" href="ke-hoach.html">Kế hoạch</a>
+  </nav>
+</div></header>
+
+<main>
+  <section class="hero">
+    <h1>5. Kế hoạch tới go-live</h1>
+    <p>Hệ thống <b>chưa chạy production</b>, mới có môi trường dev. Đây là lợi thế lớn: chưa có dữ liệu khách hàng, nên được phép làm sạch database và sửa thẳng schema thay vì viết migration vá. Kế hoạch dưới đây sắp các việc theo thứ tự để mỗi phần code chỉ phải động vào <b>một lần</b>, và việc làm trước là nền cho việc làm sau.</p>
+    <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
+  </section>
+
+  <h2>Nguyên tắc sắp thứ tự</h2>
+  <div class="grid g2">
+    <div class="card"><ol class="steps">
+      <li><b>Test trước, sửa sau.</b> Dựng khung test và bộ dữ liệu mẫu ngay đầu. Mọi lỗi sửa sau đều có test chặn tái phát, và đến lúc go-live có sẵn bộ kiểm thử hồi quy.</li>
+      <li><b>Schema một lần.</b> Gộp 117 migration thành một baseline sạch và sửa mọi lỗi schema (unique, index, seed) trong cùng một đợt, rồi mới viết logic.</li>
+      <li><b>Theo module, không theo mức độ.</b> Gom các lỗi cùng file vào một đợt (ví dụ mọi lỗi của <code>AttendanceController</code> sửa cùng lúc), tránh mở đi mở lại.</li>
+    </ol></div>
+    <div class="card"><ol class="steps" start="4" style="counter-reset:s 3">
+      <li><b>Đầu vào trước đầu ra.</b> Chấm công phải đúng trước thì phép và lương mới đúng được.</li>
+      <li><b>Frontend chạy song song</b> trên các lỗi chỉ thuộc FE, rồi ghép UI cho tính năng BE mới theo từng mốc.</li>
+      <li><b>Go-live với phạm vi tối thiểu.</b> Những gì chưa cần cho khách đầu tiên (thuế đúng luật đầy đủ, máy chấm công, hợp đồng) để sau go-live.</li>
+    </ol></div>
+  </div>
+
+  <h2>Quyết định đã chốt (08/10/2026)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Quyết định</th><th>Kế hoạch thay đổi thế nào</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><b>Go-live gồm bảng lương</b>, làm từ từ, không ép tiến độ.</td><td>Giữ đủ Mốc 3b. Không có hạn chót cứng, nên mỗi mốc chỉ qua khi đạt tiêu chí "Xong khi", không cắt phạm vi để kịp ngày.</td></tr>
+      <tr><td>2</td><td>Pilot dùng <b>đủ các loại ca hiện có</b> (ngày, đêm, qua đêm, nhiều ca/ngày) và cần <b>linh hoạt nhất có thể</b>.</td><td>Mốc 2 kiểm thử với mọi loại ca. Thêm <b>Mốc 2b · Ca đa năng</b> (ca linh hoạt, ca xoay vòng, đổi ca, ca chia đôi) trước go-live; đã chuyển khỏi danh sách sau go-live.</td></tr>
+      <tr><td>3</td><td>Khoá kỳ theo <b>ngày chốt công admin đã cài trong Cài đặt</b> (tháng dương lịch).</td><td>Không làm cấu hình kỳ mới: bảng khoá kỳ dùng lại ngày chốt sẵn có. Chỉ cần thêm thao tác khoá/mở kỳ và quyền mở lại kỳ (đề xuất chỉ Admin, có ghi audit).</td></tr>
+      <tr><td>4</td><td><b>GPS + gắn thiết bị</b> là đủ cho go-live.</td><td>Mốc 2 làm cờ GPS giả, độ chính xác, gắn thiết bị. Selfie/khuôn mặt ghi <b>TODO</b> ở đợt sau go-live.</td></tr>
+      <tr><td>5</td><td><b>Tiếp tục Elastic Beanstalk.</b></td><td>Mốc 5 dựng 2 môi trường EB (staging, prod) cùng cấu hình, HTTPS bằng chứng chỉ ACM gắn vào ALB, secret đọc từ SSM Parameter Store, RDS bật backup tự động.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Lộ trình</h2>
+  <div class="diagram"><pre class="mermaid">
+gantt
+  title Lộ trình tới go-live (1 BE + 1 FE)
+  dateFormat YYYY-MM-DD
+  axisFormat %d/%m
+  excludes weekends
+  section Backend
+  Mốc 0 · Khung test và dữ liệu mẫu           :m0, 2026-10-12, 3d
+  Mốc 1 · Schema sạch và bảo mật              :crit, m1, after m0, 9d
+  Mốc 2 · Chấm công đúng và khoá kỳ           :crit, m2, after m1, 10d
+  Mốc 2b · Ca đa năng                         :m2b, after m2, 6d
+  Mốc 3a · Nghỉ phép                          :m3a, after m2b, 4d
+  Mốc 3b · Bảng lương                         :m3b, after m3a, 8d
+  Mốc 5 · Sẵn sàng vận hành                   :m5, after m3b, 5d
+  section Frontend
+  Mốc 4a · Sửa lỗi FE độc lập                 :crit, f1, 2026-10-15, 4d
+  Mốc 4b · l10n, menu, phân trang             :f2, after f1, 6d
+  UI cho Mốc 2 (khoá kỳ, check-out, ca đêm)   :f3, after m1, 5d
+  UI cho Mốc 2b (ca linh hoạt, xoay vòng, đổi ca) :f4, after m2, 6d
+  UI cho Mốc 3 (loại phép, biến lương)        :f5, after m2b, 5d
+  section Nghiệm thu
+  UAT với công ty pilot                       :crit, u1, after m5, 5d
+  Go-live                                      :milestone, gl, after u1, 0d
+  </pre></div>
+  <p class="cap">Hình 9. Khoảng 11–12 tuần, go-live dự kiến đầu tháng 1/2027. Đây là lịch tham khảo, không phải hạn chót: mốc chỉ qua khi đạt tiêu chí. Có thêm 1 backend thì Mốc 3 chạy song song Mốc 2/2b.</p>
+
+  <h2>Các mốc chi tiết</h2>
+
+  <div class="card ms">
+    <div class="when"><b>Mốc 0</b>3 ngày · BE</div>
+    <div>
+      <h3 style="margin-top:0">Khung test và dữ liệu mẫu</h3>
+      <ul class="clean">
+        <li>Bật chạy test trong CI (bỏ <code>-DskipTests</code>), dùng Testcontainers MySQL để test chạy trên DB thật (O1).</li>
+        <li>Bộ dữ liệu mẫu chuẩn: 1 công ty, 3 phòng ban, 10 nhân viên, ca ngày + ca đêm + 2 ca/ngày, vài đơn phép, đơn chấm công. Dùng chung cho test tự động và demo.</li>
+        <li>Viết sẵn các test "đang đỏ" cho những lỗi nghiêm trọng (tự duyệt công, ca đêm, ngày phép tính vắng, biến <code>STANDARD_WORK_DAYS</code>). Sửa xong thì test chuyển xanh.</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> CI chạy test mỗi lần push; có ít nhất 10 test tái hiện các lỗi nghiêm trọng.</p>
+    </div>
+  </div>
+
+  <div class="card ms" style="margin-top:14px">
+    <div class="when"><b>Mốc 1</b>9 ngày · BE</div>
+    <div>
+      <h3 style="margin-top:0">Schema sạch và bảo mật</h3>
+      <p class="lead">Làm trước vì mọi mốc sau đều đọc/ghi các bảng này và đi qua lớp xác thực.</p>
+      <ul class="clean">
+        <li><b>Database (3 ngày):</b>
+          <ul class="clean">
+            <li>Gộp V1–V117 thành một migration baseline mới, vì chưa có dữ liệu prod cần giữ.</li>
+            <li>Đưa seed demo sang thư mục chỉ dùng cho dev (S2).</li>
+            <li>Sửa unique có cột <code>deleted</code> và unique của <code>positions</code> theo công ty (D2, D3).</li>
+            <li>Sửa unique của <code>attendances</code> để chặn dòng trùng (A9).</li>
+            <li>Thêm index cho các truy vấn nóng, bật <code>validate-on-migrate</code> (O3).</li>
+            <li>Không cần backfill V95 (A10): chỉ cần dựng lại DB dev.</li>
+          </ul></li>
+        <li><b>Xác thực (2 ngày):</b>
+          <ul class="clean">
+            <li>Secret bắt buộc và đủ dài, không có giá trị mặc định (S1).</li>
+            <li>Kiểm <code>enabled</code> ở filter và khi refresh; thu hồi phiên khi khoá hoặc xoá nhân viên (S3, D4).</li>
+            <li>Access token bắt buộc loại COMPANY và sống ngắn; thêm logout; dọn phiên hết hạn (S4).</li>
+            <li>Impersonate sống ≤ 1 giờ và kiểm sysadmin trong DB (S5).</li>
+            <li>Giới hạn số lần đăng nhập, chính sách mật khẩu (S10).</li>
+          </ul></li>
+        <li><b>Phân quyền (3 ngày):</b>
+          <ul class="clean">
+            <li>Tạo role Employee mặc định khi onboarding (D1).</li>
+            <li>Phạm vi "toàn công ty" ghi tường minh, không suy từ tập rỗng; chặn tự sửa quyền, chỉ cấp được quyền mình đang có (S6).</li>
+            <li>Thêm quyền <code>ATTENDANCE_APPROVE</code> kèm kiểm phạm vi và cấm tự duyệt (A1, A2, S14).</li>
+            <li>Dữ liệu lương trên Dashboard/Báo cáo chỉ hiện với người có <code>PAYROLL_VIEW</code> (S7).</li>
+            <li>Universal Excel kiểm quyền theo từng module (S8).</li>
+          </ul></li>
+        <li><b>Cấu hình (1 ngày):</b> CORS đọc whitelist (S9); ẩn chi tiết lỗi (S13); upload theo thư mục công ty, kiểm quyền (S12); đặt múi giờ JVM <code>Asia/Ho_Chi_Minh</code> (O2).</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> mọi test bảo mật xanh; tạo công ty mới → nhân viên mới chỉ có quyền tự chấm công; nhân viên không tự duyệt được công.</p>
+    </div>
+  </div>
+
+  <div class="card ms" style="margin-top:14px">
+    <div class="when"><b>Mốc 2</b>10 ngày · BE<br>+ 5 ngày FE</div>
+    <div>
+      <h3 style="margin-top:0">Chấm công đúng và khoá kỳ</h3>
+      <p class="lead">Gom toàn bộ thay đổi trong <code>AttendanceController</code>, <code>AttendanceCalculationService</code>, <code>WorkShiftService</code> vào một đợt; tiện thể tách logic khỏi controller. Pilot dùng mọi loại ca, nên mỗi sửa đổi phải chạy qua đủ kịch bản: ca ngày, ca đêm, ca qua đêm, nhiều ca trong 1 ngày.</p>
+      <ul class="clean">
+        <li><b>Ca & phân ca (3 ngày):</b>
+          <ul class="clean">
+            <li>Phân ca hàng loạt dùng chung kiểm tra với phân ca đơn (A8).</li>
+            <li>Import ca dạng so sánh rồi cập nhật, không xoá đi tạo lại (A6).</li>
+            <li>Xoá ca không xoá cứng công (A7).</li>
+            <li>Sửa giờ làm của ca qua đêm (A17).</li>
+            <li>Tính công dùng snapshot ca (A11).</li>
+          </ul></li>
+        <li><b>Check-in/out (3 ngày):</b>
+          <ul class="clean">
+            <li>Sửa luồng ca đêm: xác định đúng ngày hiệu lực và bật lại nút check-out (A3, A4).</li>
+            <li>Cho check-out bất kỳ lúc nào sau check-in (A14); trạng thái đi muộn theo dung sai cấu hình (A13).</li>
+            <li>Khoá dòng khi check-in để chặn bấm hai lần.</li>
+            <li>Nhận <code>isMocked</code>, độ chính xác GPS, deviceId và gắn thiết bị: 1 nhân viên 1 thiết bị, đổi máy cần quản lý duyệt (A19). Selfie: TODO sau go-live.</li>
+          </ul></li>
+        <li><b>Duyệt & khoá kỳ (3 ngày):</b>
+          <ul class="clean">
+            <li>Khi duyệt luôn tính lại trạng thái, gồm cả LEAVE cho ngày nghỉ cả ngày (A5, L1).</li>
+            <li>Khoá kỳ theo ngày chốt công trong Cài đặt: khoá/mở kỳ, chỉ Admin mở lại và có ghi lại ai mở; mọi thao tác ghi công, đơn, phép kiểm khoá (A12).</li>
+            <li>Import bảng công dùng transaction riêng cho từng dòng (A18).</li>
+          </ul></li>
+        <li><b>Đơn & nhắc nhở (1 ngày):</b> đơn sửa giờ thay thế được giờ thực (A16); giới hạn OT theo giờ có mặt (A15); scheduler so khớp theo khoảng thời gian và có ShedLock (O2).</li>
+        <li><b>FE:</b> màn khoá/mở kỳ; nút check-out mới; gửi GPS lúc bấm kèm cờ mock; hiển thị trạng thái kỳ đã khoá.</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> kịch bản 5 đêm liên tiếp ca 22:00–06:00 chấm đủ và đúng giờ; ngày có 3 ca (sáng, chiều, tối) chấm đúng từng ca; import lại cùng file ca không mất công; kỳ đã khoá thì mọi thao tác sửa bị từ chối.</p>
+    </div>
+  </div>
+
+  <div class="card ms" style="margin-top:14px">
+    <div class="when"><b>Mốc 2b</b>6 ngày · BE<br>+ 6 ngày FE</div>
+    <div>
+      <h3 style="margin-top:0">Ca đa năng</h3>
+      <p class="lead">Làm ngay sau Mốc 2 vì dùng chung code ca/phân ca vừa sửa, và phải xong trước phép/lương vì thay đổi cách tính giờ công.</p>
+      <ul class="clean">
+        <li><b>Ca linh hoạt:</b> chỉ quy định số giờ phải làm và khung giờ được vào, không cố định giờ vào/ra; đi muộn tính theo giờ thiếu.</li>
+        <li><b>Ca xoay vòng:</b> mẫu chu kỳ (ví dụ 2 sáng – 2 chiều – 2 đêm – 2 nghỉ), sinh phân ca tự động cho khoảng ngày.</li>
+        <li><b>Đổi ca / nhận ca:</b> nhân viên gửi yêu cầu đổi ca với đồng nghiệp, quản lý duyệt; kiểm trùng giờ và kỳ đã khoá.</li>
+        <li><b>Ca chia đôi:</b> một ca có giờ nghỉ dài ở giữa, tính giờ công trừ phần nghỉ.</li>
+        <li>Giữ snapshot ca khi duyệt như hiện tại để lương không đổi khi sửa ca sau này.</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> mỗi loại ca có ít nhất 1 test tính công; sinh phân ca xoay vòng 1 tháng cho 10 nhân viên đúng mẫu; đổi ca đã duyệt cập nhật đúng cả 2 người.</p>
+    </div>
+  </div>
+
+  <div class="card ms" style="margin-top:14px">
+    <div class="when"><b>Mốc 3</b>12 ngày · BE<br>+ 5 ngày FE</div>
+    <div>
+      <h3 style="margin-top:0">Nghỉ phép (3a) và bảng lương (3b)</h3>
+      <ul class="clean">
+        <li><b>3a · Nghỉ phép (4 ngày):</b>
+          <ul class="clean">
+            <li>Số dư theo loại phép, có cờ "cần số dư" để nghỉ không lương không trừ quỹ (L8).</li>
+            <li>Sổ ghi trừ/hoàn theo từng đơn (L13); kiểm đơn chồng ngày, bỏ ngày không có ca (L11); kiểm chế độ ngày/giờ theo loại phép (L12).</li>
+            <li>Scheduler cộng phép hằng ngày, thâm niên tính đúng, chỉ cho nhân viên đang làm (L10).</li>
+            <li>Chặn huỷ phép khi kỳ đã khoá (L9); khoá lạc quan <code>@Version</code> (L14).</li>
+          </ul></li>
+        <li><b>3b · Bảng lương (8 ngày):</b>
+          <ul class="clean">
+            <li>Gán đủ biến hệ thống (L3); tính biến theo thứ tự phụ thuộc, tách trước/sau GROSS (L2); IF chỉ tính nhánh được chọn, thêm ROUND (L15).</li>
+            <li>BH/PIT thành biến hệ thống có thứ tự, đảm bảo gross − khấu trừ = net (L5).</li>
+            <li>Sửa nháp và tính lại chạy trong một transaction, giữ phần chỉnh tay (L6, L7).</li>
+            <li>Biến ngày phép có lương/không lương (L1); áp phạm vi khi xuất phiếu (L16); lưu người duyệt/người trả (L18).</li>
+            <li>Chưa làm thuế đầy đủ theo luật ở mốc này: để kế toán cấu hình qua công thức.</li>
+          </ul></li>
+        <li><b>FE:</b> màn loại phép mới; hiển thị lỗi công thức rõ ràng; phiếu lương thống nhất tổng khấu trừ.</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> bộ 6 phiếu lương mẫu (đủ công, nghỉ phép có lương, nghỉ không lương, OT ngày, OT đêm, vào giữa tháng) khớp số tính tay; số dư phép không âm khi tạo đơn song song.</p>
+    </div>
+  </div>
+
+  <div class="card ms" style="margin-top:14px">
+    <div class="when"><b>Mốc 4</b>10 ngày · FE<br>(song song)</div>
+    <div>
+      <h3 style="margin-top:0">Frontend</h3>
+      <ul class="clean">
+        <li><b>4a · Lỗi độc lập (4 ngày, làm ngay tuần đầu):</b>
+          <ul class="clean">
+            <li>Check-in từ push (F1).</li>
+            <li>Refresh token chỉ khi 401 và chỉ một lần cho mọi request đang chờ; logout khi refresh thất bại (F2, F3).</li>
+            <li>Sửa lỗi "không ghi nhớ đăng nhập" (F4).</li>
+            <li>Host cấu hình theo môi trường, ẩn ô đổi server ở bản release (F7).</li>
+            <li>Banner khi impersonate (F5).</li>
+            <li>Vòng đời FCM (F10).</li>
+          </ul></li>
+        <li><b>4b · Chất lượng (6 ngày):</b>
+          <ul class="clean">
+            <li>Dịch 63 mã lỗi và khoảng 300 chuỗi viết cứng; CI chặn chuỗi có dấu (F6).</li>
+            <li>Một cấu hình menu/quyền dùng chung cho router, sidebar, drawer, bottom nav (F8).</li>
+            <li>Phân trang server cho đơn phép, đơn chấm công, phân ca (F9).</li>
+            <li>Cấu hình cache cho bản web (F12).</li>
+          </ul></li>
+        <li>Không tách file lớn và không chuyển sang Riverpod trước go-live: tốn công mà người dùng không thấy khác biệt.</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> chế độ tiếng Anh không còn chữ Việt; không còn mã lỗi thô; bấm Check-in trên thông báo thành công.</p>
+    </div>
+  </div>
+
+  <div class="card ms" style="margin-top:14px">
+    <div class="when"><b>Mốc 5</b>5 ngày · BE<br>+ UAT 5 ngày</div>
+    <div>
+      <h3 style="margin-top:0">Sẵn sàng vận hành và nghiệm thu</h3>
+      <ul class="clean">
+        <li>Elastic Beanstalk: 2 môi trường staging và prod cùng cấu hình; GitHub Actions deploy staging khi merge, prod qua bước duyệt tay (environment approval), không đẩy thẳng từ <code>main</code>.</li>
+        <li>HTTPS: chứng chỉ ACM gắn vào ALB của EB, chuyển hướng HTTP → HTTPS; DB kết nối SSL; S3 private.</li>
+        <li>Secret (JWT, DB, FCM, tile user-agent) đặt trong SSM Parameter Store, EB đọc qua environment properties; không để trong repo.</li>
+        <li>RDS bật backup tự động và PITR, diễn tập khôi phục một lần trên staging.</li>
+        <li>Health check của EB trỏ vào Actuator, log CloudWatch có request-id, cảnh báo lỗi qua email/Slack (O4).</li>
+        <li>Thư mục cache tile bản đồ trỏ vào đĩa có giới hạn dung lượng (EB instance có thể bị thay, cache mất cũng không sao).</li>
+        <li>Audit log cho các thao tác sửa công, duyệt lương, đổi quyền, impersonate.</li>
+        <li>Tài khoản system admin prod tạo bằng script một lần, có đổi mật khẩu và 2FA nếu kịp.</li>
+        <li>Runbook: deploy, rollback, khôi phục DB, xử lý khi chấm công lỗi.</li>
+        <li><b>UAT:</b> công ty pilot chạy song song với cách chấm công cũ trong 1 kỳ, đối chiếu kết quả.</li>
+      </ul>
+      <p class="exit"><b>Xong khi:</b> checklist go-live đạt 100%; kết quả kỳ pilot khớp cách cũ (hoặc chênh lệch có giải thích).</p>
+    </div>
+  </div>
+
+  <h2>Sau go-live (theo nhu cầu khách)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Đợt</th><th>Nội dung</th><th>Công</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Ngày lễ, lịch tuần theo phòng ban, hệ số OT 150/200/300%, phụ cấp đêm, trần OT, quy đổi giờ → công, phút đi muộn/về sớm</td><td class="nw">2–3 tuần</td></tr>
+      <tr><td>2</td><td>BH theo lương HĐ có trần/sàn, phần doanh nghiệp đóng, người phụ thuộc, biểu thuế và mức giảm trừ cấu hình theo hiệu lực (đối chiếu văn bản 2026) (L4)</td><td class="nw">2–3 tuần</td></tr>
+      <tr><td>3</td><td>Bậc lương tháng, lịch sử bậc/HĐ, nhiều lần chi trong tháng, phiếu lương PDF/email, file chi lương ngân hàng (L17)</td><td class="nw">3 tuần</td></tr>
+      <tr><td>4</td><td>Hợp đồng lao động, MST, sổ BHXH, lịch sử công tác, mã hoá dữ liệu cá nhân (D5)</td><td class="nw">2 tuần</td></tr>
+      <tr><td>5</td><td><b>TODO:</b> selfie/khuôn mặt khi chấm công; máy chấm công, QR, Wi-Fi; nghỉ bù</td><td class="nw">3–5 tuần</td></tr>
+      <tr><td>6</td><td>Tái cấu trúc: tách file FE lớn, dùng Riverpod, gom kiểm quyền BE thành annotation; dark mode, cỡ chữ hệ thống</td><td class="nw">làm dần</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Theo dõi tiến độ</h2>
+  <div class="grid g4">
+    <div class="card kpi"><div class="n">0</div><div class="l">lỗi Nghiêm trọng còn mở trước UAT</div></div>
+    <div class="card kpi"><div class="n">≥ 60%</div><div class="l">độ phủ test cho service chấm công, phép, lương</div></div>
+    <div class="card kpi"><div class="n">100%</div><div class="l">chuỗi hiển thị qua l10n, mã lỗi có bản dịch</div></div>
+    <div class="card kpi"><div class="n">1 kỳ</div><div class="l">chạy song song với khách pilot, kết quả khớp</div></div>
+  </div>
+</main>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BossKin — Mô hình dữ liệu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="assets/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default', er: { useMaxWidth: false }, fontFamily: 'Be Vietnam Pro, Roboto, sans-serif' });
+</script>
+<style>.diagram .mermaid{min-width:1400px}</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="index.html"><span>B</span>BossKin · Review</a>
+  <nav class="nav">
+    <a href="index.html">Tổng quan</a>
+    <a href="kien-truc.html">Kiến trúc</a>
+    <a class="on" href="du-lieu.html">Dữ liệu</a>
+    <a href="luong-nghiep-vu.html">Luồng nghiệp vụ</a>
+    <a href="danh-gia.html">Đánh giá</a>
+    <a href="ke-hoach.html">Kế hoạch</a>
+  </nav>
+</div></header>
+
+<main>
+  <section class="hero">
+    <h1>2. Mô hình dữ liệu</h1>
+    <p>MySQL 8, 34 bảng, quản lý bằng Flyway (V1 → V117) với <code>ddl-auto: validate</code>. Multi-tenant chung schema: hầu hết bảng có <code>company_id</code>, việc lọc theo công ty làm ở tầng ứng dụng (không có row-level security). <code>BaseEntity</code> chỉ có <code>created_at/updated_at</code>, không có <code>created_by/updated_by</code>.</p>
+  </section>
+
+  <h2>Sơ đồ quan hệ (ER)</h2>
+  <p class="lead">Cuộn ngang để xem hết. Thuộc tính chỉ liệt kê khoá và vài cột quan trọng.</p>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+    COMPANIES {
+        bigint id PK
+        varchar code UK
+        boolean active
+        int payroll_cutoff_day
+    }
+    SYSTEM_ADMINS {
+        bigint id PK
+        varchar email UK
+    }
+    DEPARTMENTS {
+        bigint id PK
+        bigint company_id FK
+        bigint parent_id FK
+        bigint manager_id FK
+        varchar code
+        boolean deleted
+    }
+    POSITIONS {
+        bigint id PK
+        bigint department_id FK
+        varchar code
+    }
+    EMPLOYEES {
+        bigint id PK
+        bigint company_id FK
+        bigint department_id FK
+        bigint position_id FK
+        bigint salary_grade_id FK
+        varchar employee_code
+        varchar identity_card
+        varchar bank_account
+    }
+    USERS {
+        bigint id PK
+        bigint company_id FK
+        bigint employee_id FK
+        varchar email
+        boolean enabled
+    }
+    ROLES {
+        bigint id PK
+        bigint company_id FK
+        varchar name
+        boolean is_default
+    }
+    PERMISSIONS {
+        bigint id PK
+        varchar code UK
+        varchar module
+    }
+    ROLE_PERMISSIONS {
+        bigint role_id PK
+        bigint permission_id PK
+    }
+    USER_ROLES {
+        bigint user_id PK
+        bigint role_id PK
+    }
+    USER_PERMISSIONS {
+        bigint user_id PK
+        bigint permission_id PK
+    }
+    ROLE_PERMISSION_DEPT_SCOPES {
+        bigint role_id FK
+        varchar permission_code
+        bigint department_id
+    }
+    USER_PERMISSION_DEPT_SCOPES {
+        bigint user_id FK
+        varchar permission_code
+        bigint department_id
+    }
+    USER_SESSIONS {
+        bigint id PK
+        bigint user_id FK
+        varchar jti UK
+        boolean revoked
+    }
+    PROFILE_EDIT_REQUESTS {
+        bigint id PK
+        bigint employee_id FK
+        varchar status
+    }
+    EMPLOYEE_LOCATIONS {
+        bigint id PK
+        bigint employee_id FK
+        double latitude
+        double longitude
+    }
+    SALARY_HISTORIES {
+        bigint id PK
+        bigint employee_id FK
+        decimal base_salary
+        date effective_date
+    }
+    WORK_SHIFTS {
+        bigint id PK
+        bigint company_id FK
+        varchar code
+        time start_time
+        time end_time
+    }
+    DEPARTMENT_SHIFTS {
+        bigint department_id FK
+        bigint shift_id FK
+    }
+    SHIFT_ASSIGNMENTS {
+        bigint id PK
+        bigint employee_id FK
+        bigint shift_id FK
+        date work_date
+        boolean deleted
+    }
+    ATTENDANCES {
+        bigint id PK
+        bigint employee_id FK
+        bigint shift_assignment_id FK
+        date date
+        datetime check_in
+        datetime check_out
+        boolean approved
+    }
+    ATTENDANCE_REQUESTS {
+        bigint id PK
+        bigint employee_id FK
+        bigint shift_assignment_id FK
+        varchar request_type
+        varchar status
+    }
+    ATTENDANCE_APPROVE_LEAVES {
+        bigint id PK
+        bigint attendance_id FK
+        bigint leave_request_id FK
+        double leave_hours
+    }
+    LEAVE_TYPES {
+        bigint id PK
+        bigint company_id FK
+        varchar code
+        boolean paid
+    }
+    LEAVE_ACCRUAL_RULES {
+        bigint id PK
+        bigint company_id FK
+        bigint department_id FK
+        varchar frequency
+    }
+    LEAVE_GRANTS {
+        bigint id PK
+        bigint employee_id FK
+        bigint leave_type_id FK
+        bigint accrual_rule_id FK
+        decimal grant_days
+    }
+    LEAVE_REQUESTS {
+        bigint id PK
+        bigint employee_id FK
+        bigint leave_type_id FK
+        bigint parent_id FK
+        varchar status
+    }
+    SALARY_GRADES {
+        bigint id PK
+        bigint company_id FK
+        varchar pay_type
+        decimal base_rate
+    }
+    SALARY_FORMULAS {
+        bigint id PK
+        bigint salary_grade_id FK
+        date effective_date
+    }
+    FORMULA_VARIABLES {
+        bigint id PK
+        bigint company_id FK
+        varchar name
+    }
+    PAYROLLS {
+        bigint id PK
+        bigint employee_id FK
+        int year
+        int month
+        varchar status
+        decimal net_salary
+    }
+    EXCEL_HISTORY {
+        bigint id PK
+        bigint company_id
+        bigint user_id
+        varchar file_url
+    }
+    FCM_NOTIFICATION_LOGS {
+        bigint id PK
+        bigint user_id
+        date work_date
+    }
+
+    COMPANIES ||--o{ DEPARTMENTS : has
+    COMPANIES ||--o{ EMPLOYEES : employs
+    COMPANIES ||--o{ USERS : has
+    COMPANIES ||--o{ ROLES : defines
+    COMPANIES ||--o{ WORK_SHIFTS : defines
+    COMPANIES ||--o{ LEAVE_TYPES : defines
+    COMPANIES ||--o{ LEAVE_ACCRUAL_RULES : defines
+    COMPANIES ||--o{ SALARY_GRADES : defines
+    COMPANIES ||--o{ FORMULA_VARIABLES : defines
+    COMPANIES ||--o{ EXCEL_HISTORY : logs
+    DEPARTMENTS |o--o{ DEPARTMENTS : parent_of
+    DEPARTMENTS ||--o{ POSITIONS : contains
+    DEPARTMENTS ||--o{ EMPLOYEES : contains
+    POSITIONS |o--o{ EMPLOYEES : holds
+    SALARY_GRADES |o--o{ EMPLOYEES : graded
+    SALARY_GRADES ||--o{ SALARY_FORMULAS : uses
+    EMPLOYEES |o--o| USERS : account
+    USERS ||--o{ USER_ROLES : has
+    ROLES ||--o{ USER_ROLES : assigned
+    ROLES ||--o{ ROLE_PERMISSIONS : grants
+    PERMISSIONS ||--o{ ROLE_PERMISSIONS : in
+    USERS ||--o{ USER_PERMISSIONS : direct
+    PERMISSIONS ||--o{ USER_PERMISSIONS : in
+    ROLES ||--o{ ROLE_PERMISSION_DEPT_SCOPES : scoped
+    USERS ||--o{ USER_PERMISSION_DEPT_SCOPES : scoped
+    USERS ||--o{ USER_SESSIONS : opens
+    USERS ||--o{ FCM_NOTIFICATION_LOGS : notified
+    EMPLOYEES ||--o{ PROFILE_EDIT_REQUESTS : submits
+    EMPLOYEES ||--o{ EMPLOYEE_LOCATIONS : checkin_at
+    EMPLOYEES ||--o{ SALARY_HISTORIES : salary
+    WORK_SHIFTS ||--o{ DEPARTMENT_SHIFTS : available
+    DEPARTMENTS ||--o{ DEPARTMENT_SHIFTS : available
+    WORK_SHIFTS |o--o{ SHIFT_ASSIGNMENTS : template
+    EMPLOYEES ||--o{ SHIFT_ASSIGNMENTS : scheduled
+    EMPLOYEES ||--o{ ATTENDANCES : records
+    SHIFT_ASSIGNMENTS |o--o{ ATTENDANCES : for_shift
+    EMPLOYEES ||--o{ ATTENDANCE_REQUESTS : requests
+    SHIFT_ASSIGNMENTS |o--o{ ATTENDANCE_REQUESTS : for_shift
+    ATTENDANCES ||--o{ ATTENDANCE_APPROVE_LEAVES : snapshots
+    LEAVE_REQUESTS ||--o{ ATTENDANCE_APPROVE_LEAVES : applied
+    LEAVE_TYPES ||--o{ LEAVE_REQUESTS : typed
+    LEAVE_TYPES |o--o{ LEAVE_GRANTS : typed
+    LEAVE_ACCRUAL_RULES |o--o{ LEAVE_GRANTS : generates
+    EMPLOYEES ||--o{ LEAVE_GRANTS : granted
+    EMPLOYEES ||--o{ LEAVE_REQUESTS : requests
+    LEAVE_REQUESTS |o--o{ LEAVE_REQUESTS : parent_of
+    EMPLOYEES ||--o{ PAYROLLS : paid
+    SALARY_GRADES |o--o{ PAYROLLS : snapshot
+  </pre></div>
+  <p class="cap">Hình 5. <code>SYSTEM_ADMINS</code>, <code>EXCEL_HISTORY</code>, <code>FCM_NOTIFICATION_LOGS</code> chỉ liên kết logic (không có khoá ngoại). Bảng scope phòng ban đã bỏ FK tới <code>departments</code> từ V23.</p>
+
+  <h2>Nhóm bảng</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Nhóm</th><th>Bảng</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr><td><b>Tenant & cấu hình</b></td><td><code>companies</code>, <code>system_admins</code></td><td><code>companies</code> chứa ~25 cột cài đặt (giờ ngày/đêm, OT, GPS, cửa sổ check-in, dung sai, làm tròn, giờ/ngày phép, công chuẩn, ngày chốt lương). Không có lịch sử hay ngày hiệu lực.</td></tr>
+      <tr><td><b>Tổ chức</b></td><td><code>departments</code>, <code>positions</code>, <code>employees</code>, <code>employee_locations</code>, <code>salary_histories</code>, <code>profile_edit_requests</code></td><td>Cây phòng ban dạng adjacency list; có override GPS/dung sai theo phòng. Nhân viên chứa CCCD, số tài khoản dạng chữ thường.</td></tr>
+      <tr><td><b>Tài khoản & quyền</b></td><td><code>users</code>, <code>roles</code>, <code>permissions</code>, <code>role_permissions</code>, <code>user_roles</code>, <code>user_permissions</code>, <code>role_/user_permission_dept_scopes</code>, <code>user_sessions</code></td><td>Email đăng nhập duy nhất toàn hệ thống. Scope dùng mã âm cho các phạm vi đặc biệt.</td></tr>
+      <tr><td><b>Ca & chấm công</b></td><td><code>work_shifts</code>, <code>department_shifts</code>, <code>shift_assignments</code>, <code>attendances</code>, <code>attendance_requests</code>, <code>attendance_approve_leaves</code></td><td>Mỗi ca (slot) một dòng công; tối đa 2 ca/ngày. Snapshot giờ và cờ khi duyệt. <code>attendances</code> không có <code>company_id</code>.</td></tr>
+      <tr><td><b>Nghỉ phép</b></td><td><code>leave_types</code>, <code>leave_accrual_rules</code>, <code>leave_grants</code>, <code>leave_requests</code></td><td>Grant không gắn loại phép (quỹ chung). Đơn nhiều ngày = đơn cha + đơn con theo ngày.</td></tr>
+      <tr><td><b>Lương</b></td><td><code>salary_grades</code>, <code>salary_formulas</code>, <code>formula_variables</code>, <code>payrolls</code></td><td>Bậc lương chỉ DAILY/HOURLY. Công thức gross/net + biến JSON. Mỗi nhân viên một bảng lương/tháng (unique).</td></tr>
+      <tr><td><b>Nhật ký</b></td><td><code>excel_history</code>, <code>fcm_notification_logs</code></td><td>Không có FK, không có index (FCM), không có chính sách xoá dữ liệu cũ.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Rủi ro về dữ liệu</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Mức</th><th>Vấn đề</th><th>Hệ quả</th><th>Hướng xử lý</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sev high">Cao</span></td><td>Unique key có cột <code>deleted</code> (employees, users, departments, positions, roles, work_shifts)</td><td>Tạo lại rồi xoá lần hai cùng mã/email → lỗi duplicate key (500)</td><td>Dùng <code>deleted_token</code>/cột sinh <code>IF(deleted,NULL,1)</code> trong unique</td></tr>
+      <tr><td><span class="sev high">Cao</span></td><td><code>positions</code> unique <code>(code, deleted)</code> toàn hệ thống</td><td>Công ty B không tạo được chức vụ trùng mã với công ty A</td><td>Unique theo công ty/phòng ban</td></tr>
+      <tr><td><span class="sev high">Cao</span></td><td><code>attendances</code> unique <code>(employee_id, date, shift_assignment_id)</code> — NULL không bị chặn, thiếu <code>deleted</code></td><td>Bấm check-in đồng thời tạo 2 dòng; check-in lại sau xoá mềm bị lỗi</td><td>Cột sinh <code>COALESCE(shift_assignment_id,0)</code>, thêm deleted, khoá dòng</td></tr>
+      <tr><td><span class="sev high">Cao</span></td><td>CCCD, số tài khoản, địa chỉ lưu dạng chữ thường, trả nguyên cho ai có <code>EMPLOYEE_VIEW</code>; file Excel lưu vĩnh viễn trên S3</td><td>Không đạt yêu cầu bảo vệ dữ liệu cá nhân (NĐ 13/2023)</td><td>Mã hoá cột, che bớt khi hiển thị, quyền xem riêng, xoá file theo hạn</td></tr>
+      <tr><td><span class="sev med">TB</span></td><td>Mã NV = <code>count+1</code></td><td>Trùng mã sau khi xoá NV, tranh chấp khi tạo đồng thời</td><td>Bộ đếm theo công ty có khoá</td></tr>
+      <tr><td><span class="sev med">TB</span></td><td>Cây phòng ban không chặn chu trình, đổi cha không tính lại <code>level</code></td><td>Cây hỏng, scope mở rộng sai</td><td>Kiểm tổ tiên, tính lại level hoặc bỏ cột level</td></tr>
+      <tr><td><span class="sev med">TB</span></td><td>Flyway <code>validate-on-migrate: false</code> + <code>baseline-on-migrate: true</code> ở prod; seed demo nằm trong migration</td><td>Sửa migration cũ không bị phát hiện; tài khoản demo xuất hiện ở prod</td><td>Bật validate, tách seed dev</td></tr>
+      <tr><td><span class="sev med">TB</span></td><td>Soft delete không thống nhất (<code>@Where</code>, <code>@SQLRestriction</code>, lọc tay)</td><td>Một số truy vấn đếm cả bản ghi đã xoá</td><td>Chuẩn hoá <code>@SQLDelete</code> + <code>@SQLRestriction</code></td></tr>
+      <tr><td><span class="sev low">Thấp</span></td><td>Thiếu index cho truy vấn nóng (công theo ngày/công ty, đơn phép theo khoảng ngày)</td><td>Chậm khi dữ liệu lớn</td><td>Index ghép, cân nhắc thêm <code>company_id</code> vào attendances</td></tr>
+      <tr><td><span class="sev low">Thấp</span></td><td>Không có audit trail (<code>created_by/updated_by</code>, bảng audit)</td><td>Không truy được ai sửa lương, quyền, công</td><td>Hibernate Envers hoặc bảng <code>audit_logs</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Dữ liệu HR còn thiếu</h2>
+  <div class="grid g3">
+    <div class="card"><b>Hợp đồng lao động</b><p class="lead">Loại HĐ, số HĐ, ngày ký/hiệu lực/hết hạn, phụ lục, lương & phụ cấp theo HĐ, cảnh báo sắp hết hạn.</p></div>
+    <div class="card"><b>Thuế & bảo hiểm</b><p class="lead">MST cá nhân, số sổ BHXH, mức lương đóng BH, người phụ thuộc (giảm trừ gia cảnh).</p></div>
+    <div class="card"><b>Lịch sử công tác</b><p class="lead">Thuyên chuyển phòng ban/chức vụ/bậc lương có ngày hiệu lực; hiện cập nhật đè.</p></div>
+    <div class="card"><b>Tài liệu nhân sự</b><p class="lead">CCCD scan, bằng cấp, HĐ đã ký gắn vào nhân viên, phân loại, hạn.</p></div>
+    <div class="card"><b>Ngày lễ & lịch làm việc</b><p class="lead">Bảng ngày lễ, lịch tuần theo phòng ban (T7 nửa ngày...), hiện cuối tuần đang cố định T7/CN.</p></div>
+    <div class="card"><b>Line manager</b><p class="lead"><code>employees.manager_id</code> để làm luồng duyệt theo quản lý trực tiếp và sơ đồ tổ chức.</p></div>
+  </div>
+</main>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+</body>
+</html>

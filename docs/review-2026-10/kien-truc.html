@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BossKin — Kiến trúc hệ thống</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="assets/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default', fontFamily: 'Be Vietnam Pro, Roboto, sans-serif' });
+</script>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="index.html"><span>B</span>BossKin · Review</a>
+  <nav class="nav">
+    <a href="index.html">Tổng quan</a>
+    <a class="on" href="kien-truc.html">Kiến trúc</a>
+    <a href="du-lieu.html">Dữ liệu</a>
+    <a href="luong-nghiep-vu.html">Luồng nghiệp vụ</a>
+    <a href="danh-gia.html">Đánh giá</a>
+    <a href="ke-hoach.html">Kế hoạch</a>
+  </nav>
+</div></header>
+
+<main>
+  <section class="hero">
+    <h1>1. Kiến trúc hệ thống</h1>
+    <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap.</p>
+  </section>
+  <ul class="toc">
+    <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
+    <li><a href="#request">Đường đi của một request</a></li>
+    <li><a href="#auth">Xác thực & phân quyền</a></li>
+    <li><a href="#deploy">Build & deploy</a></li>
+    <li><a href="#api">Danh sách API</a></li>
+    <li><a href="#fe">Kiến trúc frontend</a></li>
+    <li><a href="#nhan-xet">Nhận xét kiến trúc</a></li>
+  </ul>
+
+  <h2 id="tong-quan">Sơ đồ thành phần</h2>
+  <div class="diagram"><pre class="mermaid">
+flowchart LR
+  subgraph Client["Người dùng"]
+    W["Flutter Web<br/>(HR, quản lý)"]
+    A["Flutter Android<br/>(nhân viên check-in)"]
+    SA["System Admin<br/>/admin/*"]
+  end
+  subgraph AWS["AWS Elastic Beanstalk"]
+    LB["ALB / EB"]
+    subgraph BE["Spring Boot 3.3 (monolith)"]
+      SEC["Security chains<br/>/admin/** · /api/v1/**<br/>JwtAuthFilter"]
+      CTL["25 Controller"]
+      SVC["32 Service + 12 Excel descriptor"]
+      ENG["AttendanceCalculator<br/>FormulaEngine"]
+      SCH["Scheduler nhắc ca<br/>(mỗi 60s)"]
+      TILE["MapTile proxy + cache đĩa"]
+    end
+  end
+  DB[("MySQL 8<br/>34 bảng · Flyway V1–V117")]
+  S3[("AWS S3<br/>ảnh, tài liệu, file Excel")]
+  FCM["Firebase FCM"]
+  OSM["tile.openstreetmap.org"]
+
+  W --> LB
+  A --> LB
+  SA --> LB
+  LB --> SEC --> CTL --> SVC --> DB
+  SVC --> ENG
+  SVC --> S3
+  SCH --> FCM --> A
+  CTL --> TILE --> OSM
+  </pre></div>
+  <p class="cap">Hình 1. Thành phần chính. Backend không tách worker riêng: scheduler chạy chung tiến trình với API.</p>
+
+  <h2 id="request">Đường đi của một request</h2>
+  <ol class="steps">
+    <li>Client gửi request kèm <code>Authorization: Bearer &lt;JWT&gt;</code>, <code>Accept-Language</code>, <code>X-Device-ID</code>.</li>
+    <li>Spring Security chọn chain: <code>/admin/**</code> (yêu cầu <code>ROLE_SYSTEM_ADMIN</code>) hoặc <code>/api/v1/**</code> (chỉ yêu cầu đã đăng nhập).</li>
+    <li><code>JwtAuthFilter</code> đọc token, nạp user từ DB (trừ token impersonate), đặt vào SecurityContext. Lỗi token bị nuốt im lặng → request đi tiếp như ẩn danh.</li>
+    <li>Controller tự kiểm quyền bằng <code>requirePermission(...)</code> hoặc <code>user.can(...)</code> (lặp ở 15 controller, không có chốt chặn tập trung).</li>
+    <li>Service/Repository lọc theo <code>companyId</code> lấy từ user và theo tập phòng ban được phép (<code>DeptScopeService</code>).</li>
+    <li>Lỗi nghiệp vụ ném <code>ResponseStatusException</code> → <code>ApiExceptionHandler</code> dịch key <code>error.*</code> theo ngôn ngữ.</li>
+  </ol>
+
+  <h2 id="auth">Xác thực & phân quyền</h2>
+  <div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor U as Người dùng
+  participant FE as Flutter
+  participant AU as AuthController / AuthService
+  participant F as JwtAuthFilter
+  participant C as Controller
+  participant DS as DeptScopeService
+  participant DB as MySQL
+  U->>FE: Email + mật khẩu
+  FE->>AU: POST /api/v1/auth/login
+  AU->>DB: findByEmail, kiểm BCrypt, enabled, công ty active
+  AU->>DB: Lưu user_sessions (jti, deviceId)
+  AU-->>FE: access (24h) + refresh (7 ngày) + permissions + departmentScope
+  FE->>C: GET /api/v1/... (Bearer access)
+  C->>F: (qua filter)
+  F->>DB: Nạp user theo email + companyId, tính lại quyền
+  Note over F: Không kiểm enabled, không kiểm loại token<br/>Token impersonate: không tra DB
+  C->>C: requirePermission("X_VIEW")
+  C->>DS: resolvedScopes(userId, perm)
+  DS-->>C: Tập phòng ban (rỗng = toàn công ty)
+  C->>DB: Truy vấn lọc companyId + phòng ban
+  C-->>FE: Dữ liệu
+  FE->>AU: POST /auth/refresh (khi 401/403)
+  AU->>DB: Kiểm jti chưa revoke → revoke cũ, tạo phiên mới
+  </pre></div>
+  <p class="cap">Hình 2. Luồng đăng nhập, gọi API và refresh. Rủi ro liên quan: mục S1–S6 ở trang <a href="danh-gia.html#bao-mat">Đánh giá</a>.</p>
+
+  <div class="grid g3">
+    <div class="card"><b>3 loại token</b><ul class="clean">
+      <li><code>COMPANY</code>: user công ty, 24h, mang companyId + permissions.</li>
+      <li><code>REFRESH</code>: 7 ngày, lưu jti trong <code>user_sessions</code>, xoay vòng mỗi lần dùng.</li>
+      <li><code>SYSTEM</code>: system admin, 24h, không có refresh.</li>
+      <li>Impersonate: token COMPANY có cờ <code>impersonated</code>, toàn quyền, 24h.</li>
+    </ul></div>
+    <div class="card"><b>Mô hình quyền</b><ul class="clean">
+      <li>Quyền = role ∪ quyền trực tiếp (quyền trực tiếp ghi đè theo module).</li>
+      <li>~33 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*...).</li>
+      <li><code>VIEW</code> là tiền đề của quyền khác trong module.</li>
+      <li>Quyền được nạp lại từ DB mỗi request → đổi role có hiệu lực ngay.</li>
+    </ul></div>
+    <div class="card"><b>Phạm vi phòng ban</b><ul class="clean">
+      <li>Gắn theo từng quyền (role hoặc user).</li>
+      <li>Mã đặc biệt: −1 chỉ mình tôi, −2 phòng tôi, −3 phòng tôi + cấp con.</li>
+      <li>Mở rộng con cháu bằng BFS.</li>
+      <li><b>Tập rỗng = toàn công ty</b> (fail-open — xem R5).</li>
+    </ul></div>
+  </div>
+
+  <h2 id="deploy">Build & deploy</h2>
+  <div class="diagram"><pre class="mermaid">
+flowchart LR
+  DEV["Dev push"] --> MAIN["branch main"]
+  MAIN --> GA["GitHub Actions<br/>deploy.yml"]
+  GA --> B["mvn clean package<br/>-DskipTests"]
+  B --> Z["zip jar + Procfile"]
+  Z --> EB["Elastic Beanstalk<br/>Java SE, port 5000<br/>profile prod"]
+  EB --> RDS[("MySQL")]
+  EB -.Flyway migrate khi khởi động.-> RDS
+  FEB["Flutter web build<br/>(thủ công)"] --> SRV["serve.py / host tĩnh"]
+  APK["APK Android<br/>(thủ công)"] --> USERS["Nhân viên"]
+  </pre></div>
+  <p class="cap">Hình 3. Pipeline hiện tại. Không chạy test, không có staging, frontend build tay. <code>.ebextensions</code> không nằm trong gói zip nên bị bỏ qua.</p>
+
+  <h2 id="api">Danh sách API (25 controller)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Controller</th><th>Đường dẫn gốc</th><th>Chức năng</th></tr></thead>
+    <tbody>
+      <tr><td>AuthController</td><td><code>/api/v1/auth/{login,refresh}</code>, <code>/admin/auth/login</code></td><td>Đăng nhập user công ty, refresh, đăng nhập system admin</td></tr>
+      <tr><td>CompanyController</td><td><code>/admin/companies</code></td><td>Tạo/sửa/bật tắt công ty, impersonate</td></tr>
+      <tr><td>AdminStatsController</td><td><code>/admin/stats</code></td><td>Thống kê toàn hệ thống (kể cả tổng lương từng công ty)</td></tr>
+      <tr><td>AttendanceController</td><td><code>/api/v1/attendances</code></td><td>Bảng công, xem theo ngày, duyệt/bỏ duyệt, sửa tay (override), check-in/out (admin & tự chấm), import/export</td></tr>
+      <tr><td>AttendanceRequestController</td><td><code>/api/v1/attendance-requests</code></td><td>Đơn bổ sung công / OT: tạo, duyệt, từ chối, huỷ, bật/tắt áp dụng</td></tr>
+      <tr><td>LeaveController</td><td><code>/api/v1/leaves</code></td><td>Loại phép, đơn phép, cấp phép, quy tắc cộng phép, cài đặt</td></tr>
+      <tr><td>WorkShiftController</td><td><code>/api/v1/shifts</code></td><td>Ca làm, phân ca đơn lẻ / hàng loạt, import/export</td></tr>
+      <tr><td>EmployeeController</td><td><code>/api/v1/employees</code></td><td>Nhân viên CRUD, import/export</td></tr>
+      <tr><td>EmployeeLocationController</td><td><code>/api/v1/employees/{id}/locations</code></td><td>Vị trí check-in riêng từng nhân viên</td></tr>
+      <tr><td>DepartmentController</td><td><code>/api/v1/departments</code></td><td>Cây phòng ban, import/export</td></tr>
+      <tr><td>PositionController</td><td><code>/api/v1/positions</code></td><td>Chức vụ</td></tr>
+      <tr><td>PayrollController</td><td><code>/api/v1/payrolls</code></td><td>Tạo, sửa nháp, tính lại, duyệt, trả, xuất phiếu, phiếu của tôi</td></tr>
+      <tr><td>SalaryGradeController</td><td><code>/api/v1/salary-grades</code></td><td>Bậc lương (ngày/giờ)</td></tr>
+      <tr><td>SalaryFormulaController</td><td><code>/api/v1/salary-formulas</code></td><td>Công thức lương, kiểm tra công thức</td></tr>
+      <tr><td>FormulaVariableController</td><td><code>/api/v1/formula-variables</code></td><td>Biến công thức toàn công ty</td></tr>
+      <tr><td>SalaryHistoryController</td><td><code>/api/v1/salary-histories</code></td><td>Lịch sử lương</td></tr>
+      <tr><td>ReportController</td><td><code>/api/v1/reports</code></td><td>Báo cáo Excel: nhân sự, chấm công, OT, lương, phép</td></tr>
+      <tr><td>DashboardController</td><td><code>/api/v1/dashboard</code></td><td>Tổng quan, KPI, phân tích, rủi ro</td></tr>
+      <tr><td>UniversalExcelController</td><td><code>/api/v1/excel</code></td><td>Import/export đa module, lịch sử</td></tr>
+      <tr><td>RoleController</td><td><code>/api/v1/roles</code></td><td>Vai trò, quyền, phạm vi theo vai trò</td></tr>
+      <tr><td>UserController</td><td><code>/api/v1/users</code></td><td>Tài khoản, gán vai trò/quyền/phạm vi, khoá mở</td></tr>
+      <tr><td>ProfileController</td><td><code>/api/v1/profile</code></td><td>Hồ sơ, đổi mật khẩu, yêu cầu sửa hồ sơ, cài đặt thông báo</td></tr>
+      <tr><td>CompanySettingController</td><td><code>/api/v1/company-settings</code></td><td>Cấu hình công ty (chấm công, phép, lương, GPS)</td></tr>
+      <tr><td>UploadController</td><td><code>/api/v1/upload</code></td><td>Upload ảnh/tài liệu lên S3</td></tr>
+      <tr><td>MapTileController</td><td><code>/api/v1/map-tiles/{z}/{x}/{y}.png</code></td><td>Proxy + cache ô bản đồ OSM (vùng Việt Nam)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="fe">Kiến trúc frontend</h2>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  S["Khởi động app"] --> C1["ServerConfig.load<br/>(mặc định 192.168.0.12:8080)"]
+  C1 --> C2["Ngôn ngữ · DeviceId · FCM"]
+  C2 --> C3{"Auth.restoreAndVerify<br/>GET /profile"}
+  C3 -- "chưa đăng nhập" --> L["/login"]
+  C3 -- "system admin" --> AD["/admin/dashboard"]
+  AD -- "impersonate" --> SH
+  C3 -- "user công ty" --> SH["ShellRoute · AppShell"]
+  L --> SH
+  SH --> D{"Màn hình ≥ 900px?"}
+  D -- "Có" --> SB["Sidebar 220px<br/>13 mục lọc theo quyền"]
+  D -- "Không" --> BN["Drawer + BottomNav<br/>Dashboard · Chấm công · Đơn · Phép · Hồ sơ"]
+  SB --> M["Màn hình module<br/>(StatefulWidget + setState)"]
+  BN --> M
+  M --> R["Repository / ApiService (Dio)"]
+  R --> I["Interceptor: gắn token,<br/>401/403 → refresh rồi thử lại"]
+  PUSH["Push FCM có nút Check-in"] --> CI["/check-in-out (tự gửi)"]
+  </pre></div>
+  <p class="cap">Hình 4. Khởi động và điều hướng phía Flutter. Riverpod có khai báo nhưng thực tế dùng singleton + <code>setState</code>.</p>
+
+  <h2 id="nhan-xet">Nhận xét kiến trúc</h2>
+  <div class="grid g2">
+    <div class="card"><b>Hợp lý ở giai đoạn hiện tại</b><ul class="clean plus">
+      <li>Monolith + MySQL đủ đơn giản cho quy mô vài chục công ty, dễ deploy trên EB.</li>
+      <li>Engine tính công (<code>AttendanceCalculator</code>) và tính lương (<code>FormulaEngine</code>) tách riêng, không phụ thuộc DB, dễ viết test.</li>
+      <li>Universal Excel dùng mô hình descriptor: thêm module mới chỉ cần một bean.</li>
+      <li>Tách hai security chain cho system admin và user công ty.</li>
+    </ul></div>
+    <div class="card"><b>Cần chỉnh</b><ul class="clean minus">
+      <li><code>AttendanceController</code> 1.771 dòng chứa logic nghiệp vụ và <code>@Transactional</code>; 9 chỗ transaction ở controller.</li>
+      <li>Kiểm quyền thủ công lặp 15 lần → dễ quên (đã quên ở approve chấm công, dashboard, báo cáo).</li>
+      <li>Scheduler chạy trong API, dùng múi giờ JVM, không khoá phân tán → lệch giờ và gửi trùng khi scale.</li>
+      <li>Không có health check, metrics, audit log; lỗi token bị nuốt không log.</li>
+      <li>FE: 12 file trên 1.000 dòng, logic gọi API nằm trong widget, không có test.</li>
+    </ul></div>
+  </div>
+</main>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+</body>
+</html>

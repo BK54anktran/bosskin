@@ -1,0 +1,103 @@
+/* BossKin — Review hệ thống chấm công (10/2026) */
+:root{
+  --bg:#F7F8FA; --card:#FFFFFF; --ink:#111827; --ink-2:#4B5563; --ink-3:#6B7280;
+  --line:#E5E7EB; --brand:#2563EB; --brand-soft:#EFF4FF;
+  --crit:#B91C1C; --crit-bg:#FEE2E2; --high:#C2410C; --high-bg:#FFEDD5;
+  --med:#A16207; --med-bg:#FEF9C3; --low:#047857; --low-bg:#D1FAE5;
+  --ok:#047857; --code-bg:#F3F4F6; --radius:12px;
+  --font:"Be Vietnam Pro",Roboto,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1115; --card:#171A21; --ink:#E5E7EB; --ink-2:#C2C7D0; --ink-3:#9AA1AD;
+    --line:#2A2F3A; --brand:#7AA2FF; --brand-soft:#1B2540;
+    --crit:#FCA5A5; --crit-bg:#3B1515; --high:#FDBA74; --high-bg:#3A2312;
+    --med:#FDE68A; --med-bg:#3A3212; --low:#6EE7B7; --low-bg:#12332A; --ok:#6EE7B7; --code-bg:#1F232C;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6}
+a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:5px;word-break:break-word}
+
+/* Thanh trên */
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand span{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;font-size:13px}
+.nav{display:flex;gap:4px;flex-wrap:wrap}
+.nav a{padding:6px 10px;border-radius:8px;color:var(--ink-2);font-size:14px}
+.nav a:hover{background:var(--brand-soft);text-decoration:none}
+.nav a.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+
+main{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+.hero{padding:8px 0 18px}
+.hero h1{font-size:30px;line-height:1.25;margin:0 0 8px}
+.hero p{margin:0;color:var(--ink-2);max-width:820px}
+.meta{margin-top:10px;font-size:13px;color:var(--ink-3)}
+h2{font-size:22px;margin:40px 0 12px;padding-top:6px;scroll-margin-top:70px}
+h3{font-size:17px;margin:26px 0 8px;scroll-margin-top:70px}
+p{margin:8px 0}
+.lead{color:var(--ink-2)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+
+/* KPI / điểm */
+.kpi .n{font-size:28px;font-weight:700;line-height:1.1}
+.kpi .l{color:var(--ink-3);font-size:13px}
+.score{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.score:last-child{border-bottom:0}
+.score .name{flex:1;min-width:0}
+.score .name small{display:block;color:var(--ink-3);font-size:12.5px}
+.bar{width:160px;height:8px;border-radius:99px;background:var(--line);overflow:hidden;flex-shrink:0}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--brand)}
+.score b{width:44px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Bảng */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--code-bg);font-weight:600;white-space:nowrap;position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.nw{white-space:nowrap}
+
+/* Mức độ */
+.sev{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.sev.crit{background:var(--crit-bg);color:var(--crit)}
+.sev.high{background:var(--high-bg);color:var(--high)}
+.sev.med{background:var(--med-bg);color:var(--med)}
+.sev.low{background:var(--low-bg);color:var(--low)}
+.tag{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;background:var(--brand-soft);color:var(--brand);font-weight:600;white-space:nowrap}
+
+/* Danh sách điểm mạnh/yếu */
+ul.clean{padding-left:18px;margin:6px 0}
+ul.clean li{margin:4px 0}
+.plus li::marker{content:"＋ ";color:var(--ok)}
+.minus li::marker{content:"－ ";color:var(--crit)}
+
+/* Sơ đồ */
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;overflow-x:auto;margin:10px 0 6px}
+.diagram .mermaid{margin:0;min-width:640px;text-align:center}
+.cap{font-size:13px;color:var(--ink-3);margin:0 0 14px}
+
+/* Bộ lọc */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.filters button{border:1px solid var(--line);background:var(--card);color:var(--ink-2);padding:6px 12px;border-radius:99px;font:inherit;font-size:13.5px;cursor:pointer}
+.filters button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.note{border-left:3px solid var(--brand);background:var(--brand-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+.warn{border-left-color:var(--high);background:var(--high-bg)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{counter-increment:s;position:relative;padding:6px 0 6px 38px;border-bottom:1px dashed var(--line)}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:6px;width:26px;height:26px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:13px;display:grid;place-items:center}
+.toc{columns:2;column-gap:28px;margin:6px 0;padding-left:18px}
+@media (max-width:700px){.toc{columns:1}.bar{width:90px}.hero h1{font-size:24px}}
+footer{max-width:1180px;margin:0 auto;padding:0 20px 40px;color:var(--ink-3);font-size:13px}
+@media print{.top{position:static}.filters{display:none}}

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BossKin — Đánh giá hệ thống</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="index.html"><span>B</span>BossKin · Review</a>
+  <nav class="nav">
+    <a href="index.html">Tổng quan</a>
+    <a href="kien-truc.html">Kiến trúc</a>
+    <a href="du-lieu.html">Dữ liệu</a>
+    <a href="luong-nghiep-vu.html">Luồng nghiệp vụ</a>
+    <a class="on" href="danh-gia.html">Đánh giá</a>
+    <a href="ke-hoach.html">Kế hoạch</a>
+  </nav>
+</div></header>
+
+<main>
+  <section class="hero">
+    <h1>4. Đánh giá: điểm mạnh, điểm yếu, thiếu sót</h1>
+    <p>Mỗi điểm yếu có mã (S = bảo mật, A = chấm công, L = phép & lương, D = dữ liệu, F = frontend, O = vận hành), mức độ, vị trí trong code và hướng sửa. Đường dẫn backend tính từ <code>backend/src/main/java/com/bosskin/</code>, frontend từ <code>frontend/lib/</code>.</p>
+  </section>
+  <ul class="toc">
+    <li><a href="#manh">Điểm mạnh</a></li>
+    <li><a href="#yeu">Điểm yếu & rủi ro (lọc được)</a></li>
+    <li><a href="#thieu">Thiếu sót so với chuẩn chấm công VN</a></li>
+  </ul>
+
+  <h2 id="manh">Điểm mạnh</h2>
+  <div class="grid g2">
+    <div class="card"><b>Chấm công</b><ul class="clean plus">
+      <li>Giờ check-in/out lấy theo server, múi giờ <code>Asia/Ho_Chi_Minh</code> — chặn được việc chỉnh giờ máy.</li>
+      <li>Geofence 3 cấp có kế thừa: nhân viên → cây phòng ban → công ty, có cờ bật/tắt.</li>
+      <li>Mô hình theo slot: 2 ca/ngày, ca tuỳ chỉnh giờ & nghỉ, ca qua đêm; chặn chồng ca cả với ca đêm hôm trước/sau.</li>
+      <li>Engine tính công thuần (<code>AttendanceCalculator</code>), tách giờ ngày/đêm, OT ngày/đêm, trừ nghỉ giữa ca và phép theo giờ.</li>
+      <li>Dung sai và làm tròn cấu hình được, kế thừa phòng ban → công ty.</li>
+      <li>Snapshot khi duyệt; tự bỏ duyệt khi dữ liệu nguồn đổi.</li>
+      <li>Đơn có cờ <code>applied</code>, tự duyệt cặp check-in/check-out.</li>
+    </ul></div>
+    <div class="card"><b>Phép & lương</b><ul class="clean plus">
+      <li>Tiền dùng <code>BigDecimal</code>, cột <code>DECIMAL(15,2)</code>.</li>
+      <li>FormulaEngine tự viết (recursive descent), không dùng script engine → không có nguy cơ thực thi mã; phát hiện vòng tham chiếu; có endpoint kiểm tra công thức.</li>
+      <li>Snapshot đầy đủ trên phiếu lương: kỳ, bậc, ngày/giờ công, các khoản kèm nhãn.</li>
+      <li>Phiếu đã duyệt không sửa/xoá được; NV không thấy bản nháp.</li>
+      <li>Phép theo ngày và giờ, đơn nhiều ngày tách đơn con, ca đêm xuyên ngày, "giữ chỗ" số dư khi tạo đơn.</li>
+      <li>Kỳ lương theo ngày chốt (1–28).</li>
+    </ul></div>
+    <div class="card"><b>Bảo mật & dữ liệu</b><ul class="clean plus">
+      <li>Hai security chain tách biệt; mật khẩu BCrypt; quyền nạp lại từ DB mỗi request.</li>
+      <li>Refresh token xoay vòng, lưu jti; đổi mật khẩu thu hồi mọi phiên.</li>
+      <li>Cô lập công ty nhất quán ở các API đọc/sửa theo ID; không có SQL ghép chuỗi.</li>
+      <li>Upload S3 có whitelist MIME, giới hạn 10MB, key UUID.</li>
+      <li>Migration gần đây viết idempotent, có backfill; tìm kiếm không dấu nhờ collation.</li>
+    </ul></div>
+    <div class="card"><b>Frontend & sản phẩm</b><ul class="clean plus">
+      <li>Độ phủ tính năng rộng; Universal Excel 12 module có preview và lịch sử.</li>
+      <li>Responsive có chủ đích: sidebar desktop, drawer + bottom nav mobile, lọc theo quyền.</li>
+      <li>Đa số màn hình có đủ trạng thái loading/lỗi/rỗng; xoá có hộp thoại xác nhận.</li>
+      <li>Push có nút thao tác nhanh; giữ phiên khi mất mạng; phân trang server cho danh sách lớn nhất.</li>
+      <li>Có cơ chế i18n đầy đủ (~1.050 key vi/en), đổi ngôn ngữ khi đang chạy.</li>
+    </ul></div>
+  </div>
+
+  <h2 id="yeu">Điểm yếu & rủi ro</h2>
+  <div class="filters" id="fSev">
+    <button data-v="all" class="on">Tất cả mức</button>
+    <button data-v="crit">Nghiêm trọng</button>
+    <button data-v="high">Cao</button>
+    <button data-v="med">Trung bình</button>
+    <button data-v="low">Thấp</button>
+  </div>
+  <div class="filters" id="fMod">
+    <button data-v="all" class="on">Tất cả mảng</button>
+    <button data-v="S">Bảo mật</button>
+    <button data-v="A">Chấm công</button>
+    <button data-v="L">Phép & lương</button>
+    <button data-v="D">Dữ liệu</button>
+    <button data-v="F">Frontend</button>
+    <button data-v="O">Vận hành</button>
+  </div>
+  <p class="cap" id="count"></p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Mã</th><th>Mức</th><th>Vấn đề</th><th>Vị trí</th><th>Hướng sửa</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+
+  <h2 id="thieu">Thiếu sót so với hệ thống chấm công chuẩn ở Việt Nam</h2>
+  <div class="grid g3">
+    <div class="card"><b>Ngày lễ & lịch làm việc</b><ul class="clean">
+      <li>Không có bảng ngày lễ/Tết; loại ca HOLIDAY/DAY_OFF đã bị bỏ (V102).</li>
+      <li>Cuối tuần cố định T7/CN; không có lịch tuần theo phòng ban (T7 nửa ngày...).</li>
+      <li>Ngày công chuẩn là số cố định (22), không theo lịch thực tế của tháng.</li>
+    </ul></div>
+    <div class="card"><b>Làm thêm giờ (BLLĐ 2019)</b><ul class="clean">
+      <li>Chưa có hệ số OT 150% / 200% / 300%, phụ cấp làm đêm 30%, +20% OT đêm.</li>
+      <li>Không phân biệt OT ngày thường / ngày nghỉ tuần / ngày lễ.</li>
+      <li>Không có trần OT (40 giờ/tháng, 200–300 giờ/năm) và cảnh báo.</li>
+      <li>Không có nghỉ bù quy đổi từ OT.</li>
+    </ul></div>
+    <div class="card"><b>Quy đổi & kỷ luật công</b><ul class="clean">
+      <li>Không quy đổi giờ → công (0,5 / 1 công); HALF_DAY không bao giờ được gán.</li>
+      <li>Có cờ đi muộn/về sớm nhưng không lưu số phút, không quy tắc phạt, không đếm số lần.</li>
+      <li>Không tự đóng ca thiếu check-out.</li>
+    </ul></div>
+    <div class="card"><b>Chốt công & chốt lương</b><ul class="clean">
+      <li>Không có khoá kỳ công / kỳ lương; không có quy trình NV xác nhận → quản lý → HR chốt.</li>
+      <li>Không có mở lại kỳ có kiểm soát; không lưu người duyệt/người trả lương.</li>
+    </ul></div>
+    <div class="card"><b>Thiết bị & chống gian lận</b><ul class="clean">
+      <li>Chưa nhận log từ máy chấm công vân tay/FaceID (ZKTeco, Hikvision...).</li>
+      <li>Không có QR động, Wi-Fi/BSSID, selfie + liveness, gắn thiết bị, phát hiện fake GPS.</li>
+      <li>Không có chấm công offline có token thời gian ký từ server.</li>
+    </ul></div>
+    <div class="card"><b>Ca phức tạp</b><ul class="clean">
+      <li>Không có ca linh hoạt (đủ 8 giờ trong khung 7–10h), ca xoay vòng 3 ca 4 kíp, mẫu lịch tuần lặp lại.</li>
+      <li>Không có đổi ca, đăng ký ca, đi công tác / làm việc ngoài.</li>
+    </ul></div>
+    <div class="card"><b>Thuế TNCN</b><ul class="clean">
+      <li>Giảm trừ bản thân cố định 11 triệu, không có người phụ thuộc.</li>
+      <li>Biểu thuế 7 bậc cố định trong code; cần biểu thuế cấu hình theo ngày hiệu lực (mức giảm trừ và biểu thuế 2026 có thay đổi — cần đối chiếu văn bản chính thức).</li>
+      <li>Không tách thu nhập miễn thuế; không có khấu trừ 10% HĐ dưới 3 tháng; không quyết toán năm.</li>
+    </ul></div>
+    <div class="card"><b>Bảo hiểm</b><ul class="clean">
+      <li>Chỉ có tỷ lệ phần NV 8 / 1,5 / 1%, tính trên đơn giá ngày/giờ.</li>
+      <li>Không có lương đóng BH theo HĐ, sàn lương tối thiểu vùng, trần 20 lần.</li>
+      <li>Không có phần doanh nghiệp đóng (21,5%) và KPCĐ 2%.</li>
+    </ul></div>
+    <div class="card"><b>Phép năm & chi trả</b><ul class="clean">
+      <li>Chưa có mặc định 12 ngày/năm + 1 ngày mỗi 5 năm thâm niên; tỷ lệ năm đầu.</li>
+      <li>Chưa có nghỉ việc riêng có lương (kết hôn, tang) không trừ phép; ốm/thai sản tách quỹ.</li>
+      <li>Không có kết chuyển phép, thanh toán phép chưa nghỉ.</li>
+      <li>Một phiếu/NV/tháng → không làm được tạm ứng, lương tháng 13, truy lĩnh, quyết toán nghỉ việc.</li>
+      <li>Không có file chi lương ngân hàng, phiếu lương PDF/email.</li>
+    </ul></div>
+    <div class="card"><b>Hồ sơ nhân sự</b><ul class="clean">
+      <li>Thiếu hợp đồng lao động, người phụ thuộc, MST, sổ BHXH, lịch sử công tác, tài liệu, onboarding/offboarding.</li>
+    </ul></div>
+    <div class="card"><b>Bảo mật doanh nghiệp</b><ul class="clean">
+      <li>Không có audit log, 2FA, khoá tài khoản sau N lần sai, chính sách mật khẩu, quên mật khẩu.</li>
+      <li>Không có tách nhiệm vụ: người tạo lương tự duyệt, tự duyệt công/phép của mình.</li>
+    </ul></div>
+    <div class="card"><b>Vận hành</b><ul class="clean">
+      <li>Không có health check, metrics, cảnh báo lỗi, log có request-id.</li>
+      <li>Không thấy cấu hình backup/PITR cho DB (cần kiểm tra trên AWS).</li>
+      <li>Không có staging, không chạy test trong CI.</li>
+    </ul></div>
+  </div>
+</main>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+
+<script>
+const SEV = { crit: 'Nghiêm trọng', high: 'Cao', med: 'Trung bình', low: 'Thấp' };
+const R = [
+  // Bảo mật
+  ['S1','crit','JWT secret có giá trị mặc định trong application.yml, prod không ghi đè. Nếu EB chưa set JWT_SECRET, ai cũng tự ký được token impersonate (filter không tra DB nhánh này) → chiếm mọi công ty. <i>Cần kiểm tra env EB.</i>','application.yml:50; security/JwtAuthFilter.java:51-60','Bỏ giá trị mặc định, fail-fast khi thiếu hoặc &lt; 256 bit; xoay secret'],
+  ['S2','crit','Migration seed tài khoản admin@bosskin.vn và sysadmin@bosskin.io với mật khẩu biết trước, chạy cả ở prod.','db/migration V2:38-46, V4:43-47','Tách seed sang profile dev; đổi/khoá tài khoản trên mọi môi trường'],
+  ['S3','high','Khoá user không có hiệu lực: filter và refresh không kiểm enabled, không thu hồi phiên khi khoá → user bị khoá dùng tiếp 24h và refresh vô hạn.','controller/UserController.java:180-192; JwtAuthFilter.java:66-77; service/AuthService.java:118-123','Kiểm enabled ở filter + refresh; revokeAllByUserId khi khoá/xoá'],
+  ['S4','high','Refresh token dùng được như access token (filter không kiểm type); access token không thu hồi được; không có logout; user_sessions không được dọn.','JwtAuthFilter.java:64-77','Bắt buộc type=COMPANY; access 15–30 phút; thêm logout + job dọn phiên'],
+  ['S5','high','Impersonation: token 24h toàn quyền, không kiểm sysadmin còn tồn tại, không audit; principal có id=null nên các cột processedBy/approvedBy có thể lỗi.','controller/CompanyController.java:65-95; JwtAuthFilter.java:51-60','TTL ≤ 1h, kiểm sysadmin trong DB, ghi audit_log'],
+  ['S6','high','Phạm vi phòng ban fail-open: tập rỗng = toàn công ty; scope MY_DEPT khi NV chưa có phòng → toàn công ty; người có USER_MANAGE tự xoá scope hoặc tự gán quyền trực tiếp → tự nâng quyền. <i>Kịch bản tự nâng cần test xác nhận.</i>','service/DeptScopeService.java:26-56; UserController.java:112-177','Giá trị "toàn công ty" tường minh; cấm sửa quyền/scope của chính mình; chỉ cấp tập con quyền của caller'],
+  ['S7','high','Mọi role có DASHBOARD_VIEW (V26) và Dashboard trả tổng lương + xu hướng lương; báo cáo payroll-summary chỉ cần REPORT_VIEW, ReportService không áp scope.','db/migration V26; service/DashboardService.java:138-148,294-298; controller/ReportController.java:90-100','Kiểm PAYROLL_VIEW + scope trong service, ẩn khối lương'],
+  ['S8','med','Universal Excel chỉ kiểm EXCEL_IMPORT/EXPORT (chưa có trong migration → chỉ dùng được khi impersonate); descriptor không kiểm quyền module & scope → khi thêm quyền sẽ thành lỗ leo thang.','controller/UniversalExcelController.java:44-96; service/EmployeeImportService.java:425-463','Mỗi descriptor khai báo quyền đọc/ghi và kiểm scope theo dòng'],
+  ['S9','med','CORS cho mọi origin kèm credentials; whitelist trong yml không được đọc.','config/SecurityConfig.java:92-96','Đọc app.cors.allowed-origins'],
+  ['S10','med','Không rate-limit/lockout đăng nhập; thông báo "Email đã được sử dụng" lộ email chéo công ty; mật khẩu tối thiểu 6 ký tự; không 2FA.','AuthController; UserController.java:66; service/ProfileService.java:117','Bucket4j, chính sách mật khẩu, bắt đổi mật khẩu lần đầu, TOTP cho admin'],
+  ['S11','med','Có thể truyền tải không mã hoá: README hướng dẫn dùng http://...elasticbeanstalk.com; DB prod useSSL=false. <i>Cần kiểm tra ALB.</i>','README.md:150; application-prod.yml:4','Bắt buộc HTTPS ở ALB và FE; useSSL=true'],
+  ['S12','med','Upload không kiểm quyền, folder do client đặt, key không có prefix công ty, trả URL public. <i>Cần kiểm tra bucket policy.</i>','controller/UploadController.java:21-37','Prefix company/{id}/, bucket private + presigned URL'],
+  ['S13','med','server.error.include-message: always; exception ngoài ResponseStatusException trả message gốc (có thể chứa lỗi SQL).','application.yml:43; i18n/ApiExceptionHandler','Handler tập trung, ẩn chi tiết ở prod'],
+  ['S14','low','Không chặn tự duyệt đơn phép/đơn công của chính mình; JwtAuthFilter nuốt mọi exception không log.','service/LeaveService.java:181-205; AttendanceRequestService.java:147-162','Chặn self-approval; log lỗi token ở mức debug'],
+  // Chấm công
+  ['A1','crit','Duyệt/bỏ duyệt bảng công chỉ cần ATTENDANCE_VIEW và không kiểm phạm vi khi gọi bằng attendanceId. Vì ATTENDANCE_VIEW là quyền đi kèm ATTENDANCE_SELF, nhân viên tự chấm có thể tự duyệt công của mình hoặc người khác.','controller/AttendanceController.java:749-768, 940-951','Quyền ATTENDANCE_APPROVE, requireViewScope, cấm tự duyệt'],
+  ['A2','crit','Endpoint approve gắn shiftAssignmentId lấy bằng findById không lọc công ty (IDOR).','AttendanceController.java:778-779','Tìm theo id + companyId + employeeId'],
+  ['A3','high','Ca đêm liên tiếp không check-in được: 22:00 hôm nay bị hiểu là ca đêm hôm qua → dòng hôm qua đã có check-in → 403.','AttendanceController.java:1277-1288','Chỉ áp dụng phần sau nửa đêm, ưu tiên ca hôm nay'],
+  ['A4','high','Nút check-out ca đêm luôn tắt: đổi sang ca hôm qua nhưng vẫn dùng phân ca và công của hôm nay.','AttendanceController.java:1142-1183; FE check_in_out_screen.dart:292','Nạp lại phân ca + công của ngày hiệu lực'],
+  ['A5','high','Bỏ duyệt và import đặt status=null; duyệt lại không tính lại status → payroll đếm theo PRESENT/LATE nên mất ngày công.','AttendanceController.java:838-842, 961; AttendanceExcelService.java:1542; PayrollService.java:86-88','Luôn tính lại status khi duyệt; migration sửa dữ liệu cũ'],
+  ['A6','high','Import phân ca xoá mềm toàn bộ ca trong khoảng ngày rồi tạo ca mới → công cũ trỏ vào ca đã xoá, mất khỏi bảng công; không kiểm đã duyệt/2 ca/chồng giờ.','service/ShiftExcelService.java:862-934','Diff & upsert theo (NV, ngày, slot); chặn khi đã có công'],
+  ['A7','high','Xoá một ca xoá cứng công và đơn của ca đó; cờ ShiftAssignment.approved không bao giờ được set nên chốt chặn vô dụng.','service/WorkShiftService.java:276-296','Chặn khi có công, dùng xoá mềm'],
+  ['A8','high','Phân ca hàng loạt ghi đè ca đầu tiên trong ngày, không kiểm chồng giờ/đã có công; N×ngày truy vấn.','WorkShiftService.java:312-362','Dùng chung validate với phân ca đơn, truy vấn theo lô'],
+  ['A9','high','Unique (employee_id, date, shift_assignment_id) không gồm deleted → check-in lại sau xoá mềm lỗi 500; với ca NULL thì bấm đồng thời tạo 2 dòng.','db/migration V95, V105; AttendanceController.java:1256-1275','Unique có deleted / cột sinh; khoá dòng; idempotency key'],
+  ['A10','high','V95 không backfill shift_assignment_id → dữ liệu cũ có 2 dòng NULL/ngày, cùng một dòng bị dùng cho mọi slot.','db/migration V95; AttendanceController.java:342-353, 470-480','Migration backfill theo thứ tự ca'],
+  ['A11','high','Tính công dùng giờ ca live thay vì snapshot → sửa giờ ca mẫu làm đổi công chưa duyệt của các kỳ trước.','service/AttendanceCalculationService.java:128-135','Ưu tiên snapshot cho ngày đã qua'],
+  ['A12','high','Không có khoá kỳ công: duyệt/từ chối đơn, override, import vẫn bỏ duyệt dòng công dù lương kỳ đó đã duyệt/trả.','AttendanceRequestService.java:439-453; AttendanceController.java:899-906','Bảng period lock; chặn mọi ghi khi kỳ đã khoá'],
+  ['A13','med','Trạng thái LATE dùng +15 phút cố định, không theo dung sai công ty → dashboard "top đi muộn" lệch với cờ LATE_IN.','AttendanceController.java:1002, 1062','Dùng resolvePolicy'],
+  ['A14','med','Cửa sổ check-out chỉ ±30 phút quanh giờ kết thúc → về sớm hoặc OT dài không check-out được; check-in muộn &gt; 30 phút bị chặn.','AttendanceController.java:1385-1404','Cho check-out bất kỳ lúc nào sau check-in, cửa sổ chỉ để gán slot'],
+  ['A15','med','OT ngoài ca cộng nguyên số phút NV tự khai, không đối chiếu giờ thực; không có trần OT luật định.','AttendanceCalculationService.java:234-255','OT ≤ giờ có mặt ngoài ca; cảnh báo trần'],
+  ['A16','med','Đơn sửa giờ chỉ lấy check-in sớm nhất / check-out muộn nhất → không sửa lùi giờ được.','AttendanceCalculationService.java:191-204','Đơn đã áp dụng thì thay thế giờ thực'],
+  ['A17','med','work_minutes ca qua đêm bị âm (−960).','WorkShiftService.java:383-391','Cộng 1440 khi kết thúc ≤ bắt đầu'],
+  ['A18','med','Import bảng công nuốt exception trong cùng transaction (rollback-only); import sửa dòng đã duyệt mà không bỏ duyệt.','AttendanceController.java:1664-1682; AttendanceExcelService.java:1054-1057','Transaction riêng từng dòng; reset snapshot'],
+  ['A19','med','Chống gian lận yếu: GPS client gửi, không kiểm mock/độ chính xác, không gắn thiết bị, lấy GPS một lần khi mở màn hình, tự gửi từ push dù lấy GPS lỗi.','FE check_in_out_screen.dart:48-78; AttendanceController.java:1471-1510','Gửi isMocked/accuracy/deviceId, lấy GPS lúc bấm, bind thiết bị'],
+  ['A20','low','listShifts/createShift dùng findAll() toàn hệ thống rồi lọc; listAssignments không lọc scope.','WorkShiftService.java:37, 59, 79, 157','Truy vấn theo companyId + scope'],
+  // Phép & lương
+  ['L1','crit','Ngày nghỉ phép có lương không được trả: ngày nghỉ cả ngày tạo dòng ABSENT và giữ nguyên khi duyệt; LEAVE chỉ set qua import → LEAVE_DAYS ≈ 0; snapshot phép không được payroll dùng.','AttendanceController.java:788-790, 838-842; PayrollService.java:371-380','Duyệt công có phép cả ngày → LEAVE; biến PAID_/UNPAID_LEAVE_DAYS/HOURS'],
+  ['L2','crit','Biến riêng/global tham chiếu GROSS làm hỏng toàn bộ việc tạo lương (đánh giá trước khi có GROSS); một biến global lỗi làm hỏng lương mọi NV.','PayrollService.java:140-157; FormulaEngine.java:22-35','Đánh giá lười theo phụ thuộc, tách pha trước/sau GROSS'],
+  ['L3','crit','STANDARD_WORK_DAYS và HOURS_PER_DAY là biến hệ thống nhưng không bao giờ được gán → công thức phổ biến CONTRACT_SALARY / STANDARD_WORK_DAYS * PRESENT_DAYS lỗi.','FormulaEngine.java:29, 92-93; PayrollService.java:424-441','Gán giá trị + test "mọi biến hệ thống đều có giá trị"'],
+  ['L4','high','BH mặc định tính trên baseRate là đơn giá ngày/giờ (300.000đ/ngày → BHXH 24.000đ); không có trần/sàn.','PayrollService.java:74-75, 159-167','Lương đóng BH theo HĐ + trần/sàn'],
+  ['L5','high','Cột BH/PIT tính trong Java không vào NET; Excel và phiếu NV cho ra hai "tổng khấu trừ" khác nhau; PIT tính trên toàn bộ GROSS.','PayrollService.java:159-179; PayrollExcelService; FE self_payroll_screen.dart:187-188','Đưa BH/PIT thành biến hệ thống có thứ tự; kiểm gross − khấu trừ = net'],
+  ['L6','high','Sửa nháp ghi đè NET bằng công thức cứng, bỏ qua expressionNet và khấu trừ tuỳ chỉnh; phụ cấp/thưởng tay không vào GROSS khi có công thức riêng.','PayrollService.java:256-291','Đưa phụ cấp/thưởng/khấu trừ tay thành biến, chạy lại engine'],
+  ['L7','high','Tính lại = xoá rồi tạo trong transaction khác → lỗi giữa chừng mất bảng nháp và mọi chỉnh tay.','controller/PayrollController.java:183-185','Chuyển vào service @Transactional, cập nhật tại chỗ'],
+  ['L8','high','Grant không gắn loại phép → nghỉ không lương, ốm, việc riêng đều trừ quỹ phép năm; hết quỹ thì không xin được nghỉ không lương.','service/LeaveService.java:150, 581','Cờ requiresBalance trên loại phép, grant theo loại'],
+  ['L9','high','Huỷ đơn đã duyệt không giới hạn thời gian, kể cả sau khi lương đã trả; quyền admin xác định bằng tên role ADMIN/HR.','LeaveService.java:242-296','Chặn khi kỳ lương đã duyệt; dùng permission + scope'],
+  ['L10','high','Không có scheduler cộng phép; HR phải bấm đúng ngày; thâm niên = hiệu số năm; cộng cả cho NV đã nghỉ.','LeaveService.java:471-534','@Scheduled hằng ngày, Period.between, chỉ NV ACTIVE'],
+  ['L11','med','Không kiểm trùng đơn; đơn nhiều ngày tính cả CN/lễ/ngày không có ca; giờ nghỉ không trừ nghỉ trưa.','LeaveService.java:117-179, 562-579','Tính theo lịch ca, kiểm chồng đơn'],
+  ['L12','med','Không kiểm mode theo đơn vị loại phép ở BE (gửi HOUR_RANGE cho loại DAY → 4 giờ trừ thành 4 ngày).','LeaveService.java:635-658','Bắt buộc DAY→DAY_RANGE, HOUR→HOUR_RANGE'],
+  ['L13','med','Hoàn phép không về đúng grant đã trừ; deductDays trừ hai lần khi mượn giờ; đổi giờ/ngày phép làm đổi số dư hồi tố.','LeaveService.java:848-1000','Bảng ledger request↔grant; lưu số dư theo giờ'],
+  ['L14','med','Không có @Version trên LeaveGrant/Payroll → hai đơn song song có thể vượt số dư.','entity/BaseEntity.java','@Version hoặc SELECT ... FOR UPDATE'],
+  ['L15','med','IF đánh giá cả hai nhánh (chia 0 vẫn lỗi); số "1.2.3" gây 500; thiếu ROUND; lỗi trả về chung chung.','FormulaEngine.java:300-313, 461-469','IF lười, bắt lỗi parse, thêm ROUND, thông báo chi tiết'],
+  ['L16','med','Xuất phiếu lương theo ids bỏ qua phạm vi phòng ban; file lương lưu lại trong lịch sử Excel.','PayrollExcelService.java:289-290, 388','Áp scope; không lưu hoặc giới hạn xem file lương'],
+  ['L17','med','Lương dùng bậc/lương HĐ hiện tại, không theo hiệu lực trong kỳ; sửa baseRate không có lịch sử.','PayrollService.java:73-82, 420-421','Lịch sử bậc/HĐ theo hiệu lực, chia tỷ lệ'],
+  ['L18','low','Không lưu approvedBy/paidBy và phiên bản công thức; làm tròn 2 số lẻ thay vì đồng; FE dùng double cho tiền; tạo lương hàng loạt lặp ở FE.','entity/Payroll.java; FE payroll_screen.dart:1074','Thêm cột người thao tác, làm tròn VND, endpoint bulk'],
+  // Dữ liệu
+  ['D1','crit','Công ty mới chỉ có role "Admin" is_default=true; tạo NV không thấy role "Employee" thì gán role mặc định → mọi NV mới có quyền Admin.','service/CompanyService.java:167; EmployeeService.java:352-355','Seed role Employee mặc định; bỏ fallback; rà dữ liệu đã lỡ gán'],
+  ['D2','high','Unique key có cột deleted ở employees, users, departments, positions, roles, work_shifts → xoá lần hai cùng khoá bị lỗi 500.','db/migration V24, V36, V37','deleted_token hoặc cột sinh trong unique'],
+  ['D3','high','positions unique (code, deleted) toàn hệ thống, không theo công ty.','db/migration V24:84','Unique theo công ty/phòng ban'],
+  ['D4','high','Xoá NV không khoá user → NV đã nghỉ vẫn đăng nhập; đồng bộ tài khoản bật lại user đã khoá.','EmployeeService.java:268-271, 335-344','Khoá user + thu hồi phiên khi xoá/INACTIVE'],
+  ['D5','high','CCCD, số tài khoản, địa chỉ lưu dạng chữ thường, trả nguyên cho EMPLOYEE_VIEW, xuất Excel lưu vĩnh viễn trên S3.','entity/Employee.java:90-99; EmployeeService.toResponse:381-382','Mã hoá cột, che bớt, quyền EMPLOYEE_PII_VIEW, xoá file theo hạn'],
+  ['D6','med','Mã NV = count+1 → trùng sau khi xoá, tranh chấp khi tạo đồng thời.','EmployeeService.java:362-365','Bộ đếm theo công ty có khoá'],
+  ['D7','med','PUT nhân viên thiếu positionId/salaryGradeId thì xoá chức vụ/bậc lương.','EmployeeService.java:207-224','Ngữ nghĩa PATCH thống nhất'],
+  ['D8','med','Cây phòng ban không chặn chu trình, đổi cha không tính lại level; import xoá được phòng còn NV.','DepartmentService.java:245-285, 363-384','Kiểm tổ tiên, tính lại level, sắp xếp topo khi import'],
+  ['D9','med','Excel đọc ô số thành long → mất số 0 đầu ở SĐT, CCCD, STK; tài khoản import dùng mật khẩu cố định Bosskin@123.','UniversalExcelService.java:514-517; EmployeeImportService.java:36, 504','Đọc dạng text; mật khẩu ngẫu nhiên + bắt đổi'],
+  ['D10','med','N+1: cây phòng ban đếm NV bằng load toàn bộ, danh sách user 3 query/user, import load lại danh mục mỗi dòng, báo cáo tải toàn bộ vào RAM.','DepartmentService.java:67, 118, 435; UserController.java:268; ReportService','COUNT GROUP BY, cache khi import, projection, phân trang'],
+  ['D11','med','Duyệt yêu cầu sửa hồ sơ không áp scope, không lưu giá trị cũ.','ProfileService.java','Kiểm scope, lưu old_values'],
+  ['D12','low','Scope phòng ban không có FK, không kiểm phòng thuộc công ty; thiếu index cho truy vấn nóng; không có retention cho log/S3.','db/migration V23; UserPermDeptScopeRepository','Validate ID, index ghép, job dọn dữ liệu'],
+  // Frontend
+  ['F1','high','Nút Check-in/Check-out trên push không bao giờ chạy: đọc token sai nơi lưu (SharedPreferences thay vì SecureStorage) và sai đường dẫn /attendance/ (BE là /attendances/).','frontend data/services/notification_service.dart:159-172','Đọc token qua helper chung, sửa path, thêm X-Device-ID'],
+  ['F2','high','Refresh token không single-flight; BE thu hồi refresh cũ mỗi lần → nhiều request 401 cùng lúc thì các request sau lỗi.','data/services/api_service.dart:119-147','Dùng một Completer chung cho refresh'],
+  ['F3','high','Mọi 403 cũng kích hoạt refresh; refresh thất bại không logout, router không có refreshListenable.','api_service.dart:117, 148-150','Chỉ refresh khi 401; logout + redirect khi thất bại'],
+  ['F4','high','Bỏ chọn "Ghi nhớ đăng nhập" thì token chỉ ở RAM nhưng ApiService đọc từ storage → mọi request thiếu Authorization.','data/services/auth_service.dart:347-355; api_service.dart:56-74','Lấy token từ AuthService (bộ nhớ)'],
+  ['F5','high','Khi impersonate, currentUser trả sysadmin → mọi nút đều hiện dù token công ty không có quyền; hết 24h lỗi không báo rõ.','auth_service.dart:128, 591-595; main.dart:100, 211','Tách user hiển thị/user thực thi, banner đang impersonate'],
+  ['F6','high','~300 chuỗi tiếng Việt hardcode (367 dòng/32 file); chỉ 9/63 error key của BE có bản dịch → user thấy "error.xxx.yyy".','core/utils/error_utils.dart:5-27; presentation/screens/payroll/salary_formula_tab.dart…','Đưa vào ARB; CI chặn literal có dấu'],
+  ['F7','med','Host mặc định là IP LAN 192.168.0.12 ở 2 chỗ; ai cũng đổi được server ở màn hình đăng nhập, không bắt https.','core/config/server_config.dart:5; notification_service.dart:162; login_screen.dart:259-301','--dart-define theo môi trường, ẩn ở bản release'],
+  ['F8','med','Kiểm quyền menu lặp 4 nơi và không khớp; /profile/edit-requests không có guard; /excel chỉ cần EMPLOYEE_VIEW.','main.dart:50-64, 209-225; app_shell.dart:281-299; app_drawer.dart:89-103','NavRegistry dùng chung'],
+  ['F9','med','Phân trang phía client cho đơn phép, đơn chấm công, ca; danh sách NV chặn ở 500 không báo.','leaves_screen.dart:172, 194, 459; attendance_requests_screen.dart:1513','Phân trang/tìm kiếm server-side'],
+  ['F10','med','Vòng đời FCM: chỉ đăng ký khi bật trong Hồ sơ, không xử lý onTokenRefresh, logout không gỡ token, inbox dùng chung mọi user trên máy.','notification_service.dart:384-498','Đăng ký sau login, gỡ khi logout, inbox theo user'],
+  ['F11','med','12 file trên 1.000 dòng; logic API trong widget; 589 setState; Riverpod khai báo nhưng không dùng; không có test.','presentation/screens/*','Tách controller theo module, widget test cho router/quyền'],
+  ['F12','low','Ép textScaler bỏ qua cỡ chữ hệ thống; không dark mode; serve.py gửi no-store cho mọi file → main.dart.js tải lại mỗi lần.','main.dart:277-286; serve.py:18-21','Tôn trọng cỡ chữ, darkTheme, cache asset có hash'],
+  // Vận hành
+  ['O1','high','Gần như không có test (4 test); CI deploy thẳng prod với -DskipTests, không staging.','backend/src/test; .github/workflows/deploy.yml:25','Chạy test trong CI, Testcontainers MySQL, staging'],
+  ['O2','high','Scheduler dùng múi giờ JVM (EB thường UTC → lệch 7 giờ), so khớp đúng phút, không ShedLock → bỏ lỡ hoặc gửi trùng; 54 chỗ now() không truyền zone.','service/CheckInOutReminderScheduler.java:35-63; ShiftReminderScheduler.java:28-66','-Duser.timezone=Asia/Ho_Chi_Minh, ZoneId tường minh, so khoảng, ShedLock'],
+  ['O3','med','Flyway validate-on-migrate tắt, baseline-on-migrate bật ở prod; 19 migration có UPDATE/DELETE không rollback.','application.yml:32-33; application-prod.yml:20-21','Bật validate, review migration'],
+  ['O4','med','Không có Actuator/health, metrics, request-id; .ebextensions không nằm trong gói zip; Dockerfile chạy root, EXPOSE 8080 khác prod 5000.','deploy.yml; Dockerfile; .ebextensions','Actuator + CloudWatch, sửa gói deploy'],
+  ['O5','low','MapTile proxy chặn luồng Tomcat tới 10–20s khi chờ; cache trên đĩa instance, mất khi thay instance; chính sách OSM hạn chế lưu lượng lớn.','service/MapTileService.java:176, 195','Nhà cung cấp tile/CDN khi tải lớn'],
+];
+const rows = document.getElementById('rows');
+let fs = 'all', fm = 'all';
+function render(){
+  const list = R.filter(r => (fs === 'all' || r[1] === fs) && (fm === 'all' || r[0][0] === fm));
+  rows.innerHTML = list.map(r => `<tr><td class="nw"><b>${r[0]}</b></td><td><span class="sev ${r[1]}">${SEV[r[1]]}</span></td><td>${r[2]}</td><td><code>${r[3]}</code></td><td>${r[4]}</td></tr>`).join('');
+  const by = k => R.filter(r => r[1] === k).length;
+  document.getElementById('count').textContent = `Đang hiển thị ${list.length}/${R.length} mục · Nghiêm trọng ${by('crit')} · Cao ${by('high')} · Trung bình ${by('med')} · Thấp ${by('low')}`;
+}
+function bind(id, set){
+  document.querySelectorAll('#' + id + ' button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#' + id + ' button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); set(b.dataset.v); render();
+  }));
+}
+bind('fSev', v => fs = v); bind('fMod', v => fm = v);
+const h = location.hash.replace('#', '');
+const map = { 'bao-mat': 'S', 'cham-cong': 'A', 'luong': 'L', 'du-lieu': 'D', 'frontend': 'F', 'van-hanh': 'O' };
+if (map[h]) { fm = map[h]; document.querySelectorAll('#fMod button').forEach(b => b.classList.toggle('on', b.dataset.v === fm)); document.getElementById('yeu').scrollIntoView(); }
+render();
+</script>
+</body>
+</html>
