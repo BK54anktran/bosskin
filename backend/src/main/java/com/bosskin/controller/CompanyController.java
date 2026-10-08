@@ -83,7 +83,7 @@ public class CompanyController {
         return ResponseEntity.ok(AuthDTO.LoginResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
-                .expiresIn(jwtUtil.getExpiration())
+                .expiresIn(JwtUtil.IMPERSONATE_EXPIRATION_MS)
                 .user(AuthDTO.UserInfo.builder()
                         .email(sysAdmin.getEmail())
                         .type("COMPANY")

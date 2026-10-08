@@ -44,6 +44,7 @@ public class EmployeeService {
     private final CompanyRepository companyRepository;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final com.bosskin.repository.UserSessionRepository userSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final DeptScopeService deptScopeService;
 
@@ -341,6 +342,13 @@ public class EmployeeService {
         }
         employeeRepository.save(e);
         employeeRepository.delete(e);
+
+        // D4: nhân viên đã xoá không được đăng nhập tiếp — khoá tài khoản và thu hồi phiên
+        userRepository.findByEmployeeId(e.getId()).ifPresent(u -> {
+            u.setEnabled(false);
+            userRepository.save(u);
+            userSessionRepository.revokeAllByUserId(u.getId());
+        });
     }
 
     private void requireViewScope(Long userId, Long deptId) {

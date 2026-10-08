@@ -28,9 +28,29 @@ public class JwtUtil {
     @Value("${app.jwt.expiration}")  private long expiration;
     @Value("${app.jwt.refresh-expiration}") private long refreshExpiration;
 
+    /** Secret cũ từng là giá trị mặc định công khai trong application.yml — cấm dùng lại. */
+    private static final String LEAKED_DEFAULT_SECRET = "bosskin-super-secret-key-change-in-production-2024";
+    private static final int MIN_SECRET_BYTES = 32;
+
+    @jakarta.annotation.PostConstruct
+    void validateSecret() {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("Thiếu JWT_SECRET. Tạo bằng: openssl rand -base64 48");
+        }
+        if (secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
+            throw new IllegalStateException("JWT_SECRET phải dài ít nhất " + MIN_SECRET_BYTES + " byte");
+        }
+        if (LEAKED_DEFAULT_SECRET.equals(secret)) {
+            throw new IllegalStateException("JWT_SECRET đang là giá trị mặc định cũ đã công khai, hãy đổi");
+        }
+    }
+
     private SecretKey key() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
+
+    /** Phiên impersonate của system admin sống tối đa 1 giờ. */
+    public static final long IMPERSONATE_EXPIRATION_MS = 60 * 60 * 1000L;
 
     // ── Company user token ──────────────────────────────────────────────
     public String generateToken(User user, String deviceId) {
@@ -61,7 +81,7 @@ public class JwtUtil {
         claims.put("companyId",   companyId);
         claims.put("permissions", permissions);
         claims.put("impersonated", true);
-        return buildToken(claims, email, expiration);
+        return buildToken(claims, email, IMPERSONATE_EXPIRATION_MS);
     }
 
     // ── System admin token ──────────────────────────────────────────────

@@ -25,6 +25,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.refresh(request));
     }
 
+    // Đăng xuất: POST /api/v1/auth/logout  { "refreshToken": "..." }
+    @PostMapping("/api/v1/auth/logout")
+    public ResponseEntity<Void> logout(@RequestBody(required = false) AuthDTO.RefreshRequest request) {
+        authService.logout(request != null ? request.getRefreshToken() : null);
+        return ResponseEntity.noContent().build();
+    }
+
     // System admin login: POST /admin/auth/login
     @PostMapping("/admin/auth/login")
     public ResponseEntity<AuthDTO.LoginResponse> systemLogin(@Valid @RequestBody AuthDTO.LoginRequest request) {

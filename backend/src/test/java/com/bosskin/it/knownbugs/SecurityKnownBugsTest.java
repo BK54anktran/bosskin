@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * nên hiện đang đỏ. Sửa xong lỗi nào thì bỏ @Tag("known-bug") của test đó.
  * Mã lỗi (S1, D1…) theo docs/review-2026-10/danh-gia.html — sửa ở Mốc 1.
  */
-@Tag("known-bug")
 class SecurityKnownBugsTest extends IntegrationTest {
 
     /** Giá trị mặc định đang nằm trong application.yml. */
@@ -97,6 +96,7 @@ class SecurityKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("D1 · Nhân viên mới của công ty mới không nhận vai trò Admin")
     void d1_newEmployeeInNewCompany_isNotAdmin() {
         var c = fixture.newCompany();
@@ -112,6 +112,7 @@ class SecurityKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("S6 · Người quản lý tài khoản không tự gán cho mình vai trò Admin")
     void s6_userManagerCannotEscalateOwnRole() {
         var c = fixture.standardCompany();

@@ -17,6 +17,7 @@ public interface UserSessionRepository extends JpaRepository<UserSession, Long> 
     void cleanupExpiredAndRevoked(LocalDateTime now);
 
     @Modifying
+    @org.springframework.transaction.annotation.Transactional
     @Query("UPDATE UserSession s SET s.revoked = true WHERE s.user.id = :userId")
     int revokeAllByUserId(Long userId);
 }

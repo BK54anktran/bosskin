@@ -1,3 +1,0 @@
-ALTER TABLE companies
-    ADD COLUMN day_start_time TIME NOT NULL DEFAULT '06:00:00',
-    ADD COLUMN day_end_time   TIME NOT NULL DEFAULT '22:00:00';

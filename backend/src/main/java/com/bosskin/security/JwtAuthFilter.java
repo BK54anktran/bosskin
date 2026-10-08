@@ -50,13 +50,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (JwtUtil.TYPE_SYSTEM.equals(type)) {
                     SystemAdmin admin = systemAdminRepository.findByEmail(email).orElse(null);
-                    if (admin != null && jwtUtil.isTokenValid(jwt, admin)) {
+                    if (admin != null && admin.isEnabled() && jwtUtil.isTokenValid(jwt, admin)) {
                         setAuth(admin, request);
                     }
+                } else if (!JwtUtil.TYPE_COMPANY.equals(type)) {
+                    // Refresh token (type REFRESH) hoặc token lạ: không dùng làm access token
                 } else if (jwtUtil.isImpersonateToken(jwt)) {
-                    // Sysadmin impersonate: full quyền, không gắn với employee nào
+                    // Sysadmin impersonate: full quyền, không gắn với employee nào.
+                    // Kiểm lại trong DB: email phải là system admin còn hoạt động.
                     Long companyId = jwtUtil.extractCompanyId(jwt);
-                    if (companyId != null && !jwtUtil.isTokenExpired(jwt)) {
+                    boolean sysAdminActive = systemAdminRepository.findByEmail(email)
+                        .map(SystemAdmin::isEnabled).orElse(false);
+                    if (sysAdminActive && companyId != null && !jwtUtil.isTokenExpired(jwt)) {
                         com.bosskin.entity.Company company = companyRepository.findById(companyId).orElse(null);
                         if (company != null && company.isActive()) {
                             Set<String> perms = jwtUtil.extractPermissions(jwt);
@@ -68,7 +73,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     User user = (companyId != null)
                         ? userRepository.findByEmailAndCompanyId(email, companyId).orElse(null)
                         : userRepository.findByEmail(email).orElse(null);
-                    if (user != null && jwtUtil.isTokenValid(jwt, user)
+                    if (user != null && user.isEnabled() && !user.isDeleted()
+                            && jwtUtil.isTokenValid(jwt, user)
                             && user.getCompanyId() != null
                             && companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
                         setAuth(user, request);

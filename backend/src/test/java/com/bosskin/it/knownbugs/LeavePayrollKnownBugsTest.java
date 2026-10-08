@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tái hiện lỗi nghỉ phép / bảng lương / rò dữ liệu lương đã biết.
  * Mỗi test khẳng định hành vi ĐÚNG nên hiện đang đỏ.
  */
-@Tag("known-bug")
 class LeavePayrollKnownBugsTest extends IntegrationTest {
 
     private static final LocalDate DAY = LocalDate.of(2026, 11, 3);
@@ -31,6 +30,7 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     @Autowired PayrollService payrollService;
 
     @Test
+    @Tag("known-bug")
     @DisplayName("L1 · Ngày nghỉ phép có lương đã duyệt được ghi công là LEAVE, không phải vắng")
     void l1_approvedPaidLeaveDay_isLeaveNotAbsent() {
         var c = fixture.standardCompany();
@@ -52,6 +52,7 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("L8 · Nghỉ không lương không cần số dư phép")
     void l8_unpaidLeave_doesNotRequireBalance() {
         var c = fixture.standardCompany();
@@ -64,6 +65,7 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("L3 · Công thức dùng STANDARD_WORK_DAYS tạo được bảng lương")
     void l3_formulaUsingStandardWorkDays_generates() {
         var c = fixture.standardCompany();
@@ -79,6 +81,7 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("S7 · Người không có quyền xem lương không thấy tổng lương trên Dashboard")
     void s7_dashboardHidesSalaryWithoutPayrollView() {
         var c = fixture.standardCompany();

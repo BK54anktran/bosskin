@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Chưa có test cho ca đêm (A3/A4): logic check-in đọc LocalDateTime.now() trực tiếp,
  * cần đưa Clock vào trước (việc đầu tiên của Mốc 2) mới giả lập được giờ.
  */
-@Tag("known-bug")
 class AttendanceKnownBugsTest extends IntegrationTest {
 
     private static final LocalDate DAY = LocalDate.of(2026, 11, 3); // thứ Ba
@@ -33,6 +32,7 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     @Autowired JdbcTemplate jdbc;
 
     @Test
+    @Tag("known-bug")
     @DisplayName("A1 · Nhân viên chỉ có quyền xem chấm công không tự duyệt công của mình được")
     void a1_viewOnlyEmployeeCannotApproveOwnAttendance() {
         var c = fixture.standardCompany();
@@ -48,6 +48,7 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("A2 · Không gắn được phân ca của công ty khác khi duyệt công (IDOR)")
     void a2_approveWithOtherCompanyShiftAssignment_isRejected() {
         var a = fixture.standardCompany();
@@ -64,6 +65,7 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("A5 · Bỏ duyệt không làm trạng thái công thành rỗng")
     void a5_unapproveKeepsStatus() {
         var c = fixture.standardCompany();
@@ -80,6 +82,7 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     }
 
     @Test
+    @Tag("known-bug")
     @DisplayName("A7 · Xoá phân ca không xoá mất bản ghi công đã duyệt")
     void a7_deleteShiftAssignment_keepsApprovedAttendance() {
         var c = fixture.standardCompany();

@@ -97,6 +97,10 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.refresh_token_expired");
         }
 
+        if (!"REFRESH".equals(claims.get("type"))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.invalid_refresh_token");
+        }
+
         String jti      = (String) claims.get("jti");
         String deviceId = (String) claims.get("deviceId");
         String email    = claims.getSubject();
@@ -117,6 +121,9 @@ public class AuthService {
 
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Người dùng không tồn tại"));
+        if (!user.isEnabled() || user.isDeleted()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.account_disabled");
+        }
 
         if (!companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive");
@@ -157,6 +164,23 @@ public class AuthService {
     }
 
     // ── System admin login ──────────────────────────────────────────────
+    /** Đăng xuất: thu hồi phiên refresh. Token sai/hết hạn thì bỏ qua (đăng xuất luôn thành công). */
+    @org.springframework.transaction.annotation.Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) return;
+        try {
+            Claims claims = jwtUtil.extractAllClaimsIgnoreExpiry(refreshToken);
+            String jti = (String) claims.get("jti");
+            if (jti == null) return;
+            userSessionRepository.findByJti(jti).ifPresent(s -> {
+                s.setRevoked(true);
+                userSessionRepository.save(s);
+            });
+        } catch (Exception ignored) {
+            // token hỏng: không có gì để thu hồi
+        }
+    }
+
     public AuthDTO.LoginResponse systemLogin(AuthDTO.LoginRequest req) {
         SystemAdmin admin = systemAdminRepository.findByEmail(req.getEmail())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng"));

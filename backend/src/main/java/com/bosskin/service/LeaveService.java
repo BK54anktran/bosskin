@@ -43,7 +43,7 @@ public class LeaveService {
 
     @Transactional
     public LeaveDTO.LeaveTypeResponse createType(Long companyId, LeaveDTO.LeaveTypeUpsert req) {
-        if (leaveTypeRepository.existsByCompanyIdAndCodeIgnoreCase(companyId, req.getCode())) {
+        if (leaveTypeRepository.existsByCompanyIdAndCodeIgnoreCaseAndDeletedFalse(companyId, req.getCode())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã loại phép đã tồn tại");
         }
         LeaveType type = LeaveType.builder()
@@ -63,7 +63,7 @@ public class LeaveService {
     public LeaveDTO.LeaveTypeResponse updateType(Long companyId, Long id, LeaveDTO.LeaveTypeUpsert req) {
         LeaveType type = leaveTypeRepository.findByIdAndCompanyIdAndDeletedFalse(id, companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại phép"));
-        if (leaveTypeRepository.existsByCompanyIdAndCodeIgnoreCaseAndIdNot(companyId, req.getCode(), id)) {
+        if (leaveTypeRepository.existsByCompanyIdAndCodeIgnoreCaseAndIdNotAndDeletedFalse(companyId, req.getCode(), id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã loại phép đã tồn tại");
         }
         type.setCode(req.getCode().trim().toUpperCase());

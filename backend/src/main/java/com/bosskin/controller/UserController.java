@@ -38,6 +38,7 @@ public class UserController {
     private final PermissionConsistencyService permissionConsistencyService;
     private final DeptScopeService deptScopeService;
     private final PasswordEncoder passwordEncoder;
+    private final com.bosskin.repository.UserSessionRepository userSessionRepository;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listUsers(@AuthenticationPrincipal User caller) {
@@ -187,8 +188,13 @@ public class UserController {
         User user = findUserInCompanyAndScope(id, caller);
         Boolean enabled = (Boolean) body.get("enabled");
         if (enabled == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "enabled là bắt buộc");
+        if (!enabled && user.getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.cannot_disable_self");
+        }
         user.setEnabled(enabled);
-        return ResponseEntity.ok(toUserMap(userRepository.save(user)));
+        User saved = userRepository.save(user);
+        if (!enabled) userSessionRepository.revokeAllByUserId(saved.getId());
+        return ResponseEntity.ok(toUserMap(saved));
     }
 
     private User findUserInCompanyAndScope(Long userId, User caller) {

@@ -6,6 +6,12 @@ spring:
     show-sql: false
 
 app:
+  jwt:
+    # Chỉ dùng cho test
+    secret: test-only-jwt-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+  bootstrap:
+    sysadmin-email: sysadmin@test.local
+    sysadmin-password: Test-SysAdmin-123
   s3:
     # Không gọi S3 thật khi test; giá trị giả chỉ để khởi tạo client
     access-key: test

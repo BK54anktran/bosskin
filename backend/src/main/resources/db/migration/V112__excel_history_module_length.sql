@@ -1,1 +1,0 @@
-ALTER TABLE excel_history MODIFY COLUMN module VARCHAR(255) NOT NULL;

@@ -29,8 +29,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    # V1 là baseline gộp trước go-live: chỉ chạy trên DB trống, DB cũ (V1–V117) phải tạo lại
+    baseline-on-migrate: false
+    validate-on-migrate: true
 
   servlet:
     multipart:
@@ -46,8 +47,15 @@ server:
     connection-timeout: 120000   # 2 phút cho import file lớn
 
 app:
+  # System admin đầu tiên, chỉ dùng khi DB chưa có system admin nào (xem SystemAdminBootstrap)
+  bootstrap:
+    sysadmin-email: ${BOOTSTRAP_SYSADMIN_EMAIL:}
+    sysadmin-password: ${BOOTSTRAP_SYSADMIN_PASSWORD:}
+
   jwt:
-    secret: ${JWT_SECRET:bosskin-super-secret-key-change-in-production-2024}
+    # Bắt buộc đặt JWT_SECRET (>= 32 ký tự, ngẫu nhiên). Không có giá trị mặc định.
+    # Tạo nhanh: openssl rand -base64 48
+    secret: ${JWT_SECRET:}
     expiration: 86400000       # 24 hours
     refresh-expiration: 604800000  # 7 days
 
