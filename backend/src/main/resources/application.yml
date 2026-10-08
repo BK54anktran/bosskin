@@ -66,6 +66,23 @@ app:
   firebase:
     service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:firebase-service-account.json}
 
+  # Ô bản đồ OSM đi qua BE (MapTileController) — FE không gọi thẳng tile.openstreetmap.org
+  map-tiles:
+    upstream-url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+    user-agent: ${MAP_TILE_USER_AGENT:BossKin-HR/1.0 (map tile proxy)}   # OSM khuyên ghi kèm email/URL liên hệ
+    cache-dir: ${MAP_TILE_CACHE_DIR:${user.home}/.bosskin/map-tiles}
+    max-cache-mb: ${MAP_TILE_MAX_CACHE_MB:1024}   # đầy thì xoá ô cũ nhất
+    refresh-after-days: 30        # ô cũ hơn thì tải lại
+    min-zoom: 5
+    max-zoom: 18
+    rate-limit-per-minute: 600    # số ô / phút / người dùng
+    max-concurrent-upstream: 4    # số lượt tải đồng thời sang OSM
+    bbox:                         # Việt Nam, gồm Hoàng Sa & Trường Sa
+      min-lat: 6.0
+      max-lat: 23.6
+      min-lon: 102.0
+      max-lon: 118.0
+
 logging:
   level:
     com.bosskin: DEBUG

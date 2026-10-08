@@ -3,12 +3,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/map/app_tile_layer.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/attendance_message_utils.dart';
 import '../../../data/models/attendance.dart';
@@ -778,11 +778,7 @@ class _LocationMapPanelState extends State<_LocationMapPanel> {
                           initialZoom: 16,
                         ),
                         children: [
-                          TileLayer(
-                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.bosskin.app',
-                            tileProvider: CancellableNetworkTileProvider(),
-                          ),
+                          appTileLayer(),
                           if (!_isFree)
                             CircleLayer(
                               circles: widget.allowedLocations!.map((loc) {
