@@ -30,6 +30,8 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
   TimeOfDay? _breakStart;
   TimeOfDay? _breakEnd;
   String _color = '#1976D2';
+  bool _flexible = false;
+  late final TextEditingController _requiredHours;
   List<DepartmentFlat> _allDepts = [];
   final Set<int> _selectedDeptIds = {};
   bool _saving = false;
@@ -49,6 +51,9 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
     _name = TextEditingController(text: s?.name ?? '');
     _code = TextEditingController(text: s?.code ?? '');
     _group = TextEditingController(text: s?.groupName ?? '');
+    _flexible = s?.isFlexible ?? false;
+    _requiredHours = TextEditingController(
+        text: s?.requiredMinutes != null ? _hoursText(s!.requiredMinutes!) : '8');
     if (s != null) {
       _color = s.color;
       _start = _parseTime(s.startTime);
@@ -65,7 +70,13 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
     _name.dispose();
     _code.dispose();
     _group.dispose();
+    _requiredHours.dispose();
     super.dispose();
+  }
+
+  static String _hoursText(int minutes) {
+    final h = minutes / 60;
+    return h == h.roundToDouble() ? h.toStringAsFixed(0) : h.toStringAsFixed(1);
   }
 
   TimeOfDay? _parseTime(String? s) {
@@ -159,6 +170,10 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
         'color': _color,
         if (_group.text.trim().isNotEmpty) 'groupName': _group.text.trim(),
         'departmentIds': _selectedDeptIds.toList(),
+        'shiftType': _flexible ? 'FLEXIBLE' : 'FIXED',
+        if (_flexible)
+          'requiredMinutes':
+              ((double.tryParse(_requiredHours.text.replaceAll(',', '.')) ?? 0) * 60).round(),
       };
       if (widget.shift == null) {
         await ApiService.instance.post('/shifts', (_) => null, body);
@@ -275,6 +290,34 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
                   ),
                   const SizedBox(height: 16),
 
+                  SegmentedButton<bool>(
+                    segments: [
+                      ButtonSegment(value: false, label: Text(s.shiftTypeFixed), icon: const Icon(Icons.schedule, size: 16)),
+                      ButtonSegment(value: true, label: Text(s.shiftTypeFlexible), icon: const Icon(Icons.timelapse, size: 16)),
+                    ],
+                    selected: {_flexible},
+                    onSelectionChanged: (v) => setState(() => _flexible = v.first),
+                  ),
+                  if (_flexible) ...[
+                    const SizedBox(height: 8),
+                    Text(s.shiftFlexibleHint,
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _requiredHours,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: s.shiftRequiredHoursLabel,
+                        suffixText: s.hourSuffix,
+                      ),
+                      validator: (v) {
+                        if (!_flexible) return null;
+                        final h = double.tryParse((v ?? '').replaceAll(',', '.'));
+                        return (h == null || h <= 0 || h > 24) ? s.shiftRequiredHoursInvalid : null;
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 16),
                   if (true) ...[
                     Row(children: [
                       Expanded(

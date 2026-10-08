@@ -311,8 +311,8 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
         }
         return;
       }
-      // Otherwise assign (allow up to 2 per day, remove oldest if already 2)
-      if (existingList.length >= 2) {
+      // Otherwise assign (tối đa 4 ca/ngày như backend; đủ 4 thì bỏ ca cũ nhất)
+      if (existingList.length >= 4) {
         await _deleteById(existingList.first.id,
             hasAttendance: existingList.first.hasAttendance,
             approved: existingList.first.approved);

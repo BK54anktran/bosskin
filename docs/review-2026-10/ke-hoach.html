@@ -60,7 +60,7 @@
       <tr><td><b>2</b> · Chấm công & khoá kỳ</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m2-attendance</code>, <code>golive/m3-leave-payroll</code></td>
         <td>Đã làm A3–A8, A11–A19: ca đêm, về sớm, đi muộn theo dung sai, trạng thái khi duyệt, chặn xoá phân ca có công, import phân ca đối chiếu, phân ca hàng loạt, snapshot giờ ca, <b>khoá kỳ công</b>, chặn GPS giả, đơn sửa giờ thay giờ thực, trần OT theo giờ có mặt, phút làm ca qua đêm, import duyệt từng dòng, nhắc nhở theo khoảng giờ, chặn tự duyệt đơn.
           <br><span class="muted">Còn lại (làm cùng frontend): màn hình khoá/mở kỳ, gắn thiết bị (FE gửi mã máy), lấy GPS lúc bấm nút. Giới hạn 2 ca/ngày mở ở Mốc 2b.</span></td></tr>
-      <tr><td><b>2b</b> · Ca đa năng</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
+      <tr><td><b>2b</b> · Ca đa năng</td><td><span class="st done">Xong 08/10</span></td><td><code>golive/m2b-shifts</code></td><td>Ca linh hoạt (đủ số giờ trong khung, thiếu giờ = đi muộn, giờ công chặn ở số giờ phải làm); ca chia đôi (nghỉ dài giữa ca); tối đa 4 ca/ngày; mẫu xoay ca + sinh phân ca cho nhiều NV (lệch ngày từng người, ngày đã có công giữ nguyên); đổi ca / nhường ca có quản lý duyệt (quyền <code>SHIFT_SWAP_APPROVE</code>). Migration V5, test <code>ShiftTypesTest</code> (6 ca kiểm). FE: loại ca trong form ca, tab "Xoay ca", màn "Đổi ca". Seed TH company có đủ các loại ca.</td></tr>
       <tr><td><b>3</b> · Phép & lương</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m3-leave-payroll</code></td>
         <td>71 test xanh, không còn test <code>known-bug</code> nào đỏ. Phép: quỹ theo loại phép, chồng ngày, mode theo đơn vị, huỷ đơn theo quyền, cộng phép tự động hằng ngày (L8–L12, L14). Lương: biến hệ thống, thứ tự tính trước/sau GROSS, IF/ROUND, BH/thuế dùng được trong NET, chỉnh tay và tính lại tại chỗ, lưu người duyệt/trả (L1–L3, L5–L7, L15, L16, L18).
           <br><span class="muted">Còn lại: sổ ghi trừ/hoàn phép theo từng đơn (L13), quỹ phép tách theo loại; FE: màn loại phép (cờ trừ quỹ), lỗi công thức chi tiết, phiếu lương thống nhất tổng khấu trừ.</span></td></tr>
@@ -218,7 +218,7 @@ gantt
   </div>
 
   <div class="card ms" style="margin-top:14px">
-    <div class="when"><b>Mốc 2b</b>6 ngày · BE<br>+ 6 ngày FE</div>
+    <div class="when"><b>Mốc 2b</b>6 ngày · BE<br>+ 6 ngày FE<br><span class="st done">Xong</span></div>
     <div>
       <h3 style="margin-top:0">Ca đa năng</h3>
       <p class="lead">Làm ngay sau Mốc 2 vì dùng chung code ca/phân ca vừa sửa, và phải xong trước phép/lương vì thay đổi cách tính giờ công.</p>

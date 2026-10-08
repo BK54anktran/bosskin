@@ -238,6 +238,8 @@ class _AppDrawerState extends State<AppDrawer> {
           AppRoutes.attendanceRequests,
           requiredPermission: 'ATTENDANCE_SELF',
         ),
+        _DrawerItem(s.swapMenu, Icons.swap_horiz, AppRoutes.shiftSwaps,
+            requiredPermission: 'ATTENDANCE_SELF'),
         _DrawerItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
         _DrawerItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,

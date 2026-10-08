@@ -3548,4 +3548,187 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uiNotifCheckOutFailed => 'Unable to check out';
+
+  @override
+  String get shiftTypeFixed => 'Fixed hours';
+
+  @override
+  String get shiftTypeFlexible => 'Flexible';
+
+  @override
+  String get shiftFlexibleHint =>
+      'Employees may come and go any time within the window below as long as they work the required hours. Working fewer hours counts as late.';
+
+  @override
+  String get shiftRequiredHoursLabel => 'Required hours';
+
+  @override
+  String get shiftRequiredHoursInvalid => 'Enter hours between 0 and 24';
+
+  @override
+  String shiftFlexibleWindow(String window) {
+    return 'Flexible within $window';
+  }
+
+  @override
+  String get rotationTab => 'Rotations';
+
+  @override
+  String get rotationIntro =>
+      'Rotation patterns: a cycle of days, each with one or more shifts or a day off. Apply one to generate assignments for many employees.';
+
+  @override
+  String get rotationAdd => 'Add rotation';
+
+  @override
+  String get rotationEdit => 'Edit rotation';
+
+  @override
+  String get rotationEmpty => 'No rotation patterns yet';
+
+  @override
+  String get rotationName => 'Pattern name';
+
+  @override
+  String get rotationDaysHint =>
+      'Pick shifts for each day of the cycle; no shift = day off.';
+
+  @override
+  String rotationDayN(String n) {
+    return 'Day $n';
+  }
+
+  @override
+  String get rotationDayOff => 'Off';
+
+  @override
+  String get rotationAddDay => 'Add day';
+
+  @override
+  String rotationCycleDays(String n) {
+    return '$n-day cycle';
+  }
+
+  @override
+  String get rotationNeedNameAndShift =>
+      'Enter a name and pick at least one shift';
+
+  @override
+  String get rotationDeleteTitle => 'Delete rotation';
+
+  @override
+  String rotationDeleteConfirm(String name) {
+    return 'Delete \"$name\"? Assignments already generated are kept.';
+  }
+
+  @override
+  String get rotationApply => 'Apply to employees';
+
+  @override
+  String rotationApplyTitle(String name) {
+    return 'Apply \"$name\"';
+  }
+
+  @override
+  String get rotationStartAt => 'Start date maps to';
+
+  @override
+  String get rotationStagger => 'Offset per next person';
+
+  @override
+  String get rotationStaggerNone => 'No offset';
+
+  @override
+  String rotationStaggerDays(String n) {
+    return '$n day(s)';
+  }
+
+  @override
+  String rotationSelectedCount(String n) {
+    return '$n selected';
+  }
+
+  @override
+  String get rotationOrderHint =>
+      'Selection order sets the offset: earlier picks get smaller offsets. Days that already have attendance are kept.';
+
+  @override
+  String get rotationResultTitle => 'Rotation result';
+
+  @override
+  String rotationResultSummary(
+      String assigned, String cleared, String unchanged) {
+    return 'Assigned $assigned days, cleared $cleared days off, $unchanged unchanged.';
+  }
+
+  @override
+  String rotationResultConflicts(String n) {
+    return '$n days could not be assigned:';
+  }
+
+  @override
+  String get swapMenu => 'Shift swaps';
+
+  @override
+  String get swapCreate => 'Request swap / give away';
+
+  @override
+  String get swapEmpty => 'No swap requests';
+
+  @override
+  String get swapMyShift => 'My shift';
+
+  @override
+  String get swapNoUpcoming =>
+      'You have no upcoming shifts that can be swapped';
+
+  @override
+  String get swapPickColleague => 'Choose a colleague';
+
+  @override
+  String get swapGiveOption => 'Give this shift to them';
+
+  @override
+  String swapWithShift(String shift) {
+    return 'Swap for their $shift';
+  }
+
+  @override
+  String get swapSend => 'Send request';
+
+  @override
+  String get swapSent => 'Request sent, waiting for approval';
+
+  @override
+  String swapGiveTitle(String from, String to) {
+    return '$from gives a shift to $to';
+  }
+
+  @override
+  String swapSwapTitle(String from, String to) {
+    return '$from swaps shifts with $to';
+  }
+
+  @override
+  String get swapReject => 'Reject';
+
+  @override
+  String get swapRejectTitle => 'Reject swap request';
+
+  @override
+  String get swapApproved => 'Approved, assignments updated';
+
+  @override
+  String get swapRejected => 'Rejected';
+
+  @override
+  String get swapCancelled => 'Request cancelled';
+
+  @override
+  String get permUiShiftSwapApprove =>
+      'Approve / reject buttons on the Shift swaps screen';
+
+  @override
+  String get permDescShiftSwapApprove =>
+      'Approve shift swap / give-away requests';
 }

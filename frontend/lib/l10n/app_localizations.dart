@@ -6746,6 +6746,307 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Không thể check-out'**
   String get uiNotifCheckOutFailed;
+
+  /// No description provided for @shiftTypeFixed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ cố định'**
+  String get shiftTypeFixed;
+
+  /// No description provided for @shiftTypeFlexible.
+  ///
+  /// In vi, this message translates to:
+  /// **'Linh hoạt'**
+  String get shiftTypeFlexible;
+
+  /// No description provided for @shiftFlexibleHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên vào/ra lúc nào cũng được trong khung giờ bên dưới, chỉ cần làm đủ số giờ. Làm thiếu giờ được tính là đi muộn.'**
+  String get shiftFlexibleHint;
+
+  /// No description provided for @shiftRequiredHoursLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số giờ phải làm'**
+  String get shiftRequiredHoursLabel;
+
+  /// No description provided for @shiftRequiredHoursInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập số giờ từ 0 đến 24'**
+  String get shiftRequiredHoursInvalid;
+
+  /// No description provided for @shiftFlexibleWindow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Linh hoạt trong khung {window}'**
+  String shiftFlexibleWindow(String window);
+
+  /// No description provided for @rotationTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay ca'**
+  String get rotationTab;
+
+  /// No description provided for @rotationIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mẫu xoay ca: chu kỳ các ngày, mỗi ngày một hoặc nhiều ca hoặc nghỉ. Áp dụng để tự sinh phân ca cho nhiều nhân viên.'**
+  String get rotationIntro;
+
+  /// No description provided for @rotationAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm mẫu xoay'**
+  String get rotationAdd;
+
+  /// No description provided for @rotationEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa mẫu xoay'**
+  String get rotationEdit;
+
+  /// No description provided for @rotationEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mẫu xoay ca'**
+  String get rotationEmpty;
+
+  /// No description provided for @rotationName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên mẫu'**
+  String get rotationName;
+
+  /// No description provided for @rotationDaysHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ca cho từng ngày trong chu kỳ; không chọn ca nào = ngày nghỉ.'**
+  String get rotationDaysHint;
+
+  /// No description provided for @rotationDayN.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày {n}'**
+  String rotationDayN(String n);
+
+  /// No description provided for @rotationDayOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ'**
+  String get rotationDayOff;
+
+  /// No description provided for @rotationAddDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ngày'**
+  String get rotationAddDay;
+
+  /// No description provided for @rotationCycleDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chu kỳ {n} ngày'**
+  String rotationCycleDays(String n);
+
+  /// No description provided for @rotationNeedNameAndShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập tên và chọn ít nhất một ca'**
+  String get rotationNeedNameAndShift;
+
+  /// No description provided for @rotationDeleteTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá mẫu xoay ca'**
+  String get rotationDeleteTitle;
+
+  /// No description provided for @rotationDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá mẫu \"{name}\"? Phân ca đã sinh không bị ảnh hưởng.'**
+  String rotationDeleteConfirm(String name);
+
+  /// No description provided for @rotationApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng cho nhân viên'**
+  String get rotationApply;
+
+  /// No description provided for @rotationApplyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng mẫu \"{name}\"'**
+  String rotationApplyTitle(String name);
+
+  /// No description provided for @rotationStartAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày bắt đầu ứng với'**
+  String get rotationStartAt;
+
+  /// No description provided for @rotationStagger.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi người sau lệch'**
+  String get rotationStagger;
+
+  /// No description provided for @rotationStaggerNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lệch'**
+  String get rotationStaggerNone;
+
+  /// No description provided for @rotationStaggerDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} ngày'**
+  String rotationStaggerDays(String n);
+
+  /// No description provided for @rotationSelectedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chọn {n} người'**
+  String rotationSelectedCount(String n);
+
+  /// No description provided for @rotationOrderHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thứ tự chọn quyết định độ lệch: người chọn trước lệch ít hơn. Ngày đã có chấm công được giữ nguyên.'**
+  String get rotationOrderHint;
+
+  /// No description provided for @rotationResultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả áp dụng mẫu'**
+  String get rotationResultTitle;
+
+  /// No description provided for @rotationResultSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xếp {assigned} ngày, bỏ ca {cleared} ngày nghỉ, giữ nguyên {unchanged} ngày.'**
+  String rotationResultSummary(
+      String assigned, String cleared, String unchanged);
+
+  /// No description provided for @rotationResultConflicts.
+  ///
+  /// In vi, this message translates to:
+  /// **'{n} ngày không xếp được:'**
+  String rotationResultConflicts(String n);
+
+  /// No description provided for @swapMenu.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi ca'**
+  String get swapMenu;
+
+  /// No description provided for @swapCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xin đổi / nhường ca'**
+  String get swapCreate;
+
+  /// No description provided for @swapEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có yêu cầu đổi ca'**
+  String get swapEmpty;
+
+  /// No description provided for @swapMyShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca của tôi'**
+  String get swapMyShift;
+
+  /// No description provided for @swapNoUpcoming.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có ca sắp tới nào có thể đổi'**
+  String get swapNoUpcoming;
+
+  /// No description provided for @swapPickColleague.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn đồng nghiệp'**
+  String get swapPickColleague;
+
+  /// No description provided for @swapGiveOption.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhường ca này cho người này'**
+  String get swapGiveOption;
+
+  /// No description provided for @swapWithShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi lấy ca {shift}'**
+  String swapWithShift(String shift);
+
+  /// No description provided for @swapSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi yêu cầu'**
+  String get swapSend;
+
+  /// No description provided for @swapSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi yêu cầu, chờ quản lý duyệt'**
+  String get swapSent;
+
+  /// No description provided for @swapGiveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{from} nhường ca cho {to}'**
+  String swapGiveTitle(String from, String to);
+
+  /// No description provided for @swapSwapTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{from} đổi ca với {to}'**
+  String swapSwapTitle(String from, String to);
+
+  /// No description provided for @swapReject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối'**
+  String get swapReject;
+
+  /// No description provided for @swapRejectTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối yêu cầu đổi ca'**
+  String get swapRejectTitle;
+
+  /// No description provided for @swapApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt, phân ca đã được đổi'**
+  String get swapApproved;
+
+  /// No description provided for @swapRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã từ chối'**
+  String get swapRejected;
+
+  /// No description provided for @swapCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ yêu cầu'**
+  String get swapCancelled;
+
+  /// No description provided for @permUiShiftSwapApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nút duyệt / từ chối trên màn Đổi ca'**
+  String get permUiShiftSwapApprove;
+
+  /// No description provided for @permDescShiftSwapApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt yêu cầu đổi ca / nhường ca'**
+  String get permDescShiftSwapApprove;
 }
 
 class _AppLocalizationsDelegate

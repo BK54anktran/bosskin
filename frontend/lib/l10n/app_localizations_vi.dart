@@ -3550,4 +3550,183 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get uiNotifCheckOutFailed => 'Không thể check-out';
+
+  @override
+  String get shiftTypeFixed => 'Giờ cố định';
+
+  @override
+  String get shiftTypeFlexible => 'Linh hoạt';
+
+  @override
+  String get shiftFlexibleHint =>
+      'Nhân viên vào/ra lúc nào cũng được trong khung giờ bên dưới, chỉ cần làm đủ số giờ. Làm thiếu giờ được tính là đi muộn.';
+
+  @override
+  String get shiftRequiredHoursLabel => 'Số giờ phải làm';
+
+  @override
+  String get shiftRequiredHoursInvalid => 'Nhập số giờ từ 0 đến 24';
+
+  @override
+  String shiftFlexibleWindow(String window) {
+    return 'Linh hoạt trong khung $window';
+  }
+
+  @override
+  String get rotationTab => 'Xoay ca';
+
+  @override
+  String get rotationIntro =>
+      'Mẫu xoay ca: chu kỳ các ngày, mỗi ngày một hoặc nhiều ca hoặc nghỉ. Áp dụng để tự sinh phân ca cho nhiều nhân viên.';
+
+  @override
+  String get rotationAdd => 'Thêm mẫu xoay';
+
+  @override
+  String get rotationEdit => 'Sửa mẫu xoay';
+
+  @override
+  String get rotationEmpty => 'Chưa có mẫu xoay ca';
+
+  @override
+  String get rotationName => 'Tên mẫu';
+
+  @override
+  String get rotationDaysHint =>
+      'Chọn ca cho từng ngày trong chu kỳ; không chọn ca nào = ngày nghỉ.';
+
+  @override
+  String rotationDayN(String n) {
+    return 'Ngày $n';
+  }
+
+  @override
+  String get rotationDayOff => 'Nghỉ';
+
+  @override
+  String get rotationAddDay => 'Thêm ngày';
+
+  @override
+  String rotationCycleDays(String n) {
+    return 'Chu kỳ $n ngày';
+  }
+
+  @override
+  String get rotationNeedNameAndShift => 'Nhập tên và chọn ít nhất một ca';
+
+  @override
+  String get rotationDeleteTitle => 'Xoá mẫu xoay ca';
+
+  @override
+  String rotationDeleteConfirm(String name) {
+    return 'Xoá mẫu \"$name\"? Phân ca đã sinh không bị ảnh hưởng.';
+  }
+
+  @override
+  String get rotationApply => 'Áp dụng cho nhân viên';
+
+  @override
+  String rotationApplyTitle(String name) {
+    return 'Áp dụng mẫu \"$name\"';
+  }
+
+  @override
+  String get rotationStartAt => 'Ngày bắt đầu ứng với';
+
+  @override
+  String get rotationStagger => 'Mỗi người sau lệch';
+
+  @override
+  String get rotationStaggerNone => 'Không lệch';
+
+  @override
+  String rotationStaggerDays(String n) {
+    return '$n ngày';
+  }
+
+  @override
+  String rotationSelectedCount(String n) {
+    return 'Đã chọn $n người';
+  }
+
+  @override
+  String get rotationOrderHint =>
+      'Thứ tự chọn quyết định độ lệch: người chọn trước lệch ít hơn. Ngày đã có chấm công được giữ nguyên.';
+
+  @override
+  String get rotationResultTitle => 'Kết quả áp dụng mẫu';
+
+  @override
+  String rotationResultSummary(
+      String assigned, String cleared, String unchanged) {
+    return 'Đã xếp $assigned ngày, bỏ ca $cleared ngày nghỉ, giữ nguyên $unchanged ngày.';
+  }
+
+  @override
+  String rotationResultConflicts(String n) {
+    return '$n ngày không xếp được:';
+  }
+
+  @override
+  String get swapMenu => 'Đổi ca';
+
+  @override
+  String get swapCreate => 'Xin đổi / nhường ca';
+
+  @override
+  String get swapEmpty => 'Chưa có yêu cầu đổi ca';
+
+  @override
+  String get swapMyShift => 'Ca của tôi';
+
+  @override
+  String get swapNoUpcoming => 'Bạn không có ca sắp tới nào có thể đổi';
+
+  @override
+  String get swapPickColleague => 'Chọn đồng nghiệp';
+
+  @override
+  String get swapGiveOption => 'Nhường ca này cho người này';
+
+  @override
+  String swapWithShift(String shift) {
+    return 'Đổi lấy ca $shift';
+  }
+
+  @override
+  String get swapSend => 'Gửi yêu cầu';
+
+  @override
+  String get swapSent => 'Đã gửi yêu cầu, chờ quản lý duyệt';
+
+  @override
+  String swapGiveTitle(String from, String to) {
+    return '$from nhường ca cho $to';
+  }
+
+  @override
+  String swapSwapTitle(String from, String to) {
+    return '$from đổi ca với $to';
+  }
+
+  @override
+  String get swapReject => 'Từ chối';
+
+  @override
+  String get swapRejectTitle => 'Từ chối yêu cầu đổi ca';
+
+  @override
+  String get swapApproved => 'Đã duyệt, phân ca đã được đổi';
+
+  @override
+  String get swapRejected => 'Đã từ chối';
+
+  @override
+  String get swapCancelled => 'Đã huỷ yêu cầu';
+
+  @override
+  String get permUiShiftSwapApprove => 'Nút duyệt / từ chối trên màn Đổi ca';
+
+  @override
+  String get permDescShiftSwapApprove => 'Duyệt yêu cầu đổi ca / nhường ca';
 }

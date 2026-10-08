@@ -1241,4 +1241,66 @@
   ,"uiNotifGpsRequiredCheckOut": "Công ty yêu cầu GPS — nhấn để check-out ngay khi mở app"
   ,"uiNotifCheckInFailed": "Không thể check-in"
   ,"uiNotifCheckOutFailed": "Không thể check-out"
+  ,"shiftTypeFixed": "Giờ cố định"
+  ,"shiftTypeFlexible": "Linh hoạt"
+  ,"shiftFlexibleHint": "Nhân viên vào/ra lúc nào cũng được trong khung giờ bên dưới, chỉ cần làm đủ số giờ. Làm thiếu giờ được tính là đi muộn."
+  ,"shiftRequiredHoursLabel": "Số giờ phải làm"
+  ,"shiftRequiredHoursInvalid": "Nhập số giờ từ 0 đến 24"
+  ,"shiftFlexibleWindow": "Linh hoạt trong khung {window}"
+  ,"@shiftFlexibleWindow": { "placeholders": { "window": { "type": "String" } } }
+  ,"rotationTab": "Xoay ca"
+  ,"rotationIntro": "Mẫu xoay ca: chu kỳ các ngày, mỗi ngày một hoặc nhiều ca hoặc nghỉ. Áp dụng để tự sinh phân ca cho nhiều nhân viên."
+  ,"rotationAdd": "Thêm mẫu xoay"
+  ,"rotationEdit": "Sửa mẫu xoay"
+  ,"rotationEmpty": "Chưa có mẫu xoay ca"
+  ,"rotationName": "Tên mẫu"
+  ,"rotationDaysHint": "Chọn ca cho từng ngày trong chu kỳ; không chọn ca nào = ngày nghỉ."
+  ,"rotationDayN": "Ngày {n}"
+  ,"@rotationDayN": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationDayOff": "Nghỉ"
+  ,"rotationAddDay": "Thêm ngày"
+  ,"rotationCycleDays": "Chu kỳ {n} ngày"
+  ,"@rotationCycleDays": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationNeedNameAndShift": "Nhập tên và chọn ít nhất một ca"
+  ,"rotationDeleteTitle": "Xoá mẫu xoay ca"
+  ,"rotationDeleteConfirm": "Xoá mẫu \"{name}\"? Phân ca đã sinh không bị ảnh hưởng."
+  ,"@rotationDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"rotationApply": "Áp dụng cho nhân viên"
+  ,"rotationApplyTitle": "Áp dụng mẫu \"{name}\""
+  ,"@rotationApplyTitle": { "placeholders": { "name": { "type": "String" } } }
+  ,"rotationStartAt": "Ngày bắt đầu ứng với"
+  ,"rotationStagger": "Mỗi người sau lệch"
+  ,"rotationStaggerNone": "Không lệch"
+  ,"rotationStaggerDays": "{n} ngày"
+  ,"@rotationStaggerDays": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationSelectedCount": "Đã chọn {n} người"
+  ,"@rotationSelectedCount": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationOrderHint": "Thứ tự chọn quyết định độ lệch: người chọn trước lệch ít hơn. Ngày đã có chấm công được giữ nguyên."
+  ,"rotationResultTitle": "Kết quả áp dụng mẫu"
+  ,"rotationResultSummary": "Đã xếp {assigned} ngày, bỏ ca {cleared} ngày nghỉ, giữ nguyên {unchanged} ngày."
+  ,"@rotationResultSummary": { "placeholders": { "assigned": { "type": "String" }, "cleared": { "type": "String" }, "unchanged": { "type": "String" } } }
+  ,"rotationResultConflicts": "{n} ngày không xếp được:"
+  ,"@rotationResultConflicts": { "placeholders": { "n": { "type": "String" } } }
+  ,"swapMenu": "Đổi ca"
+  ,"swapCreate": "Xin đổi / nhường ca"
+  ,"swapEmpty": "Chưa có yêu cầu đổi ca"
+  ,"swapMyShift": "Ca của tôi"
+  ,"swapNoUpcoming": "Bạn không có ca sắp tới nào có thể đổi"
+  ,"swapPickColleague": "Chọn đồng nghiệp"
+  ,"swapGiveOption": "Nhường ca này cho người này"
+  ,"swapWithShift": "Đổi lấy ca {shift}"
+  ,"@swapWithShift": { "placeholders": { "shift": { "type": "String" } } }
+  ,"swapSend": "Gửi yêu cầu"
+  ,"swapSent": "Đã gửi yêu cầu, chờ quản lý duyệt"
+  ,"swapGiveTitle": "{from} nhường ca cho {to}"
+  ,"@swapGiveTitle": { "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } } }
+  ,"swapSwapTitle": "{from} đổi ca với {to}"
+  ,"@swapSwapTitle": { "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } } }
+  ,"swapReject": "Từ chối"
+  ,"swapRejectTitle": "Từ chối yêu cầu đổi ca"
+  ,"swapApproved": "Đã duyệt, phân ca đã được đổi"
+  ,"swapRejected": "Đã từ chối"
+  ,"swapCancelled": "Đã huỷ yêu cầu"
+  ,"permUiShiftSwapApprove": "Nút duyệt / từ chối trên màn Đổi ca"
+  ,"permDescShiftSwapApprove": "Duyệt yêu cầu đổi ca / nhường ca"
 }

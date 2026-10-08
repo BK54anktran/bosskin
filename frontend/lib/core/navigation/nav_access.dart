@@ -12,6 +12,7 @@ const Map<String, List<String>> routeAnyOf = {
   AppRoutes.employees: ['EMPLOYEE_VIEW'],
   AppRoutes.departments: ['DEPARTMENT_VIEW'],
   AppRoutes.shifts: ['SHIFT_VIEW', 'SHIFT_MANAGE'],
+  AppRoutes.shiftSwaps: ['ATTENDANCE_SELF', 'SHIFT_SWAP_APPROVE'],
   AppRoutes.attendance: ['ATTENDANCE_VIEW'],
   AppRoutes.checkInOut: ['ATTENDANCE_SELF'],
   AppRoutes.attendanceRequests: [

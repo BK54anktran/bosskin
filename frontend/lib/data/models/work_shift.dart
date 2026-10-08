@@ -28,8 +28,15 @@ class WorkShift {
   final String color;
   final bool active;
   final List<DeptRef> departments;
+  /// FIXED | FLEXIBLE (ca linh hoạt: chỉ cần đủ requiredMinutes trong khung giờ)
+  final String shiftType;
+  final int? requiredMinutes;
+
+  bool get isFlexible => shiftType == 'FLEXIBLE';
 
   const WorkShift({
+    this.shiftType = 'FIXED',
+    this.requiredMinutes,
     required this.id,
     required this.name,
     required this.code,
@@ -60,6 +67,8 @@ class WorkShift {
                 ?.map((e) => DeptRef.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
+        shiftType: (m['shiftType'] as String?) ?? 'FIXED',
+        requiredMinutes: m['requiredMinutes'] as int?,
       );
 
   String get timeLabel {
@@ -68,9 +77,10 @@ class WorkShift {
   }
 
   String workHoursLabel(AppLocalizations s) {
-    if (workMinutes == null) return '';
-    final h = workMinutes! ~/ 60;
-    final m = workMinutes! % 60;
+    final minutes = isFlexible && requiredMinutes != null ? requiredMinutes : workMinutes;
+    if (minutes == null) return '';
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
     return m == 0 ? '${h}h' : s.uiHoursMinutesShort('$h', '$m');
   }
 }

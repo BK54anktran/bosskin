@@ -1238,4 +1238,66 @@
   ,"uiNotifGpsRequiredCheckOut": "Your company requires GPS — tap to check out when the app opens"
   ,"uiNotifCheckInFailed": "Unable to check in"
   ,"uiNotifCheckOutFailed": "Unable to check out"
+  ,"shiftTypeFixed": "Fixed hours"
+  ,"shiftTypeFlexible": "Flexible"
+  ,"shiftFlexibleHint": "Employees may come and go any time within the window below as long as they work the required hours. Working fewer hours counts as late."
+  ,"shiftRequiredHoursLabel": "Required hours"
+  ,"shiftRequiredHoursInvalid": "Enter hours between 0 and 24"
+  ,"shiftFlexibleWindow": "Flexible within {window}"
+  ,"@shiftFlexibleWindow": { "placeholders": { "window": { "type": "String" } } }
+  ,"rotationTab": "Rotations"
+  ,"rotationIntro": "Rotation patterns: a cycle of days, each with one or more shifts or a day off. Apply one to generate assignments for many employees."
+  ,"rotationAdd": "Add rotation"
+  ,"rotationEdit": "Edit rotation"
+  ,"rotationEmpty": "No rotation patterns yet"
+  ,"rotationName": "Pattern name"
+  ,"rotationDaysHint": "Pick shifts for each day of the cycle; no shift = day off."
+  ,"rotationDayN": "Day {n}"
+  ,"@rotationDayN": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationDayOff": "Off"
+  ,"rotationAddDay": "Add day"
+  ,"rotationCycleDays": "{n}-day cycle"
+  ,"@rotationCycleDays": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationNeedNameAndShift": "Enter a name and pick at least one shift"
+  ,"rotationDeleteTitle": "Delete rotation"
+  ,"rotationDeleteConfirm": "Delete \"{name}\"? Assignments already generated are kept."
+  ,"@rotationDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"rotationApply": "Apply to employees"
+  ,"rotationApplyTitle": "Apply \"{name}\""
+  ,"@rotationApplyTitle": { "placeholders": { "name": { "type": "String" } } }
+  ,"rotationStartAt": "Start date maps to"
+  ,"rotationStagger": "Offset per next person"
+  ,"rotationStaggerNone": "No offset"
+  ,"rotationStaggerDays": "{n} day(s)"
+  ,"@rotationStaggerDays": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationSelectedCount": "{n} selected"
+  ,"@rotationSelectedCount": { "placeholders": { "n": { "type": "String" } } }
+  ,"rotationOrderHint": "Selection order sets the offset: earlier picks get smaller offsets. Days that already have attendance are kept."
+  ,"rotationResultTitle": "Rotation result"
+  ,"rotationResultSummary": "Assigned {assigned} days, cleared {cleared} days off, {unchanged} unchanged."
+  ,"@rotationResultSummary": { "placeholders": { "assigned": { "type": "String" }, "cleared": { "type": "String" }, "unchanged": { "type": "String" } } }
+  ,"rotationResultConflicts": "{n} days could not be assigned:"
+  ,"@rotationResultConflicts": { "placeholders": { "n": { "type": "String" } } }
+  ,"swapMenu": "Shift swaps"
+  ,"swapCreate": "Request swap / give away"
+  ,"swapEmpty": "No swap requests"
+  ,"swapMyShift": "My shift"
+  ,"swapNoUpcoming": "You have no upcoming shifts that can be swapped"
+  ,"swapPickColleague": "Choose a colleague"
+  ,"swapGiveOption": "Give this shift to them"
+  ,"swapWithShift": "Swap for their {shift}"
+  ,"@swapWithShift": { "placeholders": { "shift": { "type": "String" } } }
+  ,"swapSend": "Send request"
+  ,"swapSent": "Request sent, waiting for approval"
+  ,"swapGiveTitle": "{from} gives a shift to {to}"
+  ,"@swapGiveTitle": { "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } } }
+  ,"swapSwapTitle": "{from} swaps shifts with {to}"
+  ,"@swapSwapTitle": { "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } } }
+  ,"swapReject": "Reject"
+  ,"swapRejectTitle": "Reject swap request"
+  ,"swapApproved": "Approved, assignments updated"
+  ,"swapRejected": "Rejected"
+  ,"swapCancelled": "Request cancelled"
+  ,"permUiShiftSwapApprove": "Approve / reject buttons on the Shift swaps screen"
+  ,"permDescShiftSwapApprove": "Approve shift swap / give-away requests"
 }

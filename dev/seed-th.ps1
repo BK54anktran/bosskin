@@ -112,6 +112,9 @@ foreach ($s in @(
   @('CHIEU','Ca gãy - chiều','13:00','17:00',$null,$null))) {
   $shift[$s[0]] = (Call POST '/api/v1/shifts' @{ code = $s[0]; name = $s[1]; startTime = $s[2]; endTime = $s[3]; breakStart = $s[4]; breakEnd = $s[5] }).id
 }
+# ca linh hoạt: làm đủ 8 tiếng bất kỳ lúc nào trong 07:00–19:00
+$shift['LH'] = (Call POST '/api/v1/shifts' @{ code = 'LH'; name = 'Linh hoạt 8 tiếng'; startTime = '07:00'; endTime = '19:00'
+  shiftType = 'FLEXIBLE'; requiredMinutes = 480 }).id
 
 # ── 5. Bậc lương + công thức ────────────────────────────────────────────────
 Step 'Bậc lương, công thức lương'
@@ -234,6 +237,16 @@ foreach ($k in $emp.Keys) {
   Write-Host "  $($emp[$k].name): $($days.Count) ngày"
 }
 
+# ── 9b. Xoay ca tháng 11: 2 ca 1 – 2 ca 2 – 2 ca đêm – 2 nghỉ cho 2 công nhân (lệch 2 ngày) ─
+Step 'Xoay ca tháng 11'
+$rot = Call POST '/api/v1/shift-rotations' @{ name = 'Xoay 2-2-2-2 (xưởng)'
+  days = @(@($shift['CA1']), @($shift['CA1']), @($shift['CA2']), @($shift['CA2']), @($shift['DEM']), @($shift['DEM']), @(), @()) }
+$gen = Call POST "/api/v1/shift-rotations/$($rot.id)/generate" @{ employeeIds = @($emp['cn1'].id, $emp['cn2'].id)
+  from = '2026-11-01'; to = '2026-11-30'; startOffset = 0; staggerPerEmployee = 2 }
+Write-Host "  xếp $($gen.assignedDays) ngày, $(@($gen.conflicts).Count) ngày lỗi"
+# Mai làm ca linh hoạt cả tuần 02–06/11 (thay ca hành chính)
+for ($d = [datetime]'2026-11-02'; $d -le [datetime]'2026-11-06'; $d = $d.AddDays(1)) { Assign 'ktv' 'LH' $d }
+
 # ── 10. Đơn đang chờ duyệt (để thử màn duyệt) ───────────────────────────────
 Step 'Đơn chờ duyệt'
 $cn1Token = Login $emp['cn1'].email $PW
@@ -241,6 +254,13 @@ Call POST '/api/v1/attendance-requests' @{ requestDate = '2026-10-08'; requestTy
   shiftAssignmentId = $script:sa['cn1|2026-10-08']; note = 'Quên chấm công vào' } $cn1Token | Out-Null
 $cn2Token = Login $emp['cn2'].email $PW
 Call POST '/api/v1/leaves/requests' @{ leaveTypeId = $ltPN; mode = 'DAY_RANGE'; fromDate = '2026-10-15'; toDate = '2026-10-16'; reason = 'Về quê' } $cn2Token | Out-Null
+# đổi ca 02/11: Tài (ca 1) đổi với Lan (ca 2)
+$myShifts = Call GET '/api/v1/shift-swaps/my-shifts' $null $cn1Token
+$mine = @($myShifts) | Where-Object { $_.date -eq '2026-11-02' } | Select-Object -First 1
+$cols = Call GET "/api/v1/shift-swaps/colleagues?assignmentId=$($mine.assignmentId)" $null $cn1Token
+$lan = @($cols) | Where-Object { $_.employeeId -eq $emp['cn2'].id } | Select-Object -First 1
+Call POST '/api/v1/shift-swaps' @{ requesterAssignmentId = $mine.assignmentId; targetEmployeeId = $emp['cn2'].id
+  targetAssignmentId = @($lan.shifts)[0].assignmentId; reason = 'Đưa con đi khám buổi sáng' } $cn1Token | Out-Null
 
 # ── 11. Bảng lương nháp tháng 9 ─────────────────────────────────────────────
 Step 'Bảng lương tháng 9/2026 (nháp)'

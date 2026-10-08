@@ -216,6 +216,8 @@ class _AppShellState extends State<AppShell>
         _NavItem(s.attendanceRequests, Icons.note_add_outlined,
             AppRoutes.attendanceRequests,
             requiredPermission: 'ATTENDANCE_SELF'),
+        _NavItem(s.swapMenu, Icons.swap_horiz, AppRoutes.shiftSwaps,
+            requiredPermission: 'ATTENDANCE_SELF'),
         _NavItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
         _NavItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,
@@ -250,6 +252,7 @@ class _AppShellState extends State<AppShell>
     return switch (path) {
       AppRoutes.dashboard => s.dashboard,
       AppRoutes.employees => s.employees,
+      AppRoutes.shiftSwaps => s.swapMenu,
       AppRoutes.departments => s.departments,
       AppRoutes.shifts => s.shifts,
       AppRoutes.roles => s.roles,

@@ -32,6 +32,7 @@ import 'presentation/screens/payroll/payroll_tab_screen.dart';
 import 'presentation/screens/payroll/self_payroll_screen.dart';
 import 'presentation/screens/excel/excel_import_export_screen.dart';
 import 'presentation/screens/report/report_screen.dart';
+import 'presentation/screens/shift/shift_swap_screen.dart';
 import 'presentation/widgets/app_shell.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -166,6 +167,10 @@ final _router = GoRouter(
         GoRoute(
           path: AppRoutes.shifts,
           pageBuilder: (_, __) => const NoTransitionPage(child: ShiftScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.shiftSwaps,
+          pageBuilder: (_, __) => const NoTransitionPage(child: ShiftSwapScreen()),
         ),
         GoRoute(
           path: AppRoutes.roles,

@@ -21,8 +21,9 @@
 ## Chạy & quản lý server dev (khi chủ dự án yêu cầu)
 - Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`,
   `dev\reset-db.cmd` (xoá sạch DB dev, migrate lại, tạo system admin từ `BOOTSTRAP_SYSADMIN_*` trong `backend/.env`),
-  `dev\seed-th.cmd` (công ty mẫu "TH company": 4 phòng ban, 8 NV có tài khoản, 4 vai trò, 6 ca gồm ca đêm và ca gãy,
-  phân ca 9–10/2026, 4 loại phép, công đã duyệt 01/09–07/10, đơn chờ duyệt, bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
+  `dev\seed-th.cmd` (công ty mẫu "TH company": 4 phòng ban, 8 NV có tài khoản, 4 vai trò, 7 ca gồm ca đêm, ca gãy và
+  ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân, 4 loại phép, công đã duyệt
+  01/09–07/10, đơn chờ duyệt (sửa giờ, nghỉ phép, đổi ca), bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
 - Cách chạy: Claude chỉ được click (không gõ) trong File Explorer → mở `D:\bosskin\dev` và double-click file `.cmd`.
   Kiểm tra trang bằng built-in browser (`http://localhost:3000`).
@@ -312,8 +313,15 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V4** (`V4__payroll_audit.sql`) — V1 là baseline gộp V1–V117 cũ
-→ Migration tiếp theo phải là **V5**
+Cao nhất: **V5** (`V5__flexible_rotation_swap.sql`) — V1 là baseline gộp V1–V117 cũ
+→ Migration tiếp theo phải là **V6**
+
+## Ca làm (Mốc 2b)
+- `WorkShift.shiftType`: `FIXED` | `FLEXIBLE` (linh hoạt: `requiredMinutes` trong khung `startTime–endTime`, thiếu giờ = LATE).
+  Loại ca và số phút được snapshot vào `shift_assignments` như giờ ca.
+- Tối đa `WorkShiftService.MAX_SHIFTS_PER_DAY` = 4 ca/ngày; kiểm tra chồng giờ dùng `validatePlacement`.
+- Mẫu xoay ca `shift_rotations` (`/api/v1/shift-rotations`, sinh phân ca `/{id}/generate`), đổi/nhường ca
+  `shift_swap_requests` (`/api/v1/shift-swaps`, quyền duyệt `SHIFT_SWAP_APPROVE`). Màn FE: tab "Xoay ca" ở Ca làm, màn "Đổi ca".
 
 ## Màn hình Flutter
 | Screen | Path |

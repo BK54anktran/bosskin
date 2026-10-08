@@ -95,6 +95,22 @@ const _viMessages = <String, String>{
   'error.user.employee_not_linked': 'Tài khoản chưa gắn với nhân viên',
   'error.user.not_found': 'Không tìm thấy tài khoản',
   'error.variable.name_required': 'Thiếu tên biến',
+  'error.shift.flexible_required_minutes': 'Ca linh hoạt cần có khung giờ và số giờ phải làm',
+  'error.shift.flexible_window_too_short': 'Khung giờ ngắn hơn số giờ phải làm',
+  'error.shift.too_many_per_day': 'Tối đa 4 ca mỗi ngày',
+  'error.rotation.not_found': 'Không tìm thấy mẫu xoay ca',
+  'error.rotation.empty': 'Mẫu xoay ca cần ít nhất một ca',
+  'error.rotation.shift_invalid': 'Mẫu có ca không tồn tại hoặc đã xoá',
+  'error.rotation.range_invalid': 'Khoảng ngày không hợp lệ (tối đa 93 ngày)',
+  'error.swap.not_your_shift': 'Đây không phải ca của bạn',
+  'error.swap.same_employee': 'Không thể đổi ca với chính mình',
+  'error.swap.target_shift_mismatch': 'Ca được chọn không thuộc người nhận',
+  'error.swap.already_pending': 'Ca này đang có yêu cầu đổi chờ duyệt',
+  'error.swap.self_approve': 'Không được duyệt yêu cầu đổi ca có liên quan đến mình',
+  'error.swap.shift_changed': 'Phân ca đã thay đổi sau khi gửi yêu cầu',
+  'error.swap.not_found': 'Không tìm thấy yêu cầu đổi ca',
+  'error.swap.not_pending': 'Yêu cầu đã được xử lý',
+  'error.swap.past_shift': 'Không đổi được ca đã qua',
 };
 
 const _enMessages = <String, String>{
@@ -190,6 +206,22 @@ const _enMessages = <String, String>{
   'error.user.employee_not_linked': 'This account is not linked to an employee',
   'error.user.not_found': 'User not found',
   'error.variable.name_required': 'Variable name is required',
+  'error.shift.flexible_required_minutes': 'A flexible shift needs a time window and required hours',
+  'error.shift.flexible_window_too_short': 'The window is shorter than the required hours',
+  'error.shift.too_many_per_day': 'At most 4 shifts per day',
+  'error.rotation.not_found': 'Rotation pattern not found',
+  'error.rotation.empty': 'A rotation needs at least one shift',
+  'error.rotation.shift_invalid': 'The pattern contains a missing or deleted shift',
+  'error.rotation.range_invalid': 'Invalid date range (max 93 days)',
+  'error.swap.not_your_shift': 'This is not your shift',
+  'error.swap.same_employee': 'You cannot swap with yourself',
+  'error.swap.target_shift_mismatch': 'The chosen shift does not belong to that colleague',
+  'error.swap.already_pending': 'This shift already has a pending swap request',
+  'error.swap.self_approve': 'You cannot approve a swap that involves you',
+  'error.swap.shift_changed': 'The assignment changed after the request was sent',
+  'error.swap.not_found': 'Swap request not found',
+  'error.swap.not_pending': 'The request has already been processed',
+  'error.swap.past_shift': 'Past shifts cannot be swapped',
 };
 
 /// Tra bản dịch; key dạng "error.x.y.<chi tiết>" thử lại với phần đầu "error.x.y".
@@ -204,6 +236,9 @@ String? _translateKey(String key, bool en) {
     k = k.substring(0, dot);
   }
 }
+
+/// Dịch một mã lỗi backend đơn lẻ (vd. lý do trong danh sách xung đột); không có bản dịch thì trả nguyên.
+String serverKeyMsg(String key) => _translateKey(key, LanguageService.instance.isEnglish) ?? key;
 
 String serverMsg(dynamic e) {
   final en = LanguageService.instance.isEnglish;

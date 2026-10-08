@@ -20,6 +20,7 @@ import '../../widgets/import_preview_dialog.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
 import 'shift_assign_tab.dart';
+import 'shift_rotation_tab.dart';
 import 'shift_form_dialog.dart';
 
 class ShiftScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _ShiftScreenState extends State<ShiftScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this, animationDuration: Duration.zero);
+    _tab = TabController(length: 3, vsync: this, animationDuration: Duration.zero);
     _loadShifts();
     _loadDepartments();
   }
@@ -297,6 +298,7 @@ class _ShiftScreenState extends State<ShiftScreen>
                 tabs: [
                   Tab(text: s.shiftAssignmentsTab),
                   Tab(text: s.shiftListTab),
+                  Tab(text: s.rotationTab),
                 ],
                 onTap: (_) => setState(() {}),
               ),
@@ -345,6 +347,7 @@ class _ShiftScreenState extends State<ShiftScreen>
             ],
           ]),
         ),
+        if (_tab.index != 2)
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
           child: Row(
@@ -391,6 +394,11 @@ class _ShiftScreenState extends State<ShiftScreen>
                 onEdit: _openForm,
                 onDelete: _deleteShift,
                 onRetry: _loadShifts,
+              ),
+              ShiftRotationTab(
+                shifts: _shifts,
+                canManage: canManage,
+                onGenerated: _assignTabKey.reload,
               ),
             ],
           ),
@@ -571,7 +579,9 @@ class _ShiftCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              shift.timeLabel,
+              shift.isFlexible
+                  ? s.shiftFlexibleWindow(shift.timeLabel)
+                  : shift.timeLabel,
               style:
                   const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
             ),
