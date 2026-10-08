@@ -31,6 +31,8 @@ spring:
     locations: classpath:db/migration
     # V1 là baseline gộp trước go-live: chỉ chạy trên DB trống, DB cũ (V1–V117) phải tạo lại
     baseline-on-migrate: false
+    # Chỉ dev\reset-db.cmd mới mở (SPRING_FLYWAY_CLEAN_DISABLED=false); prod luôn cấm clean
+    clean-disabled: ${SPRING_FLYWAY_CLEAN_DISABLED:true}
     validate-on-migrate: true
 
   servlet:

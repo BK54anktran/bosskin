@@ -19,7 +19,10 @@
    tiếp tục đúng giờ reset (được tạo phiên mới nếu cần).
 
 ## Chạy & quản lý server dev (khi chủ dự án yêu cầu)
-- Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`.
+- Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`,
+  `dev\reset-db.cmd` (xoá sạch DB dev, migrate lại, tạo system admin từ `BOOTSTRAP_SYSADMIN_*` trong `backend/.env`).
+- Cách chạy: Claude chỉ được click (không gõ) trong File Explorer → mở `D:\bosskin\dev` và double-click file `.cmd`.
+  Kiểm tra trang bằng built-in browser (`http://localhost:3000`).
   Backend cổng 8080 (đọc `backend/.env`, cần MySQL localhost:3306), frontend web debug cổng 3000.
 - Claude khởi động bằng cách chạy `dev\start.cmd` trên máy Windows của chủ dự án (điều khiển máy tính),
   theo dõi qua `dev/logs/*.log` (đọc được từ thư mục repo), báo URL khi sẵn sàng, tự xử lý lỗi khởi động

@@ -30,6 +30,7 @@ dev\start.cmd              :: backend (8080) + frontend (3000), chạy nền
 dev\start.cmd backend      :: chỉ backend
 dev\status.cmd             :: trạng thái + log cuối
 dev\stop.cmd               :: dừng tất cả   (dev\stop.cmd -Force: dừng cả tiến trình lạ chiếm cổng)
+dev\reset-db.cmd           :: XOÁ SẠCH DB dev, chạy lại migration, tạo system admin (BOOTSTRAP_SYSADMIN_* trong .env)
 ```
 
 - Backend: `mvn spring-boot:run` trong `backend\` (dùng `mvnw.cmd` nếu chưa có `mvn`), đọc `backend\.env`.
@@ -37,6 +38,7 @@ dev\stop.cmd               :: dừng tất cả   (dev\stop.cmd -Force: dừng c
 - Frontend: `flutter run -d web-server` cổng 3000, bản debug, `API_HOST=http://localhost:8080`.
   Không có flutter trên Windows thì tự chạy qua WSL2. Log: `dev\logs\frontend.log`.
 - Mở `http://localhost:3000/login` (công ty) hoặc `http://localhost:3000/admin/login` (system admin).
+- DB tạo trước khi gộp baseline (10/2026) báo `Migration checksum mismatch` → chạy `dev\reset-db.cmd` một lần.
 
 ---
 
