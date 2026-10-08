@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/department_model.dart';
 import '../../data/repositories/universal_excel_repository.dart';
 import 'department_picker_field.dart';
+import '../../l10n/app_localizations.dart';
 
 final _excelRepo = UniversalExcelRepository();
 
@@ -90,6 +91,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SizedBox(
@@ -102,8 +104,8 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
             child: Row(children: [
               const Icon(Icons.tune_outlined, color: AppTheme.primary),
               const SizedBox(width: 10),
-              const Text('Tùy chọn xuất',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(s.reportExportOptions,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.close, size: 20),
@@ -118,7 +120,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
             labelColor: AppTheme.primary,
             unselectedLabelColor: AppTheme.textSecondary,
             indicatorColor: AppTheme.primary,
-            tabs: _types.map((t) => Tab(text: _typeLabel(t))).toList(),
+            tabs: _types.map((t) => Tab(text: _typeLabel(s, t))).toList(),
           ),
           const Divider(height: 1),
           // ── Tab content ─────────────────────────────────────────────────────
@@ -168,7 +170,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
                   spacing: 4,
                   runSpacing: 2,
                   children: _types.map((t) => Text(
-                    '${_selectedColumns[t]!.length} cột ${_typeLabel(t)}  ·',
+                    '${s.xlColumnsOfType('${_selectedColumns[t]!.length}', _typeLabel(s, t))}  ·',
                     style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                   )).toList(),
                 ),
@@ -176,13 +178,13 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
               const SizedBox(width: 12),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Hủy'),
+                child: Text(s.cancel),
               ),
               const SizedBox(width: 8),
               FilledButton.icon(
                 onPressed: _confirm,
                 icon: const Icon(Icons.file_download_outlined, size: 16),
-                label: const Text('Xuất'),
+                label: Text(s.excelHistoryTypeExport),
               ),
             ]),
           ),
@@ -191,17 +193,17 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
     );
   }
 
-  static String _typeLabel(String type) => switch (type) {
-        'employee'          => 'Nhân viên',
-        'department'        => 'Phòng ban',
-        'position'          => 'Chức vụ',
-        'shift'             => 'Ca làm việc',
-        'shift_assignment'  => 'Phân công ca',
-        'attendance'        => 'Chấm công',
-        'payroll'           => 'Bảng lương',
-        'salary_grade'      => 'Bậc lương',
-        'salary_formula'    => 'Công thức lương',
-        'formula_variable'  => 'Biến công thức',
+  static String _typeLabel(AppLocalizations s, String type) => switch (type) {
+        'employee'          => s.excelModuleEmployee,
+        'department'        => s.excelModuleDepartment,
+        'position'          => s.excelModulePosition,
+        'shift'             => s.excelModuleShift,
+        'shift_assignment'  => s.excelModuleShiftAssignment,
+        'attendance'        => s.excelModuleAttendance,
+        'payroll'           => s.excelModulePayroll,
+        'salary_grade'      => s.excelModuleSalaryGrade,
+        'salary_formula'    => s.excelModuleSalaryFormula,
+        'formula_variable'  => s.excelModuleFormulaVariable,
         _                   => type,
       };
 }
@@ -237,6 +239,7 @@ class _ModuleOptionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     return Row(children: [
       // ── Column selection (left 60%) ────────────────────────────────────────
       Expanded(
@@ -245,14 +248,14 @@ class _ModuleOptionsTab extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
             child: Row(children: [
-              const Text('Chọn cột xuất',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              Text(s.xlSelectExportColumns,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(width: 8),
               Text('(${selectedColumns.length}/${meta.columns.length})',
                   style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
               const Spacer(),
-              TextButton(onPressed: onSelectDefault, child: const Text('Mặc định', style: TextStyle(fontSize: 11))),
-              TextButton(onPressed: onSelectAll, child: const Text('Tất cả', style: TextStyle(fontSize: 11))),
+              TextButton(onPressed: onSelectDefault, child: Text(s.defaultLabel, style: const TextStyle(fontSize: 11))),
+              TextButton(onPressed: onSelectAll, child: Text(s.all, style: const TextStyle(fontSize: 11))),
             ]),
           ),
           const Divider(height: 1),
@@ -261,10 +264,10 @@ class _ModuleOptionsTab extends StatelessWidget {
             selected: selectedColumns,
             onToggle: onColumnToggle,
           )),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(12, 4, 12, 6),
-            child: Text('(*) Bắt buộc để import lại được',
-                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+            child: Text(s.xlRequiredForReimport,
+                style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
           ),
         ]),
       ),
@@ -273,14 +276,14 @@ class _ModuleOptionsTab extends StatelessWidget {
       Expanded(
         flex: 4,
         child: meta.filters.isEmpty
-            ? const Center(
-                child: Text('Không có bộ lọc',
-                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)))
+            ? Center(
+                child: Text(s.xlNoFilters,
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)))
             : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 10, 16, 8),
-                  child: Text('Bộ lọc',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                  child: Text(s.xlFilters,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 ),
                 const Divider(height: 1),
                 Expanded(
@@ -326,6 +329,7 @@ class _ColumnList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final grouped = <String?, List<ExcelColumnMeta>>{};
     for (final col in columns) {
       grouped.putIfAbsent(col.group, () => []).add(col);
@@ -336,7 +340,7 @@ class _ColumnList extends StatelessWidget {
       if (group != null) {
         widgets.add(Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 2),
-          child: Text(_groupLabel(group),
+          child: Text(_groupLabel(s, group),
               style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -363,9 +367,9 @@ class _ColumnList extends StatelessWidget {
                 child: Text(col.label, style: const TextStyle(fontSize: 12)),
               ),
               if (!col.importable)
-                const Tooltip(
-                  message: 'Chỉ export, không import',
-                  child: Icon(Icons.visibility_outlined, size: 12, color: AppTheme.textSecondary),
+                Tooltip(
+                  message: s.xlExportOnlyTooltip,
+                  child: const Icon(Icons.visibility_outlined, size: 12, color: AppTheme.textSecondary),
                 ),
             ]),
           ),
@@ -376,16 +380,16 @@ class _ColumnList extends StatelessWidget {
     return ListView(padding: EdgeInsets.zero, children: widgets);
   }
 
-  static String _groupLabel(String group) => switch (group) {
-        'basic'          => 'Thông tin cơ bản',
-        'contract'       => 'Hợp đồng & Lương',
-        'personal'       => 'Thông tin cá nhân',
-        'computed'       => 'Dữ liệu tổng hợp',
-        'override'       => 'Ghi đè thủ công',
-        'identification' => 'Định danh',
-        'earnings'       => 'Thu nhập',
-        'deductions'     => 'Khấu trừ & Net',
-        'period'         => 'Kỳ lương & Giờ công',
+  static String _groupLabel(AppLocalizations s, String group) => switch (group) {
+        'basic'          => s.basicInfo,
+        'contract'       => s.xlGroupContractSalary,
+        'personal'       => s.personalInfo,
+        'computed'       => s.xlGroupComputed,
+        'override'       => s.xlGroupOverride,
+        'identification' => s.xlGroupIdentification,
+        'earnings'       => s.incomeSection,
+        'deductions'     => s.xlGroupDeductions,
+        'period'         => s.xlGroupPeriodHours,
         _                => group,
       };
 }
@@ -405,6 +409,7 @@ class _DeptFilterField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final flat = departments.map((d) => DepartmentFlat(
       id: d.id,
       name: d.name,
@@ -415,8 +420,8 @@ class _DeptFilterField extends StatelessWidget {
     )).toList();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('Phòng ban',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+      Text(s.excelFilterDepartment,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
       const SizedBox(height: 4),
       DepartmentMultiPickerField(
         departments: flat,
@@ -447,44 +452,46 @@ class _FilterField extends StatelessWidget {
     this.valueTo,
   });
 
-  String _label() => _knownLabels[filter.labelKey] ?? filter.labelKey;
+  String _label(AppLocalizations s) => _knownLabel(s, filter.labelKey) ?? filter.labelKey;
 
-  static const _knownLabels = {
-    'filter.search':               'Tìm kiếm',
-    'filter.department':           'Phòng ban',
-    'filter.department.parent':    'Phòng ban cha',
-    'filter.status':               'Trạng thái',
-    'filter.salaryGrade':          'Bậc lương',
-    'filter.joinDate':             'Ngày vào làm',
-    'filter.year':                 'Năm',
-    'filter.month':                'Tháng',
-    'filter.shift.group':          'Nhóm ca',
-    'filter.status.all':           'Tất cả',
-    'filter.status.active':        'Đang làm',
-    'filter.status.inactive':      'Đã nghỉ',
-    'filter.attendance.present':   'Có mặt',
-    'filter.attendance.absent':    'Vắng mặt',
-    'filter.attendance.late':      'Đi trễ',
-    'filter.attendance.halfDay':   'Nửa ngày',
-    'filter.attendance.leave':     'Nghỉ phép',
-    'filter.payroll.draft':        'Nháp',
-    'filter.payroll.approved':     'Đã duyệt',
-    'filter.payroll.paid':         'Đã trả',
-    'filter.grade':                'Bậc lương',
-    'filter.grade.payType':        'Loại tính lương',
-    'filter.grade.payType.daily':  'Theo ngày',
-    'filter.grade.payType.hourly': 'Theo giờ',
-    'filter.variable.category':    'Nhóm biến',
+  static String? _knownLabel(AppLocalizations s, String key) => switch (key) {
+    'filter.search'               => s.search,
+    'filter.department'           => s.excelFilterDepartment,
+    'filter.department.parent'    => s.parentDepartment,
+    'filter.status'               => s.excelFilterStatus,
+    'filter.salaryGrade'          => s.salaryGrade,
+    'filter.joinDate'             => s.joinDate,
+    'filter.year'                 => s.excelFilterYear,
+    'filter.month'                => s.excelFilterMonth,
+    'filter.shift.group'          => s.shiftGroup,
+    'filter.status.all'           => s.excelFilterAll,
+    'filter.status.active'        => s.employeeStatusActive,
+    'filter.status.inactive'      => s.xlFilterStatusInactive,
+    'filter.attendance.present'   => s.present,
+    'filter.attendance.absent'    => s.absent,
+    'filter.attendance.late'      => s.late,
+    'filter.attendance.halfDay'   => s.xlFilterHalfDay,
+    'filter.attendance.leave'     => s.leave,
+    'filter.payroll.draft'        => s.payrollStatusDraft,
+    'filter.payroll.approved'     => s.payrollStatusApproved,
+    'filter.payroll.paid'         => s.payrollStatusPaid,
+    'filter.grade'                => s.salaryGrade,
+    'filter.grade.payType'        => s.xlFilterPayType,
+    'filter.grade.payType.daily'  => s.byDay,
+    'filter.grade.payType.hourly' => s.leaveByHour,
+    'filter.variable.category'    => s.xlFilterVariableCategory,
+    _                             => null,
   };
 
-  static String _optLabel(FilterOption opt) =>
-      _knownLabels[opt.labelKey] ?? opt.labelKey;
+  static String _optLabel(AppLocalizations s, FilterOption opt) =>
+      _knownLabel(s, opt.labelKey) ?? opt.labelKey;
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       if (filter.type != 'TEXT') ...[
-        Text(_label(),
+        Text(_label(s),
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
       ],
@@ -506,11 +513,11 @@ class _FilterField extends StatelessWidget {
             isDense: true,
           ),
           items: [
-            const DropdownMenuItem(value: null, child: Text('— Tất cả —',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
+            DropdownMenuItem(value: null, child: Text('— ${s.all} —',
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
             ...filter.options.map((o) => DropdownMenuItem(
               value: o.value,
-              child: Text(_optLabel(o), style: const TextStyle(fontSize: 12)),
+              child: Text(_optLabel(s, o), style: const TextStyle(fontSize: 12)),
             )),
           ],
           onChanged: (v) => onChange(filter.key, v),
@@ -518,13 +525,13 @@ class _FilterField extends StatelessWidget {
       else if (filter.type == 'DATE_RANGE')
         Row(children: [
           Expanded(child: _DateInput(
-            hint: 'Từ ngày',
+            hint: s.fromDate,
             value: valueFrom,
             onChange: (v) => onChange('${filter.key}From', v),
           )),
           const SizedBox(width: 6),
           Expanded(child: _DateInput(
-            hint: 'Đến ngày',
+            hint: s.toDate,
             value: valueTo,
             onChange: (v) => onChange('${filter.key}To', v),
           )),
@@ -620,6 +627,7 @@ class _MultiPickFieldState extends State<_MultiPickField> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // ── Chips ──
       if (_selected.isNotEmpty)
@@ -646,7 +654,7 @@ class _MultiPickFieldState extends State<_MultiPickField> {
         controller: _ctrl,
         focusNode: _focus,
         decoration: InputDecoration(
-          hintText: 'Tìm tên hoặc mã...',
+          hintText: s.xlSearchNameOrCode,
           hintStyle: const TextStyle(fontSize: 11),
           border: const OutlineInputBorder(),
           contentPadding: EdgeInsets.zero,

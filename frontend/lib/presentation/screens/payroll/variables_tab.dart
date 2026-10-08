@@ -144,12 +144,12 @@ class _VariablesTabState extends State<VariablesTab> {
       await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Không thể xoá'),
+          title: Text(s.varCannotDelete),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Biến "${v.name}" đang được dùng trong ${usages.length} công thức:'),
+              Text(s.payVarUsedInFormulas(v.name, '${usages.length}')),
               const SizedBox(height: 8),
               ...usages.map((u) => Padding(
                 padding: const EdgeInsets.only(left: 8, bottom: 2),
@@ -162,12 +162,12 @@ class _VariablesTabState extends State<VariablesTab> {
                 ),
               )),
               const SizedBox(height: 8),
-              const Text('Vui lòng xoá biến này khỏi các công thức trước.',
-                  style: TextStyle(fontSize: 13, color: AppTheme.error)),
+              Text(s.varFixFormulasFirst,
+                  style: const TextStyle(fontSize: 13, color: AppTheme.error)),
             ],
           ),
           actions: [
-            FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đã hiểu')),
+            FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(s.payUnderstood)),
           ],
         ),
       );
@@ -177,7 +177,7 @@ class _VariablesTabState extends State<VariablesTab> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: Text('Xoá biến "${v.name}"?'),
+        content: Text(s.payVarDeleteConfirm(v.name)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
           FilledButton(
@@ -222,12 +222,12 @@ class _VariablesTabState extends State<VariablesTab> {
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 600;
             final searchField = TextField(
-              decoration: const InputDecoration(
-                hintText: 'Tìm tên, mô tả, biểu thức...',
-                prefixIcon: Icon(Icons.search, size: 18),
+              decoration: InputDecoration(
+                hintText: s.payVarSearchHint,
+                prefixIcon: const Icon(Icons.search, size: 18),
                 isDense: true,
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               ),
               onChanged: (v) => setState(() { _search = v; _page = 0; }),
             );
@@ -236,13 +236,13 @@ class _VariablesTabState extends State<VariablesTab> {
                 : DropdownButtonFormField<String?>(
                     initialValue: _categoryFilter,
                     isDense: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Nhóm',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: InputDecoration(
+                      labelText: s.payVarGroup,
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Tất cả')),
+                      DropdownMenuItem(value: null, child: Text(s.all)),
                       ..._categories.map((c) => DropdownMenuItem(value: c, child: Text(c))),
                     ],
                     onChanged: (v) => setState(() { _categoryFilter = v; _page = 0; }),
@@ -251,7 +251,7 @@ class _VariablesTabState extends State<VariablesTab> {
                 ? FilledButton.icon(
                     onPressed: _openAdd,
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Thêm biến Global'),
+                    label: Text(s.varAddGlobal),
                   )
                 : null;
 
@@ -319,20 +319,20 @@ class _VariablesTabState extends State<VariablesTab> {
                               Container(
                                 color: AppTheme.border.withValues(alpha: 0.3),
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                child: const Row(
+                                child: Row(
                                   children: [
-                                    Expanded(flex: 2, child: Text('Tên biến',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-                                    Expanded(flex: 3, child: Text('Mô tả',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-                                    Expanded(flex: 3, child: Text('Biểu thức',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-                                    Expanded(flex: 2, child: Text('Nhóm',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-                                    Expanded(flex: 2, child: Text('Scope',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-                                    SizedBox(width: 96, child: Text('Actions',
-                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+                                    Expanded(flex: 2, child: Text(s.varColName,
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+                                    Expanded(flex: 3, child: Text(s.varColDesc,
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+                                    Expanded(flex: 3, child: Text(s.varColExpr,
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+                                    Expanded(flex: 2, child: Text(s.payVarGroup,
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+                                    Expanded(flex: 2, child: Text(s.varColScope,
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+                                    SizedBox(width: 96, child: Text(s.varColActions,
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
                                   ],
                                 ),
                               ),
@@ -392,7 +392,7 @@ class _VariablesTabState extends State<VariablesTab> {
                                                           mainAxisSize: MainAxisSize.min,
                                                           children: [
                                                             Tooltip(
-                                                              message: v.showInFormula ? 'Ẩn khỏi công thức' : 'Hiện trong công thức',
+                                                              message: v.showInFormula ? s.payHideFromFormula : s.payShowInFormula,
                                                               child: IconButton(
                                                                 icon: Icon(
                                                                   v.showInFormula ? Icons.visibility : Icons.visibility_off_outlined,
@@ -405,7 +405,7 @@ class _VariablesTabState extends State<VariablesTab> {
                                                               ),
                                                             ),
                                                             Tooltip(
-                                                              message: 'Sửa',
+                                                              message: s.edit,
                                                               child: IconButton(
                                                                 icon: const Icon(Icons.edit_outlined, size: 16),
                                                                 color: AppTheme.textSecondary,
@@ -415,7 +415,7 @@ class _VariablesTabState extends State<VariablesTab> {
                                                               ),
                                                             ),
                                                             Tooltip(
-                                                              message: 'Xoá',
+                                                              message: s.delete,
                                                               child: IconButton(
                                                                 icon: const Icon(Icons.delete_outline, size: 16),
                                                                 color: AppTheme.error,

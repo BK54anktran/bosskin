@@ -107,7 +107,7 @@ class _SalaryFormulaTabState extends State<SalaryFormulaTab> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: Text('Xoá công thức lương "${f.salaryGradeCode} — ${f.salaryGradeName}"?'),
+        content: Text(s.payFormulaDeleteConfirm('${f.salaryGradeCode} — ${f.salaryGradeName}')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
           FilledButton(
@@ -220,6 +220,7 @@ class _FormulaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final f = formula;
     return Card(
       margin: EdgeInsets.zero,
@@ -239,7 +240,7 @@ class _FormulaCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                       ),
                       Text(
-                        '${f.salaryGradeCode} — ${f.salaryGradeName}  ·  ${f.departmentName ?? 'Toàn công ty'}',
+                        '${f.salaryGradeCode} — ${f.salaryGradeName}  ·  ${f.departmentName ?? s.scopeCompanyLabel}',
                         style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                       ),
                     ],
@@ -252,7 +253,7 @@ class _FormulaCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Từ ${_dateFmt.format(f.effectiveDate)}',
+                    s.payFromDate(_dateFmt.format(f.effectiveDate)),
                     style: const TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -261,7 +262,7 @@ class _FormulaCard extends StatelessWidget {
                     onPressed: onDuplicate,
                     icon: const Icon(Icons.copy_outlined, size: 20),
                     color: AppTheme.textSecondary,
-                    tooltip: 'Nhân bản',
+                    tooltip: s.payDuplicate,
                   ),
                   IconButton(onPressed: onEdit, icon: const Icon(Icons.edit_outlined, size: 20), color: AppTheme.textSecondary),
                   IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline, size: 20), color: AppTheme.error),
@@ -441,8 +442,9 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
   List<Widget> _systemVarChipWidgets(void Function(String) onInsert) {
     if (_systemVars.isEmpty) return [];
     final grouped = <String, List<AllVariable>>{};
+    final other = AppLocalizations.of(context).payVarCategoryOther;
     for (final v in _systemVars) {
-      grouped.putIfAbsent(v.category ?? 'Khác', () => []).add(v);
+      grouped.putIfAbsent(v.category ?? other, () => []).add(v);
     }
     return grouped.entries.map((entry) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,16 +541,17 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
   }
 
   Future<void> _save() async {
+    final s = AppLocalizations.of(context);
     if (_nameCtrl.text.trim().isEmpty) {
-      setState(() => _error = 'Vui lòng nhập tên công thức');
+      setState(() => _error = s.payFormulaNameRequired);
       return;
     }
     if (_selectedGrade == null && widget.existing == null) {
-      setState(() => _error = 'Vui lòng chọn bậc lương');
+      setState(() => _error = s.payGradeRequired);
       return;
     }
     if (_grossCtrl.text.trim().isEmpty || _netCtrl.text.trim().isEmpty) {
-      setState(() => _error = 'Vui lòng nhập đầy đủ công thức');
+      setState(() => _error = s.payFormulaIncomplete);
       return;
     }
     if (!_validated) { await _validate(); if (!_validated) return; }
@@ -626,19 +629,19 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
             children: [
               Text(
                 widget.onSave != null
-                    ? 'Chỉnh sửa công thức lương'
+                    ? s.payFormulaCustomizeTitle
                     : isEdit
-                        ? 'Sửa công thức lương'
+                        ? s.payFormulaEditTitle
                         : widget.duplicateFrom != null
-                            ? 'Nhân bản công thức lương'
-                            : 'Thêm công thức lương',
+                            ? s.payFormulaDuplicateTitle
+                            : s.payFormulaAddTitle,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               if (widget.onSave != null) ...[
                 const SizedBox(height: 4),
-                const Text(
-                  'Thay đổi chỉ áp dụng cho bảng lương này. Công thức gốc không bị ảnh hưởng.',
-                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                Text(
+                  s.payFormulaInlineNote,
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                 ),
               ],
               const SizedBox(height: 16),
@@ -657,10 +660,10 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                       // Formula name
                       TextField(
                         controller: _nameCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Tên công thức',
-                          hintText: 'VD: Lương tháng — ca ngày',
-                          hintStyle: TextStyle(fontSize: 12),
+                        decoration: InputDecoration(
+                          labelText: s.payFormulaNameLabel,
+                          hintText: s.payFormulaNameHint,
+                          hintStyle: const TextStyle(fontSize: 12),
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
@@ -675,7 +678,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                           items: widget.grades.map((g) => DropdownMenuItem(
                             value: g,
                             child: Text(
-                              '${g.code} — ${g.name}  ·  ${g.departmentName ?? "Toàn công ty"}',
+                              '${g.code} — ${g.name}  ·  ${g.departmentName ?? s.scopeCompanyLabel}',
                               overflow: TextOverflow.ellipsis,
                             ),
                           )).toList(),
@@ -691,7 +694,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                           ),
                           child: Text(
                             widget.existing != null
-                                ? '${widget.existing!.salaryGradeCode} — ${widget.existing!.salaryGradeName}  ·  ${widget.existing!.departmentName ?? "Toàn công ty"}'
+                                ? '${widget.existing!.salaryGradeCode} — ${widget.existing!.salaryGradeName}  ·  ${widget.existing!.departmentName ?? s.scopeCompanyLabel}'
                                 : '',
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                           ),
@@ -725,16 +728,16 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${s.formulaVariables} — nhấn chip để chèn vào công thức đang focus',
+                              s.payFormulaVarsChipHint(s.formulaVariables),
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                             ),
                             const SizedBox(height: 8),
-                            ...buildSystemVarChips(_systemVars, _insertVar),
+                            ...buildSystemVarChips(s, _systemVars, _insertVar),
                             // ── Biến Global (company-wide) ──────────────────
                             Row(
                               children: [
-                                const Text('Biến Global (toàn công ty)',
-                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                                Text(s.varGlobalSection,
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () => _openCustomVarDialog(),
@@ -746,18 +749,19 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             Builder(builder: (_) {
                               final visibleGlobals = _globalVars.where((v) => v.showInFormula).toList();
                               if (visibleGlobals.isEmpty) {
-                                return const Text('Chưa có biến global',
-                                    style: TextStyle(fontSize: 11, color: AppTheme.textSecondary,
+                                return Text(s.varNoGlobal,
+                                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary,
                                         fontStyle: FontStyle.italic));
                               }
                               // Nhóm theo category
+                              final other = s.payVarCategoryOther;
                               final Map<String, List<FormulaVariable>> grouped = {};
                               for (final v in visibleGlobals) {
-                                final key = (v.category?.isNotEmpty ?? false) ? v.category! : 'Khác';
+                                final key = (v.category?.isNotEmpty ?? false) ? v.category! : other;
                                 grouped.putIfAbsent(key, () => []).add(v);
                               }
                               final sortedKeys = grouped.keys.toList()
-                                ..sort((a, b) => a == 'Khác' ? 1 : b == 'Khác' ? -1 : a.compareTo(b));
+                                ..sort((a, b) => a == other ? 1 : b == other ? -1 : a.compareTo(b));
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -784,8 +788,8 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             // ── Biến Private (chỉ trong công thức này) ──────
                             Row(
                               children: [
-                                const Text('Biến Private (công thức này)',
-                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                                Text(s.varPrivateSection,
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () => _openPrivateVarDialog(),
@@ -802,8 +806,8 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                               ),
                             const SizedBox(height: 4),
                             if (_privateVars.isEmpty)
-                              const Text('Chưa có biến private',
-                                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary,
+                              Text(s.varNoPrivate,
+                                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary,
                                       fontStyle: FontStyle.italic))
                             else
                               Wrap(
@@ -824,11 +828,11 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             _varGroupSection(
                               icon: Icons.add_circle_outline,
                               color: AppTheme.secondary,
-                              title: 'Thu nhập',
-                              subtitle: 'Dùng tên biến trong công thức Gross để cộng, hiển thị riêng trên phiếu lương',
+                              title: s.incomeSection,
+                              subtitle: s.payGrossVarsHint,
                               vars: _incomeVars,
-                              onAdd: () => _openVarGroupDialog(_incomeVars, 'Thu nhập'),
-                              onEdit: (k, v) => _openVarGroupDialog(_incomeVars, 'Thu nhập', k, v),
+                              onAdd: () => _openVarGroupDialog(_incomeVars, s.incomeSection),
+                              onEdit: (k, v) => _openVarGroupDialog(_incomeVars, s.incomeSection, k, v),
                               onInsert: _insertVar,
                             ),
                             const SizedBox(height: 8),
@@ -839,11 +843,11 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             _varGroupSection(
                               icon: Icons.card_giftcard_outlined,
                               color: const Color(0xFF9C27B0),
-                              title: 'Trợ cấp',
-                              subtitle: 'Dùng tên biến trong công thức Gross để cộng, hiển thị riêng trên phiếu lương',
+                              title: s.allowanceSection,
+                              subtitle: s.payGrossVarsHint,
                               vars: _allowanceVars,
-                              onAdd: () => _openVarGroupDialog(_allowanceVars, 'Trợ cấp'),
-                              onEdit: (k, v) => _openVarGroupDialog(_allowanceVars, 'Trợ cấp', k, v),
+                              onAdd: () => _openVarGroupDialog(_allowanceVars, s.allowanceSection),
+                              onEdit: (k, v) => _openVarGroupDialog(_allowanceVars, s.allowanceSection, k, v),
                               onInsert: _insertVar,
                             ),
                             const SizedBox(height: 8),
@@ -853,8 +857,8 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             _varGroupSection(
                               icon: Icons.remove_circle_outline,
                               color: AppTheme.error,
-                              title: 'Khoản khấu trừ',
-                              subtitle: 'Dùng tên biến trong công thức Net để trừ, hiển thị riêng trên phiếu lương',
+                              title: s.payDeductionItemsTitle,
+                              subtitle: s.payNetVarsHint,
                               vars: _deductionVars,
                               onAdd: () => _openDeductionDialog(),
                               onEdit: (k, v) => _openDeductionDialog(k, v),
@@ -877,7 +881,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                         controller: _grossCtrl, focusNode: _grossFocus, maxLines: 3,
                         decoration: InputDecoration(
                           labelText: '${s.formulaGross} (Gross)',
-                          hintText: 'Vd: BASE_RATE / 22 * PRESENT_DAYS + DAY_OT * BASE_RATE / 8 * 1.5',
+                          hintText: s.payGrossFormulaHint,
                           hintStyle: const TextStyle(fontSize: 12),
                           alignLabelWithHint: true,
                           border: OutlineInputBorder(borderSide: BorderSide(color: _errGross.isNotEmpty ? AppTheme.error : AppTheme.border)),
@@ -896,7 +900,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                         controller: _netCtrl, focusNode: _netFocus, maxLines: 3,
                         decoration: InputDecoration(
                           labelText: '${s.formulaNet} (Net)',
-                          hintText: 'Vd: GROSS - GROSS * SOCIAL_INS_RATE - GROSS * HEALTH_INS_RATE',
+                          hintText: s.payNetFormulaHint,
                           hintStyle: const TextStyle(fontSize: 12),
                           alignLabelWithHint: true,
                           border: OutlineInputBorder(borderSide: BorderSide(color: _errNet.isNotEmpty ? AppTheme.error : AppTheme.border)),
@@ -976,6 +980,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
   }
 
   void _editPrivateVar(String name, String expr) {
+    final s = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
@@ -984,24 +989,24 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: Text('Sửa $name'),
+              title: Text(s.payEditNamed(name)),
               onTap: () { Navigator.pop(context); _openPrivateVarDialog(name, expr); },
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: AppTheme.error),
-              title: Text('Xoá $name', style: const TextStyle(color: AppTheme.error)),
+              title: Text(s.payDeleteNamed(name), style: const TextStyle(color: AppTheme.error)),
               onTap: () async {
                 Navigator.pop(context);
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    content: Text('Xoá biến "$name"?'),
+                    content: Text(s.payVarDeleteConfirm(name)),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
                       FilledButton(
                         style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Xoá'),
+                        child: Text(s.delete),
                       ),
                     ],
                   ),
@@ -1029,6 +1034,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
     required void Function(String, DeductionVarEntry) onEdit,
     required void Function(String) onInsert,
   }) {
+    final s = AppLocalizations.of(context);
     final entries = vars.entries.toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1044,7 +1050,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
         Text(subtitle, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
         const SizedBox(height: 4),
         if (vars.isEmpty)
-          const Text('Chưa có mục nào', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic))
+          Text(s.payNoItems, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic))
         else
           ReorderableListView(
             shrinkWrap: true,
@@ -1139,7 +1145,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
     final result = await showDialog<MapEntry<String, DeductionVarEntry>>(
       context: context,
       builder: (_) => _DeductionVarDialog(
-        title: 'Khấu trừ',
+        title: AppLocalizations.of(context).deductionSection,
         keyCtrl: keyCtrl,
         labelCtrl: labelCtrl,
         exprCtrl: exprCtrl,
@@ -1256,7 +1262,7 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
     final name = _nameCtrl.text.trim().toUpperCase();
     final expr = _exprCtrl.text.trim();
     if (name.isEmpty || expr.isEmpty) {
-      setState(() => _error = 'Vui lòng điền đầy đủ');
+      setState(() => _error = AppLocalizations.of(context).payFillAllFields);
       return;
     }
     setState(() { _validating = true; _errors = []; _validated = false; _error = null; });
@@ -1290,9 +1296,10 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final isEdit = widget.existing != null;
     return AlertDialog(
-      title: Text(isEdit ? 'Sửa biến tùy chỉnh' : 'Thêm biến tùy chỉnh'),
+      title: Text(isEdit ? s.payCustomVarEditTitle : s.payCustomVarAddTitle),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -1306,9 +1313,9 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
               ),
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Tên biến (A-Z, 0-9, _)',
-                hintText: 'VD: THUONG_LE',
+              decoration: InputDecoration(
+                labelText: s.varNameLabel,
+                hintText: s.varNameHint,
               ),
               textCapitalization: TextCapitalization.characters,
               onChanged: (_) => setState(() => _validated = false),
@@ -1316,7 +1323,7 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
             const SizedBox(height: 10),
             TextFormField(
               controller: _labelCtrl,
-              decoration: const InputDecoration(labelText: 'Mô tả (tuỳ chọn)'),
+              decoration: InputDecoration(labelText: s.varDescLabel),
             ),
             const SizedBox(height: 10),
             // Chip palette biến hệ thống
@@ -1329,11 +1336,11 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Nhấn chip để chèn vào biểu thức',
-                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  Text(s.varChipInsertHint,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
-                  ...buildSystemVarChips(_systemVars, _insertVar, compact: true),
-                  ...buildGroupedGlobalChips(_globalVars, _insertVar),
+                  ...buildSystemVarChips(s, _systemVars, _insertVar, compact: true),
+                  ...buildGroupedGlobalChips(s, _globalVars, _insertVar),
                 ],
               ),
             ),
@@ -1342,8 +1349,8 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
               controller: _exprCtrl,
               focusNode: _exprFocus,
               decoration: InputDecoration(
-                labelText: 'Biểu thức',
-                hintText: 'VD: BASE_RATE * 0.5',
+                labelText: s.varExprLabel,
+                hintText: s.varExprHint,
                 hintStyle: const TextStyle(fontSize: 12),
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
@@ -1366,13 +1373,13 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
                 ),
               ),
             if (_validated && _errors.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
                 child: Row(children: [
-                  Icon(Icons.check_circle, color: AppTheme.secondary, size: 16),
-                  SizedBox(width: 6),
-                  Text('Biểu thức hợp lệ',
-                      style: TextStyle(color: AppTheme.secondary, fontSize: 13)),
+                  const Icon(Icons.check_circle, color: AppTheme.secondary, size: 16),
+                  const SizedBox(width: 6),
+                  Text(s.varExprValid,
+                      style: const TextStyle(color: AppTheme.secondary, fontSize: 13)),
                 ]),
               ),
           ],
@@ -1388,13 +1395,13 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    content: Text('Xoá biến "${widget.existing!.name}"?'),
+                    content: Text(s.payVarDeleteConfirm(widget.existing!.name)),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
                       FilledButton(
                         style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Xoá'),
+                        child: Text(s.delete),
                       ),
                     ],
                   ),
@@ -1404,7 +1411,7 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
                 }
               },
               icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.error),
-              label: const Text('Xoá', style: TextStyle(color: AppTheme.error)),
+              label: Text(s.delete, style: const TextStyle(color: AppTheme.error)),
             ),
           )
         else
@@ -1412,19 +1419,19 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
             OutlinedButton.icon(
               onPressed: _validating ? null : _validate,
               icon: _validating
                   ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.check, size: 16),
-              label: const Text('Kiểm tra'),
+              label: Text(s.formulaValidate),
             ),
             FilledButton(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Lưu'),
+                  : Text(s.save),
             ),
           ],
         ),
@@ -1497,16 +1504,17 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
     final key = widget.keyCtrl.text.trim().toUpperCase();
     final label = widget.labelCtrl.text.trim();
     final expr = widget.exprCtrl.text.trim();
-    if (key.isEmpty) { setState(() => _error = 'Vui lòng nhập tên biến'); return; }
+    final s = AppLocalizations.of(context);
+    if (key.isEmpty) { setState(() => _error = s.payVarNameRequired); return; }
     if (!RegExp(r'^[A-Z][A-Z0-9_]{0,49}$').hasMatch(key)) {
-      setState(() => _error = 'Tên biến phải bắt đầu bằng chữ hoa, chỉ gồm A-Z, 0-9, _');
+      setState(() => _error = s.payVarNameFormatError);
       return;
     }
     if (widget.existingKeys.contains(key)) {
-      setState(() => _error = 'Tên biến "$key" đã tồn tại');
+      setState(() => _error = s.payVarNameExists(key));
       return;
     }
-    if (expr.isEmpty) { setState(() => _error = 'Vui lòng nhập biểu thức'); return; }
+    if (expr.isEmpty) { setState(() => _error = s.payExprRequired); return; }
     Navigator.pop(context, MapEntry(key, DeductionVarEntry(
       label: label.isEmpty ? key : label,
       expression: expr,
@@ -1515,8 +1523,9 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(widget.isEdit ? 'Sửa ${widget.title.toLowerCase()}' : 'Thêm ${widget.title.toLowerCase()}'),
+      title: Text(widget.isEdit ? s.payEditItemTitle(widget.title.toLowerCase()) : s.payAddItemTitle(widget.title.toLowerCase())),
       content: SizedBox(
         width: 380,
         child: SingleChildScrollView(
@@ -1531,9 +1540,9 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
               ),
             TextFormField(
               controller: widget.keyCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Tên biến (A-Z, 0-9, _)',
-                hintText: 'VD: ADVANCE_DEDUCT',
+              decoration: InputDecoration(
+                labelText: s.varNameLabel,
+                hintText: s.payDeductionKeyHint,
               ),
               textCapitalization: TextCapitalization.characters,
               onChanged: (_) => setState(() => _error = null),
@@ -1541,9 +1550,9 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
             const SizedBox(height: 10),
             TextFormField(
               controller: widget.labelCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Tên hiển thị trên phiếu lương',
-                hintText: 'VD: Tạm ứng tháng 5',
+              decoration: InputDecoration(
+                labelText: s.payPayslipLabel,
+                hintText: s.payPayslipLabelHint,
               ),
             ),
             const SizedBox(height: 10),
@@ -1556,11 +1565,11 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Nhấn chip để chèn vào biểu thức',
-                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  Text(s.varChipInsertHint,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
-                  ...buildSystemVarChips(widget.systemVars, _insertVar, compact: true),
-                  ...buildGroupedGlobalChips(widget.globalVars, _insertVar),
+                  ...buildSystemVarChips(s, widget.systemVars, _insertVar, compact: true),
+                  ...buildGroupedGlobalChips(s, widget.globalVars, _insertVar),
                 ],
               ),
             ),
@@ -1568,10 +1577,10 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
             TextFormField(
               controller: widget.exprCtrl,
               focusNode: _exprFocus,
-              decoration: const InputDecoration(
-                labelText: 'Biểu thức (số tiền hoặc công thức)',
-                hintText: 'VD: 500000   hoặc   ABSENT_DAYS * 50000',
-                hintStyle: TextStyle(fontSize: 12),
+              decoration: InputDecoration(
+                labelText: s.payAmountExprLabel,
+                hintText: s.payAmountExprHint,
+                hintStyle: const TextStyle(fontSize: 12),
               ),
               style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
               maxLines: 2,
@@ -1591,13 +1600,13 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    content: Text('Xoá khoản khấu trừ "${widget.keyCtrl.text}"?'),
+                    content: Text(s.payDeductionDeleteConfirm(widget.keyCtrl.text)),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
                       FilledButton(
                         style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Xoá'),
+                        child: Text(s.delete),
                       ),
                     ],
                   ),
@@ -1605,7 +1614,7 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
                 if (ok == true && context.mounted) Navigator.pop(context, const MapEntry('__delete__', DeductionVarEntry(label: '', expression: '')));
               },
               icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.error),
-              label: const Text('Xoá', style: TextStyle(color: AppTheme.error)),
+              label: Text(s.delete, style: const TextStyle(color: AppTheme.error)),
             ),
           )
         else
@@ -1613,11 +1622,11 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
               onPressed: _submit,
-              child: Text(widget.isEdit ? 'Cập nhật' : 'Thêm'),
+              child: Text(widget.isEdit ? s.payUpdateAction : s.add),
             ),
           ],
         ),
@@ -1629,6 +1638,7 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
 // ─── Shared helper: system var chips từ BE (thay thế hardcode buildVarGroups) ──
 
 List<Widget> buildSystemVarChips(
+  AppLocalizations s,
   List<AllVariable> systemVars,
   void Function(String) onInsert, {
   bool compact = false,
@@ -1636,7 +1646,7 @@ List<Widget> buildSystemVarChips(
   if (systemVars.isEmpty) return [];
   final grouped = <String, List<AllVariable>>{};
   for (final v in systemVars) {
-    grouped.putIfAbsent(v.category ?? 'Khác', () => []).add(v);
+    grouped.putIfAbsent(v.category ?? s.payVarCategoryOther, () => []).add(v);
   }
   final labelSize = compact ? 10.0 : 11.0;
   final chipSpacing = compact ? 4.0 : 6.0;
@@ -1666,15 +1676,16 @@ List<Widget> buildSystemVarChips(
 // ─── Shared helper: grouped global var chips (insert only, no edit) ────────────
 
 List<Widget> buildGroupedGlobalChips(
-    List<FormulaVariable> vars, void Function(String) onInsert) {
+    AppLocalizations s, List<FormulaVariable> vars, void Function(String) onInsert) {
   if (vars.isEmpty) return [];
+  final globalLabel = s.payGlobalVarGroup;
   final Map<String, List<FormulaVariable>> grouped = {};
   for (final v in vars) {
-    final key = (v.category?.isNotEmpty ?? false) ? v.category! : 'Biến Global';
+    final key = (v.category?.isNotEmpty ?? false) ? v.category! : globalLabel;
     grouped.putIfAbsent(key, () => []).add(v);
   }
   final sortedKeys = grouped.keys.toList()
-    ..sort((a, b) => a == 'Biến Global' ? 1 : b == 'Biến Global' ? -1 : a.compareTo(b));
+    ..sort((a, b) => a == globalLabel ? 1 : b == globalLabel ? -1 : a.compareTo(b));
   return sortedKeys.map((cat) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -1839,20 +1850,21 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
   void _submit() {
     final name = widget.nameCtrl.text.trim().toUpperCase();
     final expr = widget.exprCtrl.text.trim();
+    final s = AppLocalizations.of(context);
     if (name.isEmpty) {
-      setState(() => _error = 'Vui lòng nhập tên biến');
+      setState(() => _error = s.payVarNameRequired);
       return;
     }
     if (!RegExp(r'^[A-Z][A-Z0-9_]*$').hasMatch(name)) {
-      setState(() => _error = 'Tên phải bắt đầu bằng chữ hoa, chỉ dùng A-Z, 0-9, _');
+      setState(() => _error = s.payNameFormatError);
       return;
     }
     if (widget.existingNames.contains(name)) {
-      setState(() => _error = 'Tên biến đã tồn tại');
+      setState(() => _error = s.payVarNameExistsPlain);
       return;
     }
     if (expr.isEmpty) {
-      setState(() => _error = 'Vui lòng nhập biểu thức');
+      setState(() => _error = s.payExprRequired);
       return;
     }
     Navigator.pop(context, MapEntry(name, expr));
@@ -1860,8 +1872,9 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(widget.isEdit ? 'Sửa biến private' : 'Thêm biến private'),
+      title: Text(widget.isEdit ? s.varEditPrivate : s.varAddPrivate),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -1876,9 +1889,9 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
             TextFormField(
               controller: widget.nameCtrl,
               enabled: !widget.isEdit,
-              decoration: const InputDecoration(
-                labelText: 'Tên biến (A-Z, 0-9, _)',
-                hintText: 'VD: HOA_HONG',
+              decoration: InputDecoration(
+                labelText: s.varNameLabel,
+                hintText: s.payPrivateVarNameHint,
               ),
               textCapitalization: TextCapitalization.characters,
               onChanged: (_) => setState(() => _error = null),
@@ -1894,11 +1907,11 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Nhấn chip để chèn vào biểu thức',
-                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  Text(s.varChipInsertHint,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
-                  ...buildSystemVarChips(widget.systemVars, _insertVar, compact: true),
-                  ...buildGroupedGlobalChips(widget.globalVars, _insertVar),
+                  ...buildSystemVarChips(s, widget.systemVars, _insertVar, compact: true),
+                  ...buildGroupedGlobalChips(s, widget.globalVars, _insertVar),
                 ],
               ),
             ),
@@ -1906,9 +1919,9 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
             TextFormField(
               controller: widget.exprCtrl,
               focusNode: _exprFocus,
-              decoration: const InputDecoration(
-                labelText: 'Biểu thức',
-                hintText: 'VD: BASE_RATE * 0.1',
+              decoration: InputDecoration(
+                labelText: s.varExprLabel,
+                hintText: s.payPrivateVarExprHint,
               ),
               style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
               maxLines: 2,
@@ -1918,8 +1931,8 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
-        FilledButton(onPressed: _submit, child: const Text('Thêm')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
+        FilledButton(onPressed: _submit, child: Text(s.add)),
       ],
     );
   }

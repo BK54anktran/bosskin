@@ -5996,6 +5996,756 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhập Excel tổng hợp'**
   String get permDescExcelImport;
+
+  /// No description provided for @payAddItemTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm {item}'**
+  String payAddItemTitle(String item);
+
+  /// No description provided for @payEditItemTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa {item}'**
+  String payEditItemTitle(String item);
+
+  /// No description provided for @payAmountExprHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: 500000   hoặc   ABSENT_DAYS * 50000'**
+  String get payAmountExprHint;
+
+  /// No description provided for @payAmountExprLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biểu thức (số tiền hoặc công thức)'**
+  String get payAmountExprLabel;
+
+  /// No description provided for @payCustomVarAddTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm biến tùy chỉnh'**
+  String get payCustomVarAddTitle;
+
+  /// No description provided for @payCustomVarEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa biến tùy chỉnh'**
+  String get payCustomVarEditTitle;
+
+  /// No description provided for @payHourShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ'**
+  String get payHourShort;
+
+  /// No description provided for @payDayShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày'**
+  String get payDayShort;
+
+  /// No description provided for @payDeductionDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá khoản khấu trừ \"{name}\"?'**
+  String payDeductionDeleteConfirm(String name);
+
+  /// No description provided for @payDeductionItemsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoản khấu trừ'**
+  String get payDeductionItemsTitle;
+
+  /// No description provided for @payDeductionKeyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: ADVANCE_DEDUCT'**
+  String get payDeductionKeyHint;
+
+  /// No description provided for @payDeleteNamed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá {name}'**
+  String payDeleteNamed(String name);
+
+  /// No description provided for @payEditNamed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa {name}'**
+  String payEditNamed(String name);
+
+  /// No description provided for @payDuplicate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân bản'**
+  String get payDuplicate;
+
+  /// No description provided for @payExprRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập biểu thức'**
+  String get payExprRequired;
+
+  /// No description provided for @payFillAllFields.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng điền đầy đủ'**
+  String get payFillAllFields;
+
+  /// No description provided for @payFillAllInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng điền đầy đủ thông tin'**
+  String get payFillAllInfo;
+
+  /// No description provided for @payFormulaAddTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm công thức lương'**
+  String get payFormulaAddTitle;
+
+  /// No description provided for @payFormulaCustomizeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa công thức lương'**
+  String get payFormulaCustomizeTitle;
+
+  /// No description provided for @payFormulaEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa công thức lương'**
+  String get payFormulaEditTitle;
+
+  /// No description provided for @payFormulaDuplicateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân bản công thức lương'**
+  String get payFormulaDuplicateTitle;
+
+  /// No description provided for @payFormulaDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá công thức lương \"{name}\"?'**
+  String payFormulaDeleteConfirm(String name);
+
+  /// No description provided for @payFormulaEditedName.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} (đã chỉnh sửa)'**
+  String payFormulaEditedName(String name);
+
+  /// No description provided for @payFormulaIncomplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập đầy đủ công thức'**
+  String get payFormulaIncomplete;
+
+  /// No description provided for @payFormulaInlineNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thay đổi chỉ áp dụng cho bảng lương này. Công thức gốc không bị ảnh hưởng.'**
+  String get payFormulaInlineNote;
+
+  /// No description provided for @payFormulaNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Lương tháng — ca ngày'**
+  String get payFormulaNameHint;
+
+  /// No description provided for @payFormulaNameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên công thức'**
+  String get payFormulaNameLabel;
+
+  /// No description provided for @payFormulaNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập tên công thức'**
+  String get payFormulaNameRequired;
+
+  /// No description provided for @payFormulaVarsChipHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'{label} — nhấn chip để chèn vào công thức đang focus'**
+  String payFormulaVarsChipHint(String label);
+
+  /// No description provided for @payFromDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ {date}'**
+  String payFromDate(String date);
+
+  /// No description provided for @payGlobalVarGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biến Global'**
+  String get payGlobalVarGroup;
+
+  /// No description provided for @payGradeDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá bậc lương \"{name}\"?'**
+  String payGradeDeleteConfirm(String name);
+
+  /// No description provided for @payGradeRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chọn bậc lương'**
+  String get payGradeRequired;
+
+  /// No description provided for @payGrossFormulaHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vd: BASE_RATE / 22 * PRESENT_DAYS + DAY_OT * BASE_RATE / 8 * 1.5'**
+  String get payGrossFormulaHint;
+
+  /// No description provided for @payNetFormulaHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vd: GROSS - GROSS * SOCIAL_INS_RATE - GROSS * HEALTH_INS_RATE'**
+  String get payNetFormulaHint;
+
+  /// No description provided for @payGrossVarsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng tên biến trong công thức Gross để cộng, hiển thị riêng trên phiếu lương'**
+  String get payGrossVarsHint;
+
+  /// No description provided for @payNetVarsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng tên biến trong công thức Net để trừ, hiển thị riêng trên phiếu lương'**
+  String get payNetVarsHint;
+
+  /// No description provided for @payHideFromFormula.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ẩn khỏi công thức'**
+  String get payHideFromFormula;
+
+  /// No description provided for @payShowInFormula.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện trong công thức'**
+  String get payShowInFormula;
+
+  /// No description provided for @payInvalidRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn giá không hợp lệ'**
+  String get payInvalidRate;
+
+  /// No description provided for @payNameFormatError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên phải bắt đầu bằng chữ hoa, chỉ dùng A-Z, 0-9, _'**
+  String get payNameFormatError;
+
+  /// No description provided for @payVarNameFormatError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên biến phải bắt đầu bằng chữ hoa, chỉ gồm A-Z, 0-9, _'**
+  String get payVarNameFormatError;
+
+  /// No description provided for @payNoItems.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mục nào'**
+  String get payNoItems;
+
+  /// No description provided for @payPayslipLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên hiển thị trên phiếu lương'**
+  String get payPayslipLabel;
+
+  /// No description provided for @payPayslipLabelHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Tạm ứng tháng 5'**
+  String get payPayslipLabelHint;
+
+  /// No description provided for @payPrivateVarNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: HOA_HONG'**
+  String get payPrivateVarNameHint;
+
+  /// No description provided for @payPrivateVarExprHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: BASE_RATE * 0.1'**
+  String get payPrivateVarExprHint;
+
+  /// No description provided for @payUnderstood.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hiểu'**
+  String get payUnderstood;
+
+  /// No description provided for @payUpdateAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get payUpdateAction;
+
+  /// No description provided for @payVarCategoryLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm / Module (tuỳ chọn)'**
+  String get payVarCategoryLabel;
+
+  /// No description provided for @payVarCategoryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Bảo hiểm, Phụ cấp, Thuế...'**
+  String get payVarCategoryHint;
+
+  /// No description provided for @payVarCategoryOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khác'**
+  String get payVarCategoryOther;
+
+  /// No description provided for @payVarDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá biến \"{name}\"?'**
+  String payVarDeleteConfirm(String name);
+
+  /// No description provided for @payVarGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm'**
+  String get payVarGroup;
+
+  /// No description provided for @payVarNameExists.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên biến \"{name}\" đã tồn tại'**
+  String payVarNameExists(String name);
+
+  /// No description provided for @payVarNameExistsPlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên biến đã tồn tại'**
+  String get payVarNameExistsPlain;
+
+  /// No description provided for @payVarNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập tên biến'**
+  String get payVarNameRequired;
+
+  /// No description provided for @payVarSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm tên, mô tả, biểu thức...'**
+  String get payVarSearchHint;
+
+  /// No description provided for @payVarUsedInFormulas.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biến \"{name}\" đang được dùng trong {count} công thức:'**
+  String payVarUsedInFormulas(String name, String count);
+
+  /// No description provided for @xlColumnsOfType.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} cột {type}'**
+  String xlColumnsOfType(String count, String type);
+
+  /// No description provided for @xlSelectExportColumns.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn cột xuất'**
+  String get xlSelectExportColumns;
+
+  /// No description provided for @xlRequiredForReimport.
+  ///
+  /// In vi, this message translates to:
+  /// **'(*) Bắt buộc để import lại được'**
+  String get xlRequiredForReimport;
+
+  /// No description provided for @xlNoFilters.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có bộ lọc'**
+  String get xlNoFilters;
+
+  /// No description provided for @xlFilters.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ lọc'**
+  String get xlFilters;
+
+  /// No description provided for @xlExportOnlyTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ export, không import'**
+  String get xlExportOnlyTooltip;
+
+  /// No description provided for @xlGroupContractSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng & Lương'**
+  String get xlGroupContractSalary;
+
+  /// No description provided for @xlGroupComputed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dữ liệu tổng hợp'**
+  String get xlGroupComputed;
+
+  /// No description provided for @xlGroupOverride.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi đè thủ công'**
+  String get xlGroupOverride;
+
+  /// No description provided for @xlGroupIdentification.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định danh'**
+  String get xlGroupIdentification;
+
+  /// No description provided for @xlGroupDeductions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khấu trừ & Net'**
+  String get xlGroupDeductions;
+
+  /// No description provided for @xlGroupPeriodHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ lương & Giờ công'**
+  String get xlGroupPeriodHours;
+
+  /// No description provided for @xlFilterStatusInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nghỉ'**
+  String get xlFilterStatusInactive;
+
+  /// No description provided for @xlFilterHalfDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nửa ngày'**
+  String get xlFilterHalfDay;
+
+  /// No description provided for @xlFilterPayType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại tính lương'**
+  String get xlFilterPayType;
+
+  /// No description provided for @xlFilterVariableCategory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhóm biến'**
+  String get xlFilterVariableCategory;
+
+  /// No description provided for @xlSearchNameOrCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm tên hoặc mã...'**
+  String get xlSearchNameOrCode;
+
+  /// No description provided for @xlErrorsCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi ({count})'**
+  String xlErrorsCount(String count);
+
+  /// No description provided for @xlWarnEmployeeExistsSkipped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đã tồn tại — bỏ qua'**
+  String get xlWarnEmployeeExistsSkipped;
+
+  /// No description provided for @xlErrEmployeeNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy nhân viên'**
+  String get xlErrEmployeeNotFound;
+
+  /// No description provided for @xlErrEmployeeAlreadyExists.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đã tồn tại'**
+  String get xlErrEmployeeAlreadyExists;
+
+  /// No description provided for @xlChangesCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} thay đổi'**
+  String xlChangesCount(String count);
+
+  /// No description provided for @empDeleteSalaryConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá mức lương này?'**
+  String get empDeleteSalaryConfirm;
+
+  /// No description provided for @empSalaryMustBePositive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương phải > 0'**
+  String get empSalaryMustBePositive;
+
+  /// No description provided for @empContractSalaryVnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương hợp đồng (VNĐ)'**
+  String get empContractSalaryVnd;
+
+  /// No description provided for @empContractSalaryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: 20000000'**
+  String get empContractSalaryHint;
+
+  /// No description provided for @dashDateFromLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ: {date}'**
+  String dashDateFromLabel(String date);
+
+  /// No description provided for @dashDateToLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến: {date}'**
+  String dashDateToLabel(String date);
+
+  /// No description provided for @dashMonthShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'T{month}'**
+  String dashMonthShort(String month);
+
+  /// No description provided for @dashMonthYearShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'T{month}/{year}'**
+  String dashMonthYearShort(String month, String year);
+
+  /// No description provided for @uiJustNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vừa xong'**
+  String get uiJustNow;
+
+  /// No description provided for @uiMinutesAgo.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút trước'**
+  String uiMinutesAgo(String minutes);
+
+  /// No description provided for @uiHoursAgo.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ trước'**
+  String uiHoursAgo(String hours);
+
+  /// No description provided for @uiDaysAgo.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày trước'**
+  String uiDaysAgo(String days);
+
+  /// No description provided for @uiRowsEditing.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} hàng đang sửa'**
+  String uiRowsEditing(String count);
+
+  /// No description provided for @uiApproveAttendanceConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phê duyệt chấm công {name} ngày {date}?'**
+  String uiApproveAttendanceConfirm(String name, String date);
+
+  /// No description provided for @uiUnapproveAttendanceConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ phê duyệt chấm công {name} ngày {date}? Dữ liệu sẽ được tính toán lại.'**
+  String uiUnapproveAttendanceConfirm(String name, String date);
+
+  /// No description provided for @uiToleranceMustBeNonNegative.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dung sai phải là số >= 0'**
+  String get uiToleranceMustBeNonNegative;
+
+  /// No description provided for @uiPayrollCutoffDayHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'1–28. VD: 25 → kỳ tháng 5 = 25/4–24/5'**
+  String get uiPayrollCutoffDayHelper;
+
+  /// No description provided for @uiCheckInToleranceMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dung sai check-in (phút)'**
+  String get uiCheckInToleranceMinutes;
+
+  /// No description provided for @uiCheckOutToleranceMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dung sai check-out (phút)'**
+  String get uiCheckOutToleranceMinutes;
+
+  /// No description provided for @uiRoundCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm tròn check-in'**
+  String get uiRoundCheckIn;
+
+  /// No description provided for @uiRoundCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm tròn check-out'**
+  String get uiRoundCheckOut;
+
+  /// No description provided for @uiRoundWorkHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm tròn giờ ngày/đêm/OT'**
+  String get uiRoundWorkHours;
+
+  /// No description provided for @uiNotApplied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không áp dụng'**
+  String get uiNotApplied;
+
+  /// No description provided for @uiMinutesValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút'**
+  String uiMinutesValue(String minutes);
+
+  /// No description provided for @uiLeaveHistoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử phép — {name}'**
+  String uiLeaveHistoryTitle(String name);
+
+  /// No description provided for @uiGrantDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp ngày'**
+  String get uiGrantDate;
+
+  /// No description provided for @uiSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nguồn'**
+  String get uiSource;
+
+  /// No description provided for @uiGranted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp'**
+  String get uiGranted;
+
+  /// No description provided for @uiUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã dùng'**
+  String get uiUsed;
+
+  /// No description provided for @uiRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn lại'**
+  String get uiRemaining;
+
+  /// No description provided for @uiManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thủ công'**
+  String get uiManual;
+
+  /// No description provided for @uiAutomatic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động'**
+  String get uiAutomatic;
+
+  /// No description provided for @uiHoursMinutesShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours}h{minutes}p'**
+  String uiHoursMinutesShort(String hours, String minutes);
+
+  /// No description provided for @uiCheckResultChannelName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả check-in/out'**
+  String get uiCheckResultChannelName;
+
+  /// No description provided for @uiNotifSessionExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiên đăng nhập hết hạn — vui lòng mở app'**
+  String get uiNotifSessionExpired;
+
+  /// No description provided for @uiNotifCheckInSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Check-in thành công!'**
+  String get uiNotifCheckInSuccess;
+
+  /// No description provided for @uiNotifCheckOutSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Check-out thành công!'**
+  String get uiNotifCheckOutSuccess;
+
+  /// No description provided for @uiNotifConnectionError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi kết nối — vui lòng kiểm tra trong app'**
+  String get uiNotifConnectionError;
+
+  /// No description provided for @uiNotifOpenAndCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở & Check-in'**
+  String get uiNotifOpenAndCheckIn;
+
+  /// No description provided for @uiNotifOpenAndCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở & Check-out'**
+  String get uiNotifOpenAndCheckOut;
+
+  /// No description provided for @uiNotifGpsRequiredCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty yêu cầu GPS — nhấn để check-in ngay khi mở app'**
+  String get uiNotifGpsRequiredCheckIn;
+
+  /// No description provided for @uiNotifGpsRequiredCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty yêu cầu GPS — nhấn để check-out ngay khi mở app'**
+  String get uiNotifGpsRequiredCheckOut;
+
+  /// No description provided for @uiNotifCheckInFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể check-in'**
+  String get uiNotifCheckInFailed;
+
+  /// No description provided for @uiNotifCheckOutFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể check-out'**
+  String get uiNotifCheckOutFailed;
 }
 
 class _AppLocalizationsDelegate

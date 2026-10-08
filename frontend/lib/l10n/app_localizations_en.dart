@@ -3104,4 +3104,448 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permDescExcelImport => 'Import combined Excel';
+
+  @override
+  String payAddItemTitle(String item) {
+    return 'Add $item';
+  }
+
+  @override
+  String payEditItemTitle(String item) {
+    return 'Edit $item';
+  }
+
+  @override
+  String get payAmountExprHint => 'E.g. 500000   or   ABSENT_DAYS * 50000';
+
+  @override
+  String get payAmountExprLabel => 'Expression (amount or formula)';
+
+  @override
+  String get payCustomVarAddTitle => 'Add custom variable';
+
+  @override
+  String get payCustomVarEditTitle => 'Edit custom variable';
+
+  @override
+  String get payHourShort => 'Hourly';
+
+  @override
+  String get payDayShort => 'Daily';
+
+  @override
+  String payDeductionDeleteConfirm(String name) {
+    return 'Delete deduction \"$name\"?';
+  }
+
+  @override
+  String get payDeductionItemsTitle => 'Deductions';
+
+  @override
+  String get payDeductionKeyHint => 'E.g. ADVANCE_DEDUCT';
+
+  @override
+  String payDeleteNamed(String name) {
+    return 'Delete $name';
+  }
+
+  @override
+  String payEditNamed(String name) {
+    return 'Edit $name';
+  }
+
+  @override
+  String get payDuplicate => 'Duplicate';
+
+  @override
+  String get payExprRequired => 'Please enter an expression';
+
+  @override
+  String get payFillAllFields => 'Please fill in all fields';
+
+  @override
+  String get payFillAllInfo => 'Please fill in all required information';
+
+  @override
+  String get payFormulaAddTitle => 'Add salary formula';
+
+  @override
+  String get payFormulaCustomizeTitle => 'Customize salary formula';
+
+  @override
+  String get payFormulaEditTitle => 'Edit salary formula';
+
+  @override
+  String get payFormulaDuplicateTitle => 'Duplicate salary formula';
+
+  @override
+  String payFormulaDeleteConfirm(String name) {
+    return 'Delete salary formula \"$name\"?';
+  }
+
+  @override
+  String payFormulaEditedName(String name) {
+    return '$name (edited)';
+  }
+
+  @override
+  String get payFormulaIncomplete => 'Please enter both formulas';
+
+  @override
+  String get payFormulaInlineNote =>
+      'Changes apply to this payroll only. The original formula is not affected.';
+
+  @override
+  String get payFormulaNameHint => 'E.g. Monthly salary — day shift';
+
+  @override
+  String get payFormulaNameLabel => 'Formula name';
+
+  @override
+  String get payFormulaNameRequired => 'Please enter a formula name';
+
+  @override
+  String payFormulaVarsChipHint(String label) {
+    return '$label — tap a chip to insert it into the focused formula';
+  }
+
+  @override
+  String payFromDate(String date) {
+    return 'From $date';
+  }
+
+  @override
+  String get payGlobalVarGroup => 'Global variables';
+
+  @override
+  String payGradeDeleteConfirm(String name) {
+    return 'Delete salary grade \"$name\"?';
+  }
+
+  @override
+  String get payGradeRequired => 'Please select a salary grade';
+
+  @override
+  String get payGrossFormulaHint =>
+      'E.g. BASE_RATE / 22 * PRESENT_DAYS + DAY_OT * BASE_RATE / 8 * 1.5';
+
+  @override
+  String get payNetFormulaHint =>
+      'E.g. GROSS - GROSS * SOCIAL_INS_RATE - GROSS * HEALTH_INS_RATE';
+
+  @override
+  String get payGrossVarsHint =>
+      'Use the variable name in the Gross formula to add it; shown separately on the payslip';
+
+  @override
+  String get payNetVarsHint =>
+      'Use the variable name in the Net formula to subtract it; shown separately on the payslip';
+
+  @override
+  String get payHideFromFormula => 'Hide from formula editor';
+
+  @override
+  String get payShowInFormula => 'Show in formula editor';
+
+  @override
+  String get payInvalidRate => 'Invalid rate';
+
+  @override
+  String get payNameFormatError =>
+      'Name must start with an uppercase letter and use only A-Z, 0-9, _';
+
+  @override
+  String get payVarNameFormatError =>
+      'Variable name must start with an uppercase letter and contain only A-Z, 0-9, _';
+
+  @override
+  String get payNoItems => 'No items yet';
+
+  @override
+  String get payPayslipLabel => 'Name shown on payslip';
+
+  @override
+  String get payPayslipLabelHint => 'E.g. May advance';
+
+  @override
+  String get payPrivateVarNameHint => 'E.g. COMMISSION';
+
+  @override
+  String get payPrivateVarExprHint => 'E.g. BASE_RATE * 0.1';
+
+  @override
+  String get payUnderstood => 'Got it';
+
+  @override
+  String get payUpdateAction => 'Update';
+
+  @override
+  String get payVarCategoryLabel => 'Group / Module (optional)';
+
+  @override
+  String get payVarCategoryHint => 'E.g. Insurance, Allowances, Tax...';
+
+  @override
+  String get payVarCategoryOther => 'Other';
+
+  @override
+  String payVarDeleteConfirm(String name) {
+    return 'Delete variable \"$name\"?';
+  }
+
+  @override
+  String get payVarGroup => 'Group';
+
+  @override
+  String payVarNameExists(String name) {
+    return 'Variable name \"$name\" already exists';
+  }
+
+  @override
+  String get payVarNameExistsPlain => 'Variable name already exists';
+
+  @override
+  String get payVarNameRequired => 'Please enter a variable name';
+
+  @override
+  String get payVarSearchHint => 'Search name, description, expression...';
+
+  @override
+  String payVarUsedInFormulas(String name, String count) {
+    return 'Variable \"$name\" is used in $count formula(s):';
+  }
+
+  @override
+  String xlColumnsOfType(String count, String type) {
+    return '$count $type columns';
+  }
+
+  @override
+  String get xlSelectExportColumns => 'Columns to export';
+
+  @override
+  String get xlRequiredForReimport => '(*) Required for re-import';
+
+  @override
+  String get xlNoFilters => 'No filters';
+
+  @override
+  String get xlFilters => 'Filters';
+
+  @override
+  String get xlExportOnlyTooltip => 'Export only, not importable';
+
+  @override
+  String get xlGroupContractSalary => 'Contract & Salary';
+
+  @override
+  String get xlGroupComputed => 'Computed data';
+
+  @override
+  String get xlGroupOverride => 'Manual overrides';
+
+  @override
+  String get xlGroupIdentification => 'Identification';
+
+  @override
+  String get xlGroupDeductions => 'Deductions & Net';
+
+  @override
+  String get xlGroupPeriodHours => 'Pay period & Work hours';
+
+  @override
+  String get xlFilterStatusInactive => 'Resigned';
+
+  @override
+  String get xlFilterHalfDay => 'Half day';
+
+  @override
+  String get xlFilterPayType => 'Pay type';
+
+  @override
+  String get xlFilterVariableCategory => 'Variable group';
+
+  @override
+  String get xlSearchNameOrCode => 'Search name or code...';
+
+  @override
+  String xlErrorsCount(String count) {
+    return 'Errors ($count)';
+  }
+
+  @override
+  String get xlWarnEmployeeExistsSkipped => 'Employee already exists — skipped';
+
+  @override
+  String get xlErrEmployeeNotFound => 'Employee not found';
+
+  @override
+  String get xlErrEmployeeAlreadyExists => 'Employee already exists';
+
+  @override
+  String xlChangesCount(String count) {
+    return '$count changes';
+  }
+
+  @override
+  String get empDeleteSalaryConfirm => 'Delete this salary entry?';
+
+  @override
+  String get empSalaryMustBePositive => 'Salary must be > 0';
+
+  @override
+  String get empContractSalaryVnd => 'Contract salary (VND)';
+
+  @override
+  String get empContractSalaryHint => 'e.g. 20000000';
+
+  @override
+  String dashDateFromLabel(String date) {
+    return 'From: $date';
+  }
+
+  @override
+  String dashDateToLabel(String date) {
+    return 'To: $date';
+  }
+
+  @override
+  String dashMonthShort(String month) {
+    return 'M$month';
+  }
+
+  @override
+  String dashMonthYearShort(String month, String year) {
+    return '$month/$year';
+  }
+
+  @override
+  String get uiJustNow => 'Just now';
+
+  @override
+  String uiMinutesAgo(String minutes) {
+    return '$minutes min ago';
+  }
+
+  @override
+  String uiHoursAgo(String hours) {
+    return '$hours h ago';
+  }
+
+  @override
+  String uiDaysAgo(String days) {
+    return '$days days ago';
+  }
+
+  @override
+  String uiRowsEditing(String count) {
+    return '$count rows being edited';
+  }
+
+  @override
+  String uiApproveAttendanceConfirm(String name, String date) {
+    return 'Approve attendance for $name on $date?';
+  }
+
+  @override
+  String uiUnapproveAttendanceConfirm(String name, String date) {
+    return 'Unapprove attendance for $name on $date? The data will be recalculated.';
+  }
+
+  @override
+  String get uiToleranceMustBeNonNegative => 'Tolerance must be a number >= 0';
+
+  @override
+  String get uiPayrollCutoffDayHelper =>
+      '1–28. E.g. 25 → May period = 25/4–24/5';
+
+  @override
+  String get uiCheckInToleranceMinutes => 'Check-in tolerance (minutes)';
+
+  @override
+  String get uiCheckOutToleranceMinutes => 'Check-out tolerance (minutes)';
+
+  @override
+  String get uiRoundCheckIn => 'Check-in rounding';
+
+  @override
+  String get uiRoundCheckOut => 'Check-out rounding';
+
+  @override
+  String get uiRoundWorkHours => 'Day/night/OT hours rounding';
+
+  @override
+  String get uiNotApplied => 'Not applied';
+
+  @override
+  String uiMinutesValue(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String uiLeaveHistoryTitle(String name) {
+    return 'Leave history — $name';
+  }
+
+  @override
+  String get uiGrantDate => 'Granted on';
+
+  @override
+  String get uiSource => 'Source';
+
+  @override
+  String get uiGranted => 'Granted';
+
+  @override
+  String get uiUsed => 'Used';
+
+  @override
+  String get uiRemaining => 'Remaining';
+
+  @override
+  String get uiManual => 'Manual';
+
+  @override
+  String get uiAutomatic => 'Automatic';
+
+  @override
+  String uiHoursMinutesShort(String hours, String minutes) {
+    return '${hours}h${minutes}m';
+  }
+
+  @override
+  String get uiCheckResultChannelName => 'Check-in/out results';
+
+  @override
+  String get uiNotifSessionExpired => 'Session expired — please open the app';
+
+  @override
+  String get uiNotifCheckInSuccess => 'Checked in successfully!';
+
+  @override
+  String get uiNotifCheckOutSuccess => 'Checked out successfully!';
+
+  @override
+  String get uiNotifConnectionError =>
+      'Connection error — please check in the app';
+
+  @override
+  String get uiNotifOpenAndCheckIn => 'Open & Check in';
+
+  @override
+  String get uiNotifOpenAndCheckOut => 'Open & Check out';
+
+  @override
+  String get uiNotifGpsRequiredCheckIn =>
+      'Your company requires GPS — tap to check in when the app opens';
+
+  @override
+  String get uiNotifGpsRequiredCheckOut =>
+      'Your company requires GPS — tap to check out when the app opens';
+
+  @override
+  String get uiNotifCheckInFailed => 'Unable to check in';
+
+  @override
+  String get uiNotifCheckOutFailed => 'Unable to check out';
 }

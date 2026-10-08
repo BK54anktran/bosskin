@@ -1,3 +1,5 @@
+import 'package:bosskin/l10n/app_localizations.dart';
+
 bool _parseBool(dynamic v, {bool defaultVal = false}) {
   if (v == null) return defaultVal;
   if (v is bool) return v;
@@ -65,11 +67,11 @@ class WorkShift {
     return '';
   }
 
-  String get workHoursLabel {
+  String workHoursLabel(AppLocalizations s) {
     if (workMinutes == null) return '';
     final h = workMinutes! ~/ 60;
     final m = workMinutes! % 60;
-    return m == 0 ? '${h}h' : '${h}h${m}p';
+    return m == 0 ? '${h}h' : s.uiHoursMinutesShort('$h', '$m');
   }
 }
 

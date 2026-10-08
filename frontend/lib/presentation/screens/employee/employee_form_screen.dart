@@ -354,9 +354,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                 )),
                 _field(TextFormField(
                   controller: _contractSalary,
-                  decoration: const InputDecoration(
-                    labelText: 'Lương hợp đồng (VNĐ)',
-                    hintText: 'VD: 20000000',
+                  decoration: InputDecoration(
+                    labelText: s.empContractSalaryVnd,
+                    hintText: s.empContractSalaryHint,
                   ),
                   keyboardType: TextInputType.number,
                 )),

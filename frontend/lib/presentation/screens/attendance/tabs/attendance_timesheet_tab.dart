@@ -839,7 +839,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
             child: Row(children: [
               const Icon(Icons.edit_outlined, size: 16, color: AppTheme.primary),
               const SizedBox(width: 8),
-              Text('${_editingRows.length} hàng đang sửa',
+              Text(s.uiRowsEditing('${_editingRows.length}'),
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary)),
               const Spacer(),
               if (_bulkLoading)

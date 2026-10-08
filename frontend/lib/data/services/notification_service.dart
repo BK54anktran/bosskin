@@ -8,13 +8,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/localization/language_service.dart';
+import 'package:bosskin/l10n/app_localizations.dart';
 import '../../core/navigation/navigator_keys.dart';
 import 'profile_service.dart';
 
 const _channelId         = 'shift_reminders';
-const _channelName       = 'Nhắc nhở ca làm';
+String get _channelName => _l10n().shiftReminderTitle;
 const _channelResultId   = 'check_results';
-const _channelResultName = 'Kết quả check-in/out';
+String get _channelResultName => _l10n().uiCheckResultChannelName;
 
 const _actionCheckIn      = 'action_check_in';
 const _actionCheckOut     = 'action_check_out';
@@ -25,6 +27,8 @@ const _typeCheckIn  = 'CHECK_IN_REMINDER';
 const _typeCheckOut = 'CHECK_OUT_REMINDER';
 
 final _local = FlutterLocalNotificationsPlugin();
+
+AppLocalizations _l10n() => lookupAppLocalizations(LanguageService.instance.locale);
 
 // ── AppNotification ──────────────────────────────────────────────────────────
 
@@ -78,6 +82,7 @@ class AppNotification {
 @pragma('vm:entry-point')
 Future<void> _onBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp();
+  await LanguageService.instance.load();
   final type = message.data['type'] as String?;
   if (message.notification != null && type != _typeCheckIn && type != _typeCheckOut) return;
   await _initLocalPlugin();
@@ -116,6 +121,7 @@ void _onBackgroundActionResponse(NotificationResponse response) {
 Future<void> _handleBackgroundAction(NotificationResponse response) async {
   final actionId = response.actionId;
   if (actionId != _actionCheckIn && actionId != _actionCheckOut) return;
+  await LanguageService.instance.load();
   await _initLocalPlugin();
   await _ensureResultChannel();
   await _callCheckInOut(actionId!);
@@ -164,7 +170,7 @@ Future<void> _callCheckInOut(String actionId) async {
   final host  = ServerConfig.host;
 
   if (token == null) {
-    await _showResultNotif('Phiên đăng nhập hết hạn — vui lòng mở app');
+    await _showResultNotif(_l10n().uiNotifSessionExpired);
     return;
   }
 
@@ -185,7 +191,7 @@ Future<void> _callCheckInOut(String actionId) async {
 
     if (res.statusCode == 200 || res.statusCode == 201) {
       await _showResultNotif(
-          isCheckIn ? 'Check-in thành công!' : 'Check-out thành công!');
+          isCheckIn ? _l10n().uiNotifCheckInSuccess : _l10n().uiNotifCheckOutSuccess);
       return;
     }
 
@@ -196,16 +202,17 @@ Future<void> _callCheckInOut(String actionId) async {
       await _showResultNotif(_parseMsg(body, isCheckIn));
     }
   } catch (_) {
-    await _showResultNotif('Lỗi kết nối — vui lòng kiểm tra trong app');
+    await _showResultNotif(_l10n().uiNotifConnectionError);
   }
 }
 
 Future<void> _showOpenAppNotif(bool isCheckIn) async {
   final openAction = isCheckIn ? _actionOpenCheckIn : _actionOpenCheckOut;
-  final label      = isCheckIn ? 'Mở & Check-in' : 'Mở & Check-out';
+  final s          = _l10n();
+  final label      = isCheckIn ? s.uiNotifOpenAndCheckIn : s.uiNotifOpenAndCheckOut;
   final msg        = isCheckIn
-      ? 'Công ty yêu cầu GPS — nhấn để check-in ngay khi mở app'
-      : 'Công ty yêu cầu GPS — nhấn để check-out ngay khi mở app';
+      ? s.uiNotifGpsRequiredCheckIn
+      : s.uiNotifGpsRequiredCheckOut;
 
   await _local.show(
     DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -236,15 +243,15 @@ Future<void> _showResultNotif(String message) async {
     DateTime.now().millisecondsSinceEpoch ~/ 1000,
     'BossKin',
     message,
-    const NotificationDetails(
+    NotificationDetails(
       android: AndroidNotificationDetails(
         _channelResultId,
         _channelResultName,
         importance: Importance.high,
         priority: Priority.high,
-        largeIcon: DrawableResourceAndroidBitmap('ic_launcher'),
+        largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
       ),
-      iOS: DarwinNotificationDetails(
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentSound: true,
       ),
@@ -313,7 +320,7 @@ Future<void> _initLocalPlugin() async {
 Future<void> _ensureResultChannel() async {
   final plugin = _local.resolvePlatformSpecificImplementation<
       AndroidFlutterLocalNotificationsPlugin>();
-  await plugin?.createNotificationChannel(const AndroidNotificationChannel(
+  await plugin?.createNotificationChannel(AndroidNotificationChannel(
     _channelResultId, _channelResultName, importance: Importance.high,
   ));
 }
@@ -331,7 +338,7 @@ String _parseMsg(String body, bool isCheckIn) {
     final msg = (jsonDecode(body) as Map<String, dynamic>)['message'] as String?;
     if (msg != null && msg.isNotEmpty) return msg;
   } catch (_) {}
-  return isCheckIn ? 'Không thể check-in' : 'Không thể check-out';
+  return isCheckIn ? _l10n().uiNotifCheckInFailed : _l10n().uiNotifCheckOutFailed;
 }
 
 // ── Service class ────────────────────────────────────────────────────────────
@@ -478,10 +485,10 @@ class NotificationService {
 
     final androidPlugin = _local.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+    await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
       _channelId, _channelName, importance: Importance.high,
     ));
-    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+    await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
       _channelResultId, _channelResultName, importance: Importance.high,
     ));
 

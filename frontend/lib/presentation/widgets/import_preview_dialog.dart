@@ -381,7 +381,7 @@ class _UpdateTileState extends State<_UpdateTile> {
               const SizedBox(width: 8),
               Expanded(
                   child: Text(diff.name, style: const TextStyle(fontSize: 13))),
-              Text('${diff.changes.length} thay đổi',
+              Text(s.xlChangesCount('${diff.changes.length}'),
                   style: TextStyle(fontSize: 11, color: Colors.grey[500])),
               const SizedBox(width: 4),
               Icon(_expanded ? Icons.expand_less : Icons.expand_more,

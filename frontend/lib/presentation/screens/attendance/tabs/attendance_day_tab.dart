@@ -704,7 +704,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
             child: Row(children: [
               const Icon(Icons.edit_outlined, size: 16, color: AppTheme.primary),
               const SizedBox(width: 8),
-              Text('${_editingDaySlotKeys.length} hàng đang sửa',
+              Text(s.uiRowsEditing('${_editingDaySlotKeys.length}'),
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary)),
               const Spacer(),
               if (_dayBulkLoading)
@@ -1187,7 +1187,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
             const SizedBox(width: 2),
             SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 15,
                 icon: const Icon(Icons.lock_open_outlined, color: AppTheme.warning),
-                tooltip: 'Bỏ phê duyệt', onPressed: () => _unapproveAttendance(slot))),
+                tooltip: s.unapprove, onPressed: () => _unapproveAttendance(slot))),
           ],
         ],
       ));
@@ -1298,7 +1298,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
         builder: (ctx) => AlertDialog(title: Text(s.approve),
-          content: Text('Phê duyệt chấm công ${slot.employeeFullName} ngày ${slot.date.day}/${slot.date.month}/${slot.date.year}?'),
+          content: Text(s.uiApproveAttendanceConfirm(slot.employeeFullName, '${slot.date.day}/${slot.date.month}/${slot.date.year}')),
           actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
             FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.approve))],
         ));
@@ -1318,11 +1318,11 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   Future<void> _unapproveAttendance(DayViewRow slot) async {
     final s = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(context: context,
-        builder: (ctx) => AlertDialog(title: const Text('Bỏ phê duyệt'),
-          content: Text('Bỏ phê duyệt chấm công ${slot.employeeFullName} ngày ${slot.date.day}/${slot.date.month}/${slot.date.year}? Dữ liệu sẽ được tính toán lại.'),
+        builder: (ctx) => AlertDialog(title: Text(s.unapprove),
+          content: Text(s.uiUnapproveAttendanceConfirm(slot.employeeFullName, '${slot.date.day}/${slot.date.month}/${slot.date.year}')),
           actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
             FilledButton(style: FilledButton.styleFrom(backgroundColor: AppTheme.warning),
-                onPressed: () => Navigator.pop(ctx, true), child: const Text('Bỏ phê duyệt'))],
+                onPressed: () => Navigator.pop(ctx, true), child: Text(s.unapprove))],
         ));
     if (confirm != true || !mounted) return;
     try {

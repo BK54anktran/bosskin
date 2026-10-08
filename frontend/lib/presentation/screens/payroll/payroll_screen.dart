@@ -571,7 +571,7 @@ class _FilterBar extends StatelessWidget {
                 IconButton(
                   onPressed: onClearSelection,
                   icon: const Icon(Icons.close, size: 16),
-                  tooltip: 'Bỏ chọn',
+                  tooltip: s.quickFillClearSelection,
                   visualDensity: VisualDensity.compact,
                 ),
               ],
@@ -1554,7 +1554,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
               ]),
               const SizedBox(height: 4),
               Text(
-                '${p.employeeName} — ${formatPayrollPeriod(p.periodFrom, p.periodTo, p.month, p.year)}',
+                '${p.employeeName} — ${formatPayrollPeriod(s, p.periodFrom, p.periodTo, p.month, p.year)}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppTheme.textSecondary),
               ),
@@ -1711,6 +1711,7 @@ class _InlineFormulaEditDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final cf = payroll.customFormula;
     final bf = baseFormula;
 
@@ -1722,7 +1723,7 @@ class _InlineFormulaEditDialog extends StatelessWidget {
             salaryGradeId: bf.salaryGradeId,
             salaryGradeCode: bf.salaryGradeCode,
             salaryGradeName: bf.salaryGradeName,
-            name: cf?.name ?? '${bf.name} (đã chỉnh sửa)',
+            name: cf?.name ?? s.payFormulaEditedName(bf.name),
             effectiveDate: bf.effectiveDate,
             expressionGross: cf?.expressionGross ?? bf.expressionGross,
             expressionNet: cf?.expressionNet ?? bf.expressionNet,

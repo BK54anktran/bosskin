@@ -313,11 +313,11 @@ class _FilterDialogState extends State<_FilterDialog> {
             ),
           if (has(_FT.dateRange)) ...[
             _DateBtn(
-              label: 'Từ: ${_fmtDisplay(_dateFrom)}',
+              label: s.dashDateFromLabel(_fmtDisplay(_dateFrom)),
               onTap: () => _pickDate(true),
             ),
             _DateBtn(
-              label: 'Đến: ${_fmtDisplay(_dateTo)}',
+              label: s.dashDateToLabel(_fmtDisplay(_dateTo)),
               onTap: () => _pickDate(false),
             ),
           ],

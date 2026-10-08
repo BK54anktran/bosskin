@@ -578,7 +578,7 @@ class _NotificationTile extends StatelessWidget {
             ),
           const SizedBox(height: 2),
           Text(
-            _relativeTime(notification.time),
+            _relativeTime(AppLocalizations.of(context), notification.time),
             style: TextStyle(
               fontSize: 11,
               color: AppTheme.textSecondary.withValues(alpha: 0.7),
@@ -605,12 +605,12 @@ class _NotificationTile extends StatelessWidget {
     };
   }
 
-  String _relativeTime(DateTime time) {
+  String _relativeTime(AppLocalizations s, DateTime time) {
     final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 1) return 'Vừa xong';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
-    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
-    return '${diff.inDays} ngày trước';
+    if (diff.inMinutes < 1) return s.uiJustNow;
+    if (diff.inMinutes < 60) return s.uiMinutesAgo('${diff.inMinutes}');
+    if (diff.inHours < 24) return s.uiHoursAgo('${diff.inHours}');
+    return s.uiDaysAgo('${diff.inDays}');
   }
 }
 

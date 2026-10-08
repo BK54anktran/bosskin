@@ -123,9 +123,6 @@ class _SelfPayrollCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final p = payroll;
-    final monthNames = ['', 'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-      'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9',
-      'Tháng 10', 'Tháng 11', 'Tháng 12'];
     return Card(
       margin: EdgeInsets.zero,
       child: ListTile(
@@ -135,7 +132,7 @@ class _SelfPayrollCard extends StatelessWidget {
           child: Text('${p.month}',
               style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary)),
         ),
-        title: Text(monthNames[p.month],
+        title: Text(s.monthLabel(p.month),
             style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text('${s.presentDays}: ${p.presentDays ?? '-'}/${p.standardWorkDays ?? 22}'),
         trailing: Column(
@@ -200,35 +197,35 @@ class _SelfPayslipDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              Text(formatPayrollPeriod(p.periodFrom, p.periodTo, p.month, p.year),
+              Text(formatPayrollPeriod(s, p.periodFrom, p.periodTo, p.month, p.year),
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: AppTheme.textSecondary)),
               const Divider(height: 24),
               _Row(s.presentDays, '${p.presentDays ?? '-'} / ${p.standardWorkDays ?? 22}'),
-              _Row(s.dayShiftHours,  '${(p.dayHours ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.nightShiftHours,'${(p.nightHours ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.otDayShift,     '${(p.dayOt ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.otNightShift,   '${(p.nightOt ?? 0).toStringAsFixed(1)} giờ'),
-              _Row(s.overtimeHours, '${(p.totalOvertimeHours ?? 0).toStringAsFixed(1)} giờ'),
+              _Row(s.dayShiftHours,  '${(p.dayHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(s.nightShiftHours,'${(p.nightHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(s.otDayShift,     '${(p.dayOt ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(s.otNightShift,   '${(p.nightOt ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
+              _Row(s.overtimeHours, '${(p.totalOvertimeHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
               const Divider(height: 20),
               // ── Mức lương cơ bản ──
               if (p.payType == 'HOURLY') ...[
-                _Row(s.baseSalary, '${_fmt2(p.baseSalary)}/giờ'),
+                _Row(s.baseSalary, '${_fmt2(p.baseSalary)}/${s.unitHour}'),
               ] else ...[
                 _Row(s.baseSalaryMonthly, _fmt2(p.baseSalary)),
                 _Row(s.actualWorkDays,
-                    '${p.presentDays ?? 0} / ${p.standardWorkDays ?? 22} ngày'),
+                    '${p.presentDays ?? 0} / ${p.standardWorkDays ?? 22} ${s.daysSuffix}'),
               ],
               const SizedBox(height: 4),
               // ── Thu nhập (chỉ hiện nếu có) ──
               if (p.incomeEntries.isNotEmpty) ...[
-                const _SectionHeader('Thu nhập', AppTheme.primary),
+                _SectionHeader(s.incomeSection, AppTheme.primary),
                 ...(p.incomeEntries.values.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder))).map((e) => _Row(e.label, _fmt2(e.amount))),
                 const SizedBox(height: 4),
               ],
               // ── Trợ cấp (chỉ hiện nếu có) ──
               if (p.allowanceEntries.isNotEmpty) ...[
-                const _SectionHeader('Trợ cấp', Color(0xFF9C27B0)),
+                _SectionHeader(s.allowanceSection, const Color(0xFF9C27B0)),
                 ...(p.allowanceEntries.values.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder))).map((e) => _Row(e.label, _fmt2(e.amount))),
                 const SizedBox(height: 4),
               ],
@@ -239,7 +236,7 @@ class _SelfPayslipDialog extends StatelessWidget {
               _Row(s.grossSalary, _fmt2(p.grossSalary), bold: true, color: AppTheme.primary),
               const SizedBox(height: 8),
               // ── Khấu trừ ──
-              const _SectionHeader('Khấu trừ', AppTheme.error),
+              _SectionHeader(s.deductionSection, AppTheme.error),
               ...p.customDeductions.values.map((d) =>
                 _Row(d.label, '-${_fmt2(d.amount)}', color: AppTheme.error)),
               if (p.otherDeductions > 0)

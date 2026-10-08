@@ -83,7 +83,7 @@ class _SalaryGradeTabState extends State<SalaryGradeTab> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: Text('Xoá bậc lương "${g.code} - ${g.name}"?'),
+        content: Text(s.payGradeDeleteConfirm('${g.code} - ${g.name}')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
           FilledButton(
@@ -197,6 +197,7 @@ class _GradeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final g = grade;
     return Card(
       margin: EdgeInsets.zero,
@@ -223,7 +224,7 @@ class _GradeCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          g.payType == PayType.hourly ? 'Giờ' : 'Ngày',
+                          g.payType == PayType.hourly ? s.payHourShort : s.payDayShort,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -236,12 +237,12 @@ class _GradeCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(g.name, style: const TextStyle(fontSize: 13)),
                   Text(
-                    g.departmentName ?? 'Toàn công ty',
+                    g.departmentName ?? s.scopeCompanyLabel,
                     style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_currFmt.format(g.baseRate)}đ / ${g.payType == PayType.hourly ? "giờ" : "ngày"}',
+                    '${_currFmt.format(g.baseRate)}đ / ${g.payType == PayType.hourly ? s.unitHour : s.unitDay}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: AppTheme.secondary,
@@ -324,13 +325,14 @@ class _SalaryGradeDialogState extends State<_SalaryGradeDialog> {
   }
 
   Future<void> _save() async {
+    final s = AppLocalizations.of(context);
     if (_codeCtrl.text.isEmpty || _nameCtrl.text.isEmpty) {
-      setState(() => _error = 'Vui lòng điền đầy đủ thông tin');
+      setState(() => _error = s.payFillAllInfo);
       return;
     }
     final rate = double.tryParse(_rateCtrl.text.replaceAll(',', ''));
     if (rate == null || rate <= 0) {
-      setState(() => _error = 'Đơn giá không hợp lệ');
+      setState(() => _error = s.payInvalidRate);
       return;
     }
     setState(() { _saving = true; _error = null; });
@@ -381,7 +383,7 @@ class _SalaryGradeDialogState extends State<_SalaryGradeDialog> {
                 value: _deptId,
                 label: s.department,
                 allowAll: true,
-                allLabel: 'Toàn công ty',
+                allLabel: s.scopeCompanyLabel,
                 compact: true,
                 onChanged: (v) => setState(() => _deptId = v),
               ),

@@ -577,7 +577,7 @@ class _ShiftCard extends StatelessWidget {
             ),
             if (shift.workMinutes != null)
               Text(
-                '${s.workingHours}: ${shift.workHoursLabel}',
+                '${s.workingHours}: ${shift.workHoursLabel(s)}',
                 style: const TextStyle(
                     fontSize: 11, color: AppTheme.textSecondary),
               ),

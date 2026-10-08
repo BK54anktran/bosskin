@@ -1087,4 +1087,158 @@
   ,"permDescExcelExport": "Xuất Excel tổng hợp"
   ,"permUiExcelImport": "Nhập file Excel tổng hợp (chỉ các sheet thuộc module có quyền)"
   ,"permDescExcelImport": "Nhập Excel tổng hợp"
+  ,"payAddItemTitle": "Thêm {item}"
+  ,"@payAddItemTitle": { "placeholders": { "item": { "type": "String" } } }
+  ,"payEditItemTitle": "Sửa {item}"
+  ,"@payEditItemTitle": { "placeholders": { "item": { "type": "String" } } }
+  ,"payAmountExprHint": "VD: 500000   hoặc   ABSENT_DAYS * 50000"
+  ,"payAmountExprLabel": "Biểu thức (số tiền hoặc công thức)"
+  ,"payCustomVarAddTitle": "Thêm biến tùy chỉnh"
+  ,"payCustomVarEditTitle": "Sửa biến tùy chỉnh"
+  ,"payHourShort": "Giờ"
+  ,"payDayShort": "Ngày"
+  ,"payDeductionDeleteConfirm": "Xoá khoản khấu trừ \"{name}\"?"
+  ,"@payDeductionDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payDeductionItemsTitle": "Khoản khấu trừ"
+  ,"payDeductionKeyHint": "VD: ADVANCE_DEDUCT"
+  ,"payDeleteNamed": "Xoá {name}"
+  ,"@payDeleteNamed": { "placeholders": { "name": { "type": "String" } } }
+  ,"payEditNamed": "Sửa {name}"
+  ,"@payEditNamed": { "placeholders": { "name": { "type": "String" } } }
+  ,"payDuplicate": "Nhân bản"
+  ,"payExprRequired": "Vui lòng nhập biểu thức"
+  ,"payFillAllFields": "Vui lòng điền đầy đủ"
+  ,"payFillAllInfo": "Vui lòng điền đầy đủ thông tin"
+  ,"payFormulaAddTitle": "Thêm công thức lương"
+  ,"payFormulaCustomizeTitle": "Chỉnh sửa công thức lương"
+  ,"payFormulaEditTitle": "Sửa công thức lương"
+  ,"payFormulaDuplicateTitle": "Nhân bản công thức lương"
+  ,"payFormulaDeleteConfirm": "Xoá công thức lương \"{name}\"?"
+  ,"@payFormulaDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payFormulaEditedName": "{name} (đã chỉnh sửa)"
+  ,"@payFormulaEditedName": { "placeholders": { "name": { "type": "String" } } }
+  ,"payFormulaIncomplete": "Vui lòng nhập đầy đủ công thức"
+  ,"payFormulaInlineNote": "Thay đổi chỉ áp dụng cho bảng lương này. Công thức gốc không bị ảnh hưởng."
+  ,"payFormulaNameHint": "VD: Lương tháng — ca ngày"
+  ,"payFormulaNameLabel": "Tên công thức"
+  ,"payFormulaNameRequired": "Vui lòng nhập tên công thức"
+  ,"payFormulaVarsChipHint": "{label} — nhấn chip để chèn vào công thức đang focus"
+  ,"@payFormulaVarsChipHint": { "placeholders": { "label": { "type": "String" } } }
+  ,"payFromDate": "Từ {date}"
+  ,"@payFromDate": { "placeholders": { "date": { "type": "String" } } }
+  ,"payGlobalVarGroup": "Biến Global"
+  ,"payGradeDeleteConfirm": "Xoá bậc lương \"{name}\"?"
+  ,"@payGradeDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payGradeRequired": "Vui lòng chọn bậc lương"
+  ,"payGrossFormulaHint": "Vd: BASE_RATE / 22 * PRESENT_DAYS + DAY_OT * BASE_RATE / 8 * 1.5"
+  ,"payNetFormulaHint": "Vd: GROSS - GROSS * SOCIAL_INS_RATE - GROSS * HEALTH_INS_RATE"
+  ,"payGrossVarsHint": "Dùng tên biến trong công thức Gross để cộng, hiển thị riêng trên phiếu lương"
+  ,"payNetVarsHint": "Dùng tên biến trong công thức Net để trừ, hiển thị riêng trên phiếu lương"
+  ,"payHideFromFormula": "Ẩn khỏi công thức"
+  ,"payShowInFormula": "Hiện trong công thức"
+  ,"payInvalidRate": "Đơn giá không hợp lệ"
+  ,"payNameFormatError": "Tên phải bắt đầu bằng chữ hoa, chỉ dùng A-Z, 0-9, _"
+  ,"payVarNameFormatError": "Tên biến phải bắt đầu bằng chữ hoa, chỉ gồm A-Z, 0-9, _"
+  ,"payNoItems": "Chưa có mục nào"
+  ,"payPayslipLabel": "Tên hiển thị trên phiếu lương"
+  ,"payPayslipLabelHint": "VD: Tạm ứng tháng 5"
+  ,"payPrivateVarNameHint": "VD: HOA_HONG"
+  ,"payPrivateVarExprHint": "VD: BASE_RATE * 0.1"
+  ,"payUnderstood": "Đã hiểu"
+  ,"payUpdateAction": "Cập nhật"
+  ,"payVarCategoryLabel": "Nhóm / Module (tuỳ chọn)"
+  ,"payVarCategoryHint": "VD: Bảo hiểm, Phụ cấp, Thuế..."
+  ,"payVarCategoryOther": "Khác"
+  ,"payVarDeleteConfirm": "Xoá biến \"{name}\"?"
+  ,"@payVarDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payVarGroup": "Nhóm"
+  ,"payVarNameExists": "Tên biến \"{name}\" đã tồn tại"
+  ,"@payVarNameExists": { "placeholders": { "name": { "type": "String" } } }
+  ,"payVarNameExistsPlain": "Tên biến đã tồn tại"
+  ,"payVarNameRequired": "Vui lòng nhập tên biến"
+  ,"payVarSearchHint": "Tìm tên, mô tả, biểu thức..."
+  ,"payVarUsedInFormulas": "Biến \"{name}\" đang được dùng trong {count} công thức:"
+  ,"@payVarUsedInFormulas": { "placeholders": { "name": { "type": "String" }, "count": { "type": "String" } } }
+  ,"xlColumnsOfType": "{count} cột {type}"
+  ,"@xlColumnsOfType": { "placeholders": { "count": { "type": "String" }, "type": { "type": "String" } } }
+  ,"xlSelectExportColumns": "Chọn cột xuất"
+  ,"xlRequiredForReimport": "(*) Bắt buộc để import lại được"
+  ,"xlNoFilters": "Không có bộ lọc"
+  ,"xlFilters": "Bộ lọc"
+  ,"xlExportOnlyTooltip": "Chỉ export, không import"
+  ,"xlGroupContractSalary": "Hợp đồng & Lương"
+  ,"xlGroupComputed": "Dữ liệu tổng hợp"
+  ,"xlGroupOverride": "Ghi đè thủ công"
+  ,"xlGroupIdentification": "Định danh"
+  ,"xlGroupDeductions": "Khấu trừ & Net"
+  ,"xlGroupPeriodHours": "Kỳ lương & Giờ công"
+  ,"xlFilterStatusInactive": "Đã nghỉ"
+  ,"xlFilterHalfDay": "Nửa ngày"
+  ,"xlFilterPayType": "Loại tính lương"
+  ,"xlFilterVariableCategory": "Nhóm biến"
+  ,"xlSearchNameOrCode": "Tìm tên hoặc mã..."
+  ,"xlErrorsCount": "Lỗi ({count})"
+  ,"@xlErrorsCount": { "placeholders": { "count": { "type": "String" } } }
+  ,"xlWarnEmployeeExistsSkipped": "Nhân viên đã tồn tại — bỏ qua"
+  ,"xlErrEmployeeNotFound": "Không tìm thấy nhân viên"
+  ,"xlErrEmployeeAlreadyExists": "Nhân viên đã tồn tại"
+  ,"xlChangesCount": "{count} thay đổi"
+  ,"@xlChangesCount": { "placeholders": { "count": { "type": "String" } } }
+  ,"empDeleteSalaryConfirm": "Xoá mức lương này?"
+  ,"empSalaryMustBePositive": "Lương phải > 0"
+  ,"empContractSalaryVnd": "Lương hợp đồng (VNĐ)"
+  ,"empContractSalaryHint": "VD: 20000000"
+  ,"dashDateFromLabel": "Từ: {date}"
+  ,"@dashDateFromLabel": { "placeholders": { "date": { "type": "String" } } }
+  ,"dashDateToLabel": "Đến: {date}"
+  ,"@dashDateToLabel": { "placeholders": { "date": { "type": "String" } } }
+  ,"dashMonthShort": "T{month}"
+  ,"@dashMonthShort": { "placeholders": { "month": { "type": "String" } } }
+  ,"dashMonthYearShort": "T{month}/{year}"
+  ,"@dashMonthYearShort": { "placeholders": { "month": { "type": "String" }, "year": { "type": "String" } } }
+  ,"uiJustNow": "Vừa xong"
+  ,"uiMinutesAgo": "{minutes} phút trước"
+  ,"@uiMinutesAgo": { "placeholders": { "minutes": { "type": "String" } } }
+  ,"uiHoursAgo": "{hours} giờ trước"
+  ,"@uiHoursAgo": { "placeholders": { "hours": { "type": "String" } } }
+  ,"uiDaysAgo": "{days} ngày trước"
+  ,"@uiDaysAgo": { "placeholders": { "days": { "type": "String" } } }
+  ,"uiRowsEditing": "{count} hàng đang sửa"
+  ,"@uiRowsEditing": { "placeholders": { "count": { "type": "String" } } }
+  ,"uiApproveAttendanceConfirm": "Phê duyệt chấm công {name} ngày {date}?"
+  ,"@uiApproveAttendanceConfirm": { "placeholders": { "name": { "type": "String" }, "date": { "type": "String" } } }
+  ,"uiUnapproveAttendanceConfirm": "Bỏ phê duyệt chấm công {name} ngày {date}? Dữ liệu sẽ được tính toán lại."
+  ,"@uiUnapproveAttendanceConfirm": { "placeholders": { "name": { "type": "String" }, "date": { "type": "String" } } }
+  ,"uiToleranceMustBeNonNegative": "Dung sai phải là số >= 0"
+  ,"uiPayrollCutoffDayHelper": "1–28. VD: 25 → kỳ tháng 5 = 25/4–24/5"
+  ,"uiCheckInToleranceMinutes": "Dung sai check-in (phút)"
+  ,"uiCheckOutToleranceMinutes": "Dung sai check-out (phút)"
+  ,"uiRoundCheckIn": "Làm tròn check-in"
+  ,"uiRoundCheckOut": "Làm tròn check-out"
+  ,"uiRoundWorkHours": "Làm tròn giờ ngày/đêm/OT"
+  ,"uiNotApplied": "Không áp dụng"
+  ,"uiMinutesValue": "{minutes} phút"
+  ,"@uiMinutesValue": { "placeholders": { "minutes": { "type": "String" } } }
+  ,"uiLeaveHistoryTitle": "Lịch sử phép — {name}"
+  ,"@uiLeaveHistoryTitle": { "placeholders": { "name": { "type": "String" } } }
+  ,"uiGrantDate": "Cấp ngày"
+  ,"uiSource": "Nguồn"
+  ,"uiGranted": "Cấp"
+  ,"uiUsed": "Đã dùng"
+  ,"uiRemaining": "Còn lại"
+  ,"uiManual": "Thủ công"
+  ,"uiAutomatic": "Tự động"
+  ,"uiHoursMinutesShort": "{hours}h{minutes}p"
+  ,"@uiHoursMinutesShort": { "placeholders": { "hours": { "type": "String" }, "minutes": { "type": "String" } } }
+  ,"uiCheckResultChannelName": "Kết quả check-in/out"
+  ,"uiNotifSessionExpired": "Phiên đăng nhập hết hạn — vui lòng mở app"
+  ,"uiNotifCheckInSuccess": "Check-in thành công!"
+  ,"uiNotifCheckOutSuccess": "Check-out thành công!"
+  ,"uiNotifConnectionError": "Lỗi kết nối — vui lòng kiểm tra trong app"
+  ,"uiNotifOpenAndCheckIn": "Mở & Check-in"
+  ,"uiNotifOpenAndCheckOut": "Mở & Check-out"
+  ,"uiNotifGpsRequiredCheckIn": "Công ty yêu cầu GPS — nhấn để check-in ngay khi mở app"
+  ,"uiNotifGpsRequiredCheckOut": "Công ty yêu cầu GPS — nhấn để check-out ngay khi mở app"
+  ,"uiNotifCheckInFailed": "Không thể check-in"
+  ,"uiNotifCheckOutFailed": "Không thể check-out"
 }

@@ -6,6 +6,7 @@ import '../../../data/models/all_variable.dart';
 import '../../../data/models/formula_variable.dart';
 import '../../../data/repositories/formula_variable_repository.dart';
 import 'salary_formula_tab.dart' show buildGroupedGlobalChips, buildSystemVarChips;
+import 'package:bosskin/l10n/app_localizations.dart';
 
 class CustomVarDialog extends StatefulWidget {
   final FormulaVariableRepository repo;
@@ -103,7 +104,7 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
     final name = _nameCtrl.text.trim().toUpperCase();
     final expr = _exprCtrl.text.trim();
     if (name.isEmpty || expr.isEmpty) {
-      setState(() => _error = 'Vui lòng điền đầy đủ');
+      setState(() => _error = AppLocalizations.of(context).payFillAllFields);
       return;
     }
     setState(() { _validating = true; _errors = []; _validated = false; _error = null; });
@@ -140,9 +141,10 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
     final isEdit = widget.existing != null;
     return AlertDialog(
-      title: Text(isEdit ? 'Sửa biến Global' : 'Thêm biến Global'),
+      title: Text(isEdit ? s.varEditGlobal : s.varAddGlobalTitle),
       content: SizedBox(
         width: 420,
         child: SingleChildScrollView(
@@ -157,9 +159,9 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
               ),
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Tên biến (A-Z, 0-9, _)',
-                hintText: 'VD: THUONG_LE',
+              decoration: InputDecoration(
+                labelText: s.varNameLabel,
+                hintText: s.varNameHint,
               ),
               textCapitalization: TextCapitalization.characters,
               onChanged: (_) => setState(() => _validated = false),
@@ -167,7 +169,7 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
             const SizedBox(height: 10),
             TextFormField(
               controller: _labelCtrl,
-              decoration: const InputDecoration(labelText: 'Mô tả (tuỳ chọn)'),
+              decoration: InputDecoration(labelText: s.varDescLabel),
             ),
             const SizedBox(height: 10),
             Autocomplete<String>(
@@ -179,9 +181,9 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
                 return TextFormField(
                   controller: ctrl,
                   focusNode: focus,
-                  decoration: const InputDecoration(
-                    labelText: 'Nhóm / Module (tuỳ chọn)',
-                    hintText: 'VD: Bảo hiểm, Phụ cấp, Thuế...',
+                  decoration: InputDecoration(
+                    labelText: s.payVarCategoryLabel,
+                    hintText: s.payVarCategoryHint,
                   ),
                   onChanged: (v) => _categoryCtrl.text = v,
                 );
@@ -221,11 +223,11 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Nhấn chip để chèn vào biểu thức',
-                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  Text(s.varChipInsertHint,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
-                  ...buildSystemVarChips(_systemVars, _insertVar, compact: true),
-                  ...buildGroupedGlobalChips(_visibleGlobals, _insertVar),
+                  ...buildSystemVarChips(s, _systemVars, _insertVar, compact: true),
+                  ...buildGroupedGlobalChips(s, _visibleGlobals, _insertVar),
                 ],
               ),
             ),
@@ -234,8 +236,8 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
               controller: _exprCtrl,
               focusNode: _exprFocus,
               decoration: InputDecoration(
-                labelText: 'Biểu thức',
-                hintText: 'VD: BASE_RATE * 0.5',
+                labelText: s.varExprLabel,
+                hintText: s.varExprHint,
                 hintStyle: const TextStyle(fontSize: 12),
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
@@ -258,13 +260,13 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
                 ),
               ),
             if (_validated && _errors.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
                 child: Row(children: [
-                  Icon(Icons.check_circle, color: AppTheme.secondary, size: 16),
-                  SizedBox(width: 6),
-                  Text('Biểu thức hợp lệ',
-                      style: TextStyle(color: AppTheme.secondary, fontSize: 13)),
+                  const Icon(Icons.check_circle, color: AppTheme.secondary, size: 16),
+                  const SizedBox(width: 6),
+                  Text(s.varExprValid,
+                      style: const TextStyle(color: AppTheme.secondary, fontSize: 13)),
                 ]),
               ),
           ],
@@ -272,20 +274,20 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(s.cancel)),
         OutlinedButton.icon(
           onPressed: _validating ? null : _validate,
           icon: _validating
               ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.check, size: 16),
-          label: const Text('Kiểm tra'),
+          label: Text(s.formulaValidate),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
           child: _saving
               ? const SizedBox(width: 16, height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : const Text('Lưu'),
+              : Text(s.save),
         ),
       ],
     );

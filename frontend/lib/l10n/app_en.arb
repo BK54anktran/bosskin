@@ -1084,4 +1084,158 @@
   ,"permDescExcelExport": "Export combined Excel"
   ,"permUiExcelImport": "Import the combined Excel file (only sheets for permitted modules)"
   ,"permDescExcelImport": "Import combined Excel"
+  ,"payAddItemTitle": "Add {item}"
+  ,"@payAddItemTitle": { "placeholders": { "item": { "type": "String" } } }
+  ,"payEditItemTitle": "Edit {item}"
+  ,"@payEditItemTitle": { "placeholders": { "item": { "type": "String" } } }
+  ,"payAmountExprHint": "E.g. 500000   or   ABSENT_DAYS * 50000"
+  ,"payAmountExprLabel": "Expression (amount or formula)"
+  ,"payCustomVarAddTitle": "Add custom variable"
+  ,"payCustomVarEditTitle": "Edit custom variable"
+  ,"payHourShort": "Hourly"
+  ,"payDayShort": "Daily"
+  ,"payDeductionDeleteConfirm": "Delete deduction \"{name}\"?"
+  ,"@payDeductionDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payDeductionItemsTitle": "Deductions"
+  ,"payDeductionKeyHint": "E.g. ADVANCE_DEDUCT"
+  ,"payDeleteNamed": "Delete {name}"
+  ,"@payDeleteNamed": { "placeholders": { "name": { "type": "String" } } }
+  ,"payEditNamed": "Edit {name}"
+  ,"@payEditNamed": { "placeholders": { "name": { "type": "String" } } }
+  ,"payDuplicate": "Duplicate"
+  ,"payExprRequired": "Please enter an expression"
+  ,"payFillAllFields": "Please fill in all fields"
+  ,"payFillAllInfo": "Please fill in all required information"
+  ,"payFormulaAddTitle": "Add salary formula"
+  ,"payFormulaCustomizeTitle": "Customize salary formula"
+  ,"payFormulaEditTitle": "Edit salary formula"
+  ,"payFormulaDuplicateTitle": "Duplicate salary formula"
+  ,"payFormulaDeleteConfirm": "Delete salary formula \"{name}\"?"
+  ,"@payFormulaDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payFormulaEditedName": "{name} (edited)"
+  ,"@payFormulaEditedName": { "placeholders": { "name": { "type": "String" } } }
+  ,"payFormulaIncomplete": "Please enter both formulas"
+  ,"payFormulaInlineNote": "Changes apply to this payroll only. The original formula is not affected."
+  ,"payFormulaNameHint": "E.g. Monthly salary — day shift"
+  ,"payFormulaNameLabel": "Formula name"
+  ,"payFormulaNameRequired": "Please enter a formula name"
+  ,"payFormulaVarsChipHint": "{label} — tap a chip to insert it into the focused formula"
+  ,"@payFormulaVarsChipHint": { "placeholders": { "label": { "type": "String" } } }
+  ,"payFromDate": "From {date}"
+  ,"@payFromDate": { "placeholders": { "date": { "type": "String" } } }
+  ,"payGlobalVarGroup": "Global variables"
+  ,"payGradeDeleteConfirm": "Delete salary grade \"{name}\"?"
+  ,"@payGradeDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payGradeRequired": "Please select a salary grade"
+  ,"payGrossFormulaHint": "E.g. BASE_RATE / 22 * PRESENT_DAYS + DAY_OT * BASE_RATE / 8 * 1.5"
+  ,"payNetFormulaHint": "E.g. GROSS - GROSS * SOCIAL_INS_RATE - GROSS * HEALTH_INS_RATE"
+  ,"payGrossVarsHint": "Use the variable name in the Gross formula to add it; shown separately on the payslip"
+  ,"payNetVarsHint": "Use the variable name in the Net formula to subtract it; shown separately on the payslip"
+  ,"payHideFromFormula": "Hide from formula editor"
+  ,"payShowInFormula": "Show in formula editor"
+  ,"payInvalidRate": "Invalid rate"
+  ,"payNameFormatError": "Name must start with an uppercase letter and use only A-Z, 0-9, _"
+  ,"payVarNameFormatError": "Variable name must start with an uppercase letter and contain only A-Z, 0-9, _"
+  ,"payNoItems": "No items yet"
+  ,"payPayslipLabel": "Name shown on payslip"
+  ,"payPayslipLabelHint": "E.g. May advance"
+  ,"payPrivateVarNameHint": "E.g. COMMISSION"
+  ,"payPrivateVarExprHint": "E.g. BASE_RATE * 0.1"
+  ,"payUnderstood": "Got it"
+  ,"payUpdateAction": "Update"
+  ,"payVarCategoryLabel": "Group / Module (optional)"
+  ,"payVarCategoryHint": "E.g. Insurance, Allowances, Tax..."
+  ,"payVarCategoryOther": "Other"
+  ,"payVarDeleteConfirm": "Delete variable \"{name}\"?"
+  ,"@payVarDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
+  ,"payVarGroup": "Group"
+  ,"payVarNameExists": "Variable name \"{name}\" already exists"
+  ,"@payVarNameExists": { "placeholders": { "name": { "type": "String" } } }
+  ,"payVarNameExistsPlain": "Variable name already exists"
+  ,"payVarNameRequired": "Please enter a variable name"
+  ,"payVarSearchHint": "Search name, description, expression..."
+  ,"payVarUsedInFormulas": "Variable \"{name}\" is used in {count} formula(s):"
+  ,"@payVarUsedInFormulas": { "placeholders": { "name": { "type": "String" }, "count": { "type": "String" } } }
+  ,"xlColumnsOfType": "{count} {type} columns"
+  ,"@xlColumnsOfType": { "placeholders": { "count": { "type": "String" }, "type": { "type": "String" } } }
+  ,"xlSelectExportColumns": "Columns to export"
+  ,"xlRequiredForReimport": "(*) Required for re-import"
+  ,"xlNoFilters": "No filters"
+  ,"xlFilters": "Filters"
+  ,"xlExportOnlyTooltip": "Export only, not importable"
+  ,"xlGroupContractSalary": "Contract & Salary"
+  ,"xlGroupComputed": "Computed data"
+  ,"xlGroupOverride": "Manual overrides"
+  ,"xlGroupIdentification": "Identification"
+  ,"xlGroupDeductions": "Deductions & Net"
+  ,"xlGroupPeriodHours": "Pay period & Work hours"
+  ,"xlFilterStatusInactive": "Resigned"
+  ,"xlFilterHalfDay": "Half day"
+  ,"xlFilterPayType": "Pay type"
+  ,"xlFilterVariableCategory": "Variable group"
+  ,"xlSearchNameOrCode": "Search name or code..."
+  ,"xlErrorsCount": "Errors ({count})"
+  ,"@xlErrorsCount": { "placeholders": { "count": { "type": "String" } } }
+  ,"xlWarnEmployeeExistsSkipped": "Employee already exists — skipped"
+  ,"xlErrEmployeeNotFound": "Employee not found"
+  ,"xlErrEmployeeAlreadyExists": "Employee already exists"
+  ,"xlChangesCount": "{count} changes"
+  ,"@xlChangesCount": { "placeholders": { "count": { "type": "String" } } }
+  ,"empDeleteSalaryConfirm": "Delete this salary entry?"
+  ,"empSalaryMustBePositive": "Salary must be > 0"
+  ,"empContractSalaryVnd": "Contract salary (VND)"
+  ,"empContractSalaryHint": "e.g. 20000000"
+  ,"dashDateFromLabel": "From: {date}"
+  ,"@dashDateFromLabel": { "placeholders": { "date": { "type": "String" } } }
+  ,"dashDateToLabel": "To: {date}"
+  ,"@dashDateToLabel": { "placeholders": { "date": { "type": "String" } } }
+  ,"dashMonthShort": "M{month}"
+  ,"@dashMonthShort": { "placeholders": { "month": { "type": "String" } } }
+  ,"dashMonthYearShort": "{month}/{year}"
+  ,"@dashMonthYearShort": { "placeholders": { "month": { "type": "String" }, "year": { "type": "String" } } }
+  ,"uiJustNow": "Just now"
+  ,"uiMinutesAgo": "{minutes} min ago"
+  ,"@uiMinutesAgo": { "placeholders": { "minutes": { "type": "String" } } }
+  ,"uiHoursAgo": "{hours} h ago"
+  ,"@uiHoursAgo": { "placeholders": { "hours": { "type": "String" } } }
+  ,"uiDaysAgo": "{days} days ago"
+  ,"@uiDaysAgo": { "placeholders": { "days": { "type": "String" } } }
+  ,"uiRowsEditing": "{count} rows being edited"
+  ,"@uiRowsEditing": { "placeholders": { "count": { "type": "String" } } }
+  ,"uiApproveAttendanceConfirm": "Approve attendance for {name} on {date}?"
+  ,"@uiApproveAttendanceConfirm": { "placeholders": { "name": { "type": "String" }, "date": { "type": "String" } } }
+  ,"uiUnapproveAttendanceConfirm": "Unapprove attendance for {name} on {date}? The data will be recalculated."
+  ,"@uiUnapproveAttendanceConfirm": { "placeholders": { "name": { "type": "String" }, "date": { "type": "String" } } }
+  ,"uiToleranceMustBeNonNegative": "Tolerance must be a number >= 0"
+  ,"uiPayrollCutoffDayHelper": "1–28. E.g. 25 → May period = 25/4–24/5"
+  ,"uiCheckInToleranceMinutes": "Check-in tolerance (minutes)"
+  ,"uiCheckOutToleranceMinutes": "Check-out tolerance (minutes)"
+  ,"uiRoundCheckIn": "Check-in rounding"
+  ,"uiRoundCheckOut": "Check-out rounding"
+  ,"uiRoundWorkHours": "Day/night/OT hours rounding"
+  ,"uiNotApplied": "Not applied"
+  ,"uiMinutesValue": "{minutes} min"
+  ,"@uiMinutesValue": { "placeholders": { "minutes": { "type": "String" } } }
+  ,"uiLeaveHistoryTitle": "Leave history — {name}"
+  ,"@uiLeaveHistoryTitle": { "placeholders": { "name": { "type": "String" } } }
+  ,"uiGrantDate": "Granted on"
+  ,"uiSource": "Source"
+  ,"uiGranted": "Granted"
+  ,"uiUsed": "Used"
+  ,"uiRemaining": "Remaining"
+  ,"uiManual": "Manual"
+  ,"uiAutomatic": "Automatic"
+  ,"uiHoursMinutesShort": "{hours}h{minutes}m"
+  ,"@uiHoursMinutesShort": { "placeholders": { "hours": { "type": "String" }, "minutes": { "type": "String" } } }
+  ,"uiCheckResultChannelName": "Check-in/out results"
+  ,"uiNotifSessionExpired": "Session expired — please open the app"
+  ,"uiNotifCheckInSuccess": "Checked in successfully!"
+  ,"uiNotifCheckOutSuccess": "Checked out successfully!"
+  ,"uiNotifConnectionError": "Connection error — please check in the app"
+  ,"uiNotifOpenAndCheckIn": "Open & Check in"
+  ,"uiNotifOpenAndCheckOut": "Open & Check out"
+  ,"uiNotifGpsRequiredCheckIn": "Your company requires GPS — tap to check in when the app opens"
+  ,"uiNotifGpsRequiredCheckOut": "Your company requires GPS — tap to check out when the app opens"
+  ,"uiNotifCheckInFailed": "Unable to check in"
+  ,"uiNotifCheckOutFailed": "Unable to check out"
 }

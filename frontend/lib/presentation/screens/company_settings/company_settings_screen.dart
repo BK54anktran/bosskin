@@ -178,7 +178,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     if ((ciTolText.isNotEmpty && (ciTol == null || ciTol < 0)) ||
         (coTolText.isNotEmpty && (coTol == null || coTol < 0))) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dung sai phải là số >= 0'), backgroundColor: AppTheme.error),
+        SnackBar(content: Text(s.uiToleranceMustBeNonNegative), backgroundColor: AppTheme.error),
       );
       return;
     }
@@ -343,7 +343,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                             decoration: InputDecoration(
                               labelText: s.payrollCutoffDayLabel,
                               suffixText: s.daysSuffix,
-                              helperText: '1–28. VD: 25 → kỳ tháng 5 = 25/4–24/5',
+                              helperText: s.uiPayrollCutoffDayHelper,
                             ),
                           ),
                         ],
@@ -432,7 +432,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                                 child: TextFormField(
                                   controller: _checkInToleranceCtrl,
                                   keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(labelText: 'Dung sai check-in (phút)'),
+                                  decoration: InputDecoration(labelText: s.uiCheckInToleranceMinutes),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -440,7 +440,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                                 child: TextFormField(
                                   controller: _checkOutToleranceCtrl,
                                   keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(labelText: 'Dung sai check-out (phút)'),
+                                  decoration: InputDecoration(labelText: s.uiCheckOutToleranceMinutes),
                                 ),
                               ),
                             ],
@@ -451,11 +451,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                               Expanded(
                                 child: DropdownButtonFormField<int?>(
                                   initialValue: _roundCheckInMinutes,
-                                  decoration: const InputDecoration(labelText: 'Làm tròn check-in'),
+                                  decoration: InputDecoration(labelText: s.uiRoundCheckIn),
                                   items: const [null, 1, 5, 15, 30, 60]
                                       .map((v) => DropdownMenuItem<int?>(
                                             value: v,
-                                            child: Text(v == null ? 'Không áp dụng' : '$v phút'),
+                                            child: Text(v == null ? s.uiNotApplied : s.uiMinutesValue('$v')),
                                           ))
                                       .toList(),
                                   onChanged: (v) => setState(() => _roundCheckInMinutes = v),
@@ -465,11 +465,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                               Expanded(
                                 child: DropdownButtonFormField<int?>(
                                   initialValue: _roundCheckOutMinutes,
-                                  decoration: const InputDecoration(labelText: 'Làm tròn check-out'),
+                                  decoration: InputDecoration(labelText: s.uiRoundCheckOut),
                                   items: const [null, 1, 5, 15, 30, 60]
                                       .map((v) => DropdownMenuItem<int?>(
                                             value: v,
-                                            child: Text(v == null ? 'Không áp dụng' : '$v phút'),
+                                            child: Text(v == null ? s.uiNotApplied : s.uiMinutesValue('$v')),
                                           ))
                                       .toList(),
                                   onChanged: (v) => setState(() => _roundCheckOutMinutes = v),
@@ -480,11 +480,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                           const SizedBox(height: 12),
                           DropdownButtonFormField<int?>(
                             initialValue: _roundWorkMinutes,
-                            decoration: const InputDecoration(labelText: 'Làm tròn giờ ngày/đêm/OT'),
+                            decoration: InputDecoration(labelText: s.uiRoundWorkHours),
                             items: const [null, 1, 5, 15, 30, 60]
                                 .map((v) => DropdownMenuItem<int?>(
                                       value: v,
-                                      child: Text(v == null ? 'Không áp dụng' : '$v phút'),
+                                      child: Text(v == null ? s.uiNotApplied : s.uiMinutesValue('$v')),
                                     ))
                                 .toList(),
                             onChanged: (v) => setState(() => _roundWorkMinutes = v),

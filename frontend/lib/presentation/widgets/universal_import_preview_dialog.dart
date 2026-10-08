@@ -98,7 +98,7 @@ class _UniversalImportPreviewDialogState
           const SizedBox(width: 4),
         ],
         if (_totalError > 0)
-          _Chip('$_totalError lỗi', Colors.red.shade900),
+          _Chip(s.excelImportResultError(_totalError), Colors.red.shade900),
       ]),
       content: SizedBox(
         width: 680,
@@ -166,16 +166,17 @@ class _SheetSection extends StatelessWidget {
   const _SheetSection(
       {required this.type, required this.rows, required this.s});
 
-  static const _typeLabels = {
-    'employee':   'Nhân viên',
-    'department': 'Phòng ban',
-    'position':   'Chức vụ',
-    'shift':      'Ca làm việc',
+  String _typeLabel(String type) => switch (type) {
+    'employee'   => s.excelModuleEmployee,
+    'department' => s.excelModuleDepartment,
+    'position'   => s.excelModulePosition,
+    'shift'      => s.excelModuleShift,
+    _            => type,
   };
 
   @override
   Widget build(BuildContext context) {
-    final label = _typeLabels[type] ?? type;
+    final label = _typeLabel(type);
     final warns   = rows.where((r) => r.action == 'WARN').toList();
     final creates = rows.where((r) => r.action == 'CREATE' && !r.isError).toList();
     final merges  = rows.where((r) => r.action == 'MERGE'  && !r.isError).toList();
@@ -201,7 +202,7 @@ class _SheetSection extends StatelessWidget {
                   color: Color(0xFF3B82F6))),
           const SizedBox(width: 8),
           if (skips > 0)
-            Text('$skips bỏ qua',
+            Text(s.excelImportResultSkip(skips),
                 style: TextStyle(fontSize: 11, color: Colors.grey[500])),
           const SizedBox(width: 8),
           const Expanded(
@@ -234,7 +235,7 @@ class _SheetSection extends StatelessWidget {
           ...warns.map((r) => _DiffTile(diff: r, color: Colors.orange, isWarning: true)),
         ],
         if (errors.isNotEmpty) ...[
-          _RowGroupHeader('Lỗi (${errors.length})', Colors.red.shade900,
+          _RowGroupHeader(s.xlErrorsCount('${errors.length}'), Colors.red.shade900,
               Icons.error_outline),
           ...errors.map((r) => _DiffTile(diff: r, color: Colors.red.shade900, isError: true)),
         ],
@@ -290,18 +291,12 @@ Map<String, String> _buildColLabels(AppLocalizations s) => {
   'excel.col.employee.bankName':      s.excelColEmployeeBankName,
 };
 
-const _keyMessages = <String, Map<String, String>>{
-  'warning.employee.already_exists': {'vi': 'Nhân viên đã tồn tại — bỏ qua', 'en': 'Employee already exists — skipped'},
-  'error.employee.not_found':        {'vi': 'Không tìm thấy nhân viên',       'en': 'Employee not found'},
-  'error.employee.already_exists':   {'vi': 'Nhân viên đã tồn tại',           'en': 'Employee already exists'},
+String _translateKey(String key, AppLocalizations s) => switch (key) {
+  'warning.employee.already_exists' => s.xlWarnEmployeeExistsSkipped,
+  'error.employee.not_found'        => s.xlErrEmployeeNotFound,
+  'error.employee.already_exists'   => s.xlErrEmployeeAlreadyExists,
+  _                                 => key,
 };
-
-String _translateKey(String key, AppLocalizations s) {
-  final isEn = s.localeName == 'en';
-  final map = _keyMessages[key];
-  if (map != null) return map[isEn ? 'en' : 'vi'] ?? key;
-  return key;
-}
 
 class _SummaryItem {
   final String label;

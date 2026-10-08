@@ -156,7 +156,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Text('T$mo',
+                      child: Text(s.dashMonthShort('$mo'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -556,7 +556,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             final idx = v.toInt();
                             if (idx < 0 || idx >= growthData.length) return const SizedBox();
                             final d = growthData[idx] as Map<String, dynamic>;
-                            return Text('T${d['month']}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)));
+                            return Text(s.dashMonthShort('${d['month']}'), style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)));
                           })),
                       rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -566,7 +566,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         getTooltipItem: (group, _, rod, __) {
                           final d = growthData[group.x] as Map<String, dynamic>;
                           return BarTooltipItem(
-                            'T${d['month']}/${d['year']}\n${rod.toY.toInt()} công ty',
+                            '${s.dashMonthYearShort('${d['month']}', '${d['year']}')}\n${s.adminCompanyCount(rod.toY.toInt())}',
                             const TextStyle(color: Colors.white, fontSize: 12),
                           );
                         },
@@ -662,7 +662,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       const Icon(Icons.calendar_month_outlined, size: 15, color: Color(0xFF6366F1)),
                       const SizedBox(width: 6),
-                      Text('T$_selectedMonth/$_selectedYear',
+                      Text(s.dashMonthYearShort('$_selectedMonth', '$_selectedYear'),
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF6366F1))),
                       const SizedBox(width: 4),
                       const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFF6366F1)),

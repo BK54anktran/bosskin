@@ -734,13 +734,14 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
   }
 
   Future<void> _delete(SalaryHistory sh) async {
+    final s = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: const Text('Xoá mức lương này?'),
+        content: Text(s.empDeleteSalaryConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Xoá')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.delete)),
         ],
       ),
     );
@@ -816,7 +817,7 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
         return ListTile(
           dense: true,
           title: Text(
-            'Tháng ${p.month}/${p.year}',
+            s.adminStatsMonth(p.month, p.year),
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
@@ -941,7 +942,7 @@ class _SalaryHistoryFormDialogState extends State<_SalaryHistoryFormDialog> {
   Future<void> _save() async {
     final salary = double.tryParse(_salaryCtrl.text.replaceAll(',', ''));
     if (salary == null || salary <= 0) {
-      setState(() => _error = 'Lương phải > 0');
+      setState(() => _error = AppLocalizations.of(context).empSalaryMustBePositive);
       return;
     }
     setState(() { _saving = true; _error = null; });

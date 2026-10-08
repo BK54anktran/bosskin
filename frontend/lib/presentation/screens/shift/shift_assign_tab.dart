@@ -517,8 +517,9 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     } else {
       try {
         final s = widget.shifts.firstWhere((s) => s.id == a.shiftId);
+        final wh = s.workHoursLabel(AppLocalizations.of(context));
         final hours =
-            s.workHoursLabel.isNotEmpty ? '  (${s.workHoursLabel})' : '';
+            wh.isNotEmpty ? '  ($wh)' : '';
         tooltipText = '${s.name}\n${s.timeLabel}$hours';
       } catch (_) {
         tooltipText = a.shiftName ?? a.shiftCode ?? '';

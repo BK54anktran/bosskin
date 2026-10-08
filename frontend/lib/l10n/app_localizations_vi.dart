@@ -3105,4 +3105,449 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get permDescExcelImport => 'Nhập Excel tổng hợp';
+
+  @override
+  String payAddItemTitle(String item) {
+    return 'Thêm $item';
+  }
+
+  @override
+  String payEditItemTitle(String item) {
+    return 'Sửa $item';
+  }
+
+  @override
+  String get payAmountExprHint => 'VD: 500000   hoặc   ABSENT_DAYS * 50000';
+
+  @override
+  String get payAmountExprLabel => 'Biểu thức (số tiền hoặc công thức)';
+
+  @override
+  String get payCustomVarAddTitle => 'Thêm biến tùy chỉnh';
+
+  @override
+  String get payCustomVarEditTitle => 'Sửa biến tùy chỉnh';
+
+  @override
+  String get payHourShort => 'Giờ';
+
+  @override
+  String get payDayShort => 'Ngày';
+
+  @override
+  String payDeductionDeleteConfirm(String name) {
+    return 'Xoá khoản khấu trừ \"$name\"?';
+  }
+
+  @override
+  String get payDeductionItemsTitle => 'Khoản khấu trừ';
+
+  @override
+  String get payDeductionKeyHint => 'VD: ADVANCE_DEDUCT';
+
+  @override
+  String payDeleteNamed(String name) {
+    return 'Xoá $name';
+  }
+
+  @override
+  String payEditNamed(String name) {
+    return 'Sửa $name';
+  }
+
+  @override
+  String get payDuplicate => 'Nhân bản';
+
+  @override
+  String get payExprRequired => 'Vui lòng nhập biểu thức';
+
+  @override
+  String get payFillAllFields => 'Vui lòng điền đầy đủ';
+
+  @override
+  String get payFillAllInfo => 'Vui lòng điền đầy đủ thông tin';
+
+  @override
+  String get payFormulaAddTitle => 'Thêm công thức lương';
+
+  @override
+  String get payFormulaCustomizeTitle => 'Chỉnh sửa công thức lương';
+
+  @override
+  String get payFormulaEditTitle => 'Sửa công thức lương';
+
+  @override
+  String get payFormulaDuplicateTitle => 'Nhân bản công thức lương';
+
+  @override
+  String payFormulaDeleteConfirm(String name) {
+    return 'Xoá công thức lương \"$name\"?';
+  }
+
+  @override
+  String payFormulaEditedName(String name) {
+    return '$name (đã chỉnh sửa)';
+  }
+
+  @override
+  String get payFormulaIncomplete => 'Vui lòng nhập đầy đủ công thức';
+
+  @override
+  String get payFormulaInlineNote =>
+      'Thay đổi chỉ áp dụng cho bảng lương này. Công thức gốc không bị ảnh hưởng.';
+
+  @override
+  String get payFormulaNameHint => 'VD: Lương tháng — ca ngày';
+
+  @override
+  String get payFormulaNameLabel => 'Tên công thức';
+
+  @override
+  String get payFormulaNameRequired => 'Vui lòng nhập tên công thức';
+
+  @override
+  String payFormulaVarsChipHint(String label) {
+    return '$label — nhấn chip để chèn vào công thức đang focus';
+  }
+
+  @override
+  String payFromDate(String date) {
+    return 'Từ $date';
+  }
+
+  @override
+  String get payGlobalVarGroup => 'Biến Global';
+
+  @override
+  String payGradeDeleteConfirm(String name) {
+    return 'Xoá bậc lương \"$name\"?';
+  }
+
+  @override
+  String get payGradeRequired => 'Vui lòng chọn bậc lương';
+
+  @override
+  String get payGrossFormulaHint =>
+      'Vd: BASE_RATE / 22 * PRESENT_DAYS + DAY_OT * BASE_RATE / 8 * 1.5';
+
+  @override
+  String get payNetFormulaHint =>
+      'Vd: GROSS - GROSS * SOCIAL_INS_RATE - GROSS * HEALTH_INS_RATE';
+
+  @override
+  String get payGrossVarsHint =>
+      'Dùng tên biến trong công thức Gross để cộng, hiển thị riêng trên phiếu lương';
+
+  @override
+  String get payNetVarsHint =>
+      'Dùng tên biến trong công thức Net để trừ, hiển thị riêng trên phiếu lương';
+
+  @override
+  String get payHideFromFormula => 'Ẩn khỏi công thức';
+
+  @override
+  String get payShowInFormula => 'Hiện trong công thức';
+
+  @override
+  String get payInvalidRate => 'Đơn giá không hợp lệ';
+
+  @override
+  String get payNameFormatError =>
+      'Tên phải bắt đầu bằng chữ hoa, chỉ dùng A-Z, 0-9, _';
+
+  @override
+  String get payVarNameFormatError =>
+      'Tên biến phải bắt đầu bằng chữ hoa, chỉ gồm A-Z, 0-9, _';
+
+  @override
+  String get payNoItems => 'Chưa có mục nào';
+
+  @override
+  String get payPayslipLabel => 'Tên hiển thị trên phiếu lương';
+
+  @override
+  String get payPayslipLabelHint => 'VD: Tạm ứng tháng 5';
+
+  @override
+  String get payPrivateVarNameHint => 'VD: HOA_HONG';
+
+  @override
+  String get payPrivateVarExprHint => 'VD: BASE_RATE * 0.1';
+
+  @override
+  String get payUnderstood => 'Đã hiểu';
+
+  @override
+  String get payUpdateAction => 'Cập nhật';
+
+  @override
+  String get payVarCategoryLabel => 'Nhóm / Module (tuỳ chọn)';
+
+  @override
+  String get payVarCategoryHint => 'VD: Bảo hiểm, Phụ cấp, Thuế...';
+
+  @override
+  String get payVarCategoryOther => 'Khác';
+
+  @override
+  String payVarDeleteConfirm(String name) {
+    return 'Xoá biến \"$name\"?';
+  }
+
+  @override
+  String get payVarGroup => 'Nhóm';
+
+  @override
+  String payVarNameExists(String name) {
+    return 'Tên biến \"$name\" đã tồn tại';
+  }
+
+  @override
+  String get payVarNameExistsPlain => 'Tên biến đã tồn tại';
+
+  @override
+  String get payVarNameRequired => 'Vui lòng nhập tên biến';
+
+  @override
+  String get payVarSearchHint => 'Tìm tên, mô tả, biểu thức...';
+
+  @override
+  String payVarUsedInFormulas(String name, String count) {
+    return 'Biến \"$name\" đang được dùng trong $count công thức:';
+  }
+
+  @override
+  String xlColumnsOfType(String count, String type) {
+    return '$count cột $type';
+  }
+
+  @override
+  String get xlSelectExportColumns => 'Chọn cột xuất';
+
+  @override
+  String get xlRequiredForReimport => '(*) Bắt buộc để import lại được';
+
+  @override
+  String get xlNoFilters => 'Không có bộ lọc';
+
+  @override
+  String get xlFilters => 'Bộ lọc';
+
+  @override
+  String get xlExportOnlyTooltip => 'Chỉ export, không import';
+
+  @override
+  String get xlGroupContractSalary => 'Hợp đồng & Lương';
+
+  @override
+  String get xlGroupComputed => 'Dữ liệu tổng hợp';
+
+  @override
+  String get xlGroupOverride => 'Ghi đè thủ công';
+
+  @override
+  String get xlGroupIdentification => 'Định danh';
+
+  @override
+  String get xlGroupDeductions => 'Khấu trừ & Net';
+
+  @override
+  String get xlGroupPeriodHours => 'Kỳ lương & Giờ công';
+
+  @override
+  String get xlFilterStatusInactive => 'Đã nghỉ';
+
+  @override
+  String get xlFilterHalfDay => 'Nửa ngày';
+
+  @override
+  String get xlFilterPayType => 'Loại tính lương';
+
+  @override
+  String get xlFilterVariableCategory => 'Nhóm biến';
+
+  @override
+  String get xlSearchNameOrCode => 'Tìm tên hoặc mã...';
+
+  @override
+  String xlErrorsCount(String count) {
+    return 'Lỗi ($count)';
+  }
+
+  @override
+  String get xlWarnEmployeeExistsSkipped => 'Nhân viên đã tồn tại — bỏ qua';
+
+  @override
+  String get xlErrEmployeeNotFound => 'Không tìm thấy nhân viên';
+
+  @override
+  String get xlErrEmployeeAlreadyExists => 'Nhân viên đã tồn tại';
+
+  @override
+  String xlChangesCount(String count) {
+    return '$count thay đổi';
+  }
+
+  @override
+  String get empDeleteSalaryConfirm => 'Xoá mức lương này?';
+
+  @override
+  String get empSalaryMustBePositive => 'Lương phải > 0';
+
+  @override
+  String get empContractSalaryVnd => 'Lương hợp đồng (VNĐ)';
+
+  @override
+  String get empContractSalaryHint => 'VD: 20000000';
+
+  @override
+  String dashDateFromLabel(String date) {
+    return 'Từ: $date';
+  }
+
+  @override
+  String dashDateToLabel(String date) {
+    return 'Đến: $date';
+  }
+
+  @override
+  String dashMonthShort(String month) {
+    return 'T$month';
+  }
+
+  @override
+  String dashMonthYearShort(String month, String year) {
+    return 'T$month/$year';
+  }
+
+  @override
+  String get uiJustNow => 'Vừa xong';
+
+  @override
+  String uiMinutesAgo(String minutes) {
+    return '$minutes phút trước';
+  }
+
+  @override
+  String uiHoursAgo(String hours) {
+    return '$hours giờ trước';
+  }
+
+  @override
+  String uiDaysAgo(String days) {
+    return '$days ngày trước';
+  }
+
+  @override
+  String uiRowsEditing(String count) {
+    return '$count hàng đang sửa';
+  }
+
+  @override
+  String uiApproveAttendanceConfirm(String name, String date) {
+    return 'Phê duyệt chấm công $name ngày $date?';
+  }
+
+  @override
+  String uiUnapproveAttendanceConfirm(String name, String date) {
+    return 'Bỏ phê duyệt chấm công $name ngày $date? Dữ liệu sẽ được tính toán lại.';
+  }
+
+  @override
+  String get uiToleranceMustBeNonNegative => 'Dung sai phải là số >= 0';
+
+  @override
+  String get uiPayrollCutoffDayHelper =>
+      '1–28. VD: 25 → kỳ tháng 5 = 25/4–24/5';
+
+  @override
+  String get uiCheckInToleranceMinutes => 'Dung sai check-in (phút)';
+
+  @override
+  String get uiCheckOutToleranceMinutes => 'Dung sai check-out (phút)';
+
+  @override
+  String get uiRoundCheckIn => 'Làm tròn check-in';
+
+  @override
+  String get uiRoundCheckOut => 'Làm tròn check-out';
+
+  @override
+  String get uiRoundWorkHours => 'Làm tròn giờ ngày/đêm/OT';
+
+  @override
+  String get uiNotApplied => 'Không áp dụng';
+
+  @override
+  String uiMinutesValue(String minutes) {
+    return '$minutes phút';
+  }
+
+  @override
+  String uiLeaveHistoryTitle(String name) {
+    return 'Lịch sử phép — $name';
+  }
+
+  @override
+  String get uiGrantDate => 'Cấp ngày';
+
+  @override
+  String get uiSource => 'Nguồn';
+
+  @override
+  String get uiGranted => 'Cấp';
+
+  @override
+  String get uiUsed => 'Đã dùng';
+
+  @override
+  String get uiRemaining => 'Còn lại';
+
+  @override
+  String get uiManual => 'Thủ công';
+
+  @override
+  String get uiAutomatic => 'Tự động';
+
+  @override
+  String uiHoursMinutesShort(String hours, String minutes) {
+    return '${hours}h${minutes}p';
+  }
+
+  @override
+  String get uiCheckResultChannelName => 'Kết quả check-in/out';
+
+  @override
+  String get uiNotifSessionExpired =>
+      'Phiên đăng nhập hết hạn — vui lòng mở app';
+
+  @override
+  String get uiNotifCheckInSuccess => 'Check-in thành công!';
+
+  @override
+  String get uiNotifCheckOutSuccess => 'Check-out thành công!';
+
+  @override
+  String get uiNotifConnectionError =>
+      'Lỗi kết nối — vui lòng kiểm tra trong app';
+
+  @override
+  String get uiNotifOpenAndCheckIn => 'Mở & Check-in';
+
+  @override
+  String get uiNotifOpenAndCheckOut => 'Mở & Check-out';
+
+  @override
+  String get uiNotifGpsRequiredCheckIn =>
+      'Công ty yêu cầu GPS — nhấn để check-in ngay khi mở app';
+
+  @override
+  String get uiNotifGpsRequiredCheckOut =>
+      'Công ty yêu cầu GPS — nhấn để check-out ngay khi mở app';
+
+  @override
+  String get uiNotifCheckInFailed => 'Không thể check-in';
+
+  @override
+  String get uiNotifCheckOutFailed => 'Không thể check-out';
 }

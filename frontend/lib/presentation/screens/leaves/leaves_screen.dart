@@ -2021,7 +2021,7 @@ class _EmployeeGrantHistoryDialogState
                 children: [
                   Expanded(
                     child: Text(
-                      'Lịch sử phép — ${widget.employeeName}',
+                      s.uiLeaveHistoryTitle(widget.employeeName),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -2071,7 +2071,7 @@ class _EmployeeGrantHistoryDialogState
     final s = AppLocalizations.of(context);
     final zebraColor = colorScheme.surfaceContainerHighest.withValues(alpha: 0.35);
     const colWidths = [90.0, 120.0, 110.0, 110.0, 110.0, 170.0];
-    const headers = ['Cấp ngày', 'Nguồn', 'Cấp', 'Đã dùng', 'Còn lại', 'Hiệu lực'];
+    final headers = [s.uiGrantDate, s.uiSource, s.uiGranted, s.uiUsed, s.uiRemaining, s.leaveValidity];
 
     return Column(
       children: [
@@ -2103,7 +2103,7 @@ class _EmployeeGrantHistoryDialogState
               final depleted = _isDepleted(g);
               final dimmed = expired || depleted;
               final sourceLabel =
-                  (g['source'] ?? '') == 'MANUAL' ? 'Thủ công' : 'Tự động';
+                  (g['source'] ?? '') == 'MANUAL' ? s.uiManual : s.uiAutomatic;
               return Opacity(
                 opacity: dimmed ? 0.45 : 1.0,
                 child: Container(
@@ -2203,7 +2203,7 @@ class _EmployeeGrantHistoryDialogState
         final depleted = _isDepleted(g);
         final dimmed = expired || depleted;
         final sourceLabel =
-            (g['source'] ?? '') == 'MANUAL' ? 'Thủ công' : 'Tự động';
+            (g['source'] ?? '') == 'MANUAL' ? s.uiManual : s.uiAutomatic;
         return Opacity(
           opacity: dimmed ? 0.45 : 1.0,
           child: Padding(
@@ -2252,10 +2252,10 @@ class _EmployeeGrantHistoryDialogState
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    _mobileCell('Cấp', _fmtAmt(g['grantDays'], g['grantHours'], s)),
-                    _mobileCell('Đã dùng', _fmtAmt(g['usedDays'], g['usedHours'], s)),
+                    _mobileCell(s.uiGranted, _fmtAmt(g['grantDays'], g['grantHours'], s)),
+                    _mobileCell(s.uiUsed, _fmtAmt(g['usedDays'], g['usedHours'], s)),
                     _mobileCell(
-                      'Còn lại',
+                      s.uiRemaining,
                       depleted ? s.leaveDepleted : _fmtAmt(g['remainingDays'], g['remainingHours'], s),
                       bold: true,
                       color: depleted ? AppTheme.textSecondary : AppTheme.primary,
@@ -2264,7 +2264,7 @@ class _EmployeeGrantHistoryDialogState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Hiệu lực: ${_fmtDate(g['validFrom'])} → ${_fmtDate(g['validTo'])}',
+                  '${s.leaveValidity}: ${_fmtDate(g['validFrom'])} → ${_fmtDate(g['validTo'])}',
                   style: const TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary),
                 ),
