@@ -6,7 +6,36 @@ on:
       - main
 
 jobs:
+  # Test phải xanh thì mới deploy (Mốc 0 — trước đây build bỏ qua test)
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests
+        working-directory: backend
+        run: mvn -B verify
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: backend/target/surefire-reports/
+          retention-days: 7
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -22,6 +51,7 @@ jobs:
 
       - name: Build JAR
         working-directory: backend
+        # Test đã chạy ở job "test"; ở đây chỉ đóng gói
         run: mvn clean package -DskipTests -q
 
       - name: Create deploy package

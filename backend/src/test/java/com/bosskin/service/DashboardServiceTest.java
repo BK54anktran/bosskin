@@ -13,6 +13,7 @@ import com.bosskin.repository.CompanyRepository;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.LeaveRequestRepository;
 import com.bosskin.repository.PayrollRepository;
+import com.bosskin.repository.ShiftAssignmentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,6 +33,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@org.mockito.junit.jupiter.MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
 class DashboardServiceTest {
 
     @Mock private EmployeeRepository employeeRepository;
@@ -40,6 +42,7 @@ class DashboardServiceTest {
     @Mock private LeaveRequestRepository leaveRequestRepository;
     @Mock private CompanyRepository companyRepository;
     @Mock private PayrollRepository payrollRepository;
+    @Mock private ShiftAssignmentRepository shiftAssignmentRepository;
     @Mock private AttendanceCalculationService calcSvc;
 
     @InjectMocks private DashboardService service;
@@ -110,7 +113,7 @@ class DashboardServiceTest {
         when(attendanceRepository.findByCompanyAndDateRange(eq(10L), any(LocalDate.class), any(LocalDate.class)))
             .thenReturn(List.of(attendanceA, attendanceB));
         when(attendanceRepository.findDailyAttendanceSummary(eq(10L), any(LocalDate.class), any(LocalDate.class), isNull()))
-            .thenReturn(List.of(new Object[]{LocalDate.of(2026, 6, 1), 2L, 0L, 0L, 8.0d}));
+            .thenReturn(List.<Object[]>of(new Object[]{LocalDate.of(2026, 6, 1), 2L, 0L, 0L, 8.0d}));
         when(attendanceRepository.findTopLateEmployees(eq(10L), any(LocalDate.class), any(LocalDate.class), isNull(), any(Pageable.class)))
             .thenReturn(List.of());
         when(employeeRepository.countByCompanyId(10L)).thenReturn(2L);

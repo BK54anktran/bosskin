@@ -22,7 +22,19 @@
     <java.version>17</java.version>
     <jjwt.version>0.12.5</jjwt.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <surefire.excludedGroups>known-bug</surefire.excludedGroups>
+    <surefire.groups></surefire.groups>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>known-bugs</id>
+      <properties>
+        <surefire.excludedGroups></surefire.excludedGroups>
+        <surefire.groups>known-bug</surefire.groups>
+      </properties>
+    </profile>
+  </profiles>
 
   <dependencies>
     <!-- Spring Boot Core -->
@@ -105,6 +117,22 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Integration test với MySQL thật (Docker) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mysql</artifactId>
+      <scope>test</scope>
+    </dependency>
     <!-- .env file support -->
     <dependency>
       <groupId>me.paulschwarz</groupId>
@@ -136,6 +164,19 @@
 
   <build>
     <plugins>
+      <!--
+        Test gắn @Tag("known-bug") tái hiện lỗi đã biết (xem docs/review-2026-10/danh-gia.html).
+        Mặc định bị loại khỏi build/CI; chạy riêng: mvn test -Pknown-bugs
+        Sửa xong lỗi nào thì bỏ tag của test đó để nó thành test hồi quy bình thường.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludedGroups>${surefire.excludedGroups}</excludedGroups>
+          <groups>${surefire.groups}</groups>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

@@ -354,3 +354,17 @@ Cao nhất: **V105** (`V105__attendance_soft_delete.sql`)
 - Tháng export theo `PayrollPeriod` (cutoff day), không phải tháng calendar.
 - Freeze 3 cột đầu (Mã NV, Họ tên, Phòng ban) khi export.
 - Import phân công ca đọc tên sheet để parse tháng/năm.
+
+---
+
+## Test (backend)
+
+- Chạy: `cd backend && mvn verify` — cần Docker (Testcontainers dựng MySQL 8 thật, chạy toàn bộ migration).
+- Integration test kế thừa `support/IntegrationTest`; dữ liệu mẫu lấy từ `Fixture`:
+  - `fixture.standardCompany()` — 3 phòng ban, 10 NV, ca HC/DEM/SANG/CHIEU, vai trò Nhân viên/Quản lý chấm công/Kế toán, phép PN/KL, bậc lương NGAY300.
+  - `fixture.newCompany()` — công ty trống chỉ có admin.
+  - Gọi API qua `api.get/post/put/...(token, url, body)`; mỗi test tự tạo công ty riêng, không cần dọn DB.
+- Test gắn `@Tag("known-bug")` tái hiện lỗi đã biết (xem `docs/review-2026-10/danh-gia.html`), bị loại khỏi build mặc định.
+  Chạy riêng: `mvn test -Pknown-bugs`. Sửa xong lỗi nào thì **bỏ tag** của test đó để nó thành test hồi quy.
+- Sửa lỗi nghiệp vụ → viết/bật test tương ứng trong cùng commit.
+- CI: `.github/workflows/test.yml` chạy cho mọi nhánh/PR; `deploy.yml` chỉ deploy khi test xanh.

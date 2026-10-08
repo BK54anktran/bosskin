@@ -1,0 +1,25 @@
+spring:
+  flyway:
+    # Test luôn kiểm checksum migration, phát hiện file migration bị sửa sau khi đã chạy
+    validate-on-migrate: true
+  jpa:
+    show-sql: false
+
+app:
+  s3:
+    # Không gọi S3 thật khi test; giá trị giả chỉ để khởi tạo client
+    access-key: test
+    secret-key: test
+    bucket: bosskin-test
+    endpoint: http://localhost:9
+  firebase:
+    # Không bao giờ dùng service account thật khi chạy test
+    service-account-path: /nonexistent/firebase-test.json
+  map-tiles:
+    cache-dir: ${java.io.tmpdir}/bosskin-test-map-tiles
+
+logging:
+  level:
+    com.bosskin: INFO
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN

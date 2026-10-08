@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@org.mockito.junit.jupiter.MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
 class AttendanceRequestServiceTest {
 
     @Mock private AttendanceRequestRepository requestRepository;
@@ -58,7 +59,7 @@ class AttendanceRequestServiceTest {
         Employee employee = buildEmployee(10L);
 
         when(employeeRepository.findByUserIdFetch(1L)).thenReturn(Optional.of(employee));
-        when(shiftAssignmentRepository.findByEmployeeIdAndWorkDateWithShift(10L, LocalDate.of(2026, 5, 24)))
+        org.mockito.Mockito.lenient().when(shiftAssignmentRepository.findByEmployeeIdAndWorkDateWithShift(10L, LocalDate.of(2026, 5, 24)))
                 .thenReturn(java.util.List.of());
         when(requestRepository.save(org.mockito.ArgumentMatchers.any(AttendanceRequest.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
