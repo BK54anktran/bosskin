@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 08/10/2026 (chiều)</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 08/10/2026 (tối)</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -57,11 +57,13 @@
       <tr><td><b>1</b> · Schema & bảo mật</td><td><span class="st done">Đã xong 08/10</span></td><td><code>golive/m1-security</code> → đã gộp vào <code>main</code></td>
         <td>41 test xanh. Đã sửa S1–S10, S12, S13, D1–D4, A1, A2, A9; gộp V1–V117 thành <code>V1__baseline.sql</code>; thêm quyền <code>ATTENDANCE_APPROVE</code>, <code>EXCEL_EXPORT</code>, <code>EXCEL_IMPORT</code>.
           <br><span class="muted">Còn lại: access token 24 giờ (rút ngắn cùng Mốc 4), chính sách mật khẩu và 2FA, phạm vi "toàn công ty" ghi tường minh thay vì suy từ rỗng.</span></td></tr>
-      <tr><td><b>2</b> · Chấm công & khoá kỳ</td><td><span class="st doing">Phần lớn xong 08/10</span></td><td><code>golive/m2-attendance</code></td>
-        <td>56 test xanh. Đã làm: Clock giả lập giờ; ca đêm liên tiếp + nút check-out ca đêm (A3, A4); về sớm vẫn check-out được (A14); đi muộn theo dung sai (A13); trạng thái công khi duyệt/bỏ duyệt (A5, L1); chặn xoá phân ca đã có công (A7); import phân ca đối chiếu – cập nhật (A6); phân ca hàng loạt dùng chung kiểm tra (A8); tính công theo snapshot ca (A11); chặn GPS giả lập (A19); <b>khoá kỳ công theo ngày chốt</b> (A12).
-          <br><span class="muted">Còn lại: giới hạn OT theo giờ có mặt (A15), đơn sửa giờ thay giờ thực (A16), giờ làm ca qua đêm trong ca mẫu (A17), import bảng công transaction từng dòng (A18), nhắc nhở scheduler theo khoảng giờ, gắn thiết bị (cần FE gửi mã máy), màn hình khoá/mở kỳ trên FE. Giới hạn 2 ca/ngày giữ nguyên, mở rộng ở Mốc 2b.</span></td></tr>
+      <tr><td><b>2</b> · Chấm công & khoá kỳ</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m2-attendance</code>, <code>golive/m3-leave-payroll</code></td>
+        <td>Đã làm A3–A8, A11–A19: ca đêm, về sớm, đi muộn theo dung sai, trạng thái khi duyệt, chặn xoá phân ca có công, import phân ca đối chiếu, phân ca hàng loạt, snapshot giờ ca, <b>khoá kỳ công</b>, chặn GPS giả, đơn sửa giờ thay giờ thực, trần OT theo giờ có mặt, phút làm ca qua đêm, import duyệt từng dòng, nhắc nhở theo khoảng giờ, chặn tự duyệt đơn.
+          <br><span class="muted">Còn lại (làm cùng frontend): màn hình khoá/mở kỳ, gắn thiết bị (FE gửi mã máy), lấy GPS lúc bấm nút. Giới hạn 2 ca/ngày mở ở Mốc 2b.</span></td></tr>
       <tr><td><b>2b</b> · Ca đa năng</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
-      <tr><td><b>3</b> · Phép & lương</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td>Test <code>known-bug</code> còn đỏ: L3, L8 (L1 đã sửa ở Mốc 2).</td></tr>
+      <tr><td><b>3</b> · Phép & lương</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m3-leave-payroll</code></td>
+        <td>71 test xanh, không còn test <code>known-bug</code> nào đỏ. Phép: quỹ theo loại phép, chồng ngày, mode theo đơn vị, huỷ đơn theo quyền, cộng phép tự động hằng ngày (L8–L12, L14). Lương: biến hệ thống, thứ tự tính trước/sau GROSS, IF/ROUND, BH/thuế dùng được trong NET, chỉnh tay và tính lại tại chỗ, lưu người duyệt/trả (L1–L3, L5–L7, L15, L16, L18).
+          <br><span class="muted">Còn lại: sổ ghi trừ/hoàn phép theo từng đơn (L13), quỹ phép tách theo loại; FE: màn loại phép (cờ trừ quỹ), lỗi công thức chi tiết, phiếu lương thống nhất tổng khấu trừ.</span></td></tr>
       <tr><td><b>4</b> · Frontend</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td>Đã làm trước: bản dịch mã lỗi mới, nút duyệt công theo quyền <code>ATTENDANCE_APPROVE</code>.</td></tr>
       <tr><td><b>5</b> · Vận hành & UAT</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
     </tbody>
@@ -112,10 +114,10 @@ gantt
   section Backend
   Mốc 0 · Khung test và dữ liệu mẫu (xong)    :done, m0, 2026-10-08, 1d
   Mốc 1 · Schema sạch và bảo mật (xong)       :done, m1, 2026-10-08, 1d
-  Mốc 2 · Chấm công đúng và khoá kỳ (phần lớn) :active, m2, 2026-10-08, 3d
+  Mốc 2 · Chấm công đúng và khoá kỳ (BE xong) :done, m2, 2026-10-08, 1d
   Mốc 2b · Ca đa năng                         :m2b, after m2, 6d
-  Mốc 3a · Nghỉ phép                          :m3a, after m2b, 4d
-  Mốc 3b · Bảng lương                         :m3b, after m3a, 8d
+  Mốc 3a · Nghỉ phép (BE xong)                :done, m3a, 2026-10-08, 1d
+  Mốc 3b · Bảng lương (BE xong)               :done, m3b, 2026-10-08, 1d
   Mốc 5 · Sẵn sàng vận hành                   :m5, after m3b, 5d
   section Frontend
   Mốc 4a · Sửa lỗi FE độc lập                 :crit, f1, 2026-10-15, 4d
@@ -182,7 +184,7 @@ gantt
   </div>
 
   <div class="card ms" style="margin-top:14px">
-    <div class="when"><b>Mốc 2</b>10 ngày · BE<br>+ 5 ngày FE<br><span class="st doing">Phần lớn xong</span></div>
+    <div class="when"><b>Mốc 2</b>10 ngày · BE<br>+ 5 ngày FE<br><span class="st done">Backend xong</span></div>
     <div>
       <h3 style="margin-top:0">Chấm công đúng và khoá kỳ</h3>
       <p class="lead">Gom toàn bộ thay đổi trong <code>AttendanceController</code>, <code>AttendanceCalculationService</code>, <code>WorkShiftService</code> vào một đợt; tiện thể tách logic khỏi controller. Pilot dùng mọi loại ca, nên mỗi sửa đổi phải chạy qua đủ kịch bản: ca ngày, ca đêm, ca qua đêm, nhiều ca trong 1 ngày.</p>
@@ -232,7 +234,7 @@ gantt
   </div>
 
   <div class="card ms" style="margin-top:14px">
-    <div class="when"><b>Mốc 3</b>12 ngày · BE<br>+ 5 ngày FE</div>
+    <div class="when"><b>Mốc 3</b>12 ngày · BE<br>+ 5 ngày FE<br><span class="st done">Backend xong</span></div>
     <div>
       <h3 style="margin-top:0">Nghỉ phép (3a) và bảng lương (3b)</h3>
       <ul class="clean">
