@@ -59,13 +59,37 @@
           <br><span class="muted">Còn lại: access token 24 giờ (rút ngắn cùng Mốc 4), chính sách mật khẩu và 2FA, phạm vi "toàn công ty" ghi tường minh thay vì suy từ rỗng.</span></td></tr>
       <tr><td><b>2</b> · Chấm công & khoá kỳ</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m2-attendance</code>, <code>golive/m3-leave-payroll</code></td>
         <td>Đã làm A3–A8, A11–A19: ca đêm, về sớm, đi muộn theo dung sai, trạng thái khi duyệt, chặn xoá phân ca có công, import phân ca đối chiếu, phân ca hàng loạt, snapshot giờ ca, <b>khoá kỳ công</b>, chặn GPS giả, đơn sửa giờ thay giờ thực, trần OT theo giờ có mặt, phút làm ca qua đêm, import duyệt từng dòng, nhắc nhở theo khoảng giờ, chặn tự duyệt đơn.
-          <br><span class="muted">Còn lại (làm cùng frontend): màn hình khoá/mở kỳ, gắn thiết bị (FE gửi mã máy), lấy GPS lúc bấm nút. Giới hạn 2 ca/ngày mở ở Mốc 2b.</span></td></tr>
+          <br><span class="muted">Còn lại: gắn thiết bị (FE đã gửi mã máy, BE chưa kiểm), lấy GPS lúc bấm nút. (Màn khoá kỳ xong ở 4b, giới hạn ca/ngày mở ở 2b.)</span></td></tr>
       <tr><td><b>2b</b> · Ca đa năng</td><td><span class="st done">Xong 08/10</span></td><td><code>golive/m2b-shifts</code></td><td>Ca linh hoạt (đủ số giờ trong khung, thiếu giờ = đi muộn, giờ công chặn ở số giờ phải làm); ca chia đôi (nghỉ dài giữa ca); tối đa 4 ca/ngày; mẫu xoay ca + sinh phân ca cho nhiều NV (lệch ngày từng người, ngày đã có công giữ nguyên); đổi ca / nhường ca có quản lý duyệt (quyền <code>SHIFT_SWAP_APPROVE</code>). Migration V5, test <code>ShiftTypesTest</code> (6 ca kiểm). FE: loại ca trong form ca, tab "Xoay ca", màn "Đổi ca". Seed TH company có đủ các loại ca.</td></tr>
       <tr><td><b>3</b> · Phép & lương</td><td><span class="st done">Backend xong 08/10</span></td><td><code>golive/m3-leave-payroll</code></td>
         <td>71 test xanh, không còn test <code>known-bug</code> nào đỏ. Phép: quỹ theo loại phép, chồng ngày, mode theo đơn vị, huỷ đơn theo quyền, cộng phép tự động hằng ngày (L8–L12, L14). Lương: biến hệ thống, thứ tự tính trước/sau GROSS, IF/ROUND, BH/thuế dùng được trong NET, chỉnh tay và tính lại tại chỗ, lưu người duyệt/trả (L1–L3, L5–L7, L15, L16, L18).
-          <br><span class="muted">Còn lại: sổ ghi trừ/hoàn phép theo từng đơn (L13), quỹ phép tách theo loại; FE: màn loại phép (cờ trừ quỹ), lỗi công thức chi tiết, phiếu lương thống nhất tổng khấu trừ.</span></td></tr>
+          <br><span class="muted">Còn lại: sổ ghi trừ/hoàn phép theo từng đơn (L13), quỹ phép tách theo loại; FE: lỗi công thức chi tiết, phiếu lương thống nhất tổng khấu trừ. (Cờ trừ quỹ trên màn loại phép xong ở 4b.)</span></td></tr>
       <tr><td><b>4</b> · Frontend</td><td><span class="st done">Xong 08/10</span></td><td><code>golive/m4-frontend</code>, <code>golive/m4b-frontend</code></td><td>F1 check-in từ thông báo gọi đúng API; F2/F3 refresh token chỉ khi 401, dùng chung một lần refresh, hết phiên thì đăng xuất; F4 không "ghi nhớ" vẫn dùng được; F5 banner impersonate + nút thoát; F7 địa chỉ server qua <code>--dart-define=API_HOST</code>, ô đổi server chỉ ở bản debug. Đã làm trước: bản dịch mã lỗi mới, nút duyệt công theo quyền <code>ATTENDANCE_APPROVE</code>.<br><b>4b:</b> màn khoá/mở kỳ công; công tắc "trừ quỹ phép"; F8 quyền vào màn gom một chỗ (sửa lệch /excel, /profile/edit-requests); F9 phân trang + tìm kiếm phía server cho đơn nghỉ và đơn chấm công, ô chọn NV không còn cắt ở 500; F10 FCM token theo phiên (đăng xuất gỡ token, máy dùng chung, token chết tự gỡ); F12 cache web no-cache + tôn trọng cỡ chữ hệ thống; F6 ~150 chuỗi viết cứng sang ARB, 88/88 mã lỗi có bản dịch.<br><span class="muted">Để sau: backend còn ~160 chỗ trả câu tiếng Việt thay vì mã lỗi (bản tiếng Anh sẽ thấy tiếng Việt); dark mode; CI chặn chuỗi có dấu trong .dart; lưới phân ca vẫn tải cả kỳ (đủ cho vài trăm NV).</span></td></tr>
       <tr><td><b>5</b> · Vận hành & UAT</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Kế hoạch tiếp theo <span class="tag">chốt 08/10/2026</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Bước</th><th>Nội dung</th><th>Cần AWS?</th><th>Trạng thái</th></tr></thead>
+    <tbody>
+      <tr><td><b>1</b> · Đóng nốt mốc 1–4</td><td>
+        <ul class="clean">
+          <li>Chấm công: lấy GPS ngay lúc bấm; gắn 1 thiết bị / tài khoản (BE kiểm mã máy, quản lý gỡ khi đổi máy).</li>
+          <li>Bảo mật: access token ~30 phút (app tự gia hạn); chính sách mật khẩu, bắt đổi mật khẩu lần đầu.</li>
+          <li>Ngôn ngữ: ~160 câu tiếng Việt ở backend → mã lỗi; CI chặn chuỗi có dấu viết cứng trong .dart.</li>
+          <li>Nghỉ phép: sổ cái cộng/trừ phép theo từng đơn (L13).</li>
+        </ul></td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>2</b> · Sẵn sàng chạy thật</td><td>
+        <ul class="clean">
+          <li>Audit log: sửa công, duyệt lương, đổi quyền, impersonate.</li>
+          <li>Health check (Actuator), log có request-id.</li>
+          <li>Sửa <code>Procfile</code> trỏ sai jar; cấu hình qua biến môi trường.</li>
+          <li>Runbook: deploy, rollback, sao lưu / khôi phục DB.</li>
+        </ul></td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>3</b> · Mốc 5 – lên AWS</td><td>EB staging + prod, RDS có backup/PITR, HTTPS (ACM), secret trong SSM, CI deploy staging khi test xanh, prod duyệt tay.
+        <br><span class="muted">Cần chủ dự án: cách truy cập AWS, tên miền, staging có DB riêng không.</span></td><td>Có</td><td><span class="st todo">Chờ thông tin</span></td></tr>
+      <tr><td><b>4</b> · Pilot</td><td>Nhập dữ liệu thật (NV, ca, phép), chạy song song 1 kỳ với cách chấm cũ, đối chiếu công và lương, sửa lỗi rồi chuyển hẳn.</td><td>Có</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
     </tbody>
   </table></div>
 
@@ -73,7 +97,7 @@
     <ul class="clean">
       <li>Trước khi push <code>main</code> (tự deploy): đặt <code>JWT_SECRET</code>, <code>BOOTSTRAP_SYSADMIN_EMAIL/PASSWORD</code>, <code>CORS_ALLOWED_ORIGINS</code>, <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> trên Elastic Beanstalk và tạo lại DB (DB cũ ở V117 không chạy được baseline).</li>
       <li>Thu hồi khoá Firebase cũ (từng nằm trong git) và tạo khoá mới — để sau theo quyết định 08/10.</li>
-      <li>Chạy <code>flutter analyze</code> cho 2 file frontend đã sửa (môi trường cloud không có Flutter).</li>
+      <li><b>Lưu ý:</b> <code>.github/workflows/deploy.yml</code> deploy lên EB mỗi lần push <code>main</code> (khi test xanh). Trước Mốc 5 nên đổi sang deploy tay / chỉ staging để push code dev không đụng môi trường thật.</li>
       <li>Ghi chú cho Mốc 5: <code>Procfile</code> trỏ <code>target/bosskin-1.0.0.jar</code> nhưng CI nén jar ở thư mục gốc — kiểm lại khi dựng EB.</li>
     </ul>
   </div>
