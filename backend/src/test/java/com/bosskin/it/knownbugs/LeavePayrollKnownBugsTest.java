@@ -63,7 +63,6 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     }
 
     @Test
-    @Tag("known-bug")
     @DisplayName("L3 · Công thức dùng STANDARD_WORK_DAYS tạo được bảng lương")
     void l3_formulaUsingStandardWorkDays_generates() {
         var c = fixture.standardCompany();

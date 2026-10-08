@@ -27,6 +27,12 @@ public class FormulaEngine {
             "DAY_HOURS", "NIGHT_HOURS", "DAY_OT", "NIGHT_OT", "TOTAL_OT_HOURS",
             // Cài đặt
             "BASE_RATE", "STANDARD_WORK_DAYS", "HOURS_PER_DAY",
+            // Nghỉ phép theo loại (L1)
+            "PAID_LEAVE_DAYS", "UNPAID_LEAVE_DAYS",
+            // Bảo hiểm & thuế hệ thống tính sẵn — dùng được trong công thức NET (L5)
+            "SOCIAL_INS", "HEALTH_INS", "UNEMPLOYMENT_INS", "TOTAL_INSURANCE", "PIT",
+            // Khoản chỉnh tay trên bảng lương nháp (L6)
+            "ALLOWANCE_MANUAL", "BONUS", "OTHER_DEDUCTIONS",
             // Hợp đồng & thâm niên
             "CONTRACT_SALARY",
             "TENURE_YEARS", "TENURE_MONTHS", "TENURE_DAYS",
@@ -35,10 +41,10 @@ public class FormulaEngine {
     );
 
     // Built-in functions recognized by the lexer/parser
-    public static final Set<String> BUILTIN_FUNCTIONS = Set.of("PIT_VN", "IF", "MIN", "MAX", "ABS");
+    public static final Set<String> BUILTIN_FUNCTIONS = Set.of("PIT_VN", "IF", "MIN", "MAX", "ABS", "ROUND", "FLOOR", "CEIL");
 
     // Keywords reserved — không được dùng làm tên biến tùy chỉnh
-    public static final Set<String> RESERVED_KEYWORDS = Set.of("AND", "OR", "IF", "MIN", "MAX", "ABS", "PIT_VN");
+    public static final Set<String> RESERVED_KEYWORDS = Set.of("AND", "OR", "IF", "MIN", "MAX", "ABS", "PIT_VN", "ROUND", "FLOOR", "CEIL");
 
     /** Vietnamese progressive PIT (Thuế TNCN lũy tiến theo biểu thuế 7 bậc). */
     static BigDecimal pitVN(BigDecimal taxableIncome) {
@@ -182,6 +188,59 @@ public class FormulaEngine {
             }
         }
         return resolved;
+    }
+
+    /**
+     * Tên biến (VARIABLE) xuất hiện trong biểu thức; biểu thức lỗi cú pháp trả rỗng.
+     */
+    public Set<String> referencedVariables(String expression) {
+        Set<String> names = new HashSet<>();
+        if (expression == null || expression.isBlank()) return names;
+        try {
+            for (Token t : new Lexer(expression).tokenize()) {
+                if (t.type == TokenType.VARIABLE) names.add(t.value);
+            }
+        } catch (FormulaEvaluationException ignored) {}
+        return names;
+    }
+
+    /**
+     * Chỉ giữ các biến tuỳ chỉnh được dùng tới (trực tiếp hoặc qua biến khác) từ {@code roots} (L2).
+     * Biến global không ai dùng (vd. đang lỗi chia 0) không làm hỏng lương mọi người.
+     */
+    public Map<String, String> keepReachable(Map<String, String> customVars, Set<String> roots) {
+        Set<String> needed = new HashSet<>();
+        java.util.Deque<String> stack = new java.util.ArrayDeque<>(roots);
+        while (!stack.isEmpty()) {
+            String name = stack.pop();
+            if (!customVars.containsKey(name) || !needed.add(name)) continue;
+            stack.addAll(referencedVariables(customVars.get(name)));
+        }
+        Map<String, String> result = new LinkedHashMap<>();
+        customVars.forEach((k, v) -> { if (needed.contains(k)) result.put(k, v); });
+        return result;
+    }
+
+    /**
+     * Như {@link #resolveCustomVars} nhưng bỏ qua (chưa tính) các biến phụ thuộc — trực tiếp
+     * hoặc gián tiếp — vào một tên trong {@code notYetAvailable} (vd. GROSS trước khi có GROSS) (L2).
+     */
+    public Map<String, BigDecimal> resolveCustomVarsExcept(
+            Map<String, String> customVars, Map<String, BigDecimal> baseVars, Set<String> notYetAvailable) {
+        Set<String> blocked = new HashSet<>(notYetAvailable);
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Map.Entry<String, String> e : customVars.entrySet()) {
+                if (blocked.contains(e.getKey())) continue;
+                Set<String> refs = referencedVariables(e.getValue());
+                refs.retainAll(blocked);
+                if (!refs.isEmpty()) { blocked.add(e.getKey()); changed = true; }
+            }
+        }
+        Map<String, String> ready = new LinkedHashMap<>();
+        customVars.forEach((k, v) -> { if (!blocked.contains(k)) ready.put(k, v); });
+        return resolveCustomVars(ready, baseVars);
     }
 
     /**
@@ -336,6 +395,8 @@ public class FormulaEngine {
         private final Map<String, BigDecimal> vars;
         private final boolean staticCheck; // when true, /0 is a static error
         private int pos = 0;
+        /** > 0 khi đang đọc nhánh IF không được chọn: chỉ phân tích cú pháp, không báo lỗi giá trị (L15). */
+        private int skipDepth = 0;
 
         Parser(List<Token> tokens, Map<String, BigDecimal> vars, boolean staticCheck) {
             this.tokens = tokens;
@@ -429,6 +490,7 @@ public class FormulaEngine {
                 BigDecimal right = parseFactor();
                 if (op == TokenType.SLASH) {
                     if (right.compareTo(BigDecimal.ZERO) == 0) {
+                        if (skipDepth > 0) { left = BigDecimal.ZERO; continue; }
                         if (staticCheck) {
                             throw new FormulaEvaluationException("Phép chia cho 0 trong công thức");
                         }
@@ -447,7 +509,11 @@ public class FormulaEngine {
             Token t = current();
             if (t.type == TokenType.NUMBER) {
                 consumeAny();
-                return new BigDecimal(t.value);
+                try {
+                    return new BigDecimal(t.value);
+                } catch (NumberFormatException e) {
+                    throw new FormulaEvaluationException("Số không hợp lệ: " + t.value);
+                }
             }
             if (t.type == TokenType.FUNCTION) {
                 consumeAny();
@@ -459,13 +525,41 @@ public class FormulaEngine {
                         yield staticCheck ? BigDecimal.ONE : pitVN(arg);
                     }
                     case "IF" -> {
+                        // Chỉ tính nhánh được chọn: IF(PRESENT_DAYS > 0, X / PRESENT_DAYS, 0) không lỗi chia 0
                         BigDecimal cond = parseExpr();
+                        boolean takeTrue = staticCheck || skipDepth > 0 || cond.compareTo(BigDecimal.ZERO) != 0;
                         consume(TokenType.COMMA);
+                        if (!takeTrue) skipDepth++;
                         BigDecimal trueVal = parseExpr();
+                        if (!takeTrue) skipDepth--;
                         consume(TokenType.COMMA);
+                        boolean skipFalse = takeTrue && !staticCheck && skipDepth == 0;
+                        if (skipFalse) skipDepth++;
                         BigDecimal falseVal = parseExpr();
+                        if (skipFalse) skipDepth--;
                         consume(TokenType.RPAREN);
-                        yield (staticCheck || cond.compareTo(BigDecimal.ZERO) != 0) ? trueVal : falseVal;
+                        yield takeTrue ? trueVal : falseVal;
+                    }
+                    case "ROUND" -> {
+                        // ROUND(x) làm tròn tới đồng; ROUND(x, n) làm tròn n chữ số (n âm: tới hàng chục, trăm…)
+                        BigDecimal arg = parseExpr();
+                        int digits = 0;
+                        if (current().type == TokenType.COMMA) {
+                            consumeAny();
+                            digits = parseExpr().intValue();
+                        }
+                        consume(TokenType.RPAREN);
+                        yield arg.setScale(digits, RoundingMode.HALF_UP);
+                    }
+                    case "FLOOR" -> {
+                        BigDecimal arg = parseExpr();
+                        consume(TokenType.RPAREN);
+                        yield arg.setScale(0, RoundingMode.FLOOR);
+                    }
+                    case "CEIL" -> {
+                        BigDecimal arg = parseExpr();
+                        consume(TokenType.RPAREN);
+                        yield arg.setScale(0, RoundingMode.CEILING);
                     }
                     case "MIN" -> {
                         BigDecimal a = parseExpr();
@@ -493,6 +587,7 @@ public class FormulaEngine {
                 consumeAny();
                 BigDecimal val = vars.get(t.value);
                 if (val == null) {
+                    if (skipDepth > 0) return BigDecimal.ZERO;
                     throw new FormulaEvaluationException("Biến chưa được gán giá trị: " + t.value);
                 }
                 return val;

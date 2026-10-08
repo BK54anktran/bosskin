@@ -133,7 +133,7 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
-        return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.approve(id)));
+        return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.approve(id, user.getId())));
     }
 
     @PostMapping("/{id}/pay")
@@ -145,7 +145,7 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
-        return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.markAsPaid(id)));
+        return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.markAsPaid(id, user.getId())));
     }
 
     @DeleteMapping("/{id}")
@@ -180,9 +180,7 @@ public class PayrollController {
         Long formulaId = (body != null && body.containsKey("formulaId") && body.get("formulaId") != null)
             ? Long.valueOf(body.get("formulaId").toString()) : null;
         requireFormulaCompany(formulaId, user.getCompany().getId());
-        payrollRepository.delete(p);
-        Payroll recalculated = payrollService.generatePayroll(
-            p.getEmployee().getId(), p.getYear(), p.getMonth(), formulaId);
+        Payroll recalculated = payrollService.recalculate(p.getId(), formulaId);
         return ResponseEntity.ok(PayrollDTO.Response.from(recalculated));
     }
 

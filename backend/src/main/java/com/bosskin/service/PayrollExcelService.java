@@ -288,6 +288,13 @@ public class PayrollExcelService {
         List<Payroll> payrolls;
         if (payrollIds != null && !payrollIds.isEmpty()) {
             payrolls = payrollRepository.findPayslipsByIds(payrollIds, companyId);
+            // L16: xuất theo id cũng chỉ lấy phiếu thuộc phạm vi phòng ban được xem
+            if (!scopeIds.isEmpty()) {
+                payrolls = payrolls.stream()
+                    .filter(p -> p.getEmployee().getDepartment() != null
+                        && scopeIds.contains(p.getEmployee().getDepartment().getId()))
+                    .toList();
+            }
         } else {
             Set<Long> deptScope = scopeIds.stream()
                 .filter(id -> id != null && id > 0)

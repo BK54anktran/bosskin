@@ -128,6 +128,14 @@ public class Payroll extends BaseEntity {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
+    /** Người duyệt bảng lương (L18). */
+    @Column(name = "approved_by_id")
+    private Long approvedById;
+
+    /** Người xác nhận đã trả lương (L18). */
+    @Column(name = "paid_by_id")
+    private Long paidById;
+
     // Inline formula snapshot — chỉ áp dụng cho payroll này, không lưu vào salary_formulas
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_formula", columnDefinition = "JSON")

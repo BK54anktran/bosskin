@@ -54,8 +54,10 @@ public class PayrollDTO {
         private Payroll.CustomFormula customFormula;
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime approvedAt;
+        private Long approvedById;
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime paidAt;
+        private Long paidById;
 
         public static Response from(Payroll p) {
             var emp = p.getEmployee();
@@ -102,7 +104,9 @@ public class PayrollDTO {
                     .note(p.getNote())
                     .customFormula(p.getCustomFormula())
                     .approvedAt(p.getApprovedAt())
+                    .approvedById(p.getApprovedById())
                     .paidAt(p.getPaidAt())
+                    .paidById(p.getPaidById())
                     .build();
         }
     }
