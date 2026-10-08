@@ -21,7 +21,7 @@ import org.testcontainers.containers.MySQLContainer;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({Fixture.class, Api.class})
+@Import({Fixture.class, Api.class, IntegrationTest.TestClockConfig.class})
 public abstract class IntegrationTest {
 
     @ServiceConnection
@@ -40,4 +40,22 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected Api api;
+
+    /** Giả lập giờ cho nghiệp vụ chấm công: {@code clock.set(LocalDateTime.of(...))}. */
+    @Autowired
+    protected MutableClock clock;
+
+    @org.junit.jupiter.api.BeforeEach
+    void resetClock() {
+        clock.reset();
+    }
+
+    @org.springframework.boot.test.context.TestConfiguration
+    static class TestClockConfig {
+        @org.springframework.context.annotation.Bean
+        @org.springframework.context.annotation.Primary
+        MutableClock mutableClock() {
+            return new MutableClock();
+        }
+    }
 }

@@ -63,7 +63,6 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     }
 
     @Test
-    @Tag("known-bug")
     @DisplayName("A5 · Bỏ duyệt không làm trạng thái công thành rỗng")
     void a5_unapproveKeepsStatus() {
         var c = fixture.standardCompany();
@@ -80,7 +79,6 @@ class AttendanceKnownBugsTest extends IntegrationTest {
     }
 
     @Test
-    @Tag("known-bug")
     @DisplayName("A7 · Xoá phân ca không xoá mất bản ghi công đã duyệt")
     void a7_deleteShiftAssignment_keepsApprovedAttendance() {
         var c = fixture.standardCompany();

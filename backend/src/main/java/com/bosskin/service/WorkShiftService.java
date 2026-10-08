@@ -282,15 +282,14 @@ public class WorkShiftService {
         if (a.isApproved()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.approved_cannot_delete");
         }
-        // Xóa attendance requests liên quan đến ca này
-        List<AttendanceRequest> requests = attendanceRequestRepository.findByShiftAssignment_Id(id);
-        if (!requests.isEmpty()) {
-            attendanceRequestRepository.deleteAll(requests);
-        }
-        // Xóa attendance record liên quan đến ca này
-        attendanceRepository.findByEmployeeIdAndDateAndShift(
-            a.getEmployee().getId(), a.getWorkDate(), id
-        ).ifPresent(attendanceRepository::delete);
+        requireNoAttendanceData(a.getEmployee().getId(), a.getWorkDate(), id);
+        // Dòng công rỗng (chưa check-in, chưa duyệt) được xoá mềm cùng phân ca
+        attendanceRepository.findByEmployeeIdAndDateAndShift(a.getEmployee().getId(), a.getWorkDate(), id)
+            .ifPresent(att -> {
+                att.setDeleted(true);
+                att.setDeletedAt(java.time.LocalDateTime.now());
+                attendanceRepository.save(att);
+            });
 
         assignRepo.softDeleteById(id);
     }
@@ -365,7 +364,25 @@ public class WorkShiftService {
     public void deleteAssignment(Long employeeId, LocalDate workDate, Long companyId) {
         employeeRepo.findByIdAndCompanyId(employeeId, companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+        for (ShiftAssignment a : assignRepo.findByEmployeeIdAndWorkDate(employeeId, workDate)) {
+            requireNoAttendanceData(employeeId, workDate, a.getId());
+        }
         assignRepo.softDeleteByEmployeeIdAndWorkDate(employeeId, workDate);
+    }
+
+    /**
+     * A7: không xoá phân ca khi đã có dữ liệu chấm công (check-in/out, đã duyệt, hoặc đơn
+     * chấm công) — trước đây xoá cứng làm mất bằng chứng chấm công.
+     */
+    private void requireNoAttendanceData(Long employeeId, LocalDate workDate, Long assignmentId) {
+        boolean hasAttendance = attendanceRepository.findByEmployeeIdAndDateAndShift(employeeId, workDate, assignmentId)
+            .filter(att -> att.isApproved() || att.getCheckIn() != null || att.getCheckOut() != null
+                || att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null)
+            .isPresent();
+        boolean hasRequests = !attendanceRequestRepository.findByShiftAssignment_Id(assignmentId).isEmpty();
+        if (hasAttendance || hasRequests) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_attendance");
+        }
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────

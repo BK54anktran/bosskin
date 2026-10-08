@@ -1539,7 +1539,7 @@ public class AttendanceExcelService {
                         att.setSnapActualHours(null); att.setSnapDayHours(null);
                         att.setSnapDayOt(null); att.setSnapNightHours(null);
                         att.setSnapNightOt(null); att.setWorkFlags(null);
-                        att.setStatus(null);
+                        // A5: giữ trạng thái; duyệt lại sẽ tính lại
                     }
                     applyTimesheetRowToExisting(att, row);
                     boolean shouldApprove = row.approved != null ? row.approved : wasApproved;
