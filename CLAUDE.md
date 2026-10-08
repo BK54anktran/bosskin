@@ -18,6 +18,15 @@
    Khi mức dùng chạm ~99%: dừng, commit/push phần đã xong, tổng hợp tiến độ, và hẹn lịch
    tiếp tục đúng giờ reset (được tạo phiên mới nếu cần).
 
+## Chạy & quản lý server dev (khi chủ dự án yêu cầu)
+- Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`.
+  Backend cổng 8080 (đọc `backend/.env`, cần MySQL localhost:3306), frontend web debug cổng 3000.
+- Claude khởi động bằng cách chạy `dev\start.cmd` trên máy Windows của chủ dự án (điều khiển máy tính),
+  theo dõi qua `dev/logs/*.log` (đọc được từ thư mục repo), báo URL khi sẵn sàng, tự xử lý lỗi khởi động
+  (đọc log → sửa code/config → khởi động lại), và dừng bằng `dev\stop.cmd` khi xong hoặc khi được yêu cầu.
+- Trước khi khởi động lại sau khi sửa code backend: `dev\stop.cmd backend` rồi `dev\start.cmd backend`.
+  Frontend chạy nền nên không có hot reload: sửa Dart xong thì `dev\stop.cmd frontend` rồi `dev\start.cmd frontend`.
+
 ## Stack
 - **Frontend**: Flutter (Dart) — Riverpod + GoRouter + Dio
 - **Backend**: Spring Boot 3.3 + Java 17 — JPA + JWT + Flyway + MySQL 8.0

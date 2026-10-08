@@ -21,54 +21,53 @@ cd flutter-bosskin
 
 ---
 
-## 2. Khởi động MySQL bằng Docker
+## 2. Chạy nhanh môi trường dev (Windows)
 
-```bash
-docker compose up -d mysql
+Yêu cầu: MySQL đang chạy ở `localhost:3306` (database `bosskin`), file `backend\.env` đã điền (mẫu: `backend\.env.example`).
+
+```bat
+dev\start.cmd              :: backend (8080) + frontend (3000), chạy nền
+dev\start.cmd backend      :: chỉ backend
+dev\status.cmd             :: trạng thái + log cuối
+dev\stop.cmd               :: dừng tất cả   (dev\stop.cmd -Force: dừng cả tiến trình lạ chiếm cổng)
 ```
 
-- MySQL chạy tại `localhost:3307`
-- Database: `bosskin`
-- User: `bosskin` / Password: `bosskin123`
-
-Kiểm tra MySQL đã sẵn sàng:
-
-```bash
-docker compose ps
-# STATUS phải là "healthy"
-```
+- Backend: `mvn spring-boot:run` trong `backend\` (dùng `mvnw.cmd` nếu chưa có `mvn`), đọc `backend\.env`.
+  Flyway tự chạy migration khi khởi động. Log: `dev\logs\backend.log`.
+- Frontend: `flutter run -d web-server` cổng 3000, bản debug, `API_HOST=http://localhost:8080`.
+  Không có flutter trên Windows thì tự chạy qua WSL2. Log: `dev\logs\frontend.log`.
+- Mở `http://localhost:3000/login` (công ty) hoặc `http://localhost:3000/admin/login` (system admin).
 
 ---
 
-## 3. Chạy Backend (Spring Boot)
+## 3. Chạy thủ công
 
-### Cách 1 — Chạy trực tiếp với Maven
+### Backend
 
 ```bash
 cd backend
-mvn clean package -DskipTests
-java -jar target/bosskin-*.jar
+mvn spring-boot:run                    # hoặc: mvn clean package -DskipTests && java -jar target/bosskin-*.jar
 ```
 
-Backend khởi động tại `http://localhost:8080`.  
-Flyway tự động chạy migration (V1→V4) khi start lần đầu.
+Biến môi trường chính (đặt trong `backend/.env`, xem `.env.example`):
 
-### Cách 2 — Chạy bằng Docker Compose
+| Biến | Ghi chú |
+|---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Mặc định `jdbc:mysql://localhost:3306/bosskin` |
+| `JWT_SECRET` | **Bắt buộc**, ≥ 32 byte; backend từ chối khởi động nếu thiếu |
+| `BOOTSTRAP_SYSADMIN_EMAIL`, `BOOTSTRAP_SYSADMIN_PASSWORD` | Tạo system admin đầu tiên khi DB trống |
+| `CORS_ALLOWED_ORIGINS` | Mặc định cho phép `localhost:*` |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` / `_JSON` | Tuỳ chọn — không có thì tắt thông báo đẩy |
+
+Test backend: `mvn verify` (cần Docker cho Testcontainers MySQL).
+
+### Frontend web
 
 ```bash
-# Từ thư mục gốc
-docker compose up -d
+cd frontend
+flutter run -d chrome --dart-define=API_HOST=http://localhost:8080
+# hoặc bản build: flutter build web --dart-define=API_HOST=http://localhost:8080 && python serve.py  (cổng 3000)
 ```
-
-Cả MySQL + Backend đều chạy trong container.
-
-### Biến môi trường (tuỳ chọn, có giá trị mặc định)
-
-| Biến | Mặc định |
-|---|---|
-| `DB_USERNAME` | `bosskin` |
-| `DB_PASSWORD` | `bosskin123` |
-| `JWT_SECRET` | `bosskin-super-secret-key-...` |
 
 ---
 
