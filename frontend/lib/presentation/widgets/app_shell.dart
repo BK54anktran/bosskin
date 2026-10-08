@@ -229,6 +229,8 @@ class _AppShellState extends State<AppShell>
             requiredPermission: 'EMPLOYEE_VIEW'),
         _NavItem(s.reportScreenTitle, Icons.analytics_outlined, AppRoutes.reports,
             requiredPermission: 'REPORT_VIEW'),
+        _NavItem(s.auditLogTitle, Icons.history_outlined, AppRoutes.auditLogs,
+            requiredPermission: 'AUDIT_VIEW'),
       ];
 
   static List<_NavItem> _bottomNavItems(AppLocalizations s) => [
@@ -265,6 +267,7 @@ class _AppShellState extends State<AppShell>
       AppRoutes.profile => s.profile,
       AppRoutes.excelImportExport => 'Import / Export',
       AppRoutes.reports => s.reportScreenTitle,
+      AppRoutes.auditLogs => s.auditLogTitle,
       _ => s.appName,
     };
   }

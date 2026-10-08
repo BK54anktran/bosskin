@@ -99,7 +99,27 @@ app:
       min-lon: 102.0
       max-lon: 118.0
 
+# Bước 2 — health check cho EB / load balancer: GET /actuator/health → {"status":"UP"} (kèm kiểm DB).
+# Chỉ mở health; chi tiết thành phần không lộ ra ngoài. Các endpoint actuator khác không mở.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true          # /actuator/health/liveness, /actuator/health/readiness
+  health:
+    # S3/mail… không ảnh hưởng việc nhận request; chỉ DB và ổ đĩa quyết định UP/DOWN
+    diskspace:
+      enabled: true
+
 logging:
+  # Mỗi dòng log kèm mã request [rid] (RequestIdFilter)
+  pattern:
+    level: "%5p [%X{rid:-}]"
   level:
-    com.bosskin: DEBUG
+    com.bosskin: ${LOG_LEVEL_APP:DEBUG}
     org.springframework.security: INFO

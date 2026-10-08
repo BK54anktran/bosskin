@@ -32,6 +32,7 @@ public class EmployeeController {
     private final EmployeeExcelService  employeeExcelService;
     private final EmployeeImportService employeeImportService;
     private final ExcelI18n             excelI18n;
+    private final com.bosskin.audit.AuditService audit;
 
     // ── Sheet 1: import columns — i18n, map bất kỳ ngôn ngữ nào ──────────────
     private static final List<ExcelColumn<EmployeeDTO.ImportRow>> BASIC_IMPORT = List.of(
@@ -158,6 +159,7 @@ public class EmployeeController {
     public ResponseEntity<Void> unbindDevice(@PathVariable Long id, @AuthenticationPrincipal User user) {
         requirePermission(user, "EMPLOYEE_UPDATE");
         employeeService.unbindDevice(id, user.getCompany().getId());
+        audit.log("DEVICE_UNBIND").entity("EMPLOYEE", id).save();
         return ResponseEntity.noContent().build();
     }
 

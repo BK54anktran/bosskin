@@ -33,6 +33,7 @@ public class AttendanceRequestService {
     private final EmployeeRepository employeeRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final DeptScopeService deptScopeService;
+    private final com.bosskin.audit.AuditService audit;
 
     public List<AttendanceRequestDTO.Response> getRequests(User user, String statusStr, String typeStr, Long departmentId) {
         AttendanceRequest.Status status = parseStatus(statusStr);
@@ -202,6 +203,7 @@ public class AttendanceRequestService {
         disableOlderAppliedRequests(request);
         approvePairedRequest(request, admin, body != null ? body.getAdminNote() : null);
         clearAttendanceSnapIfApproved(request.getEmployee().getId(), request.getRequestDate());
+        auditRequest("ATTENDANCE_REQUEST_APPROVE", request);
         return toResponse(getRequestOrThrow(requestId, admin.getCompany().getId()));
     }
 
@@ -221,7 +223,18 @@ public class AttendanceRequestService {
         requestRepository.save(request);
         rejectPairedRequest(request, admin, body != null ? body.getAdminNote() : null);
         clearAttendanceSnapIfApproved(request.getEmployee().getId(), request.getRequestDate());
+        auditRequest("ATTENDANCE_REQUEST_REJECT", request);
         return toResponse(getRequestOrThrow(requestId, admin.getCompany().getId()));
+    }
+
+    /** Bước 2 — nhật ký duyệt/từ chối đơn sửa giờ (đơn duyệt thay giờ chấm công thực). */
+    private void auditRequest(String action, AttendanceRequest r) {
+        audit.log(action).entity("ATTENDANCE_REQUEST", r.getId())
+            .summary(r.getEmployee().getFullName() + " · " + r.getRequestDate())
+            .detail(com.bosskin.audit.AuditService.map("employeeId", r.getEmployee().getId(),
+                "date", r.getRequestDate(), "checkIn", r.getRequestedCheckIn(),
+                "checkOut", r.getRequestedCheckOut(), "note", r.getAdminNote()))
+            .save();
     }
 
     public AttendanceRequestDTO.PendingCount getPendingCount(User user) {

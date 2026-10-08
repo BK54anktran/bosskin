@@ -140,16 +140,16 @@ sequenceDiagram
   <div class="diagram"><pre class="mermaid">
 flowchart LR
   DEV["Dev push"] --> MAIN["branch main"]
-  MAIN --> GA["GitHub Actions<br/>deploy.yml"]
-  GA --> B["mvn clean package<br/>-DskipTests"]
-  B --> Z["zip jar + Procfile"]
-  Z --> EB["Elastic Beanstalk<br/>Java SE, port 5000<br/>profile prod"]
+  MAIN --> T["test.yml<br/>mvn verify (Testcontainers)"]
+  RUN["Chạy tay<br/>deploy.yml"] --> GA["test lại + mvn package"]
+  GA --> Z["zip jar + Procfile<br/>+ .ebextensions"]
+  Z --> EB["Elastic Beanstalk<br/>Java SE, port 5000<br/>profile prod<br/>health /actuator/health"]
   EB --> RDS[("MySQL")]
   EB -.Flyway migrate khi khởi động.-> RDS
   FEB["Flutter web build<br/>(thủ công)"] --> SRV["serve.py / host tĩnh"]
   APK["APK Android<br/>(thủ công)"] --> USERS["Nhân viên"]
   </pre></div>
-  <p class="cap">Hình 3. Pipeline hiện tại. Không chạy test, không có staging, frontend build tay. <code>.ebextensions</code> không nằm trong gói zip nên bị bỏ qua.</p>
+  <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Chưa có staging (Mốc 5); frontend vẫn build tay. Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
   <h2 id="api">Danh sách API (25 controller)</h2>
   <div class="tbl-wrap"><table>
@@ -172,6 +172,7 @@ flowchart LR
       <tr><td>FormulaVariableController</td><td><code>/api/v1/formula-variables</code></td><td>Biến công thức toàn công ty</td></tr>
       <tr><td>SalaryHistoryController</td><td><code>/api/v1/salary-histories</code></td><td>Lịch sử lương</td></tr>
       <tr><td>ReportController</td><td><code>/api/v1/reports</code></td><td>Báo cáo Excel: nhân sự, chấm công, OT, lương, phép</td></tr>
+      <tr><td>AuditLogController</td><td><code>/api/v1/audit-logs</code>, <code>/admin/audit-logs</code></td><td>Nhật ký thao tác (Bước 2): sửa/duyệt công, lương, phân quyền, impersonate</td></tr>
       <tr><td>DashboardController</td><td><code>/api/v1/dashboard</code></td><td>Tổng quan, KPI, phân tích, rủi ro</td></tr>
       <tr><td>UniversalExcelController</td><td><code>/api/v1/excel</code></td><td>Import/export đa module, lịch sử</td></tr>
       <tr><td>RoleController</td><td><code>/api/v1/roles</code></td><td>Vai trò, quyền, phạm vi theo vai trò</td></tr>

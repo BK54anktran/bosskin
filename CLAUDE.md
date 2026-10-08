@@ -326,8 +326,17 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V8** (`V8__leave_ledger.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu
-→ Migration tiếp theo phải là **V9**
+Cao nhất: **V9** (`V9__audit_log.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép
+→ Migration tiếp theo phải là **V10**
+
+## Vận hành (Bước 2)
+- Runbook: `docs/runbook.md` (biến môi trường, deploy, rollback, sao lưu/khôi phục DB, sự cố). Đổi cách deploy/biến môi trường → sửa runbook.
+- Deploy EB **chạy tay** (workflow_dispatch); push `main` chỉ chạy test. Gói: jar + Procfile + `.ebextensions`.
+- Health: `GET /actuator/health` (công khai, không chi tiết); actuator khác bị chặn (SecurityConfig chain 0).
+- Mã request: `RequestIdFilter` (header `X-Request-ID`, MDC `rid`, body lỗi `requestId`).
+- Nhật ký thao tác: `audit/AuditService` — `audit.log("ACTION").entity(type, id).summary(...).detail(map).save()`.
+  Thao tác nhạy cảm mới (sửa công, lương, quyền…) phải ghi nhật ký + thêm nhãn ở `audit_log_screen.dart` và l10n.
+  Xem: `/api/v1/audit-logs` (quyền `AUDIT_VIEW`), `/admin/audit-logs` (system admin); FE màn `/audit-logs`.
 
 ## Nghỉ phép & lương (Bước 1)
 - Quỹ phép tách theo loại: `leave_grants.leave_type_id` = loại được dùng; NULL = quỹ chung cho mọi loại trừ quỹ.

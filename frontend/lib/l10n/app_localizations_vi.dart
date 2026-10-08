@@ -3804,4 +3804,144 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get formulaDeductionRest =>
       'Bảo hiểm, thuế & khoản trừ theo công thức';
+
+  @override
+  String get auditActAttendanceApprove => 'Duyệt công';
+
+  @override
+  String get auditActAttendanceUnapprove => 'Bỏ duyệt công';
+
+  @override
+  String get auditActAttendanceOverride => 'Sửa giờ công';
+
+  @override
+  String get auditActAttendanceDelete => 'Xoá bản ghi công';
+
+  @override
+  String get auditActAttendanceManualCheckIn => 'Chấm vào hộ';
+
+  @override
+  String get auditActAttendanceManualCheckOut => 'Chấm ra hộ';
+
+  @override
+  String get auditActAttendanceImport => 'Nhập chấm công từ Excel';
+
+  @override
+  String get auditActAttendanceImportTimesheet => 'Nhập bảng công từ Excel';
+
+  @override
+  String get auditActAttendanceRequestApprove => 'Duyệt đơn sửa giờ';
+
+  @override
+  String get auditActAttendanceRequestReject => 'Từ chối đơn sửa giờ';
+
+  @override
+  String get auditActPeriodLock => 'Khoá kỳ công';
+
+  @override
+  String get auditActPeriodUnlock => 'Mở lại kỳ công';
+
+  @override
+  String get auditActPayrollGenerate => 'Tạo bảng lương';
+
+  @override
+  String get auditActPayrollUpdate => 'Sửa bảng lương nháp';
+
+  @override
+  String get auditActPayrollRecalculate => 'Tính lại lương';
+
+  @override
+  String get auditActPayrollApprove => 'Duyệt lương';
+
+  @override
+  String get auditActPayrollPay => 'Đánh dấu đã trả lương';
+
+  @override
+  String get auditActPayrollDelete => 'Xoá bảng lương nháp';
+
+  @override
+  String get auditActRoleCreate => 'Tạo vai trò';
+
+  @override
+  String get auditActRoleUpdate => 'Sửa vai trò';
+
+  @override
+  String get auditActRolePermissions => 'Đổi quyền vai trò';
+
+  @override
+  String get auditActRoleDelete => 'Xoá vai trò';
+
+  @override
+  String get auditActUserCreate => 'Tạo tài khoản';
+
+  @override
+  String get auditActUserSyncFromEmployees => 'Tạo tài khoản hàng loạt';
+
+  @override
+  String get auditActUserRoles => 'Đổi vai trò tài khoản';
+
+  @override
+  String get auditActUserPermissions => 'Đổi quyền riêng tài khoản';
+
+  @override
+  String get auditActUserDeptScopes => 'Đổi phạm vi quyền';
+
+  @override
+  String get auditActUserEnable => 'Mở khoá tài khoản';
+
+  @override
+  String get auditActUserDisable => 'Khoá tài khoản';
+
+  @override
+  String get auditActDeviceUnbind => 'Gỡ thiết bị chấm công';
+
+  @override
+  String get auditActImpersonateStart => 'Quản trị hệ thống truy cập công ty';
+
+  @override
+  String get auditActCompanyCreate => 'Tạo công ty';
+
+  @override
+  String get auditActCompanyUpdate => 'Sửa công ty';
+
+  @override
+  String get auditActCompanyToggleActive => 'Bật/tắt công ty';
+
+  @override
+  String get auditLogTitle => 'Nhật ký thao tác';
+
+  @override
+  String get auditAllActions => 'Tất cả thao tác';
+
+  @override
+  String get auditActorFilter => 'Người thực hiện (email)';
+
+  @override
+  String get auditImpersonated => 'Quản trị hệ thống';
+
+  @override
+  String get auditDetail => 'Chi tiết';
+
+  @override
+  String auditRequestId(String id) {
+    return 'Mã request: $id';
+  }
+
+  @override
+  String auditIp(String ip) {
+    return 'IP: $ip';
+  }
+
+  @override
+  String get auditLoadMore => 'Xem thêm';
+
+  @override
+  String get auditEmpty => 'Chưa có thao tác nào trong khoảng này';
+
+  @override
+  String get permUiAuditView => 'Mở màn Nhật ký thao tác';
+
+  @override
+  String get permDescAuditView =>
+      'Xem nhật ký thao tác (ai sửa công, duyệt lương, đổi quyền…)';
 }

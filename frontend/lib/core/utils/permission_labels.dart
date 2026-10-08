@@ -56,6 +56,7 @@ String? permissionUiHint(AppLocalizations s, String code) => switch (code) {
       'COMPANY_SETTING_VIEW' => s.permUiCompanySettingView,
       'COMPANY_SETTING_MANAGE' => s.permUiCompanySettingManage,
       'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permUiLeaveCreateForOthers,
+      'AUDIT_VIEW' => s.permUiAuditView,
       _ => null,
     };
 
@@ -99,5 +100,6 @@ String permissionDescription(AppLocalizations s, String code, String fallback) =
       'COMPANY_SETTING_MANAGE' => s.permDescCompanySettingManage,
       'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permDescLeaveCreateForOthers,
       'DASHBOARD_VIEW' => s.permDescDashboardView,
+      'AUDIT_VIEW' => s.permDescAuditView,
       _ => fallback,
     };

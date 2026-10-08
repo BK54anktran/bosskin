@@ -71,6 +71,8 @@ public class ApiExceptionHandler {
         body.put("error", HttpStatus.valueOf(status.value()).getReasonPhrase());
         body.put("message", message);
         body.put("path", request.getRequestURI());
+        // Bước 2: mã request để người dùng báo lỗi, đội vận hành tra log
+        body.put("requestId", com.bosskin.config.RequestIdFilter.current());
         return ResponseEntity.status(status).body(body);
     }
 }

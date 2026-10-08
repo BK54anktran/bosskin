@@ -29,6 +29,7 @@ public class CompanyController {
     private final CompanyService      companyService;
     private final PermissionRepository permissionRepository;
     private final JwtUtil             jwtUtil;
+    private final com.bosskin.audit.AuditService audit;
 
     @GetMapping
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
@@ -45,20 +46,27 @@ public class CompanyController {
     @PostMapping
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<CompanyResponse> create(@Valid @RequestBody CreateCompanyRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(companyService.create(req));
+        CompanyResponse created = companyService.create(req);
+        audit.log("COMPANY_CREATE").company(created.getId()).entity("COMPANY", created.getId())
+            .summary(created.getName() + " · admin " + req.getAdminEmail()).save();
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<CompanyResponse> update(@PathVariable Long id,
                                                    @Valid @RequestBody CreateCompanyRequest req) {
-        return ResponseEntity.ok(companyService.update(id, req));
+        CompanyResponse updated = companyService.update(id, req);
+        audit.log("COMPANY_UPDATE").company(id).entity("COMPANY", id).summary(updated.getName()).save();
+        return ResponseEntity.ok(updated);
     }
 
     @PatchMapping("/{id}/toggle-active")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<Void> toggleActive(@PathVariable Long id) {
         companyService.toggleActive(id);
+        audit.log("COMPANY_TOGGLE_ACTIVE").company(id).entity("COMPANY", id)
+            .summary(String.valueOf(companyService.findById(id).isActive())).save();
         return ResponseEntity.noContent().build();
     }
 
@@ -79,6 +87,9 @@ public class CompanyController {
 
         // Token mang email sysadmin + companyId + toàn quyền
         String token = jwtUtil.generateImpersonateToken(sysAdmin.getEmail(), id, allPermissions);
+        // Bước 2 — ghi nhật ký vào công ty bị impersonate để admin công ty cũng thấy
+        audit.log("IMPERSONATE_START").company(id).entity("COMPANY", id)
+            .summary(sysAdmin.getEmail() + " → " + company.getName()).save();
 
         return ResponseEntity.ok(AuthDTO.LoginResponse.builder()
                 .accessToken(token)

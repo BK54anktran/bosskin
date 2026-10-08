@@ -7173,6 +7173,276 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Bảo hiểm, thuế & khoản trừ theo công thức'**
   String get formulaDeductionRest;
+
+  /// No description provided for @auditActAttendanceApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt công'**
+  String get auditActAttendanceApprove;
+
+  /// No description provided for @auditActAttendanceUnapprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ duyệt công'**
+  String get auditActAttendanceUnapprove;
+
+  /// No description provided for @auditActAttendanceOverride.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa giờ công'**
+  String get auditActAttendanceOverride;
+
+  /// No description provided for @auditActAttendanceDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá bản ghi công'**
+  String get auditActAttendanceDelete;
+
+  /// No description provided for @auditActAttendanceManualCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm vào hộ'**
+  String get auditActAttendanceManualCheckIn;
+
+  /// No description provided for @auditActAttendanceManualCheckOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm ra hộ'**
+  String get auditActAttendanceManualCheckOut;
+
+  /// No description provided for @auditActAttendanceImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập chấm công từ Excel'**
+  String get auditActAttendanceImport;
+
+  /// No description provided for @auditActAttendanceImportTimesheet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập bảng công từ Excel'**
+  String get auditActAttendanceImportTimesheet;
+
+  /// No description provided for @auditActAttendanceRequestApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt đơn sửa giờ'**
+  String get auditActAttendanceRequestApprove;
+
+  /// No description provided for @auditActAttendanceRequestReject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối đơn sửa giờ'**
+  String get auditActAttendanceRequestReject;
+
+  /// No description provided for @auditActPeriodLock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá kỳ công'**
+  String get auditActPeriodLock;
+
+  /// No description provided for @auditActPeriodUnlock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở lại kỳ công'**
+  String get auditActPeriodUnlock;
+
+  /// No description provided for @auditActPayrollGenerate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo bảng lương'**
+  String get auditActPayrollGenerate;
+
+  /// No description provided for @auditActPayrollUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa bảng lương nháp'**
+  String get auditActPayrollUpdate;
+
+  /// No description provided for @auditActPayrollRecalculate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính lại lương'**
+  String get auditActPayrollRecalculate;
+
+  /// No description provided for @auditActPayrollApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt lương'**
+  String get auditActPayrollApprove;
+
+  /// No description provided for @auditActPayrollPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu đã trả lương'**
+  String get auditActPayrollPay;
+
+  /// No description provided for @auditActPayrollDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá bảng lương nháp'**
+  String get auditActPayrollDelete;
+
+  /// No description provided for @auditActRoleCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo vai trò'**
+  String get auditActRoleCreate;
+
+  /// No description provided for @auditActRoleUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa vai trò'**
+  String get auditActRoleUpdate;
+
+  /// No description provided for @auditActRolePermissions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi quyền vai trò'**
+  String get auditActRolePermissions;
+
+  /// No description provided for @auditActRoleDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá vai trò'**
+  String get auditActRoleDelete;
+
+  /// No description provided for @auditActUserCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tài khoản'**
+  String get auditActUserCreate;
+
+  /// No description provided for @auditActUserSyncFromEmployees.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tài khoản hàng loạt'**
+  String get auditActUserSyncFromEmployees;
+
+  /// No description provided for @auditActUserRoles.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi vai trò tài khoản'**
+  String get auditActUserRoles;
+
+  /// No description provided for @auditActUserPermissions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi quyền riêng tài khoản'**
+  String get auditActUserPermissions;
+
+  /// No description provided for @auditActUserDeptScopes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi phạm vi quyền'**
+  String get auditActUserDeptScopes;
+
+  /// No description provided for @auditActUserEnable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở khoá tài khoản'**
+  String get auditActUserEnable;
+
+  /// No description provided for @auditActUserDisable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá tài khoản'**
+  String get auditActUserDisable;
+
+  /// No description provided for @auditActDeviceUnbind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ thiết bị chấm công'**
+  String get auditActDeviceUnbind;
+
+  /// No description provided for @auditActImpersonateStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị hệ thống truy cập công ty'**
+  String get auditActImpersonateStart;
+
+  /// No description provided for @auditActCompanyCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo công ty'**
+  String get auditActCompanyCreate;
+
+  /// No description provided for @auditActCompanyUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa công ty'**
+  String get auditActCompanyUpdate;
+
+  /// No description provided for @auditActCompanyToggleActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật/tắt công ty'**
+  String get auditActCompanyToggleActive;
+
+  /// No description provided for @auditLogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký thao tác'**
+  String get auditLogTitle;
+
+  /// No description provided for @auditAllActions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả thao tác'**
+  String get auditAllActions;
+
+  /// No description provided for @auditActorFilter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người thực hiện (email)'**
+  String get auditActorFilter;
+
+  /// No description provided for @auditImpersonated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị hệ thống'**
+  String get auditImpersonated;
+
+  /// No description provided for @auditDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết'**
+  String get auditDetail;
+
+  /// No description provided for @auditRequestId.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã request: {id}'**
+  String auditRequestId(String id);
+
+  /// No description provided for @auditIp.
+  ///
+  /// In vi, this message translates to:
+  /// **'IP: {ip}'**
+  String auditIp(String ip);
+
+  /// No description provided for @auditLoadMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem thêm'**
+  String get auditLoadMore;
+
+  /// No description provided for @auditEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thao tác nào trong khoảng này'**
+  String get auditEmpty;
+
+  /// No description provided for @permUiAuditView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở màn Nhật ký thao tác'**
+  String get permUiAuditView;
+
+  /// No description provided for @permDescAuditView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem nhật ký thao tác (ai sửa công, duyệt lương, đổi quyền…)'**
+  String get permDescAuditView;
 }
 
 class _AppLocalizationsDelegate

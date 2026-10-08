@@ -33,6 +33,7 @@ import 'presentation/screens/payroll/payroll_tab_screen.dart';
 import 'presentation/screens/payroll/self_payroll_screen.dart';
 import 'presentation/screens/excel/excel_import_export_screen.dart';
 import 'presentation/screens/report/report_screen.dart';
+import 'presentation/screens/audit/audit_log_screen.dart';
 import 'presentation/screens/shift/shift_swap_screen.dart';
 import 'presentation/widgets/app_shell.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -227,6 +228,11 @@ final _router = GoRouter(
           path: AppRoutes.reports,
           pageBuilder: (_, __) =>
               const NoTransitionPage(child: ReportScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.auditLogs,
+          pageBuilder: (_, __) =>
+              const NoTransitionPage(child: AuditLogScreen()),
         ),
       ],
     ),

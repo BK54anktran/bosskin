@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 08/10/2026 (đêm) — Bước 1 xong</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 08/10/2026 (đêm) — Bước 1, 2 xong</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -87,7 +87,8 @@
           <li>Health check (Actuator), log có request-id.</li>
           <li>Sửa <code>Procfile</code> trỏ sai jar; cấu hình qua biến môi trường.</li>
           <li>Runbook: deploy, rollback, sao lưu / khôi phục DB.</li>
-        </ul></td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+        </ul>
+        <span class="muted">Đã làm: bảng <code>audit_logs</code> (V9) ghi sửa/duyệt/xoá công, nhập công Excel, duyệt đơn sửa giờ, khoá/mở kỳ, mọi thao tác lương, đổi vai trò/quyền/phạm vi, khoá tài khoản, gỡ thiết bị, impersonate; màn "Nhật ký thao tác" (quyền <code>AUDIT_VIEW</code>). <code>/actuator/health</code> công khai, actuator khác chặn; mã request ở header, log và body lỗi. <code>Procfile</code> trỏ đúng jar, gói deploy kèm <code>.ebextensions</code> (health check), profile prod dùng <code>DB_URL</code> và giữ kiểm tra Flyway; deploy chuyển sang chạy tay. Runbook: <code>docs/runbook.md</code>. 92 test xanh.</span></td><td>Không</td><td><span class="st done">Xong 08/10</span></td></tr>
       <tr><td><b>3</b> · Mốc 5 – lên AWS</td><td>EB staging + prod, RDS có backup/PITR, HTTPS (ACM), secret trong SSM, CI deploy staging khi test xanh, prod duyệt tay.
         <br><span class="muted">Cần chủ dự án: cách truy cập AWS, tên miền, staging có DB riêng không.</span></td><td>Có</td><td><span class="st todo">Chờ thông tin</span></td></tr>
       <tr><td><b>4</b> · Pilot</td><td>Nhập dữ liệu thật (NV, ca, phép), chạy song song 1 kỳ với cách chấm cũ, đối chiếu công và lương, sửa lỗi rồi chuyển hẳn.</td><td>Có</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
@@ -98,8 +99,7 @@
     <ul class="clean">
       <li>Trước khi push <code>main</code> (tự deploy): đặt <code>JWT_SECRET</code>, <code>BOOTSTRAP_SYSADMIN_EMAIL/PASSWORD</code>, <code>CORS_ALLOWED_ORIGINS</code>, <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> trên Elastic Beanstalk và tạo lại DB (DB cũ ở V117 không chạy được baseline).</li>
       <li>Thu hồi khoá Firebase cũ (từng nằm trong git) và tạo khoá mới — để sau theo quyết định 08/10.</li>
-      <li><b>Lưu ý:</b> <code>.github/workflows/deploy.yml</code> deploy lên EB mỗi lần push <code>main</code> (khi test xanh). Trước Mốc 5 nên đổi sang deploy tay / chỉ staging để push code dev không đụng môi trường thật.</li>
-      <li>Ghi chú cho Mốc 5: <code>Procfile</code> trỏ <code>target/bosskin-1.0.0.jar</code> nhưng CI nén jar ở thư mục gốc — kiểm lại khi dựng EB.</li>
+      <li>Deploy EB đã chuyển sang <b>chạy tay</b> (Bước 2): push <code>main</code> chỉ chạy test. <code>Procfile</code> đã sửa trỏ đúng jar trong gói.</li>
     </ul>
   </div>
 

@@ -50,6 +50,20 @@ public class SecurityConfig {
             .build();
     }
 
+    // ── Chain 0: /actuator/** — chỉ mở health (EB / load balancer), còn lại chặn ──
+    @Bean @Order(0)
+    public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
+        return http
+            .securityMatcher("/actuator/**")
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                .anyRequest().denyAll()
+            )
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .build();
+    }
+
     // ── Chain 2: /api/v1/** — Company user token với permissions ───────
     @Bean @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {

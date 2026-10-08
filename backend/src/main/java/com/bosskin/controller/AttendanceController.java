@@ -75,6 +75,7 @@ public class AttendanceController {
     private final java.time.Clock clock;
     private final org.springframework.transaction.PlatformTransactionManager transactionManager;
     private final com.bosskin.service.PeriodLockService periodLockService;
+    private final com.bosskin.audit.AuditService audit;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -878,7 +879,20 @@ public class AttendanceController {
                 .build());
         }
 
+        auditAttendance("ATTENDANCE_APPROVE", att, null);
         return ResponseEntity.ok().build();
+    }
+
+    /** Bước 2 — nhật ký thao tác trên bảng công. */
+    private void auditAttendance(String action, Attendance att, Object detail) {
+        audit.log(action).entity("ATTENDANCE", att.getId())
+            .summary(att.getEmployee().getFullName() + " · " + att.getDate()
+                + (att.getStatus() != null ? " · " + att.getStatus() : ""))
+            .detail(detail != null ? detail : com.bosskin.audit.AuditService.map(
+                "employeeId", att.getEmployee().getId(), "date", att.getDate(), "status", att.getStatus(),
+                "dayHours", att.getSnapDayHours(), "dayOt", att.getSnapDayOt(),
+                "nightHours", att.getSnapNightHours(), "nightOt", att.getSnapNightOt()))
+            .save();
     }
 
     @PatchMapping("/{attendanceId}/override")
@@ -894,6 +908,11 @@ public class AttendanceController {
         requireViewScope(user, att.getEmployee().getDepartment().getId());
         requireNotOwnAttendance(user, att.getEmployee());
         periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
+        var before = com.bosskin.audit.AuditService.map(
+            "checkIn", att.getOverrideCheckIn(), "checkOut", att.getOverrideCheckOut(),
+            "breakMinutes", att.getOverrideBreakMinutes(), "otDayMinutes", att.getOverrideOtDayMinutes(),
+            "otNightMinutes", att.getOverrideOtNightMinutes(), "note", att.getOverrideNote(),
+            "approved", att.isApproved());
 
         att.setOverrideCheckIn(req.getOverrideCheckIn());
         att.setOverrideCheckOut(req.getOverrideCheckOut());
@@ -910,6 +929,12 @@ public class AttendanceController {
         att.setSnapNightOt(null);
         att.setWorkFlags(null);
         attendanceRepository.save(att);
+        auditAttendance("ATTENDANCE_OVERRIDE", att, com.bosskin.audit.AuditService.map(
+            "employeeId", att.getEmployee().getId(), "date", att.getDate(), "before", before,
+            "after", com.bosskin.audit.AuditService.map(
+                "checkIn", req.getOverrideCheckIn(), "checkOut", req.getOverrideCheckOut(),
+                "breakMinutes", req.getOverrideBreakMinutes(), "otDayMinutes", req.getOverrideOtDayMinutes(),
+                "otNightMinutes", req.getOverrideOtNightMinutes(), "note", req.getOverrideNote())));
         return ResponseEntity.ok().build();
     }
 
@@ -969,6 +994,7 @@ public class AttendanceController {
             att.setWorkFlags(null);
             // A5: giữ nguyên trạng thái; lần duyệt sau sẽ tính lại
             attendanceRepository.save(att);
+            auditAttendance("ATTENDANCE_UNAPPROVE", att, null);
         });
         return ResponseEntity.ok().build();
     }
@@ -991,6 +1017,7 @@ public class AttendanceController {
         att.setDeletedAt(java.time.LocalDateTime.now(clock));
         att.setDeletedBy(user);
         attendanceRepository.save(att);
+        auditAttendance("ATTENDANCE_DELETE", att, null);
         return ResponseEntity.noContent().build();
     }
 
@@ -1011,7 +1038,10 @@ public class AttendanceController {
         periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         target.attendance().setCheckIn(now);
         target.attendance().setStatus(checkInStatus(employee, target, now));
-        return ResponseEntity.status(HttpStatus.CREATED).body(AttendanceDTO.Response.from(attendanceRepository.save(target.attendance())));
+        Attendance savedIn = attendanceRepository.save(target.attendance());
+        auditAttendance("ATTENDANCE_MANUAL_CHECK_IN", savedIn, com.bosskin.audit.AuditService.map(
+            "employeeId", employee.getId(), "date", savedIn.getDate(), "checkIn", savedIn.getCheckIn()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(AttendanceDTO.Response.from(savedIn));
     }
 
     @GetMapping("/self/today")
@@ -1122,7 +1152,10 @@ public class AttendanceController {
         ShiftTarget target = requireCheckOutTarget(employee, getSelfCompany(user), now);
         periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         target.attendance().setCheckOut(now);
-        return ResponseEntity.ok(AttendanceDTO.Response.from(attendanceRepository.save(target.attendance())));
+        Attendance savedOut = attendanceRepository.save(target.attendance());
+        auditAttendance("ATTENDANCE_MANUAL_CHECK_OUT", savedOut, com.bosskin.audit.AuditService.map(
+            "employeeId", employee.getId(), "date", savedOut.getDate(), "checkOut", savedOut.getCheckOut()));
+        return ResponseEntity.ok(AttendanceDTO.Response.from(savedOut));
     }
 
     private AttendanceDTO.SelfTodayResponse buildSelfToday(User user) {
@@ -1767,8 +1800,9 @@ public class AttendanceController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user) {
         requirePermission(user, "ATTENDANCE_MANAGE");
-        return ResponseEntity.ok(
-            attendanceExcelService.importAttendance(user.getCompany().getId(), user.getId(), file));
+        Map<String, Integer> res = attendanceExcelService.importAttendance(user.getCompany().getId(), user.getId(), file);
+        audit.log("ATTENDANCE_IMPORT").summary(file.getOriginalFilename()).detail(res).save();
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping("/preview-import-timesheet")
@@ -1821,6 +1855,7 @@ public class AttendanceController {
         }
         if (approved > 0) result.put("approved", approved);
         if (approveFailed > 0) result.put("approveFailed", approveFailed);
+        audit.log("ATTENDANCE_IMPORT_TIMESHEET").summary(file.getOriginalFilename()).detail(result).save();
         return ResponseEntity.ok(result);
     }
 

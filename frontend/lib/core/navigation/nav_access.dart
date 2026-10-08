@@ -28,6 +28,7 @@ const Map<String, List<String>> routeAnyOf = {
   // Backend lọc từng sheet theo quyền module; vào màn chỉ cần một trong hai quyền Excel.
   AppRoutes.excelImportExport: ['EXCEL_EXPORT', 'EXCEL_IMPORT'],
   AppRoutes.reports: ['REPORT_VIEW'],
+  AppRoutes.auditLogs: ['AUDIT_VIEW'],
   // Duyệt yêu cầu sửa hồ sơ — backend yêu cầu EMPLOYEE_UPDATE.
   AppRoutes.editRequests: ['EMPLOYEE_UPDATE'],
 };

@@ -26,6 +26,7 @@ import java.util.Map;
 public class AttendancePeriodController {
 
     private final PeriodLockService periodLockService;
+    private final com.bosskin.audit.AuditService audit;
 
     @GetMapping
     public ResponseEntity<List<PeriodLockService.PeriodStatus>> list(
@@ -38,7 +39,9 @@ public class AttendancePeriodController {
     public ResponseEntity<PeriodLockService.PeriodStatus> lock(
             @AuthenticationPrincipal User user, @PathVariable int year, @PathVariable int month) {
         requirePermission(user, "ATTENDANCE_PERIOD_LOCK");
-        return ResponseEntity.ok(periodLockService.lock(user.getCompany().getId(), user.getId(), year, month));
+        var st = periodLockService.lock(user.getCompany().getId(), user.getId(), year, month);
+        audit.log("PERIOD_LOCK").entity("PERIOD", year + "-" + month).summary(month + "/" + year).save();
+        return ResponseEntity.ok(st);
     }
 
     @PostMapping("/{year}/{month}/unlock")
@@ -47,7 +50,9 @@ public class AttendancePeriodController {
             @RequestBody(required = false) Map<String, String> body) {
         requirePermission(user, "ATTENDANCE_PERIOD_LOCK");
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(periodLockService.unlock(user.getCompany().getId(), user.getId(), year, month, reason));
+        var st = periodLockService.unlock(user.getCompany().getId(), user.getId(), year, month, reason);
+        audit.log("PERIOD_UNLOCK").entity("PERIOD", year + "-" + month).summary(month + "/" + year + " · " + reason).save();
+        return ResponseEntity.ok(st);
     }
 
     private static void requirePermission(User user, String perm) {

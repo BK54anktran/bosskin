@@ -3806,4 +3806,144 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get formulaDeductionRest => 'Insurance, tax & formula deductions';
+
+  @override
+  String get auditActAttendanceApprove => 'Attendance approved';
+
+  @override
+  String get auditActAttendanceUnapprove => 'Attendance unapproved';
+
+  @override
+  String get auditActAttendanceOverride => 'Attendance edited';
+
+  @override
+  String get auditActAttendanceDelete => 'Attendance deleted';
+
+  @override
+  String get auditActAttendanceManualCheckIn => 'Manual check-in';
+
+  @override
+  String get auditActAttendanceManualCheckOut => 'Manual check-out';
+
+  @override
+  String get auditActAttendanceImport => 'Attendance imported';
+
+  @override
+  String get auditActAttendanceImportTimesheet => 'Timesheet imported';
+
+  @override
+  String get auditActAttendanceRequestApprove => 'Time request approved';
+
+  @override
+  String get auditActAttendanceRequestReject => 'Time request rejected';
+
+  @override
+  String get auditActPeriodLock => 'Period locked';
+
+  @override
+  String get auditActPeriodUnlock => 'Period unlocked';
+
+  @override
+  String get auditActPayrollGenerate => 'Payroll generated';
+
+  @override
+  String get auditActPayrollUpdate => 'Draft payroll edited';
+
+  @override
+  String get auditActPayrollRecalculate => 'Payroll recalculated';
+
+  @override
+  String get auditActPayrollApprove => 'Payroll approved';
+
+  @override
+  String get auditActPayrollPay => 'Payroll paid';
+
+  @override
+  String get auditActPayrollDelete => 'Draft payroll deleted';
+
+  @override
+  String get auditActRoleCreate => 'Role created';
+
+  @override
+  String get auditActRoleUpdate => 'Role edited';
+
+  @override
+  String get auditActRolePermissions => 'Role permissions changed';
+
+  @override
+  String get auditActRoleDelete => 'Role deleted';
+
+  @override
+  String get auditActUserCreate => 'Account created';
+
+  @override
+  String get auditActUserSyncFromEmployees => 'Accounts created in bulk';
+
+  @override
+  String get auditActUserRoles => 'Account roles changed';
+
+  @override
+  String get auditActUserPermissions => 'Account permissions changed';
+
+  @override
+  String get auditActUserDeptScopes => 'Permission scope changed';
+
+  @override
+  String get auditActUserEnable => 'Account enabled';
+
+  @override
+  String get auditActUserDisable => 'Account disabled';
+
+  @override
+  String get auditActDeviceUnbind => 'Check-in device unbound';
+
+  @override
+  String get auditActImpersonateStart => 'System admin accessed company';
+
+  @override
+  String get auditActCompanyCreate => 'Company created';
+
+  @override
+  String get auditActCompanyUpdate => 'Company edited';
+
+  @override
+  String get auditActCompanyToggleActive => 'Company enabled/disabled';
+
+  @override
+  String get auditLogTitle => 'Audit log';
+
+  @override
+  String get auditAllActions => 'All actions';
+
+  @override
+  String get auditActorFilter => 'Actor (email)';
+
+  @override
+  String get auditImpersonated => 'System admin';
+
+  @override
+  String get auditDetail => 'Details';
+
+  @override
+  String auditRequestId(String id) {
+    return 'Request id: $id';
+  }
+
+  @override
+  String auditIp(String ip) {
+    return 'IP: $ip';
+  }
+
+  @override
+  String get auditLoadMore => 'Load more';
+
+  @override
+  String get auditEmpty => 'No actions in this range';
+
+  @override
+  String get permUiAuditView => 'Opens the Audit log screen';
+
+  @override
+  String get permDescAuditView =>
+      'View the audit log (who edited attendance, approved payroll, changed permissions…)';
 }

@@ -1,9 +1,9 @@
 name: Deploy to Elastic Beanstalk
 
+# Bước 2: deploy bằng tay (Actions → Deploy to Elastic Beanstalk → Run workflow), không tự deploy mỗi lần
+# push main — push code dev không đụng môi trường thật. Test vẫn chạy cho mọi push (test.yml).
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   # Test phải xanh thì mới deploy (Mốc 0 — trước đây build bỏ qua test)
@@ -56,7 +56,10 @@ jobs:
 
       - name: Create deploy package
         working-directory: backend
-        run: zip -j deploy.zip target/bosskin-1.0.0.jar Procfile
+        # Jar + Procfile ở gốc gói (Procfile chạy "bosskin-1.0.0.jar"), kèm .ebextensions (health check, PORT)
+        run: |
+          zip -j deploy.zip target/bosskin-1.0.0.jar Procfile
+          zip -r deploy.zip .ebextensions
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22

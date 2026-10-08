@@ -40,6 +40,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final com.bosskin.service.GrantGuard grantGuard;
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
+    private final com.bosskin.audit.AuditService audit;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listUsers(@AuthenticationPrincipal User caller) {
@@ -96,6 +97,9 @@ public class UserController {
             .enabled(true)
             .build();
         User saved = userRepository.save(user);
+        audit.log("USER_CREATE").entity("USER", saved.getId()).summary(saved.getEmail())
+            .detail(com.bosskin.audit.AuditService.map("roles", roles.stream().map(Role::getName).sorted().toList(),
+                "employeeId", employee != null ? employee.getId() : null)).save();
         return ResponseEntity.status(HttpStatus.CREATED).body(toUserMap(saved));
     }
 
@@ -109,9 +113,9 @@ public class UserController {
         if (!manageScope.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.user.sync_requires_company_scope");
         }
-        return ResponseEntity.ok(
-            employeeService.syncMissingUserAccounts(caller.getCompany().getId(), body.getInitialPassword())
-        );
+        var synced = employeeService.syncMissingUserAccounts(caller.getCompany().getId(), body.getInitialPassword());
+        audit.log("USER_SYNC_FROM_EMPLOYEES").detail(synced).save();
+        return ResponseEntity.ok(synced);
     }
 
     @PutMapping("/{id}/roles")
@@ -127,8 +131,12 @@ public class UserController {
         grantGuard.requireNotSelf(caller, user.getId());
         Set<Role> newRoles = resolveRoles(roleIds, caller.getCompany().getId());
         grantGuard.requireCanGrantRoles(caller, newRoles);
+        var beforeRoles = user.getRoles().stream().map(Role::getName).sorted().toList();
         user.setRoles(newRoles);
-        return ResponseEntity.ok(toUserMap(userRepository.save(user)));
+        User saved = userRepository.save(user);
+        audit.log("USER_ROLES").entity("USER", saved.getId()).summary(saved.getEmail())
+            .detail(com.bosskin.audit.AuditService.map("before", beforeRoles, "after", newRoles.stream().map(Role::getName).sorted().toList())).save();
+        return ResponseEntity.ok(toUserMap(saved));
     }
 
     @PutMapping("/{id}/permissions")
@@ -148,9 +156,12 @@ public class UserController {
         for (String code : normalizedCodes) {
             permissionRepository.findByCode(code).ifPresent(perms::add);
         }
+        var beforePerms = user.getDirectPermissions().stream().map(Permission::getCode).sorted().toList();
         user.setDirectPermissions(perms);
         User saved = userRepository.save(user);
         deptScopeRepo.pruneByPermissionCodes(saved.getId(), normalizedCodes);
+        audit.log("USER_PERMISSIONS").entity("USER", saved.getId()).summary(saved.getEmail())
+            .detail(com.bosskin.audit.AuditService.map("before", beforePerms, "after", normalizedCodes.stream().sorted().toList())).save();
         return ResponseEntity.ok(toUserMap(saved));
     }
 
@@ -181,10 +192,13 @@ public class UserController {
         Map<String, List<Long>> converted = new java.util.HashMap<>();
         body.forEach((perm, ids) -> converted.put(perm,
             ids.stream().map(Integer::longValue).collect(Collectors.toList())));
+        var beforeScopes = deptScopeRepo.findScopesMap(id);
         deptScopeRepo.replaceAll(
             id,
             permissionConsistencyService.filterScopesByPermissionCodes(converted, directCodes)
         );
+        audit.log("USER_DEPT_SCOPES").entity("USER", id).summary(targetUser.getEmail())
+            .detail(com.bosskin.audit.AuditService.map("before", beforeScopes, "after", deptScopeRepo.findScopesMap(id))).save();
         return ResponseEntity.noContent().build();
     }
 
@@ -204,6 +218,7 @@ public class UserController {
         user.setEnabled(enabled);
         User saved = userRepository.save(user);
         if (!enabled) userSessionRepository.revokeAllByUserId(saved.getId());
+        audit.log(enabled ? "USER_ENABLE" : "USER_DISABLE").entity("USER", saved.getId()).summary(saved.getEmail()).save();
         return ResponseEntity.ok(toUserMap(saved));
     }
 

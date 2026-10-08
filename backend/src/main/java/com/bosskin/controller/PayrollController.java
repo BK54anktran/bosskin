@@ -36,6 +36,7 @@ public class PayrollController {
     private final EmployeeRepository      employeeRepository;
     private final DeptScopeService        deptScopeService;
     private final SalaryFormulaRepository salaryFormulaRepository;
+    private final com.bosskin.audit.AuditService audit;
 
     @GetMapping
     public ResponseEntity<Page<PayrollDTO.Response>> getByMonth(
@@ -106,7 +107,19 @@ public class PayrollController {
             ? Long.valueOf(body.get("formulaId").toString()) : null;
         requireFormulaCompany(formulaId, user.getCompany().getId());
         Payroll p = payrollService.generatePayroll(employeeId, year, month, formulaId);
+        auditPayroll("PAYROLL_GENERATE", p, com.bosskin.audit.AuditService.map("formulaId", formulaId));
         return ResponseEntity.status(HttpStatus.CREATED).body(PayrollDTO.Response.from(p));
+    }
+
+    /** Bước 2 — nhật ký thao tác bảng lương. */
+    private void auditPayroll(String action, Payroll p, java.util.Map<String, Object> extra) {
+        var d = com.bosskin.audit.AuditService.map(
+            "employeeId", p.getEmployee().getId(), "year", p.getYear(), "month", p.getMonth(),
+            "status", p.getStatus(), "gross", p.getGrossSalary(), "net", p.getNetSalary());
+        if (extra != null) d.putAll(extra);
+        audit.log(action).entity("PAYROLL", p.getId())
+            .summary(p.getEmployee().getFullName() + " · " + p.getMonth() + "/" + p.getYear() + " · NET " + p.getNetSalary())
+            .detail(d).save();
     }
 
     @PatchMapping("/{id}")
@@ -119,9 +132,13 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
-        return ResponseEntity.ok(PayrollDTO.Response.from(
-            payrollService.patchDraft(id, body.getAllowance(), body.getBonus(), body.getOtherDeductions(), body.getNote(), body.getCustomFormula())
-        ));
+        var before = com.bosskin.audit.AuditService.map("allowance", p.getAllowance(), "bonus", p.getBonus(),
+            "otherDeductions", p.getOtherDeductions(), "net", p.getNetSalary());
+        Payroll patched = payrollService.patchDraft(id, body.getAllowance(), body.getBonus(), body.getOtherDeductions(), body.getNote(), body.getCustomFormula());
+        auditPayroll("PAYROLL_UPDATE", patched, com.bosskin.audit.AuditService.map("before", before,
+            "after", com.bosskin.audit.AuditService.map("allowance", body.getAllowance(), "bonus", body.getBonus(),
+                "otherDeductions", body.getOtherDeductions(), "note", body.getNote())));
+        return ResponseEntity.ok(PayrollDTO.Response.from(patched));
     }
 
     @PostMapping("/{id}/approve")
@@ -133,7 +150,9 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
-        return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.approve(id, user.getId())));
+        Payroll approved = payrollService.approve(id, user.getId());
+        auditPayroll("PAYROLL_APPROVE", approved, null);
+        return ResponseEntity.ok(PayrollDTO.Response.from(approved));
     }
 
     @PostMapping("/{id}/pay")
@@ -145,7 +164,9 @@ public class PayrollController {
         Payroll p = payrollRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.payroll.not_found"));
         requireViewScope(user, p.getEmployee().getDepartment().getId());
-        return ResponseEntity.ok(PayrollDTO.Response.from(payrollService.markAsPaid(id, user.getId())));
+        Payroll paid = payrollService.markAsPaid(id, user.getId());
+        auditPayroll("PAYROLL_PAY", paid, null);
+        return ResponseEntity.ok(PayrollDTO.Response.from(paid));
     }
 
     @DeleteMapping("/{id}")
@@ -160,6 +181,7 @@ public class PayrollController {
         if (p.getStatus() != Payroll.Status.DRAFT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.payroll.delete_non_draft");
         }
+        auditPayroll("PAYROLL_DELETE", p, null);
         payrollRepository.delete(p);
         return ResponseEntity.noContent().build();
     }
@@ -181,6 +203,7 @@ public class PayrollController {
             ? Long.valueOf(body.get("formulaId").toString()) : null;
         requireFormulaCompany(formulaId, user.getCompany().getId());
         Payroll recalculated = payrollService.recalculate(p.getId(), formulaId);
+        auditPayroll("PAYROLL_RECALCULATE", recalculated, com.bosskin.audit.AuditService.map("formulaId", formulaId));
         return ResponseEntity.ok(PayrollDTO.Response.from(recalculated));
     }
 

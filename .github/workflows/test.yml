@@ -1,11 +1,9 @@
 name: Backend tests
 
-# Chạy test cho mọi nhánh khác main và mọi pull request.
-# Nhánh main chạy test ngay trong deploy.yml (test xanh mới deploy).
+# Chạy test cho mọi push (kể cả main) và mọi pull request đụng backend.
+# deploy.yml (chạy tay) cũng chạy lại test trước khi deploy.
 on:
   push:
-    branches-ignore:
-      - main
     paths:
       - 'backend/**'
       - '.github/workflows/**'

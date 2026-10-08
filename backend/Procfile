@@ -1,1 +1,1 @@
-web: java -Dspring.profiles.active=prod -Dserver.port=5000 -jar target/bosskin-1.0.0.jar
+web: java -XX:MaxRAMPercentage=75 -Dspring.profiles.active=prod -jar bosskin-1.0.0.jar
