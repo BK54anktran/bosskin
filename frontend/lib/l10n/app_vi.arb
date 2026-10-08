@@ -314,7 +314,7 @@
   "checkOutRequestTime": "Giờ check-out yêu cầu",
   "updatePasswordSuccess": "Đã đổi mật khẩu. Vui lòng đăng nhập lại",
   "fillAllPasswordFields": "Vui lòng nhập đầy đủ mật khẩu",
-  "newPasswordMinLength": "Mật khẩu mới phải có ít nhất 6 ký tự",
+  "newPasswordMinLength": "Mật khẩu mới phải có ít nhất 8 ký tự, gồm cả chữ và số",
   "passwordMismatch": "Mật khẩu xác nhận không khớp",
   "errorPrefix": "Lỗi",
   "deleteDepartmentTitle": "Xóa phòng ban",
@@ -1311,4 +1311,8 @@
   ,"@deviceBoundSince": { "placeholders": { "time": { "type": "String" } } }
   ,"deviceUnbind": "Gỡ thiết bị"
   ,"deviceUnbound": "Đã gỡ thiết bị, lần chấm công sau sẽ gắn máy mới"
+  ,"forceChangePasswordTitle": "Đổi mật khẩu lần đầu"
+  ,"forceChangePasswordDesc": "Mật khẩu của bạn do quản trị viên đặt. Vui lòng đặt mật khẩu mới để tiếp tục sử dụng."
+  ,"passwordPolicyHint": "Ít nhất 8 ký tự, gồm cả chữ và số"
+  ,"passwordSameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại"
 }

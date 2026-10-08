@@ -50,6 +50,7 @@ public class CompanyService {
 
     @Transactional
     public CompanyResponse create(CreateCompanyRequest req) {
+        com.bosskin.core.PasswordPolicy.require(req.getAdminPassword());
         if (companyRepository.existsByCode(req.getCode().toUpperCase())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã công ty đã tồn tại");
         }
@@ -97,6 +98,7 @@ public class CompanyService {
         User admin = User.builder()
             .email(req.getAdminEmail())
             .password(passwordEncoder.encode(req.getAdminPassword()))
+            .mustChangePassword(true)
             .company(company)
             .roles(Set.of(adminRole))
             .enabled(true)

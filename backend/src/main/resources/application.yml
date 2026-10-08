@@ -60,7 +60,7 @@ app:
     # Bắt buộc đặt JWT_SECRET (>= 32 ký tự, ngẫu nhiên). Không có giá trị mặc định.
     # Tạo nhanh: openssl rand -base64 48
     secret: ${JWT_SECRET:}
-    expiration: 86400000       # 24 hours
+    expiration: ${JWT_EXPIRATION_MS:1800000}  # 30 phút (access token); FE tự refresh
     refresh-expiration: 604800000  # 7 days
 
   s3:

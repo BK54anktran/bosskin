@@ -127,6 +127,28 @@ class AuthService extends ChangeNotifier {
   /// false khi đăng nhập không chọn "ghi nhớ": token chỉ giữ trong bộ nhớ (F4).
   bool _persistSession = true;
 
+  /// Tài khoản do admin đặt mật khẩu → phải đổi trước khi dùng (V7). Router chặn mọi màn khác.
+  bool _mustChangePassword = false;
+  bool get mustChangePassword => _mustChangePassword;
+  static const _mustChangeKey = 'must_change_password';
+
+  /// Backend báo 403 error.auth.password_change_required (vd. sau khi tải lại trang).
+  void markPasswordChangeRequired() {
+    if (_mustChangePassword) return;
+    _mustChangePassword = true;
+    if (_persistSession) _safeWrite(_mustChangeKey, '1');
+    notifyListeners();
+  }
+
+  /// Đổi mật khẩu bắt buộc xong: backend thu hồi mọi phiên → đăng nhập lại bằng mật khẩu mới.
+  Future<void> completeForcedPasswordChange(String newPassword) async {
+    final email = _currentUser?.email;
+    final remember = _persistSession;
+    _mustChangePassword = false;
+    await _safeDelete(_mustChangeKey);
+    if (email != null) await login(email, newPassword, rememberMe: remember);
+  }
+
   /// Đang refresh token — các request 401 cùng lúc dùng chung một lần refresh (F2).
   Future<bool>? _refreshInFlight;
 
@@ -300,6 +322,8 @@ class AuthService extends ChangeNotifier {
       _currentUser = adminUser;
     }
     if (_currentUser != null) _persistSession = true;
+    _mustChangePassword =
+        _currentUser != null && await _safeRead(_mustChangeKey) == '1';
   }
 
   // =========================================================
@@ -354,9 +378,13 @@ class AuthService extends ChangeNotifier {
       permissions: perms,
     );
 
+    _mustChangePassword = userMap['mustChangePassword'] == true;
     _persistSession = rememberMe;
     if (rememberMe) {
       await Future.wait([
+        _mustChangePassword
+            ? _safeWrite(_mustChangeKey, '1')
+            : _safeDelete(_mustChangeKey),
         _safeWrite(AppConstants.tokenKey, token),
         _safeWrite(AppConstants.userKey, jsonEncode(_currentUser!.toJson())),
         if (refreshToken != null)
@@ -680,10 +708,12 @@ class AuthService extends ChangeNotifier {
     }
     _currentUser = null;
     _currentRefreshToken = null;
+    _mustChangePassword = false;
 
     notifyListeners();
 
     await Future.wait([
+      _safeDelete(_mustChangeKey),
       _safeDelete(AppConstants.tokenKey),
       _safeDelete(AppConstants.adminTokenKey),
       _safeDelete(AppConstants.refreshTokenKey),

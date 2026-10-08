@@ -77,6 +77,11 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private boolean enabled = true;
 
+    /** Mật khẩu do người khác đặt → phải đổi ở lần đăng nhập đầu (V7). */
+    @Column(name = "must_change_password", nullable = false)
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;

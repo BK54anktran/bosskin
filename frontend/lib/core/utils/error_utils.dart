@@ -93,7 +93,6 @@ const _viMessages = <String, String>{
   'error.shift.code_required': 'Thiếu mã ca',
   'error.shift.name_required': 'Thiếu tên ca',
   'error.user.employee_not_linked': 'Tài khoản chưa gắn với nhân viên',
-  'error.user.not_found': 'Không tìm thấy tài khoản',
   'error.variable.name_required': 'Thiếu tên biến',
   'error.shift.flexible_required_minutes': 'Ca linh hoạt cần có khung giờ và số giờ phải làm',
   'error.shift.flexible_window_too_short': 'Khung giờ ngắn hơn số giờ phải làm',
@@ -113,6 +112,13 @@ const _viMessages = <String, String>{
   'error.swap.past_shift': 'Không đổi được ca đã qua',
   'error.attendance.device_not_bound': 'Thiết bị này chưa được gắn để chấm công cho bạn. Nhờ quản lý gỡ thiết bị cũ nếu bạn đổi điện thoại.',
   'error.attendance.device_missing': 'Không xác định được thiết bị — hãy cập nhật ứng dụng',
+  'error.password.weak': 'Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số',
+  'error.import.weak_password': 'Mật khẩu ban đầu của nhân viên "{0}" chưa đủ mạnh (≥ 8 ký tự, có chữ và số)',
+  'error.password.confirm_mismatch': 'Mật khẩu xác nhận không khớp',
+  'error.password.current_wrong': 'Mật khẩu hiện tại không đúng',
+  'error.password.same_as_current': 'Mật khẩu mới phải khác mật khẩu hiện tại',
+  'error.auth.password_change_required': 'Vui lòng đổi mật khẩu trước khi tiếp tục',
+  'error.user.not_found': 'Không tìm thấy tài khoản',
 };
 
 const _enMessages = <String, String>{
@@ -226,10 +232,28 @@ const _enMessages = <String, String>{
   'error.swap.past_shift': 'Past shifts cannot be swapped',
   'error.attendance.device_not_bound': 'This device is not your bound check-in device. Ask a manager to unbind your old phone if you changed phones.',
   'error.attendance.device_missing': 'Could not identify this device — please update the app',
+  'error.password.weak': 'Password must be at least 8 characters with both letters and digits',
+  'error.import.weak_password': 'Initial password for "{0}" is too weak (≥ 8 characters, letters and digits)',
+  'error.password.confirm_mismatch': 'Password confirmation does not match',
+  'error.password.current_wrong': 'Current password is incorrect',
+  'error.password.same_as_current': 'New password must differ from the current one',
+  'error.auth.password_change_required': 'Please change your password before continuing',
 };
 
 /// Tra bản dịch; key dạng "error.x.y.<chi tiết>" thử lại với phần đầu "error.x.y".
-String? _translateKey(String key, bool en) {
+/// Key có tham số: "error.x.y|a|b" → thay {0}, {1} trong bản dịch.
+String? _translateKey(String raw, bool en) {
+  final parts = raw.split('|');
+  final base = _lookupKey(parts.first, en);
+  if (base == null) return null;
+  var out = base;
+  for (var i = 1; i < parts.length; i++) {
+    out = out.replaceAll('{${i - 1}}', parts[i]);
+  }
+  return out.replaceAll(RegExp(r'\{\d+\}'), '').trim();
+}
+
+String? _lookupKey(String key, bool en) {
   final map = en ? _enMessages : _viMessages;
   var k = key;
   while (true) {

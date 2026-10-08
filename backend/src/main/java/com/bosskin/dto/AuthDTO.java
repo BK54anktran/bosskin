@@ -42,6 +42,8 @@ public class AuthDTO {
         private Set<String>              permissions;
         /** permCode → set of allowed deptIds (empty/absent = unrestricted) */
         private Map<String, Set<Long>>   departmentScope;
+        /** true → phải đổi mật khẩu trước khi dùng các chức năng khác (V7). */
+        private boolean     mustChangePassword;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

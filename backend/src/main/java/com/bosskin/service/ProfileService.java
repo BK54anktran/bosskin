@@ -114,18 +114,20 @@ public class ProfileService {
 
     @Transactional
     public void changePassword(User user, ProfileDTO.ChangePasswordRequest req) {
-        if (req.getNewPassword() == null || req.getNewPassword().trim().length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải có ít nhất 6 ký tự");
-        }
+        com.bosskin.core.PasswordPolicy.require(req.getNewPassword());
         if (!req.getNewPassword().equals(req.getConfirmPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu xác nhận không khớp");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.password.confirm_mismatch");
         }
         User account = userRepository.findById(user.getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tài khoản không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
         if (!passwordEncoder.matches(req.getCurrentPassword(), account.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.password.current_wrong");
+        }
+        if (passwordEncoder.matches(req.getNewPassword(), account.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.password.same_as_current");
         }
         account.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        account.setMustChangePassword(false);
         userRepository.save(account);
         userSessionRepository.revokeAllByUserId(account.getId());
     }

@@ -62,6 +62,7 @@ public class UserController {
         requirePermission(caller, "USER_MANAGE");
         String email    = (String) body.get("email");
         String password = (String) body.get("password");
+        if (password != null) com.bosskin.core.PasswordPolicy.require(password);
         if (email == null || password == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email và password là bắt buộc");
         }
@@ -88,6 +89,7 @@ public class UserController {
         User user = User.builder()
             .email(email)
             .password(passwordEncoder.encode(password))
+            .mustChangePassword(true)
             .company(caller.getCompany())
             .roles(roles)
             .employee(employee)

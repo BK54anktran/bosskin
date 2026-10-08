@@ -44,6 +44,12 @@ function Call($method, $path, $body = $null, $token = $script:Token) {
 function Login($email, $password, $path = '/api/v1/auth/login') {
   (Call POST $path @{ email = $email; password = $password } $null).accessToken
 }
+# Tài khoản do admin tạo phải đổi mật khẩu ở lần đầu (V7): tạo bằng mật khẩu tạm rồi đổi sang $PW.
+$TMP = $PW + 'Tmp1'
+function Activate($email) {
+  $t = Login $email $TMP
+  Call PATCH '/api/v1/profile/password' @{ currentPassword = $TMP; newPassword = $PW; confirmPassword = $PW } $t | Out-Null
+}
 function D($d) { $d.ToString('yyyy-MM-dd') }
 function Items($r) { if ($r -is [array]) { return ,$r }; if ($null -ne $r.content) { return ,@($r.content) }; return ,@($r) }
 function Step($t) { Write-Host ''; Write-Host "== $t" }
@@ -62,9 +68,10 @@ $adminEmail = 'admin@thco.local'
 $co = Call POST '/admin/companies' @{
   name = 'TH company'; code = 'THCO'; domain = 'thco.local'
   address = '12 Nguyễn Huệ, Quận 1, TP.HCM'; phone = '02873000001'; companyEmail = 'hr@thco.local'
-  adminEmail = $adminEmail; adminPassword = $PW; adminFullName = 'Quản trị TH'
+  adminEmail = $adminEmail; adminPassword = $TMP; adminFullName = 'Quản trị TH'
 } $sys
 Write-Host "TH company id=$($co.id)"
+Activate $adminEmail
 $script:Token = Login $adminEmail $PW
 
 # ── 2. Phòng ban + chức danh ────────────────────────────────────────────────
@@ -145,11 +152,12 @@ $people = @(
 $emp = @{}
 foreach ($p in $people) {
   $e = Call POST '/api/v1/employees' @{
-    fullName = $p[1]; email = $p[2]; password = $PW; gender = $p[3]; joinDate = '2025-01-02'
+    fullName = $p[1]; email = $p[2]; password = $TMP; gender = $p[3]; joinDate = '2025-01-02'
     departmentId = $dept[$p[4]]; positionId = $pos[$p[5]]; phone = '09' + (Get-Random -Minimum 10000000 -Maximum 99999999)
   }
   Call PUT "/api/v1/employees/$($e.id)" @{ salaryGradeId = $p[6]; contractSalary = $p[7] } | Out-Null
   $emp[$p[0]] = @{ id = $e.id; email = $p[2]; name = $p[1]; grade = $p[6]; userId = $null }
+  Activate $p[2]
 }
 # gán vai trò: ai cũng có "Nhân viên" (tự chấm công, xin nghỉ) + vai trò theo chức năng
 $users = Call GET '/api/v1/users'

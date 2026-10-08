@@ -1968,7 +1968,7 @@ abstract class AppLocalizations {
   /// No description provided for @newPasswordMinLength.
   ///
   /// In vi, this message translates to:
-  /// **'Mật khẩu mới phải có ít nhất 6 ký tự'**
+  /// **'Mật khẩu mới phải có ít nhất 8 ký tự, gồm cả chữ và số'**
   String get newPasswordMinLength;
 
   /// No description provided for @passwordMismatch.
@@ -7089,6 +7089,30 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đã gỡ thiết bị, lần chấm công sau sẽ gắn máy mới'**
   String get deviceUnbound;
+
+  /// No description provided for @forceChangePasswordTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi mật khẩu lần đầu'**
+  String get forceChangePasswordTitle;
+
+  /// No description provided for @forceChangePasswordDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu của bạn do quản trị viên đặt. Vui lòng đặt mật khẩu mới để tiếp tục sử dụng.'**
+  String get forceChangePasswordDesc;
+
+  /// No description provided for @passwordPolicyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ít nhất 8 ký tự, gồm cả chữ và số'**
+  String get passwordPolicyHint;
+
+  /// No description provided for @passwordSameAsCurrent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu mới phải khác mật khẩu hiện tại'**
+  String get passwordSameAsCurrent;
 }
 
 class _AppLocalizationsDelegate

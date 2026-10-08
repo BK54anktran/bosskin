@@ -86,6 +86,7 @@ public class AuthService {
                 .employeeId(user.getEmployee() != null ? user.getEmployee().getId() : null)
                 .permissions(user.getPermissions())
                 .departmentScope(deptScopeRepo.findScopesMap(user.getId()))
+                .mustChangePassword(user.isMustChangePassword())
                 .build())
             .build();
     }
@@ -162,6 +163,7 @@ public class AuthService {
                 .employeeId(user.getEmployee() != null ? user.getEmployee().getId() : null)
                 .permissions(user.getPermissions())
                 .departmentScope(deptScopeRepo.findScopesMap(user.getId()))
+                .mustChangePassword(user.isMustChangePassword())
                 .build())
             .build();
     }

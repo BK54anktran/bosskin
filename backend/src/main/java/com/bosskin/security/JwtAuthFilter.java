@@ -77,6 +77,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             && jwtUtil.isTokenValid(jwt, user)
                             && user.getCompanyId() != null
                             && companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
+                        if (user.isMustChangePassword() && !allowedBeforePasswordChange(request)) {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                "{\"status\":403,\"message\":\"error.auth.password_change_required\"}");
+                            return;
+                        }
                         setAuth(user, request);
                     }
                 }
@@ -84,6 +91,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         } catch (Exception ignored) { }
 
         filterChain.doFilter(request, response);
+    }
+
+    /** Khi còn phải đổi mật khẩu (V7): chỉ cho xem hồ sơ, đổi mật khẩu và các API /auth. */
+    static boolean allowedBeforePasswordChange(HttpServletRequest req) {
+        String path = req.getRequestURI();
+        String m = req.getMethod();
+        if (path.startsWith("/api/v1/auth/")) return true;
+        if ("GET".equals(m) && path.equals("/api/v1/profile")) return true;
+        return "PATCH".equals(m) && path.equals("/api/v1/profile/password");
     }
 
     private void setAuth(org.springframework.security.core.userdetails.UserDetails principal,

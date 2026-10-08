@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/server_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/language_service.dart';
+import '../../../core/navigation/navigator_keys.dart';
 import 'auth_service.dart';
 import 'device_service.dart';
 
@@ -113,6 +115,14 @@ class ApiService {
         },
         onError: (error, handler) async {
           final statusCode = error.response?.statusCode;
+          final errData = error.response?.data;
+          if (statusCode == 403 &&
+              errData is Map &&
+              errData['message'] == 'error.auth.password_change_required') {
+            // V7: tài khoản phải đổi mật khẩu → đưa về màn đổi mật khẩu bắt buộc.
+            AuthService.instance.markPasswordChangeRequired();
+            rootNavigatorKey.currentContext?.go(AppRoutes.changePassword);
+          }
           final isUnauthorized = statusCode == 401;
           final alreadyRetried =
               error.requestOptions.extra['__refreshed_after_permission_error'] ==

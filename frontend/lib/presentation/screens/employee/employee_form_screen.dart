@@ -1,5 +1,6 @@
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/error_utils.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/department_model.dart';
@@ -255,7 +256,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                     decoration: InputDecoration(labelText: s.passwordLabel),
                     validator: (v) {
                       if (_isEdit) return null;
-                      if (v == null || v.length < 6) return s.atLeast6Chars;
+                      if (v == null || !isStrongPassword(v)) return s.passwordPolicyHint;
                       return null;
                     },
                   )),

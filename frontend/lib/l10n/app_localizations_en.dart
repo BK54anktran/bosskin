@@ -971,7 +971,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newPasswordMinLength =>
-      'New password must be at least 6 characters';
+      'New password must be at least 8 characters with letters and digits';
 
   @override
   String get passwordMismatch => 'Password confirmation does not match';
@@ -3757,4 +3757,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deviceUnbound =>
       'Device unbound; the next check-in will bind the new phone';
+
+  @override
+  String get forceChangePasswordTitle => 'Change your password';
+
+  @override
+  String get forceChangePasswordDesc =>
+      'Your password was set by an administrator. Please choose a new password to continue.';
+
+  @override
+  String get passwordPolicyHint =>
+      'At least 8 characters, with letters and digits';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'New password must differ from the current one';
 }

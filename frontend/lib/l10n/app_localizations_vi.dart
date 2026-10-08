@@ -972,7 +972,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get fillAllPasswordFields => 'Vui lòng nhập đầy đủ mật khẩu';
 
   @override
-  String get newPasswordMinLength => 'Mật khẩu mới phải có ít nhất 6 ký tự';
+  String get newPasswordMinLength =>
+      'Mật khẩu mới phải có ít nhất 8 ký tự, gồm cả chữ và số';
 
   @override
   String get passwordMismatch => 'Mật khẩu xác nhận không khớp';
@@ -3754,4 +3755,18 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get deviceUnbound =>
       'Đã gỡ thiết bị, lần chấm công sau sẽ gắn máy mới';
+
+  @override
+  String get forceChangePasswordTitle => 'Đổi mật khẩu lần đầu';
+
+  @override
+  String get forceChangePasswordDesc =>
+      'Mật khẩu của bạn do quản trị viên đặt. Vui lòng đặt mật khẩu mới để tiếp tục sử dụng.';
+
+  @override
+  String get passwordPolicyHint => 'Ít nhất 8 ký tự, gồm cả chữ và số';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'Mật khẩu mới phải khác mật khẩu hiện tại';
 }

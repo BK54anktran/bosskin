@@ -133,4 +133,27 @@ class PermissionTest extends IntegrationTest {
         var list = api.get(c.tokenOf(manager), "/api/v1/leaves/requests/page").expectOk().body();
         assertThat(list.path("totalElements").asInt()).as("thấy cả đơn của người khác").isGreaterThanOrEqualTo(1);
     }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    com.bosskin.repository.UserPermDeptScopeRepository deptScopeRepo;
+
+    @Test
+    @DisplayName("Phạm vi theo phòng ban: xoá phòng ban duy nhất KHÔNG biến thành toàn công ty")
+    void scopedDepartmentDeleted_doesNotWidenToWholeCompany() {
+        var c = fixture.standardCompany();
+        long tmp = c.createDepartment("TMP", "Phòng tạm", null);
+        long roleId = api.post(c.adminToken, "/api/v1/roles", Map.of(
+            "name", "Xem công phòng tạm", "description", "test",
+            "permissions", List.of("ATTENDANCE_VIEW"), "roleViewAllCompany", true,
+            "deptScopes", Map.of("ATTENDANCE_VIEW", List.of(tmp)))).expectOk().id();
+        var e = c.emp(1);
+        api.put(c.adminToken, "/api/v1/users/" + e.userId() + "/roles",
+            Map.of("roleIds", List.of(roleId))).expectOk();
+        assertThat(deptScopeRepo.findDeptIds(e.userId(), "ATTENDANCE_VIEW")).containsExactly(tmp);
+
+        api.delete(c.adminToken, "/api/v1/departments/" + tmp).expectOk();
+
+        assertThat(deptScopeRepo.findDeptIds(e.userId(), "ATTENDANCE_VIEW"))
+            .as("vẫn giới hạn (phòng đã xoá), không rỗng = toàn công ty").isNotEmpty();
+    }
 }

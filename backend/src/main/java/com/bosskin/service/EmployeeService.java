@@ -137,6 +137,7 @@ public class EmployeeService {
     @Transactional
     public EmployeeDTO.Response create(EmployeeDTO.CreateRequest req, Long companyId, Long userId) {
         requireViewScope(userId, req.getDepartmentId());
+        com.bosskin.core.PasswordPolicy.require(req.getPassword());
         if (employeeRepository.existsByEmailAndCompanyId(req.getEmail(), companyId) ||
             userRepository.existsByEmail(req.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
@@ -170,6 +171,7 @@ public class EmployeeService {
         var user = com.bosskin.entity.User.builder()
             .email(req.getEmail())
             .password(passwordEncoder.encode(req.getPassword()))
+            .mustChangePassword(true)
             .company(company)
             .employee(employee)
             .enabled(true)
@@ -229,9 +231,7 @@ public class EmployeeService {
 
     @Transactional
     public UserDTO.SyncEmployeesResponse syncMissingUserAccounts(Long companyId, String initialPassword) {
-        if (initialPassword == null || initialPassword.trim().length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu khởi tạo phải có ít nhất 6 ký tự");
-        }
+        com.bosskin.core.PasswordPolicy.require(initialPassword);
 
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
@@ -313,6 +313,7 @@ public class EmployeeService {
             User newUser = User.builder()
                 .email(email)
                 .password(passwordEncoder.encode(initialPassword))
+                .mustChangePassword(true)
                 .company(company)
                 .employee(employee)
                 .enabled(true)

@@ -105,7 +105,7 @@ public class Fixture {
             body.put("joinDate", LocalDate.of(2025, 1, 1).toString());
             body.put("departmentId", deptId);
             var res = api.post(adminToken, "/api/v1/employees", body).expectOk();
-            long userId = userRepository.findByEmail(email).orElseThrow().getId();
+            long userId = clearMustChangePassword(email);
             Emp e = new Emp(res.id(), userId, email, res.text("employeeCode"), deptId);
             employees.add(e);
             return e;
@@ -193,6 +193,17 @@ public class Fixture {
 
     // ---------------------------------------------------------------- builders
 
+    /**
+     * Tài khoản do admin tạo bị buộc đổi mật khẩu ở lần đầu (V7). Test nghiệp vụ dùng tài khoản
+     * như đã đổi xong; luồng buộc đổi có test riêng (AuthTest.mustChangePassword_*).
+     */
+    public long clearMustChangePassword(String email) {
+        var u = userRepository.findByEmail(email).orElseThrow();
+        u.setMustChangePassword(false);
+        userRepository.save(u);
+        return u.getId();
+    }
+
     /** Công ty mới tinh: chỉ có admin do system admin tạo, chưa có vai trò nào khác. */
     public TestCompany newCompany() {
         int n = SEQ.incrementAndGet();
@@ -206,6 +217,7 @@ public class Fixture {
         req.setAdminPassword(PASSWORD);
         req.setAdminFullName("Admin " + code);
         long id = companyService.create(req).getId();
+        clearMustChangePassword(adminEmail);
 
         return new TestCompany(id, code, adminEmail, api.token(adminEmail, PASSWORD));
     }

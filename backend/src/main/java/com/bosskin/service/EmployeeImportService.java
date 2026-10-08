@@ -35,6 +35,16 @@ public class EmployeeImportService {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String DEFAULT_PASSWORD = "Bosskin@123";
 
+    /** Mật khẩu ban đầu của dòng import: rỗng → mặc định; tự đặt thì phải đạt chính sách. */
+    private static String importPassword(EmployeeDTO.ImportRow row) {
+        if (row.getDefaultPassword() == null || row.getDefaultPassword().isBlank()) return DEFAULT_PASSWORD;
+        String pwd = row.getDefaultPassword().trim();
+        if (!com.bosskin.core.PasswordPolicy.isStrong(pwd))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "error.import.weak_password|" + (row.getFullName() == null ? "" : row.getFullName()));
+        return pwd;
+    }
+
     // ─── LOAD FOR EXPORT ─────────────────────────────────────────────────────
 
     private static final java.time.format.DateTimeFormatter DATE_EXPORT_FMT =
@@ -279,10 +289,9 @@ public class EmployeeImportService {
                     .build();
                 Employee savedEmp = employeeRepo.save(newEmp);
 
-                String pwd = isBlank(row.getDefaultPassword())
-                    ? DEFAULT_PASSWORD : row.getDefaultPassword().trim();
+                String pwd = importPassword(row);
                 var user = com.bosskin.entity.User.builder()
-                    .email(email).password(passwordEncoder.encode(pwd))
+                    .email(email).password(passwordEncoder.encode(pwd)).mustChangePassword(true)
                     .company(company).employee(savedEmp).enabled(true).build();
                 defaultRole.ifPresent(r -> user.getRoles().add(r));
                 toCreateUsers.add(user);
@@ -498,9 +507,9 @@ public class EmployeeImportService {
         emp = employeeRepo.save(emp);
 
         Optional<Role> defaultRole = roleRepo.findFirstByCompanyIdAndIsDefaultTrue(company.getId());
-        String pwd = isBlank(row.getDefaultPassword()) ? DEFAULT_PASSWORD : row.getDefaultPassword().trim();
+        String pwd = importPassword(row);
         var user = com.bosskin.entity.User.builder()
-            .email(email).password(passwordEncoder.encode(pwd))
+            .email(email).password(passwordEncoder.encode(pwd)).mustChangePassword(true)
             .company(company).employee(emp).enabled(true).build();
         defaultRole.ifPresent(r -> user.getRoles().add(r));
         userRepo.save(user);

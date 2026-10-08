@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
 import 'package:flutter/material.dart';
@@ -254,7 +255,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         validator: (v) => (v == null || !v.contains('@')) ? s.invalidEmail : null),
                     const SizedBox(height: 10),
                     _DialogField(ctrl: adminPassCtrl, label: s.passwordLabel, obscureText: true,
-                        validator: (v) => (v == null || v.length < 6) ? s.atLeast6Chars : null),
+                        validator: (v) => (v == null || !isStrongPassword(v)) ? s.passwordPolicyHint : null),
                   ],
                 ),
               ),

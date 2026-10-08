@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/language_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -287,7 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _showSnack(s.fillAllPasswordFields);
       return;
     }
-    if (next.length < 6) {
+    if (!isStrongPassword(next)) {
       _showSnack(s.newPasswordMinLength);
       return;
     }

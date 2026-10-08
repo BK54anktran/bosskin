@@ -13,6 +13,7 @@ import 'core/theme/app_theme.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/device_service.dart';
 import 'data/services/notification_service.dart';
+import 'presentation/screens/auth/force_change_password_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
@@ -80,13 +81,23 @@ final _router = GoRouter(
 
     // Notification action button tapped while app was killed → navigate after login
     final pending = NotificationService.instance.consumePendingRoute();
-    if (pending != null && user != null && _canAccessPath(user, pending)) {
+    if (pending != null && user != null && !AuthService.instance.mustChangePassword && _canAccessPath(user, pending)) {
       return pending;
     }
 
     if (path == '/') {
       return user != null ? _firstAccessibleRoute(user) : AppRoutes.login;
     }
+
+    // V7: tài khoản phải đổi mật khẩu → chỉ được ở màn đổi mật khẩu bắt buộc.
+    final mustChange = user != null &&
+        !user.isSystemAdmin &&
+        AuthService.instance.mustChangePassword;
+    if (path == AppRoutes.changePassword) {
+      if (user == null) return AppRoutes.login;
+      return mustChange ? null : _firstAccessibleRoute(user);
+    }
+    if (mustChange) return AppRoutes.changePassword;
 
     final isAdminPath = path.startsWith('/admin');
     final isAdminLogin = path == AppRoutes.adminLogin;
@@ -116,6 +127,10 @@ final _router = GoRouter(
     GoRoute(
       path: AppRoutes.login,
       builder: (_, __) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.changePassword,
+      builder: (_, __) => const ForceChangePasswordScreen(),
     ),
     // Admin routes (outside shell)
     GoRoute(

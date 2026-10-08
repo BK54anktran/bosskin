@@ -314,7 +314,7 @@
   "checkOutRequestTime": "Requested check-out time",
   "updatePasswordSuccess": "Password changed. Please sign in again",
   "fillAllPasswordFields": "Please enter all password fields",
-  "newPasswordMinLength": "New password must be at least 6 characters",
+  "newPasswordMinLength": "New password must be at least 8 characters with letters and digits",
   "passwordMismatch": "Password confirmation does not match",
   "errorPrefix": "Error",
   "deleteDepartmentTitle": "Delete department",
@@ -1308,4 +1308,8 @@
   ,"@deviceBoundSince": { "placeholders": { "time": { "type": "String" } } }
   ,"deviceUnbind": "Unbind device"
   ,"deviceUnbound": "Device unbound; the next check-in will bind the new phone"
+  ,"forceChangePasswordTitle": "Change your password"
+  ,"forceChangePasswordDesc": "Your password was set by an administrator. Please choose a new password to continue."
+  ,"passwordPolicyHint": "At least 8 characters, with letters and digits"
+  ,"passwordSameAsCurrent": "New password must differ from the current one"
 }

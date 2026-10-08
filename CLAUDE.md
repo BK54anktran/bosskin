@@ -322,8 +322,17 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V5** (`V5__flexible_rotation_swap.sql`) — V1 là baseline gộp V1–V117 cũ
-→ Migration tiếp theo phải là **V6**
+Cao nhất: **V7** (`V7__must_change_password.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị chấm công
+→ Migration tiếp theo phải là **V8**
+
+## Bảo mật tài khoản (Bước 1)
+- Access token 30 phút (`JWT_EXPIRATION_MS`, mặc định 1800000), refresh 7 ngày; FE tự refresh khi 401.
+- Chính sách mật khẩu `core/PasswordPolicy`: ≥ 8 ký tự, có chữ và số — áp ở tạo công ty, tạo NV, tạo tài khoản, import, đổi mật khẩu.
+  FE dùng `isStrongPassword` (force_change_password_screen.dart) cho cùng quy tắc.
+- `users.must_change_password`: tài khoản do người khác đặt mật khẩu → `true`; `JwtAuthFilter` chỉ cho `/api/v1/auth/*`,
+  `GET /api/v1/profile`, `PATCH /api/v1/profile/password`, còn lại 403 `error.auth.password_change_required`.
+  FE chuyển về `/change-password`. Test: `Fixture` gỡ cờ cho tài khoản test; seed tạo bằng mật khẩu tạm rồi đổi.
+- Mã lỗi có tham số: `"error.x.y|a|b"` → FE thay `{0}`, `{1}` trong bản dịch (error_utils.dart).
 
 ## Ca làm (Mốc 2b)
 - `WorkShift.shiftType`: `FIXED` | `FLEXIBLE` (linh hoạt: `requiredMinutes` trong khung `startTime–endTime`, thiếu giờ = LATE).

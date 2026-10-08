@@ -112,4 +112,57 @@ class AuthTest extends IntegrationTest {
 
         assertThat(res.getStatus()).isEqualTo(400);
     }
+
+    private String createRawEmployee(Fixture.TestCompany c, String email, String password) {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("fullName", "Nhân viên mới");
+        body.put("email", email);
+        body.put("password", password);
+        body.put("gender", "MALE");
+        body.put("joinDate", "2025-01-01");
+        body.put("departmentId", c.departments.get("SX"));
+        return api.post(c.adminToken, "/api/v1/employees", body).raw();
+    }
+
+    @Test
+    @DisplayName("Mật khẩu yếu bị từ chối khi tạo nhân viên")
+    void weakPassword_rejectedOnCreate() {
+        var c = fixture.standardCompany();
+        String raw = createRawEmployee(c, "weak@" + c.code.toLowerCase() + ".test", "abcdefgh");
+        assertThat(raw).contains("error.password.weak");
+    }
+
+    @Test
+    @DisplayName("Tài khoản do admin tạo phải đổi mật khẩu trước khi dùng hệ thống")
+    void mustChangePassword_blocksUntilChanged() {
+        var c = fixture.standardCompany();
+        String email = "new@" + c.code.toLowerCase() + ".test";
+        createRawEmployee(c, email, Fixture.PASSWORD);
+
+        var login = api.login(email, Fixture.PASSWORD).expectOk();
+        assertThat(login.body().path("user").path("mustChangePassword").asBoolean()).isTrue();
+        String token = login.text("accessToken");
+
+        var blocked = api.get(token, "/api/v1/attendances/self/today");
+        assertThat(blocked.status()).isEqualTo(403);
+        assertThat(blocked.raw()).contains("error.auth.password_change_required");
+        assertThat(api.get(token, "/api/v1/profile").status()).isEqualTo(200);
+
+        String same = api.patch(token, "/api/v1/profile/password", Map.of(
+            "currentPassword", Fixture.PASSWORD, "newPassword", Fixture.PASSWORD,
+            "confirmPassword", Fixture.PASSWORD)).raw();
+        assertThat(same).contains("error.password.same_as_current");
+        String weak = api.patch(token, "/api/v1/profile/password", Map.of(
+            "currentPassword", Fixture.PASSWORD, "newPassword", "12345678",
+            "confirmPassword", "12345678")).raw();
+        assertThat(weak).contains("error.password.weak");
+
+        assertThat(api.patch(token, "/api/v1/profile/password", Map.of(
+            "currentPassword", Fixture.PASSWORD, "newPassword", "NewPass123",
+            "confirmPassword", "NewPass123")).ok()).isTrue();
+
+        var again = api.login(email, "NewPass123").expectOk();
+        assertThat(again.body().path("user").path("mustChangePassword").asBoolean()).isFalse();
+        assertThat(api.get(again.text("accessToken"), "/api/v1/attendances/self/today").status()).isEqualTo(200);
+    }
 }
