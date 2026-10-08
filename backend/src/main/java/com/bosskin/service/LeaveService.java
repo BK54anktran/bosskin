@@ -46,7 +46,7 @@ public class LeaveService {
     @Transactional
     public LeaveDTO.LeaveTypeResponse createType(Long companyId, LeaveDTO.LeaveTypeUpsert req) {
         if (leaveTypeRepository.existsByCompanyIdAndCodeIgnoreCaseAndDeletedFalse(companyId, req.getCode())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã loại phép đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.leave_type.code_duplicate");
         }
         LeaveType type = LeaveType.builder()
             .company(companyRef(companyId))
@@ -65,9 +65,9 @@ public class LeaveService {
     @Transactional
     public LeaveDTO.LeaveTypeResponse updateType(Long companyId, Long id, LeaveDTO.LeaveTypeUpsert req) {
         LeaveType type = leaveTypeRepository.findByIdAndCompanyIdAndDeletedFalse(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại phép"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.leave_type.not_found"));
         if (leaveTypeRepository.existsByCompanyIdAndCodeIgnoreCaseAndIdNotAndDeletedFalse(companyId, req.getCode(), id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã loại phép đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.leave_type.code_duplicate");
         }
         type.setCode(req.getCode().trim().toUpperCase());
         type.setName(req.getName().trim());
@@ -83,7 +83,7 @@ public class LeaveService {
     @Transactional
     public void deleteType(Long companyId, Long id) {
         LeaveType type = leaveTypeRepository.findByIdAndCompanyIdAndDeletedFalse(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại phép"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.leave_type.not_found"));
         type.setDeleted(true);
         type.setActive(false);
         leaveTypeRepository.save(type);
@@ -157,7 +157,7 @@ public class LeaveService {
         Employee emp;
         if (req.getEmployeeId() != null) {
             emp = employeeRepository.findByIdAndCompanyId(req.getEmployeeId(), user.getCompanyId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
             Long selfEmployeeId = user.getEmployeeId();
             boolean isSelf = selfEmployeeId != null && selfEmployeeId.equals(emp.getId());
             if (!isSelf) {
@@ -169,9 +169,9 @@ public class LeaveService {
         }
 
         LeaveType type = leaveTypeRepository.findByIdAndCompanyIdAndDeletedFalse(req.getLeaveTypeId(), user.getCompanyId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại phép"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.leave_type.not_found"));
         if (!type.isActive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại phép đã ngưng sử dụng");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave_type.inactive");
         }
         // L12: loại tính theo ngày xin theo khoảng ngày, loại tính theo giờ xin theo khoảng giờ
         LeaveRequest.Mode expectedMode = type.getUnit() == LeaveType.Unit.HOUR
@@ -181,7 +181,7 @@ public class LeaveService {
         }
 
         if (req.getToDate().isBefore(req.getFromDate())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.date.range_invalid");
         }
         periodLockService.requireOpen(emp.getCompany().getId(), req.getFromDate(), req.getToDate());
         requireNoOverlap(emp.getId(), req);
@@ -200,7 +200,7 @@ public class LeaveService {
                 .map(g -> isHourType ? availableHours(g, hpdReq) : availableDays(g, hpdReq))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             if (available.compareTo(requestedAmount) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số dư phép không đủ");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.insufficient_balance");
             }
         }
 
@@ -234,7 +234,7 @@ public class LeaveService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.leave.cannot_process_own");
         }
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ duyệt yêu cầu đang chờ");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_pending");
         }
         // Nếu là đơn cha (group), approve tất cả đơn con PENDING
         if (!request.getChildren().isEmpty()) {
@@ -266,7 +266,7 @@ public class LeaveService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.leave.cannot_process_own");
         }
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ từ chối yêu cầu đang chờ");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_pending");
         }
         BigDecimal hpd = loadHoursPerDay(companyId);
         // Nếu là đơn cha, reject + hoàn phép từng đơn con PENDING
@@ -308,10 +308,10 @@ public class LeaveService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "error.leave.cancel_only_pending");
             }
         } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền hủy yêu cầu này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.request.cancel_forbidden");
         }
         if (request.getStatus() == LeaveRequest.Status.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Yêu cầu đã được hủy");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.already_cancelled");
         }
         BigDecimal hpd = loadHoursPerDay(companyId);
         // Nếu là đơn cha, cancel từng đơn con và unapprove attendance nếu cần
@@ -367,7 +367,7 @@ public class LeaveService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.leave.cannot_process_own");
         }
         if (request.getStatus() != LeaveRequest.Status.APPROVED) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ đổi áp dụng cho yêu cầu đã duyệt");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_approved");
         }
         request.setApplied(applied);
         return saveAndReload(request, companyId);
@@ -378,16 +378,16 @@ public class LeaveService {
         requirePermission(admin, "LEAVE_GRANT_MANUAL");
         Long companyId = admin.getCompanyId();
         Employee employee = employeeRepository.findByIdAndCompanyId(req.getEmployeeId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireLeaveViewScope(admin, employee);
         LeaveType leaveType = null;
         if (req.getLeaveTypeId() != null) {
             leaveType = leaveTypeRepository.findByIdAndCompanyIdAndDeletedFalse(req.getLeaveTypeId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại phép"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.leave_type.not_found"));
         }
 
         if (req.getGrantDays() == null && req.getGrantHours() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải nhập số ngày hoặc số giờ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.amount_required");
         }
         LocalDate grantedAt = req.getGrantedAt() != null ? req.getGrantedAt() : LocalDate.now();
         LocalDate validFrom = req.getValidFrom();
@@ -397,7 +397,7 @@ public class LeaveService {
             validTo = validFrom.plusDays(req.getExpireAfterDays());
         }
         if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng hiệu lực không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.validity_invalid");
         }
 
         LeaveGrant grant = LeaveGrant.builder()
@@ -452,7 +452,7 @@ public class LeaveService {
 
     public LeaveDTO.LeaveSettingResponse getSetting(Long companyId) {
         Company c = companyRepository.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy công ty"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
         return LeaveDTO.LeaveSettingResponse.builder()
             .leaveHoursPerDay(c.getLeaveHoursPerDay())
             .build();
@@ -461,9 +461,9 @@ public class LeaveService {
     @Transactional
     public LeaveDTO.LeaveSettingResponse updateSetting(Long companyId, LeaveDTO.LeaveSettingUpsert req) {
         Company c = companyRepository.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy công ty"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
         if (req.getLeaveHoursPerDay() == null || req.getLeaveHoursPerDay().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số giờ mỗi ngày phải > 0");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.hours_per_day_invalid");
         }
         c.setLeaveHoursPerDay(req.getLeaveHoursPerDay().setScale(2, RoundingMode.HALF_UP));
         companyRepository.save(c);
@@ -477,7 +477,7 @@ public class LeaveService {
         Department department = null;
         if (req.getDepartmentId() != null) {
             department = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         }
         validateRule(req);
         LeaveAccrualRule rule = LeaveAccrualRule.builder()
@@ -501,11 +501,11 @@ public class LeaveService {
     @Transactional
     public LeaveDTO.LeaveAccrualRuleResponse updateAccrualRule(Long companyId, Long id, LeaveDTO.LeaveAccrualRuleUpsert req) {
         LeaveAccrualRule rule = leaveAccrualRuleRepository.findByIdAndCompanyIdAndDeletedFalse(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy rule"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.leave_rule.not_found"));
         Department department = null;
         if (req.getDepartmentId() != null) {
             department = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         }
         validateRule(req);
         rule.setDepartment(department);
@@ -526,7 +526,7 @@ public class LeaveService {
     @Transactional
     public void deleteAccrualRule(Long companyId, Long id) {
         LeaveAccrualRule rule = leaveAccrualRuleRepository.findByIdAndCompanyIdAndDeletedFalse(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy rule"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.leave_rule.not_found"));
         rule.setDeleted(true);
         rule.setActive(false);
         leaveAccrualRuleRepository.save(rule);
@@ -546,7 +546,7 @@ public class LeaveService {
     @Transactional
     public Map<String, Integer> runAccrualForCompany(Long companyId, LocalDate date) {
         Company company = companyRepository.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy công ty"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
         BigDecimal hoursPerDay = company.getLeaveHoursPerDay() != null && company.getLeaveHoursPerDay().compareTo(BigDecimal.ZERO) > 0
             ? company.getLeaveHoursPerDay() : BigDecimal.valueOf(8);
         List<LeaveAccrualRule> rules = leaveAccrualRuleRepository.findByCompanyIdAndDeletedFalseOrderByCreatedAtDesc(companyId)
@@ -619,17 +619,17 @@ public class LeaveService {
     private void validateRule(LeaveDTO.LeaveAccrualRuleUpsert req) {
         if (req.getFrequency() == LeaveAccrualRule.Frequency.MONTHLY) {
             if (req.getDayOfMonth() == null || req.getDayOfMonth() < 1 || req.getDayOfMonth() > 31) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Day of month không hợp lệ");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave_rule.day_of_month_invalid");
             }
         }
         if (req.getFrequency() == LeaveAccrualRule.Frequency.YEARLY) {
             if (req.getDayOfMonth() == null || req.getDayOfMonth() < 1 || req.getDayOfMonth() > 31
                 || req.getMonthOfYear() == null || req.getMonthOfYear() < 1 || req.getMonthOfYear() > 12) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mốc năm không hợp lệ");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave_rule.month_invalid");
             }
         }
         if (req.getValidFrom() != null && req.getValidTo() != null && req.getValidTo().isBefore(req.getValidFrom())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng hiệu lực không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.validity_invalid");
         }
     }
 
@@ -651,7 +651,7 @@ public class LeaveService {
             if (minutes <= 0) {
                 // Ca đêm xuyên ngày (vd 22:00→06:00): chỉ cho phép khi nhiều ngày
                 if (req.getFromDate().equals(req.getToDate())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giờ kết thúc phải sau giờ bắt đầu");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.time.end_before_start");
                 }
                 minutes += 1440; // +24h
             }
@@ -668,7 +668,7 @@ public class LeaveService {
             .map(g -> isHourType ? availableHours(g, hpd) : availableDays(g, hpd))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (type.isRequiresBalance() && available.compareTo(totalAmount) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số dư phép không đủ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.insufficient_balance");
         }
 
         // Tạo đơn cha (không trừ phép, chỉ là group)
@@ -718,22 +718,22 @@ public class LeaveService {
         BigDecimal hoursPerDay = resolveHoursPerDay(type.getCompany());
         if (req.getMode() == LeaveRequest.Mode.DAY_RANGE) {
             long days = java.time.temporal.ChronoUnit.DAYS.between(req.getFromDate(), req.getToDate()) + 1;
-            if (days <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ");
+            if (days <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.date.range_invalid");
             if (type.getUnit() == LeaveType.Unit.DAY) {
                 return BigDecimal.valueOf(days);
             }
             return BigDecimal.valueOf(days).multiply(hoursPerDay).setScale(2, RoundingMode.HALF_UP);
         }
         if (req.getFromDate() == null || req.getToDate() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.date.range_invalid");
         }
         if (req.getFromTime() == null || req.getToTime() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng giờ không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.time.range_invalid");
         }
         var start = java.time.LocalDateTime.of(req.getFromDate(), req.getFromTime());
         var end = java.time.LocalDateTime.of(req.getToDate(), req.getToTime());
         if (!end.isAfter(start)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng giờ không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.time.range_invalid");
         }
         long minutes = java.time.Duration.between(start, end).toMinutes();
         return BigDecimal.valueOf(minutes).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
@@ -822,12 +822,12 @@ public class LeaveService {
 
     private Employee getEmployeeOrThrow(User user) {
         return employeeRepository.findByUserIdFetch(user.getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tài khoản chưa được liên kết với nhân viên nào"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.employee_not_linked"));
     }
 
     private LeaveRequest getRequestOrThrow(Long id, Long companyId) {
         return leaveRequestRepository.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.request.not_found"));
     }
 
     private LeaveDTO.LeaveRequestResponse saveAndReload(LeaveRequest request, Long companyId) {
@@ -850,7 +850,7 @@ public class LeaveService {
             return BigDecimal.ONE.setScale(2, RoundingMode.HALF_UP);
         }
         if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số phép trừ mỗi ngày phải > 0");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave_type.deduct_per_day_invalid");
         }
         return value.setScale(2, RoundingMode.HALF_UP);
     }

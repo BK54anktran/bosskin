@@ -282,7 +282,7 @@ public class DepartmentService {
                 parent = saved.get(parentCode);
                 if (parent == null)
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Mã phòng ban cha \"" + parentCode + "\" không tồn tại (dòng: " + code + ")");
+                        "error.import.parent_department_missing|" + parentCode + "|" + code);
             }
 
             int level = parent == null ? 0 : parent.getLevel() + 1;
@@ -312,23 +312,23 @@ public class DepartmentService {
     @Transactional
     public DepartmentDTO.Response create(Long companyId, DepartmentDTO.CreateRequest req) {
         if (departmentRepo.existsByCodeAndCompanyId(req.getCode(), companyId))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã phòng ban đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.department.code_duplicate");
 
         Company company = companyRepo.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
 
         Department parent = null;
         int level = 0;
         if (req.getParentId() != null) {
             parent = departmentRepo.findByIdAndCompanyId(req.getParentId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban cha không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.parent_not_found"));
             level = parent.getLevel() + 1;
         }
 
         Employee manager = null;
         if (req.getManagerId() != null) {
             manager = employeeRepo.findByIdAndCompanyId(req.getManagerId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         }
 
         Department dept = Department.builder()
@@ -355,25 +355,25 @@ public class DepartmentService {
     @Transactional
     public DepartmentDTO.Response update(Long companyId, Long id, DepartmentDTO.CreateRequest req) {
         Department dept = departmentRepo.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
 
         if (departmentRepo.existsByCodeAndCompanyIdAndIdNot(req.getCode(), companyId, id))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã phòng ban đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.department.code_duplicate");
 
         Department parent = null;
         int level = 0;
         if (req.getParentId() != null) {
             if (req.getParentId().equals(id))
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phòng ban không thể là cha của chính nó");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.department.self_parent");
             parent = departmentRepo.findByIdAndCompanyId(req.getParentId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban cha không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.parent_not_found"));
             level = parent.getLevel() + 1;
         }
 
         Employee manager = null;
         if (req.getManagerId() != null) {
             manager = employeeRepo.findByIdAndCompanyId(req.getManagerId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         }
 
         dept.setName(req.getName());
@@ -407,16 +407,16 @@ public class DepartmentService {
     @Transactional
     public void delete(Long companyId, Long id) {
         Department dept = departmentRepo.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
 
         if (departmentRepo.countByParentIdAndCompanyId(id, companyId) > 0)
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Phòng ban còn phòng con, không thể xóa");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.department.has_children");
 
         if (positionRepo.countByDepartmentIdAndDepartmentCompanyId(id, companyId) > 0)
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Phòng ban còn chức vụ, không thể xóa");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.department.has_positions");
 
         if (dept.getEmployees() != null && !dept.getEmployees().isEmpty())
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Phòng ban còn nhân viên, không thể xóa");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.department.has_employees");
 
         departmentRepo.delete(dept);
     }

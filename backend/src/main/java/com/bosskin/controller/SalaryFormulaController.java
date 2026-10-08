@@ -98,7 +98,7 @@ public class SalaryFormulaController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryGrade grade = gradeRepo.findById(body.getSalaryGradeId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bậc lương"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_grade.not_found"));
         requireSameCompany(grade, user);
         requireUniqueName(body.getName(), null, user.getCompany().getId());
         Map<String, String> privateVars = body.getCustomVars() != null ? body.getCustomVars() : Map.of();
@@ -129,7 +129,7 @@ public class SalaryFormulaController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryFormula formula = formulaRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy công thức lương"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_formula.not_found"));
         requireSameCompany(formula.getSalaryGrade(), user);
         requireUniqueName(body.getName(), id, user.getCompany().getId());
         Map<String, String> privateVars = body.getCustomVars() != null ? body.getCustomVars() : Map.of();
@@ -155,7 +155,7 @@ public class SalaryFormulaController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryFormula formula = formulaRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy công thức lương"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_formula.not_found"));
         requireSameCompany(formula.getSalaryGrade(), user);
         formulaRepo.delete(formula);
         return ResponseEntity.noContent().build();

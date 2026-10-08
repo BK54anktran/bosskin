@@ -91,7 +91,7 @@ public class FormulaVariableController {
     ) {
         requirePermission(user, "PAYROLL_VIEW");
         FormulaVariable v = repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy biến"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.variable.not_found"));
         requireSameCompany(v, user);
 
         List<UsageDTO> usages = formulaRepo.findByCompanyId(user.getCompany().getId()).stream()
@@ -141,7 +141,7 @@ public class FormulaVariableController {
         validateName(body.getName());
         if (repo.findByCompanyIdAndName(user.getCompany().getId(), body.getName()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Biến '" + body.getName() + "' đã tồn tại");
+                    "error.variable.name_duplicate|" + body.getName());
         }
         // Validate expression
         validateExpression(body.getName(), body.getExpression(), null, user.getCompany().getId());
@@ -166,7 +166,7 @@ public class FormulaVariableController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         FormulaVariable v = repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy biến"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.variable.not_found"));
         requireSameCompany(v, user);
         // Đổi tên: check không trùng với biến khác
         if (body.getName() != null && !body.getName().equals(v.getName())) {
@@ -174,7 +174,7 @@ public class FormulaVariableController {
             validateName(newName);
             if (repo.existsByCompanyIdAndNameAndIdNot(user.getCompany().getId(), newName, id)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Biến '" + newName + "' đã tồn tại");
+                        "error.variable.name_duplicate|" + newName);
             }
             v.setName(newName);
         }
@@ -197,7 +197,7 @@ public class FormulaVariableController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         FormulaVariable v = repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy biến"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.variable.not_found"));
         requireSameCompany(v, user);
         Boolean show = body.get("showInFormula");
         if (show != null) v.setShowInFormula(show);
@@ -211,7 +211,7 @@ public class FormulaVariableController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         FormulaVariable v = repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy biến"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.variable.not_found"));
         requireSameCompany(v, user);
         repo.delete(v);
         return ResponseEntity.noContent().build();
@@ -222,15 +222,15 @@ public class FormulaVariableController {
     private void validateName(String name) {
         if (!name.matches("[A-Z][A-Z0-9_]{0,49}")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Tên biến phải bắt đầu bằng chữ hoa, chỉ gồm A-Z, 0-9, _");
+                    "error.variable.name_format");
         }
         if (FormulaEngine.RESERVED_KEYWORDS.contains(name)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Tên '" + name + "' là từ khóa hệ thống, không được dùng làm tên biến");
+                    "error.variable.name_reserved|" + name);
         }
         if (FormulaEngine.SYSTEM_VAR_DESCRIPTIONS.containsKey(name)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Tên '" + name + "' trùng với biến hệ thống");
+                    "error.variable.name_system|" + name);
         }
     }
 
@@ -248,7 +248,7 @@ public class FormulaVariableController {
         List<String> errors = formulaEngine.validateCustomVars(allVars, allowed);
         if (!errors.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Biểu thức không hợp lệ: " + String.join("; ", errors));
+                    "error.formula.invalid|" + String.join("; ", errors).replace('|', '/'));
         }
     }
 
@@ -259,7 +259,7 @@ public class FormulaVariableController {
 
     private void requireSameCompany(FormulaVariable v, User user) {
         if (!v.getCompany().getId().equals(user.getCompany().getId()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     // ─── DTOs ─────────────────────────────────────────────────────────────────

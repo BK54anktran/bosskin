@@ -44,11 +44,11 @@ public class AuthService {
 
         if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             loginAttemptService.recordFailure(req.getEmail());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.bad_credentials");
         }
         loginAttemptService.recordSuccess(req.getEmail());
         if (!user.isEnabled() || user.isDeleted()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị khóa");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.auth.account_disabled");
         }
         if (!companyRepository.existsByIdAndActiveTrue(user.getCompanyId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.inactive");
@@ -110,13 +110,13 @@ public class AuthService {
         String email    = claims.getSubject();
 
         UserSession session = userSessionRepository.findByJti(jti)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session không hợp lệ"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.invalid_refresh_token"));
 
         if (session.isRevoked()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session đã bị thu hồi");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.session_revoked");
         }
         if (req.getDeviceId() != null && !req.getDeviceId().equals(deviceId)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Thiết bị không khớp");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.device_mismatch");
         }
 
         // Rotate: revoke old session, create new one
@@ -124,7 +124,7 @@ public class AuthService {
         userSessionRepository.save(session);
 
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Người dùng không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.user.not_found"));
         if (!user.isEnabled() || user.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.account_disabled");
         }
@@ -196,11 +196,11 @@ public class AuthService {
 
         if (admin == null || !passwordEncoder.matches(req.getPassword(), admin.getPassword())) {
             loginAttemptService.recordFailure(attemptKey);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.bad_credentials");
         }
         loginAttemptService.recordSuccess(attemptKey);
         if (!admin.isEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị khóa");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.auth.account_disabled");
         }
 
         return AuthDTO.LoginResponse.builder()

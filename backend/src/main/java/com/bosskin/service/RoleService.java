@@ -41,16 +41,16 @@ public class RoleService {
         Long roleViewDepartmentId
     ) {
         if (roleRepository.existsByCompanyIdAndName(companyId, name)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên vai trò đã tồn tại trong công ty này");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.role.name_duplicate");
         }
         var company = companyRepository.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
 
         Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(permissionCodes);
         Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(
             normalizedCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Permission không hợp lệ: " + code))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.permission.invalid_code|" + code))
                     .getId())
                 .toList()
         ));
@@ -59,7 +59,7 @@ public class RoleService {
         var roleViewDepartment = allCompany
             ? null
             : departmentRepository.findByIdAndCompanyId(roleViewDepartmentId, companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phòng ban scope role không hợp lệ"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.role.scope_department_invalid"));
 
         Role role = Role.builder()
             .company(company)
@@ -83,13 +83,13 @@ public class RoleService {
         Long roleViewDepartmentId
     ) {
         Role role = roleRepository.findById(roleId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vai trò không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.role.not_found"));
         if (!role.getCompany().getId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền sửa vai trò này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.role.edit_forbidden");
         }
         if (name != null && !name.equals(role.getName())) {
             if (roleRepository.existsByCompanyIdAndName(companyId, name)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên vai trò đã tồn tại trong công ty này");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.role.name_duplicate");
             }
             role.setName(name);
         }
@@ -104,7 +104,7 @@ public class RoleService {
             } else {
                 role.setRoleViewDepartment(
                     departmentRepository.findByIdAndCompanyId(roleViewDepartmentId, companyId)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phòng ban scope role không hợp lệ"))
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.role.scope_department_invalid"))
                 );
             }
         }
@@ -122,9 +122,9 @@ public class RoleService {
     @Transactional
     public Role updatePermissions(Long roleId, Long companyId, List<String> permissionCodes) {
         Role role = roleRepository.findById(roleId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vai trò không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.role.not_found"));
         if (!role.getCompany().getId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền sửa vai trò này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.role.edit_forbidden");
         }
         Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(permissionCodes);
         Set<Permission> permissions = new HashSet<>();
@@ -138,9 +138,9 @@ public class RoleService {
     @Transactional
     public void delete(Long roleId, Long companyId) {
         Role role = roleRepository.findById(roleId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vai trò không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.role.not_found"));
         if (!role.getCompany().getId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền xóa vai trò này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.role.delete_forbidden");
         }
         roleRepository.delete(role);
     }

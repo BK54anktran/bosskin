@@ -68,7 +68,7 @@ public class ProfileService {
         if (req.getFullName() == null && req.getGender() == null
                 && req.getDateOfBirth() == null && req.getPhone() == null
                 && req.getPersonalEmail() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng điền ít nhất một thông tin muốn thay đổi");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.profile.nothing_to_change");
         }
 
         ProfileEditRequest request = ProfileEditRequest.builder()
@@ -196,25 +196,25 @@ public class ProfileService {
     private Employee getEmployeeOrThrow(User user) {
         return employeeRepository.findByUserIdFetch(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Tài khoản chưa được liên kết với nhân viên nào"));
+                        "error.user.employee_not_linked"));
     }
 
     private ProfileEditRequest getRequestOrThrow(Long id, Long companyId) {
         return editRequestRepository.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Không tìm thấy yêu cầu"));
+                        "error.request.not_found"));
     }
 
     private void requirePending(ProfileEditRequest req) {
         if (req.getStatus() != ProfileEditRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Yêu cầu này đã được xử lý");
+                    "error.request.already_processed");
         }
     }
 
     private void requirePermission(User user, String perm) {
         if (!user.hasPermission(perm)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 

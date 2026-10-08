@@ -140,18 +140,18 @@ public class EmployeeService {
         com.bosskin.core.PasswordPolicy.require(req.getPassword());
         if (employeeRepository.existsByEmailAndCompanyId(req.getEmail(), companyId) ||
             userRepository.existsByEmail(req.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.email.in_use");
         }
         Company company = companyRepository.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
         Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         Position pos = null;
         if (req.getPositionId() != null) {
             pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chức vụ không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
             if (!pos.getDepartment().getId().equals(req.getDepartmentId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chức vụ không thuộc phòng ban đã chọn");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.position.not_in_department");
             }
         }
 
@@ -202,16 +202,16 @@ public class EmployeeService {
         if (req.getBankName()      != null) e.setBankName(req.getBankName());
         if (req.getDepartmentId() != null) {
             e.setDepartment(departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại")));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found")));
             if (e.getPosition() != null && !e.getPosition().getDepartment().getId().equals(e.getDepartment().getId())) {
                 e.setPosition(null);
             }
         }
         if (req.getPositionId() != null) {
             Position pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chức vụ không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
             if (!pos.getDepartment().getId().equals(e.getDepartment().getId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chức vụ không thuộc phòng ban đã chọn");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.position.not_in_department");
             }
             e.setPosition(pos);
         } else {
@@ -220,7 +220,7 @@ public class EmployeeService {
         if (req.getSalaryGradeId() != null) {
             SalaryGrade grade = salaryGradeRepository.findById(req.getSalaryGradeId())
                 .filter(g -> g.getCompany() != null && g.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bậc lương không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_grade.not_found"));
             e.setSalaryGrade(grade);
         } else {
             e.setSalaryGrade(null);
@@ -234,7 +234,7 @@ public class EmployeeService {
         com.bosskin.core.PasswordPolicy.require(initialPassword);
 
         Company company = companyRepository.findById(companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
         List<Employee> employees = employeeRepository.findByCompanyId(companyId);
         Role employeeRole = resolveEmployeeRole(companyId).orElse(null);
 
@@ -365,7 +365,7 @@ public class EmployeeService {
     private void requireViewScope(Long userId, Long deptId) {
         Set<Long> scope = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
         if (!scope.isEmpty() && !scope.contains(deptId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác nhân viên phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
     }
 
     private java.util.Optional<Role> resolveEmployeeRole(Long companyId) {
@@ -375,7 +375,7 @@ public class EmployeeService {
 
     private Employee getOrThrow(Long id, Long companyId) {
         return employeeRepository.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
     }
 
     private String generateCode(Long companyId) {

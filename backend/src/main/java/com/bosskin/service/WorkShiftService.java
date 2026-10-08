@@ -55,7 +55,7 @@ public class WorkShiftService {
         // Validate root departments belong to company
         for (Long deptId : deptIds) {
             deptRepo.findByIdAndCompanyId(deptId, companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         }
         return shiftRepo.findAll()
             .stream()
@@ -87,7 +87,7 @@ public class WorkShiftService {
                 && s.getCode() != null
                 && s.getCode().equalsIgnoreCase(req.getCode()));
         if (codeExists) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã ca đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shift.code_duplicate");
         }
 
         WorkShift shift = WorkShift.builder()
@@ -112,7 +112,7 @@ public class WorkShiftService {
     public ShiftDTO.ShiftResponse updateShift(Long id, Long companyId, ShiftDTO.ShiftRequest req) {
         WorkShift shift = shiftRepo.findById(id)
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shift.not_found"));
 
         boolean codeExists = shiftRepo.findAll().stream().anyMatch(s ->
             s.isActive()
@@ -122,7 +122,7 @@ public class WorkShiftService {
                 && s.getCode() != null
                 && s.getCode().equalsIgnoreCase(req.getCode()));
         if (codeExists) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã ca đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shift.code_duplicate");
         }
 
         shift.setName(req.getName());
@@ -154,7 +154,7 @@ public class WorkShiftService {
     public void deleteShift(Long id, Long companyId) {
         WorkShift shift = shiftRepo.findById(id)
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shift.not_found"));
         shift.setCode(buildArchivedShiftCode(shift));
         shift.setActive(false);
         shiftRepo.save(shift);
@@ -178,7 +178,7 @@ public class WorkShiftService {
     public List<ShiftDTO.AssignResponse> listAssignmentsByEmployee(Long employeeId, Long companyId,
                                                                     LocalDate from, LocalDate to) {
         employeeRepo.findByIdAndCompanyId(employeeId, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         return assignRepo.findByEmployeeAndDateRange(employeeId, from, to)
             .stream().map(this::toAssignResponse).toList();
     }
@@ -187,15 +187,15 @@ public class WorkShiftService {
     public ShiftDTO.AssignResponse assign(Long companyId, ShiftDTO.AssignRequest req, Long createdBy) {
         periodLockService.requireOpen(companyId, req.getWorkDate());
         Employee employee = employeeRepo.findByIdAndCompanyId(req.getEmployeeId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
 
         WorkShift shift = null;
         if (req.getShiftId() != null) {
             shift = shiftRepo.findById(req.getShiftId())
                 .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shift.not_found"));
         } else if (req.getCustomStartTime() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải chọn ca hoặc nhập giờ tùy chỉnh");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.assignment.shift_required");
         }
 
         List<ShiftAssignment> existing = assignRepo
@@ -263,7 +263,7 @@ public class WorkShiftService {
                 LocalTime exEnd   = ex.effectiveEndTime();
                 if (exStart != null && exEnd != null && timesOverlap(newStart, newEnd, exStart, exEnd)) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Trùng ca " + exStart.format(TIME_FMT) + "–" + exEnd.format(TIME_FMT) + " trong ngày");
+                        "error.shift.overlap_same_day|" + exStart.format(TIME_FMT) + "–" + exEnd.format(TIME_FMT));
                 }
             }
 
@@ -279,8 +279,7 @@ public class WorkShiftService {
                     // Spill on today is [00:00, pe]; new shift starts before pe → overlap
                     if (toMin(newStart) < toMin(pe)) {
                         throw new ResponseStatusException(HttpStatus.CONFLICT,
-                            "Ca " + ps.format(TIME_FMT) + "–" + pe.format(TIME_FMT)
-                            + " ngày hôm trước kéo sang " + pe.format(TIME_FMT) + ", trùng với ca mới");
+                            "error.shift.overlap_previous_day|" + ps.format(TIME_FMT) + "–" + pe.format(TIME_FMT));
                     }
                 }
             }
@@ -295,8 +294,7 @@ public class WorkShiftService {
                     LocalTime ns = next.effectiveStartTime();
                     if (ns != null && toMin(ns) < toMin(newEnd)) {
                         throw new ResponseStatusException(HttpStatus.CONFLICT,
-                            "Ca mới kéo sang hôm sau đến " + newEnd.format(TIME_FMT)
-                            + ", trùng với ca " + ns.format(TIME_FMT) + " ngày hôm sau");
+                            "error.shift.overlap_next_day|" + newEnd.format(TIME_FMT) + "|" + ns.format(TIME_FMT));
                     }
                 }
             }
@@ -414,7 +412,7 @@ public class WorkShiftService {
         periodLockService.requireOpen(companyId, req.getStartDate(), req.getEndDate());
         WorkShift shift = shiftRepo.findById(req.getShiftId())
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shift.not_found"));
 
         List<Integer> excluded = req.getExcludeWeekdays() != null ? req.getExcludeWeekdays() : List.of();
         int count = 0;
@@ -438,7 +436,7 @@ public class WorkShiftService {
     @Transactional
     public void deleteAssignment(Long employeeId, LocalDate workDate, Long companyId) {
         employeeRepo.findByIdAndCompanyId(employeeId, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         periodLockService.requireOpen(companyId, workDate);
         for (ShiftAssignment a : assignRepo.findByEmployeeIdAndWorkDate(employeeId, workDate)) {
             requireNoAttendanceData(employeeId, workDate, a.getId());

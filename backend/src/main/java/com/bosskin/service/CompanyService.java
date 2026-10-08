@@ -52,10 +52,10 @@ public class CompanyService {
     public CompanyResponse create(CreateCompanyRequest req) {
         com.bosskin.core.PasswordPolicy.require(req.getAdminPassword());
         if (companyRepository.existsByCode(req.getCode().toUpperCase())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã công ty đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.company.code_duplicate");
         }
         if (userRepository.existsByEmail(req.getAdminEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email admin đã được sử dụng");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.email.in_use");
         }
 
         // 1. Tạo công ty
@@ -128,7 +128,7 @@ public class CompanyService {
 
     private Company getOrThrow(Long id) {
         return companyRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
     }
 
     private CompanyResponse toResponse(Company c) {

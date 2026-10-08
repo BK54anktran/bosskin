@@ -163,7 +163,7 @@ public class AttendanceController {
         if (scopeIds.contains(-1L)) {
             Long selfEmployeeId = getSelfEmployee(user).getId();
             if (!employeeId.equals(selfEmployeeId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ được xem dữ liệu của chính mình");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.self_only");
             }
         } else {
             requireViewScope(user, employee.getDepartment().getId());
@@ -757,7 +757,7 @@ public class AttendanceController {
 
         if (attendanceId != null) {
             att = attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bản ghi chấm công"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
             employeeId = att.getEmployee().getId();
             date = att.getDate();
             sa = att.getShiftAssignment();
@@ -768,7 +768,7 @@ public class AttendanceController {
             String dateStr = body.get("date") instanceof String s ? s : null;
             Long shiftAssignmentId = body.get("shiftAssignmentId") instanceof Number n ? n.longValue() : null;
             if (employeeId == null || dateStr == null)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu attendanceId hoặc employeeId+date");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.missing_fields");
             date = LocalDate.parse(dateStr);
             Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
@@ -953,7 +953,7 @@ public class AttendanceController {
         requirePermission(user, "ATTENDANCE_APPROVE");
         Long attendanceId = body.get("attendanceId") instanceof Number n ? n.longValue() : null;
         if (attendanceId == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu attendanceId");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.missing_fields");
 
         attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId()).ifPresent(att -> {
             requireCanApprove(user, att.getEmployee());
@@ -1220,30 +1220,30 @@ public class AttendanceController {
 
     private Employee getSelfEmployee(User user) {
         if (user == null || user.getEmployee() == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tài khoản chưa được liên kết với nhân viên nào");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.employee_not_linked");
         }
         return employeeRepository.findById(user.getEmployee().getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
     }
 
     private Company getSelfCompany(User user) {
         if (user == null || user.getCompany() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Phiên đăng nhập không hợp lệ");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.auth.invalid_session");
         }
         return companyRepository.findById(user.getCompany().getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Công ty không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
     }
 
     private void validateSelfAttendanceEnabled(User user) {
         if (!getSelfCompany(user).isSelfAttendanceEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chức năng check-in/out đang tắt");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.self_check_disabled");
         }
     }
 
     private ShiftWindow getShiftWindowOrThrow(Long employeeId, LocalDate date) {
         ShiftWindow shift = getShiftWindow(employeeId, date);
         if (shift == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hôm nay chưa được xếp ca");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.no_shift_today");
         }
         return shift;
     }
@@ -1435,18 +1435,18 @@ public class AttendanceController {
         ShiftTarget t = findCheckInTarget(employee, company, now);
         if (t != null) return t;
         if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hôm nay chưa được xếp ca");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.no_shift_today");
         }
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chưa tới hoặc đã quá giờ check-in");
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.outside_check_in_window");
     }
 
     private ShiftTarget requireCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
         ShiftTarget t = findCheckOutTarget(employee, company, now);
         if (t != null) return t;
         if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hôm nay chưa được xếp ca");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.no_shift_today");
         }
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chưa tới hoặc đã quá giờ check-out");
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.outside_check_out_window");
     }
 
     /** Đi muộn khi check-in sau giờ bắt đầu ca + dung sai (phòng ban → công ty → mặc định 15 phút) (A13). */
@@ -1609,7 +1609,7 @@ public class AttendanceController {
             boolean ok = empLocs.stream().anyMatch(loc ->
                     haversineMeters(lat, lng, loc.getLatitude(), loc.getLongitude()) <= loc.getRadiusMeters());
             if (!ok) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Vị trí của bạn nằm ngoài phạm vi được phép check-in");
+                    "error.attendance.out_of_range");
             return;
         }
 
@@ -1620,7 +1620,7 @@ public class AttendanceController {
                 if (haversineMeters(lat, lng, dept.getCheckInLatitude(), dept.getCheckInLongitude())
                         > dept.getCheckInRadiusMeters()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Vị trí của bạn nằm ngoài phạm vi phòng ban " + dept.getName());
+                            "error.attendance.out_of_department_range|" + dept.getName());
                 }
                 return;
             }
@@ -1633,7 +1633,7 @@ public class AttendanceController {
             if (haversineMeters(lat, lng, company.getCheckInLatitude(), company.getCheckInLongitude())
                     > company.getCheckInRadiusMeters()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Vị trí của bạn nằm ngoài phạm vi công ty");
+                        "error.attendance.out_of_company_range");
             }
         }
         // else: không có cấu hình → tự do

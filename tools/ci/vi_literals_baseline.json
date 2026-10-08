@@ -1,0 +1,9 @@
+{
+  "frontend/lib/core/localization/language_service.dart": 1,
+  "frontend/lib/core/utils/text_utils.dart": 1,
+  "frontend/lib/presentation/screens/admin/admin_dashboard_screen.dart": 1,
+  "frontend/lib/presentation/screens/employee/employee_screen.dart": 4,
+  "frontend/lib/presentation/screens/payroll/payroll_screen.dart": 4,
+  "frontend/lib/presentation/screens/payroll/salary_grade_tab.dart": 2,
+  "frontend/lib/presentation/screens/payroll/self_payroll_screen.dart": 1
+}

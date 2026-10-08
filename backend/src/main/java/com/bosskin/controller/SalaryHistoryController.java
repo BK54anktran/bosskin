@@ -33,7 +33,7 @@ public class SalaryHistoryController {
     ) {
         requirePermission(user, "PAYROLL_VIEW");
         employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         List<SalaryHistoryDTO> result = salaryHistoryRepository
             .findByEmployeeIdOrderByEffectiveDateDesc(employeeId)
             .stream().map(SalaryHistoryDTO::from).toList();
@@ -47,7 +47,7 @@ public class SalaryHistoryController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         Employee employee = employeeRepository.findByIdAndCompanyId(body.getEmployeeId(), user.getCompany().getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         SalaryHistory sh = SalaryHistory.builder()
             .employee(employee)
             .baseSalary(body.getBaseSalary())
@@ -65,9 +65,9 @@ public class SalaryHistoryController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryHistory sh = salaryHistoryRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch sử lương"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_history.not_found"));
         if (!sh.getEmployee().getCompany().getId().equals(user.getCompany().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         if (body.getBaseSalary() != null) sh.setBaseSalary(body.getBaseSalary());
         if (body.getEffectiveDate() != null) sh.setEffectiveDate(body.getEffectiveDate());
@@ -82,9 +82,9 @@ public class SalaryHistoryController {
     ) {
         requirePermission(user, "PAYROLL_CREATE");
         SalaryHistory sh = salaryHistoryRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch sử lương"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_history.not_found"));
         if (!sh.getEmployee().getCompany().getId().equals(user.getCompany().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         salaryHistoryRepository.delete(sh);
         return ResponseEntity.noContent().build();

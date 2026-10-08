@@ -256,12 +256,12 @@ public class EmployeeImportService {
                 // ── CREATE — cần save ngay để lấy ID gắn vào User ───────────
                 if (isBlank(row.getEmail()))
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Nhân viên \"" + row.getFullName() + "\" thiếu email");
+                        "error.import.email_missing|" + row.getFullName());
 
                 String email = row.getEmail().trim();
                 if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, companyId))
                     throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Email \"" + email + "\" đã được sử dụng");
+                        "error.import.email_in_use|" + email);
 
                 Department dept = resolveDept(deptMap, row.getDepartmentCode(), code);
                 Position   pos  = resolvePos(posMap, row.getPositionCode(), code);
@@ -477,11 +477,11 @@ public class EmployeeImportService {
                           Map<String, SalaryGrade> gradeMap) {
         if (isBlank(row.getEmail()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Nhân viên \"" + row.getFullName() + "\" thiếu email");
+                "error.import.email_missing|" + row.getFullName());
         String email = row.getEmail().trim();
         if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, company.getId()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "Email \"" + email + "\" đã được sử dụng");
+                "error.import.email_in_use|" + email);
 
         Employee emp = Employee.builder()
             .company(company)
@@ -564,7 +564,7 @@ public class EmployeeImportService {
         if (isBlank(code)) return null;
         Department d = map.get(code.trim().toUpperCase());
         if (d == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Mã phòng ban \"" + code + "\" không tồn tại (nhân viên: " + rowCode + ")");
+            "error.import.department_missing|" + code + "|" + rowCode);
         return d;
     }
 
@@ -572,7 +572,7 @@ public class EmployeeImportService {
         if (isBlank(code)) return null;
         Position p = map.get(code.trim().toUpperCase());
         if (p == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Mã chức vụ \"" + code + "\" không tồn tại (nhân viên: " + rowCode + ")");
+            "error.import.position_missing|" + code + "|" + rowCode);
         return p;
     }
 

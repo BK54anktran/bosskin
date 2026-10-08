@@ -64,10 +64,10 @@ public class UserController {
         String password = (String) body.get("password");
         if (password != null) com.bosskin.core.PasswordPolicy.require(password);
         if (email == null || password == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email và password là bắt buộc");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.email_password_required");
         }
         if (userRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.email.in_use");
         }
         @SuppressWarnings("unchecked")
         List<Integer> roleIds = (List<Integer>) body.getOrDefault("roleIds", Collections.emptyList());
@@ -83,7 +83,7 @@ public class UserController {
         }
         Set<Long> manageScope = deptScopeService.resolvedScopes(caller.getId(), "USER_MANAGE");
         if (!canManageTarget(caller, employee, manageScope)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác người dùng phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
         }
 
         User user = User.builder()
@@ -107,7 +107,7 @@ public class UserController {
         requirePermission(caller, "USER_MANAGE");
         Set<Long> manageScope = deptScopeService.resolvedScopes(caller.getId(), "USER_MANAGE");
         if (!manageScope.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Đồng bộ hàng loạt chỉ cho phép khi USER_MANAGE ở phạm vi toàn công ty");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.user.sync_requires_company_scope");
         }
         return ResponseEntity.ok(
             employeeService.syncMissingUserAccounts(caller.getCompany().getId(), body.getInitialPassword())
@@ -197,7 +197,7 @@ public class UserController {
         requirePermission(caller, "USER_MANAGE");
         User user = findUserInCompanyAndScope(id, caller);
         Boolean enabled = (Boolean) body.get("enabled");
-        if (enabled == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "enabled là bắt buộc");
+        if (enabled == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.bad_request");
         if (!enabled && user.getId().equals(caller.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.cannot_disable_self");
         }
@@ -212,7 +212,7 @@ public class UserController {
         Set<Long> manageScope = deptScopeService.resolvedScopes(caller.getId(), "USER_MANAGE");
         Long selfEmployeeId = caller.getEmployee() != null ? caller.getEmployee().getId() : null;
         if (!canManageTarget(caller, user, manageScope, selfEmployeeId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác người dùng phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
         }
         return user;
     }
@@ -244,9 +244,9 @@ public class UserController {
 
     private User findUserInCompany(Long userId, Long companyId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
         if (!user.getCompany().getId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác với người dùng này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         return user;
     }
@@ -256,9 +256,9 @@ public class UserController {
         Set<Role> roles = new HashSet<>();
         for (Integer rid : roleIds) {
             Role role = roleRepository.findById(rid.longValue())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vai trò không hợp lệ: " + rid));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.role.invalid|" + rid));
             if (!role.getCompany().getId().equals(companyId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vai trò không thuộc công ty này");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.role.not_in_company");
             }
             roles.add(role);
         }

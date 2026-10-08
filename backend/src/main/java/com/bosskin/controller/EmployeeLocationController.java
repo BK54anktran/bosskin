@@ -61,7 +61,7 @@ public class EmployeeLocationController {
         getEmployeeOrThrow(employeeId, user.getCompanyId());
         EmployeeLocation loc = locationRepo.findById(locationId)
                 .filter(l -> l.getEmployee().getId().equals(employeeId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vị trí không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.location.not_found"));
         loc.setName(body.getName());
         loc.setLatitude(body.getLatitude());
         loc.setLongitude(body.getLongitude());
@@ -78,19 +78,19 @@ public class EmployeeLocationController {
         getEmployeeOrThrow(employeeId, user.getCompanyId());
         EmployeeLocation loc = locationRepo.findById(locationId)
                 .filter(l -> l.getEmployee().getId().equals(employeeId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vị trí không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.location.not_found"));
         locationRepo.delete(loc);
         return ResponseEntity.noContent().build();
     }
 
     private Employee getEmployeeOrThrow(Long employeeId, Long companyId) {
         return employeeRepo.findByIdAndCompanyId(employeeId, companyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nhân viên không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
     }
 
     private void requirePermission(User user, String perm) {
         if (user == null || !user.hasPermission(perm))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     private EmployeeLocationDTO.Response toResponse(EmployeeLocation loc) {

@@ -49,10 +49,10 @@ public class PositionController {
         requireViewScope(user, req.getDepartmentId());
         Long companyId = user.getCompany().getId();
         if (positionRepository.existsByCodeAndDepartmentCompanyId(req.getCode(), companyId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã chức vụ đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.code_duplicate");
         }
         Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
 
         Position pos = Position.builder()
             .name(req.getName())
@@ -72,12 +72,12 @@ public class PositionController {
         requireViewScope(user, req.getDepartmentId());
         Long companyId = user.getCompany().getId();
         Position pos = positionRepository.findByIdAndDepartmentCompanyId(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chức vụ không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
         if (positionRepository.existsByCodeAndDepartmentCompanyIdAndIdNot(req.getCode(), companyId, id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã chức vụ đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.code_duplicate");
         }
         Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng ban không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
 
         pos.setName(req.getName());
         pos.setCode(req.getCode().toUpperCase());
@@ -92,10 +92,10 @@ public class PositionController {
             @AuthenticationPrincipal User user) {
         requirePermission(user, "POSITION_MANAGE");
         Position pos = positionRepository.findByIdAndDepartmentCompanyId(id, user.getCompany().getId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chức vụ không tồn tại"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
         requireViewScope(user, pos.getDepartment().getId());
         if (employeeRepository.countByPositionIdAndCompanyId(pos.getId(), user.getCompany().getId()) > 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chức vụ còn nhân viên, không thể xóa");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.has_employees");
         }
         positionRepository.delete(pos);
         return ResponseEntity.noContent().build();
@@ -109,7 +109,7 @@ public class PositionController {
     private void requireViewScope(User user, Long deptId) {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "DEPARTMENT_VIEW");
         if (!scope.isEmpty() && !scope.contains(deptId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác phòng ban này");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
     }
 
     private PositionDTO.Response toResponse(Position p) {

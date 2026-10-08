@@ -3,7 +3,6 @@ package com.bosskin.i18n;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -23,9 +22,9 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handle(ResponseStatusException ex, HttpServletRequest request) {
-        final Locale locale = request.getLocale();
         final String reason = ex.getReason() != null ? ex.getReason() : ex.getMessage();
-        final String message = MessageTranslator.translate(reason, locale);
+        // Backend trả mã lỗi ("error.x.y" hoặc "error.x.y|tham số"); FE dịch theo ngôn ngữ người dùng.
+        final String message = reason;
         final HttpStatusCode status = ex.getStatusCode();
 
         return build(status, message, request);
@@ -36,7 +35,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleConflict(DataIntegrityViolationException ex, HttpServletRequest request) {
         log.warn("Vi phạm ràng buộc dữ liệu tại {}: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
         return build(HttpStatus.CONFLICT,
-            MessageTranslator.translate("error.data.conflict", request.getLocale()), request);
+            "error.data.conflict", request);
     }
 
     /**
@@ -53,16 +52,16 @@ public class ApiExceptionHandler {
                 || ex instanceof jakarta.validation.ConstraintViolationException
                 || ex instanceof IllegalArgumentException) {
             return build(HttpStatus.BAD_REQUEST,
-                MessageTranslator.translate("error.bad_request", request.getLocale()), request);
+                "error.bad_request", request);
         }
         if (ex instanceof ErrorResponse er) {
             HttpStatusCode status = er.getStatusCode();
             String key = status.value() == 404 ? "error.not_found" : "error.bad_request";
-            return build(status, MessageTranslator.translate(key, request.getLocale()), request);
+            return build(status, key, request);
         }
         log.error("Lỗi không xử lý tại {} {}", request.getMethod(), request.getRequestURI(), ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR,
-            MessageTranslator.translate("error.internal", request.getLocale()), request);
+            "error.internal", request);
     }
 
     private ResponseEntity<Map<String, Object>> build(HttpStatusCode status, String message, HttpServletRequest request) {

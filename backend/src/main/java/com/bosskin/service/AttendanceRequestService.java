@@ -173,7 +173,7 @@ public class AttendanceRequestService {
         periodLockService.requireOpen(user.getCompany().getId(), request.getRequestDate());
         Employee emp = getEmployeeOrThrow(user);
         if (request.getEmployee() == null || !request.getEmployee().getId().equals(emp.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ được hủy yêu cầu của chính mình");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.request.cancel_own_only");
         }
         requirePending(request);
         request.setStatus(AttendanceRequest.Status.CANCELLED);
@@ -242,18 +242,18 @@ public class AttendanceRequestService {
 
     private AttendanceRequest getRequestOrThrow(Long id, Long companyId) {
         return requestRepository.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.request.not_found"));
     }
 
     private void requirePending(AttendanceRequest request) {
         if (request.getStatus() != AttendanceRequest.Status.PENDING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ được thao tác trên yêu cầu đang chờ duyệt");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_pending");
         }
     }
 
     private void requireApproved(AttendanceRequest request) {
         if (request.getStatus() != AttendanceRequest.Status.APPROVED) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ được thao tác trên yêu cầu đã duyệt");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_approved");
         }
     }
 
@@ -261,7 +261,7 @@ public class AttendanceRequestService {
         if (user == null || !user.hasPermission("ATTENDANCE_REQUEST_APPROVE")) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
-                "Không có quyền: ATTENDANCE_REQUEST_APPROVE"
+                "error.permission.denied"
             );
         }
     }
@@ -403,11 +403,11 @@ public class AttendanceRequestService {
             return assignments.stream()
                 .filter(a -> requestedId.equals(a.getId()))
                 .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ca làm không hợp lệ"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.shift.invalid"));
         }
 
         if (assignments.size() > 1 && req.getRequestType() != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn ca làm cho ngày có nhiều ca");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.shift.choose_for_multi_shift_day");
         }
 
         return assignments.get(0);

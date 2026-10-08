@@ -145,10 +145,10 @@ public class PositionExcelService {
                 dept = deptMap.get(deptCode);
                 if (dept == null)
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Mã phòng ban \"" + deptCode + "\" không tồn tại (chức vụ: " + code + ")");
+                        "error.import.position_department_missing|" + deptCode + "|" + code);
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Chức vụ \"" + code + "\" thiếu mã phòng ban");
+                    "error.import.position_department_required|" + code);
             }
 
             Position pos = existing.containsKey(code) ? existing.get(code) : new Position();

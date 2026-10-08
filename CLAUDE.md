@@ -169,7 +169,11 @@ payroll.delete      — xóa
   - `error.permission.denied`
   - `error.payroll.already_generated`
   - `error.employee.not_found`
-- Frontend dùng key này để tra `app_vi.arb` / `app_en.arb` hiển thị đúng ngôn ngữ
+- Frontend dịch mã lỗi trong `frontend/lib/core/utils/error_utils.dart` (`_viMessages` / `_enMessages`);
+  thêm mã lỗi mới ở backend → thêm bản dịch vi + en ở đó (quy tắc 2). Backend không dịch (đã bỏ MessageTranslator).
+- Mã lỗi có tham số: `"error.import.email_in_use|" + email` → bản dịch dùng `{0}`, `{1}`…
+- Không viết chuỗi tiếng Việt cứng trong `.dart` (ngoài l10n/error_utils): CI `tools/ci/check_vi_literals.py`
+  chặn chuỗi mới; baseline `tools/ci/vi_literals_baseline.json` (giảm thì chạy `--update`).
 
 ### 4. Cấu trúc Service
 - Service throw `ResponseStatusException` với **error key**, không phải message text

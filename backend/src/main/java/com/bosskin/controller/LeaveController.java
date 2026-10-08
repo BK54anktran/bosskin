@@ -220,7 +220,7 @@ public class LeaveController {
 
     private void requirePermission(User user, String perm) {
         if (user == null || !user.hasPermission(perm)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 }
