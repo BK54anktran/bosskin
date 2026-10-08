@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class LeaveService {
 
     private final LeaveTypeRepository leaveTypeRepository;
+    private final PeriodLockService periodLockService;
     private final LeaveGrantRepository leaveGrantRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveAccrualRuleRepository leaveAccrualRuleRepository;
@@ -138,6 +139,7 @@ public class LeaveService {
         if (req.getToDate().isBefore(req.getFromDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ");
         }
+        periodLockService.requireOpen(emp.getCompany().getId(), req.getFromDate(), req.getToDate());
         BigDecimal hpdReq = loadHoursPerDay(user.getCompanyId());
         boolean isHourType = type.getUnit() == LeaveType.Unit.HOUR;
         boolean isMultiDay = !req.getFromDate().equals(req.getToDate());
@@ -183,6 +185,7 @@ public class LeaveService {
         requirePermission(admin, "LEAVE_REQUEST_APPROVE");
         Long companyId = admin.getCompanyId();
         LeaveRequest request = getRequestOrThrow(id, companyId);
+        periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         requireLeaveViewScope(admin, request.getEmployee());
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ duyệt yêu cầu đang chờ");
@@ -211,6 +214,7 @@ public class LeaveService {
         requirePermission(admin, "LEAVE_REQUEST_APPROVE");
         Long companyId = admin.getCompanyId();
         LeaveRequest request = getRequestOrThrow(id, companyId);
+        periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         requireLeaveViewScope(admin, request.getEmployee());
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ từ chối yêu cầu đang chờ");
@@ -242,6 +246,7 @@ public class LeaveService {
     public LeaveDTO.LeaveRequestResponse cancelRequest(Long id, User user) {
         Long companyId = user.getCompanyId();
         LeaveRequest request = getRequestOrThrow(id, companyId);
+        periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         boolean isAdmin = user.getRoles().stream()
             .anyMatch(r -> r.getName().equals("ADMIN") || r.getName().equals("HR"));
         boolean isOwner = user.getEmployeeId() != null
@@ -300,6 +305,7 @@ public class LeaveService {
         requirePermission(admin, "LEAVE_REQUEST_APPROVE");
         Long companyId = admin.getCompanyId();
         LeaveRequest request = getRequestOrThrow(id, companyId);
+        periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         requireLeaveViewScope(admin, request.getEmployee());
         if (request.getStatus() != LeaveRequest.Status.APPROVED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ đổi áp dụng cho yêu cầu đã duyệt");

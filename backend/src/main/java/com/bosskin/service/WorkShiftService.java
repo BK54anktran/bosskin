@@ -22,6 +22,7 @@ import java.util.Set;
 public class WorkShiftService {
 
     private final WorkShiftRepository     shiftRepo;
+    private final PeriodLockService periodLockService;
     private final ShiftAssignmentRepository assignRepo;
     private final DepartmentRepository    deptRepo;
     private final EmployeeRepository      employeeRepo;
@@ -169,6 +170,7 @@ public class WorkShiftService {
 
     @Transactional
     public ShiftDTO.AssignResponse assign(Long companyId, ShiftDTO.AssignRequest req, Long createdBy) {
+        periodLockService.requireOpen(companyId, req.getWorkDate());
         Employee employee = employeeRepo.findByIdAndCompanyId(req.getEmployeeId(), companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
 
@@ -279,6 +281,7 @@ public class WorkShiftService {
         if (!a.getEmployee().getCompany().getId().equals(companyId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
+        periodLockService.requireOpen(companyId, a.getWorkDate());
         if (a.isApproved()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.approved_cannot_delete");
         }
@@ -309,6 +312,7 @@ public class WorkShiftService {
 
     @Transactional
     public int bulkAssign(Long companyId, ShiftDTO.BulkAssignRequest req, Long createdBy) {
+        periodLockService.requireOpen(companyId, req.getStartDate(), req.getEndDate());
         WorkShift shift = shiftRepo.findById(req.getShiftId())
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca làm"));
@@ -364,6 +368,7 @@ public class WorkShiftService {
     public void deleteAssignment(Long employeeId, LocalDate workDate, Long companyId) {
         employeeRepo.findByIdAndCompanyId(employeeId, companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+        periodLockService.requireOpen(companyId, workDate);
         for (ShiftAssignment a : assignRepo.findByEmployeeIdAndWorkDate(employeeId, workDate)) {
             requireNoAttendanceData(employeeId, workDate, a.getId());
         }

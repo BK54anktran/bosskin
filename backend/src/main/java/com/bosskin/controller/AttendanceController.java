@@ -73,6 +73,7 @@ public class AttendanceController {
     private final AttendanceExcelService attendanceExcelService;
     private final AttendanceCalculationService calc;
     private final java.time.Clock clock;
+    private final com.bosskin.service.PeriodLockService periodLockService;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -768,6 +769,7 @@ public class AttendanceController {
             date = att.getDate();
             sa = att.getShiftAssignment();
             requireCanApprove(user, att.getEmployee());
+            periodLockService.requireOpen(user.getCompany().getId(), date);
         } else {
             employeeId = body.get("employeeId") instanceof Number n ? n.longValue() : null;
             String dateStr = body.get("date") instanceof String s ? s : null;
@@ -778,6 +780,7 @@ public class AttendanceController {
             Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
             requireCanApprove(user, employee);
+            periodLockService.requireOpen(user.getCompany().getId(), date);
             // A2: phân ca phải thuộc đúng nhân viên và đúng ngày (chặn gắn phân ca công ty khác)
             final Long empIdForSa = employeeId;
             final LocalDate dateForSa = date;
@@ -895,6 +898,7 @@ public class AttendanceController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
         requireViewScope(user, att.getEmployee().getDepartment().getId());
         requireNotOwnAttendance(user, att.getEmployee());
+        periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
 
         att.setOverrideCheckIn(req.getOverrideCheckIn());
         att.setOverrideCheckOut(req.getOverrideCheckOut());
@@ -930,6 +934,7 @@ public class AttendanceController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
         requireViewScope(user, employee.getDepartment().getId());
         requireNotOwnAttendance(user, employee);
+        periodLockService.requireOpen(user.getCompany().getId(), LocalDate.parse(dateStr));
 
         LocalDate date = LocalDate.parse(dateStr);
         // Find or create attendance record for this employee + date
@@ -957,6 +962,7 @@ public class AttendanceController {
 
         attendanceRepository.findByIdAndCompanyId(attendanceId, user.getCompany().getId()).ifPresent(att -> {
             requireCanApprove(user, att.getEmployee());
+            periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
             att.setApproved(false);
             att.setApprovedAt(null);
             att.setApprovedBy(null);
@@ -981,6 +987,7 @@ public class AttendanceController {
         requirePermission(user, "ATTENDANCE_MANAGE");
         var att = attendanceRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
+        periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
         if (att.isApproved())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_approved");
         if (att.isDeleted())
@@ -1006,6 +1013,7 @@ public class AttendanceController {
 
         LocalDateTime now = LocalDateTime.now(clock);
         ShiftTarget target = requireCheckInTarget(employee, getSelfCompany(user), now);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         target.attendance().setCheckIn(now);
         target.attendance().setStatus(checkInStatus(employee, target, now));
         return ResponseEntity.status(HttpStatus.CREATED).body(AttendanceDTO.Response.from(attendanceRepository.save(target.attendance())));
@@ -1062,6 +1070,7 @@ public class AttendanceController {
         validateSelfAttendanceEnabled(user);
         LocalDateTime now = LocalDateTime.now(clock);
         ShiftTarget target = requireCheckInTarget(employee, getSelfCompany(user), now);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         Attendance.Status status = checkInStatus(employee, target, now);
         Double lat = body != null ? body.get("latitude") : null;
         Double lng = body != null ? body.get("longitude") : null;
@@ -1085,6 +1094,7 @@ public class AttendanceController {
         validateSelfAttendanceEnabled(user);
         LocalDateTime checkOut = LocalDateTime.now(clock);
         ShiftTarget target = requireCheckOutTarget(employee, getSelfCompany(user), checkOut);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         Double lat = body != null ? body.get("latitude") : null;
         Double lng = body != null ? body.get("longitude") : null;
         validateCheckInLocation(employee, lat, lng);
@@ -1109,6 +1119,7 @@ public class AttendanceController {
 
         LocalDateTime now = LocalDateTime.now(clock);
         ShiftTarget target = requireCheckOutTarget(employee, getSelfCompany(user), now);
+        periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         target.attendance().setCheckOut(now);
         return ResponseEntity.ok(AttendanceDTO.Response.from(attendanceRepository.save(target.attendance())));
     }

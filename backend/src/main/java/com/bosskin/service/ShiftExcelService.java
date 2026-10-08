@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class ShiftExcelService {
 
     private final WorkShiftRepository shiftRepo;
+    private final PeriodLockService periodLockService;
     private final DepartmentRepository deptRepo;
     private final WorkShiftService shiftService;
     private final ShiftAssignmentRepository assignRepo;
@@ -890,6 +891,7 @@ public class ShiftExcelService {
             .map(AssignDayKey::getDate).distinct().sorted().toList();
         java.time.LocalDate minDate = allDates.get(0);
         java.time.LocalDate maxDate = allDates.get(allDates.size() - 1);
+        periodLockService.requireOpen(companyId, minDate, maxDate);
 
         List<Long> affectedEmpIds = grouped.keySet().stream()
             .map(k -> empMap.get(k.getEmpCode()))
