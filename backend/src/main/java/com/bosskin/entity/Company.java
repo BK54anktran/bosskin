@@ -67,6 +67,11 @@ public class Company extends BaseEntity {
     @Builder.Default
     private boolean locationCheckEnabled = false;
 
+    /** Chỉ cho tự chấm công trên thiết bị đã gắn với nhân viên (V6). */
+    @Column(name = "device_binding_enabled", nullable = false)
+    @Builder.Default
+    private boolean deviceBindingEnabled = false;
+
     @Column(name = "check_in_latitude")
     private Double checkInLatitude;
 

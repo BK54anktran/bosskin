@@ -1300,4 +1300,12 @@
   ,"swapCancelled": "Request cancelled"
   ,"permUiShiftSwapApprove": "Approve / reject buttons on the Shift swaps screen"
   ,"permDescShiftSwapApprove": "Approve shift swap / give-away requests"
+  ,"deviceBindingEnabled": "Only allow check-in from the bound device"
+  ,"deviceBindingHint": "The first check-in binds the phone in use; when an employee changes phones, a manager unbinds it in the employee profile."
+  ,"deviceBoundLabel": "Check-in device bound"
+  ,"deviceNotBoundLabel": "No check-in device bound"
+  ,"deviceBoundSince": "Bound at {time}"
+  ,"@deviceBoundSince": { "placeholders": { "time": { "type": "String" } } }
+  ,"deviceUnbind": "Unbind device"
+  ,"deviceUnbound": "Device unbound; the next check-in will bind the new phone"
 }

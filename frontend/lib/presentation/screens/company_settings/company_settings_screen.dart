@@ -28,6 +28,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   final _cutoffDayCtrl = TextEditingController(text: '1');
 
   bool _locationCheckEnabled = false;
+  bool _deviceBindingEnabled = false;
   double? _checkInLat;
   double? _checkInLng;
   int _checkInRadius = 100;
@@ -82,6 +83,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         _standardWorkDaysCtrl.text = ((payroll?['standardWorkDays'] as num?)?.toInt() ?? 22).toString();
         _cutoffDayCtrl.text = ((payroll?['payrollCutoffDay'] as num?)?.toInt() ?? 1).toString();
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
+        _deviceBindingEnabled = attendance['deviceBindingEnabled'] == true;
         _checkInLat = (attendance['checkInLatitude'] as num?)?.toDouble();
         _checkInLng = (attendance['checkInLongitude'] as num?)?.toDouble();
         _checkInRadius = (attendance['checkInRadiusMeters'] as num?)?.toInt() ?? 100;
@@ -192,6 +194,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           'dayStartTime': _formatTime(_dayStart),
           'dayEndTime': _formatTime(_dayEnd),
           'locationCheckEnabled': _locationCheckEnabled,
+          'deviceBindingEnabled': _deviceBindingEnabled,
           'checkInLatitude': _checkInLat,
           'checkInLongitude': _checkInLng,
           'checkInRadiusMeters': _checkInRadius,
@@ -363,6 +366,13 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                             value: _locationCheckEnabled,
                             onChanged: (v) => setState(() => _locationCheckEnabled = v),
                             title: Text(s.locationCheckEnabled),
+                          ),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _deviceBindingEnabled,
+                            onChanged: (v) => setState(() => _deviceBindingEnabled = v),
+                            title: Text(s.deviceBindingEnabled),
+                            subtitle: Text(s.deviceBindingHint, style: const TextStyle(fontSize: 12)),
                           ),
                           if (_locationCheckEnabled) ...[
                             const SizedBox(height: 8),

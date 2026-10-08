@@ -19,6 +19,7 @@ public class CompanySettingDTO {
         @JsonFormat(pattern = "HH:mm")
         private LocalTime dayEndTime;
         private boolean locationCheckEnabled;
+        private boolean deviceBindingEnabled;
         private Double checkInLatitude;
         private Double checkInLongitude;
         private int checkInRadiusMeters;
@@ -60,6 +61,7 @@ public class CompanySettingDTO {
         @JsonFormat(pattern = "HH:mm")
         private LocalTime dayEndTime;
         private Boolean locationCheckEnabled;
+        private Boolean deviceBindingEnabled;
         private Double checkInLatitude;
         private Double checkInLongitude;
         private Integer checkInRadiusMeters;

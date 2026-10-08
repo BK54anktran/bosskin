@@ -111,6 +111,8 @@ const _viMessages = <String, String>{
   'error.swap.not_found': 'Không tìm thấy yêu cầu đổi ca',
   'error.swap.not_pending': 'Yêu cầu đã được xử lý',
   'error.swap.past_shift': 'Không đổi được ca đã qua',
+  'error.attendance.device_not_bound': 'Thiết bị này chưa được gắn để chấm công cho bạn. Nhờ quản lý gỡ thiết bị cũ nếu bạn đổi điện thoại.',
+  'error.attendance.device_missing': 'Không xác định được thiết bị — hãy cập nhật ứng dụng',
 };
 
 const _enMessages = <String, String>{
@@ -222,6 +224,8 @@ const _enMessages = <String, String>{
   'error.swap.not_found': 'Swap request not found',
   'error.swap.not_pending': 'The request has already been processed',
   'error.swap.past_shift': 'Past shifts cannot be swapped',
+  'error.attendance.device_not_bound': 'This device is not your bound check-in device. Ask a manager to unbind your old phone if you changed phones.',
+  'error.attendance.device_missing': 'Could not identify this device — please update the app',
 };
 
 /// Tra bản dịch; key dạng "error.x.y.<chi tiết>" thử lại với phần đầu "error.x.y".

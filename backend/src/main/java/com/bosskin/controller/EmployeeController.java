@@ -153,6 +153,14 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.update(id, request, user.getCompany().getId(), user.getId()));
     }
 
+    /** Gỡ thiết bị chấm công của nhân viên (V6). */
+    @DeleteMapping("/{id}/device")
+    public ResponseEntity<Void> unbindDevice(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        requirePermission(user, "EMPLOYEE_UPDATE");
+        employeeService.unbindDevice(id, user.getCompany().getId());
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal User user) {
         requirePermission(user, "EMPLOYEE_DELETE");

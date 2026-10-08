@@ -7047,6 +7047,48 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Duyệt yêu cầu đổi ca / nhường ca'**
   String get permDescShiftSwapApprove;
+
+  /// No description provided for @deviceBindingEnabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ chấm công trên thiết bị đã gắn'**
+  String get deviceBindingEnabled;
+
+  /// No description provided for @deviceBindingHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần chấm công đầu tiên tự gắn điện thoại đang dùng; đổi máy thì quản lý gỡ gắn trong hồ sơ nhân viên.'**
+  String get deviceBindingHint;
+
+  /// No description provided for @deviceBoundLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gắn thiết bị chấm công'**
+  String get deviceBoundLabel;
+
+  /// No description provided for @deviceNotBoundLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa gắn thiết bị chấm công'**
+  String get deviceNotBoundLabel;
+
+  /// No description provided for @deviceBoundSince.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gắn lúc {time}'**
+  String deviceBoundSince(String time);
+
+  /// No description provided for @deviceUnbind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ thiết bị'**
+  String get deviceUnbind;
+
+  /// No description provided for @deviceUnbound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gỡ thiết bị, lần chấm công sau sẽ gắn máy mới'**
+  String get deviceUnbound;
 }
 
 class _AppLocalizationsDelegate

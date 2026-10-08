@@ -332,6 +332,16 @@ public class EmployeeService {
             .build();
     }
 
+    /** Gỡ thiết bị chấm công đã gắn (nhân viên đổi máy) — lần chấm sau tự gắn máy mới. */
+    @Transactional
+    public void unbindDevice(Long id, Long companyId) {
+        Employee e = employeeRepository.findByIdAndCompanyId(id, companyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        e.setBoundDeviceId(null);
+        e.setBoundDeviceAt(null);
+        employeeRepository.save(e);
+    }
+
     @Transactional
     public void delete(Long id, Long companyId, Long userId) {
         Employee e = getOrThrow(id, companyId);
@@ -379,6 +389,7 @@ public class EmployeeService {
             .personalEmail(e.getPersonalEmail())
             .avatar(e.getAvatar()).gender(e.getGender())
             .dateOfBirth(e.getDateOfBirth()).joinDate(e.getJoinDate()).leaveDate(e.getLeaveDate())
+            .deviceBound(e.getBoundDeviceId() != null).boundDeviceAt(e.getBoundDeviceAt())
             .status(e.getStatus())
             .departmentId(e.getDepartment().getId()).departmentName(e.getDepartment().getName())
             .positionId(e.getPosition() != null ? e.getPosition().getId() : null)

@@ -56,6 +56,9 @@ public class CompanySettingService {
                 c.setPayrollCutoffDay(cutoff);
             }
         }
+        if (req.getAttendance().getDeviceBindingEnabled() != null) {
+            c.setDeviceBindingEnabled(req.getAttendance().getDeviceBindingEnabled());
+        }
         if (req.getAttendance().getLocationCheckEnabled() != null) {
             c.setLocationCheckEnabled(req.getAttendance().getLocationCheckEnabled());
         }
@@ -123,6 +126,7 @@ public class CompanySettingService {
                 .dayStartTime(c.getDayStartTime())
                 .dayEndTime(c.getDayEndTime())
                 .locationCheckEnabled(c.isLocationCheckEnabled())
+                .deviceBindingEnabled(c.isDeviceBindingEnabled())
                 .checkInLatitude(c.getCheckInLatitude())
                 .checkInLongitude(c.getCheckInLongitude())
                 .checkInRadiusMeters(c.getCheckInRadiusMeters())

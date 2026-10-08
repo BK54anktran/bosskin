@@ -59,9 +59,15 @@ public class Api {
     }
 
     public Res call(HttpMethod method, String token, String url, Object body) {
+        return call(method, token, url, body, java.util.Map.of());
+    }
+
+    /** Gọi API kèm header tuỳ ý (vd. X-Device-ID). */
+    public Res call(HttpMethod method, String token, String url, Object body, java.util.Map<String, String> headers) {
         try {
             MockHttpServletRequestBuilder req = request(method, url).accept(MediaType.APPLICATION_JSON);
             if (token != null) req.header("Authorization", "Bearer " + token);
+            headers.forEach(req::header);
             if (body != null) {
                 req.contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(body));
             }

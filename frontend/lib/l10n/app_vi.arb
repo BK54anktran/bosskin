@@ -1303,4 +1303,12 @@
   ,"swapCancelled": "Đã huỷ yêu cầu"
   ,"permUiShiftSwapApprove": "Nút duyệt / từ chối trên màn Đổi ca"
   ,"permDescShiftSwapApprove": "Duyệt yêu cầu đổi ca / nhường ca"
+  ,"deviceBindingEnabled": "Chỉ chấm công trên thiết bị đã gắn"
+  ,"deviceBindingHint": "Lần chấm công đầu tiên tự gắn điện thoại đang dùng; đổi máy thì quản lý gỡ gắn trong hồ sơ nhân viên."
+  ,"deviceBoundLabel": "Đã gắn thiết bị chấm công"
+  ,"deviceNotBoundLabel": "Chưa gắn thiết bị chấm công"
+  ,"deviceBoundSince": "Gắn lúc {time}"
+  ,"@deviceBoundSince": { "placeholders": { "time": { "type": "String" } } }
+  ,"deviceUnbind": "Gỡ thiết bị"
+  ,"deviceUnbound": "Đã gỡ thiết bị, lần chấm công sau sẽ gắn máy mới"
 }

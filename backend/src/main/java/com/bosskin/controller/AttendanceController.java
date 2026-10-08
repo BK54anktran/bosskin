@@ -1059,6 +1059,7 @@ public class AttendanceController {
     public ResponseEntity<AttendanceDTO.SelfTodayResponse> selfCheckIn(
             @AuthenticationPrincipal User user,
             @RequestBody(required = false) Map<String, Object> body,
+            @RequestHeader(value = "X-Device-ID", required = false) String deviceId,
             Locale locale) {
         requirePermission(user, "ATTENDANCE_SELF");
         var employee = getSelfEmployee(user);
@@ -1070,6 +1071,7 @@ public class AttendanceController {
         Double lat = numberOrNull(body, "latitude");
         Double lng = numberOrNull(body, "longitude");
         validateGpsSignal(employee, body);
+        requireBoundDevice(employee, deviceId);
         validateCheckInLocation(employee, lat, lng);
         target.attendance().setCheckIn(now);
         target.attendance().setStatus(status);
@@ -1084,6 +1086,7 @@ public class AttendanceController {
     public ResponseEntity<AttendanceDTO.SelfTodayResponse> selfCheckOut(
             @AuthenticationPrincipal User user,
             @RequestBody(required = false) Map<String, Object> body,
+            @RequestHeader(value = "X-Device-ID", required = false) String deviceId,
             Locale locale) {
         requirePermission(user, "ATTENDANCE_SELF");
         var employee = getSelfEmployee(user);
@@ -1094,6 +1097,7 @@ public class AttendanceController {
         Double lat = numberOrNull(body, "latitude");
         Double lng = numberOrNull(body, "longitude");
         validateGpsSignal(employee, body);
+        requireBoundDevice(employee, deviceId);
         validateCheckInLocation(employee, lat, lng);
         target.attendance().setCheckOut(checkOut);
         target.attendance().setCheckOutLatitude(lat);
@@ -1362,6 +1366,26 @@ public class AttendanceController {
     private static Double numberOrNull(Map<String, Object> body, String key) {
         Object v = body != null ? body.get(key) : null;
         return v instanceof Number n ? n.doubleValue() : null;
+    }
+
+    /**
+     * Gắn thiết bị (V6): công ty bật thì chỉ chấm được trên thiết bị đã gắn. Lần đầu (chưa gắn)
+     * tự gắn thiết bị đang dùng; khác thiết bị → 403, quản lý gỡ gắn khi nhân viên đổi máy.
+     */
+    private void requireBoundDevice(Employee employee, String deviceId) {
+        if (!employee.getCompany().isDeviceBindingEnabled()) return;
+        if (deviceId == null || deviceId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.device_missing");
+        }
+        if (employee.getBoundDeviceId() == null) {
+            employee.setBoundDeviceId(deviceId.trim());
+            employee.setBoundDeviceAt(LocalDateTime.now(clock));
+            employeeRepository.save(employee);
+            return;
+        }
+        if (!employee.getBoundDeviceId().equals(deviceId.trim())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.device_not_bound");
+        }
     }
 
     /** Sai số GPS tối đa (mét) khi công ty bật kiểm vị trí. */

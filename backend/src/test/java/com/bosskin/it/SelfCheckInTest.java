@@ -173,4 +173,34 @@ class SelfCheckInTest extends IntegrationTest {
         assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), past).get(0).getStatus())
             .isEqualTo(Attendance.Status.PRESENT);
     }
+
+    @Test
+    @DisplayName("Gắn thiết bị: lần đầu tự gắn, máy khác bị chặn, quản lý gỡ thì máy mới chấm được")
+    void deviceBinding() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        c.assign(e, "HC", MON);
+        c.assign(e, "HC", MON.plusDays(1));
+        c.assign(e, "HC", MON.plusDays(2));
+        api.put(c.adminToken, "/api/v1/company-settings", Map.of(
+            "attendance", Map.of("dayNightMode", false, "otEnabled", true, "deviceBindingEnabled", true),
+            "leaves", Map.of("hoursPerDay", 8))).expectOk();
+        String token = c.tokenOf(e);
+        var post = org.springframework.http.HttpMethod.POST;
+
+        clock.set(MON.atTime(7, 55));
+        assertThat(api.call(post, token, "/api/v1/attendances/self/check-in", Map.of(), Map.of("X-Device-ID", "phone-A")).status()).isEqualTo(201);
+
+        clock.set(MON.plusDays(1).atTime(7, 55));
+        var other = api.call(post, token, "/api/v1/attendances/self/check-in", Map.of(), Map.of("X-Device-ID", "phone-B"));
+        assertThat(other.status()).isEqualTo(403);
+        assertThat(other.raw()).contains("error.attendance.device_not_bound");
+
+        api.delete(c.adminToken, "/api/v1/employees/" + e.id() + "/device").expectOk();
+        assertThat(api.call(post, token, "/api/v1/attendances/self/check-in", Map.of(), Map.of("X-Device-ID", "phone-B")).status()).isEqualTo(201);
+
+        clock.set(MON.plusDays(2).atTime(7, 55));
+        assertThat(api.call(post, token, "/api/v1/attendances/self/check-in", Map.of(), Map.of("X-Device-ID", "phone-A")).status())
+            .as("máy cũ hết hiệu lực sau khi gắn máy mới").isEqualTo(403);
+    }
 }

@@ -26,6 +26,9 @@ class Employee {
   final String? bankAccount;
   final String? bankName;
   final double? contractSalary;
+  /// Đã gắn thiết bị chấm công (công ty bật gắn thiết bị)
+  final bool deviceBound;
+  final DateTime? boundDeviceAt;
 
   const Employee({
     required this.id,
@@ -52,6 +55,8 @@ class Employee {
     this.bankAccount,
     this.bankName,
     this.contractSalary,
+    this.deviceBound = false,
+    this.boundDeviceAt,
   });
 
   factory Employee.fromJson(Map<String, dynamic> j) => Employee(
@@ -79,6 +84,8 @@ class Employee {
         bankAccount: j['bankAccount'],
         bankName: j['bankName'],
         contractSalary: (j['contractSalary'] as num?)?.toDouble(),
+        deviceBound: j['deviceBound'] == true,
+        boundDeviceAt: j['boundDeviceAt'] != null ? DateTime.tryParse(j['boundDeviceAt']) : null,
       );
 
   static EmployeeStatus _status(String? s) => switch (s?.toUpperCase()) {

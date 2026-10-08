@@ -398,6 +398,8 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   employeeId: widget.employee!.id,
                   employeeName: widget.employee!.fullName,
                 ),
+                const SizedBox(height: 12),
+                _DeviceBindingTile(employee: widget.employee!),
               ]),
             ],
           ],
@@ -442,6 +444,58 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
           ),
         ),
       );
+}
+
+/// Thiết bị chấm công đã gắn + nút gỡ (khi nhân viên đổi máy).
+class _DeviceBindingTile extends StatefulWidget {
+  final Employee employee;
+  const _DeviceBindingTile({required this.employee});
+
+  @override
+  State<_DeviceBindingTile> createState() => _DeviceBindingTileState();
+}
+
+class _DeviceBindingTileState extends State<_DeviceBindingTile> {
+  late bool _bound = widget.employee.deviceBound;
+  bool _busy = false;
+
+  Future<void> _unbind() async {
+    final s = AppLocalizations.of(context);
+    setState(() => _busy = true);
+    try {
+      await ApiService.instance.dio.delete('/employees/${widget.employee.id}/device');
+      if (!mounted) return;
+      setState(() => _bound = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.deviceUnbound)));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
+    final at = widget.employee.boundDeviceAt;
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(_bound ? Icons.phonelink_lock : Icons.phonelink_off,
+          color: _bound ? AppTheme.primary : AppTheme.textSecondary, size: 20),
+      title: Text(_bound ? s.deviceBoundLabel : s.deviceNotBoundLabel, style: const TextStyle(fontSize: 13)),
+      subtitle: Text(
+        _bound && at != null ? s.deviceBoundSince(DateFormat('dd/MM/yyyy HH:mm').format(at)) : s.deviceBindingHint,
+        style: const TextStyle(fontSize: 11),
+      ),
+      trailing: _bound
+          ? OutlinedButton(onPressed: _busy ? null : _unbind, child: Text(s.deviceUnbind))
+          : null,
+    );
+  }
 }
 
 class _EmployeeLocationsPreview extends StatefulWidget {

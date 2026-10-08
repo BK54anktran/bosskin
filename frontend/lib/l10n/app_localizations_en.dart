@@ -3731,4 +3731,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permDescShiftSwapApprove =>
       'Approve shift swap / give-away requests';
+
+  @override
+  String get deviceBindingEnabled =>
+      'Only allow check-in from the bound device';
+
+  @override
+  String get deviceBindingHint =>
+      'The first check-in binds the phone in use; when an employee changes phones, a manager unbinds it in the employee profile.';
+
+  @override
+  String get deviceBoundLabel => 'Check-in device bound';
+
+  @override
+  String get deviceNotBoundLabel => 'No check-in device bound';
+
+  @override
+  String deviceBoundSince(String time) {
+    return 'Bound at $time';
+  }
+
+  @override
+  String get deviceUnbind => 'Unbind device';
+
+  @override
+  String get deviceUnbound =>
+      'Device unbound; the next check-in will bind the new phone';
 }

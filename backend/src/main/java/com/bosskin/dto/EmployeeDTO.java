@@ -54,6 +54,9 @@ public class EmployeeDTO {
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Response {
+        /** Đã gắn thiết bị chấm công (V6) */
+        private boolean deviceBound;
+        private java.time.LocalDateTime boundDeviceAt;
         private Long id;
         private String employeeCode;
         private String fullName;

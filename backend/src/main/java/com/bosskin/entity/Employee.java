@@ -92,6 +92,13 @@ public class Employee extends BaseEntity {
     @Column(name = "identity_card", length = 20)
     private String identityCard;
 
+    /** Thiết bị được phép tự chấm công khi công ty bật gắn thiết bị (V6). */
+    @Column(name = "bound_device_id")
+    private String boundDeviceId;
+
+    @Column(name = "bound_device_at")
+    private java.time.LocalDateTime boundDeviceAt;
+
     @Column(name = "bank_account", length = 30)
     private String bankAccount;
 

@@ -3729,4 +3729,29 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get permDescShiftSwapApprove => 'Duyệt yêu cầu đổi ca / nhường ca';
+
+  @override
+  String get deviceBindingEnabled => 'Chỉ chấm công trên thiết bị đã gắn';
+
+  @override
+  String get deviceBindingHint =>
+      'Lần chấm công đầu tiên tự gắn điện thoại đang dùng; đổi máy thì quản lý gỡ gắn trong hồ sơ nhân viên.';
+
+  @override
+  String get deviceBoundLabel => 'Đã gắn thiết bị chấm công';
+
+  @override
+  String get deviceNotBoundLabel => 'Chưa gắn thiết bị chấm công';
+
+  @override
+  String deviceBoundSince(String time) {
+    return 'Gắn lúc $time';
+  }
+
+  @override
+  String get deviceUnbind => 'Gỡ thiết bị';
+
+  @override
+  String get deviceUnbound =>
+      'Đã gỡ thiết bị, lần chấm công sau sẽ gắn máy mới';
 }

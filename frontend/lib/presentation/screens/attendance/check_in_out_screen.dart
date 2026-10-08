@@ -46,26 +46,48 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
     _loadLocation();
   }
 
-  Future<void> _loadLocation() async {
-    setState(() => _locating = true);
+  /// Đọc vị trí mới (có xin quyền). Trả null nếu tắt định vị / bị từ chối / quá thời gian.
+  Future<Position?> _readPosition() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) { setState(() => _locating = false); return; }
+      if (!await Geolocator.isLocationServiceEnabled()) return null;
       LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
       if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        setState(() => _locating = false);
-        return;
+        return null;
       }
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
       );
-      if (mounted) setState(() { _position = pos; _locating = false; });
     } catch (_) {
-      if (mounted) setState(() => _locating = false);
+      return null;
     }
+  }
+
+  /// Vị trí dùng khi bấm check-in/out: luôn đọc lại ngay lúc bấm (vị trí lúc mở màn hình
+  /// có thể đã cũ). Không đọc được thì chỉ dùng lại vị trí cũ nếu chưa quá 1 phút.
+  Future<Position?> _positionAtTap() async {
+    setState(() => _locating = true);
+    final fresh = await _readPosition();
+    if (!mounted) return fresh;
+    setState(() {
+      if (fresh != null) _position = fresh;
+      _locating = false;
+    });
+    if (fresh != null) return fresh;
+    final cached = _position;
+    if (cached != null && DateTime.now().difference(cached.timestamp).inSeconds <= 60) return cached;
+    return null;
+  }
+
+  Future<void> _loadLocation() async {
+    setState(() => _locating = true);
+    final pos = await _readPosition();
+    if (mounted) setState(() { _position = pos ?? _position; _locating = false; });
     // Mở từ notification → tự submit (dù GPS thành công hay thất bại)
     if (mounted && _autoAction != null) {
       final action = _autoAction!;
@@ -131,9 +153,12 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   Future<void> _doCheckIn() async {
     final s = AppLocalizations.of(context);
     await _runAction(
-      () => _repo.selfCheckIn(
-          lat: _position?.latitude, lng: _position?.longitude,
-          isMocked: _position?.isMocked, accuracy: _position?.accuracy),
+      () async {
+        final pos = await _positionAtTap();
+        return _repo.selfCheckIn(
+            lat: pos?.latitude, lng: pos?.longitude,
+            isMocked: pos?.isMocked, accuracy: pos?.accuracy);
+      },
       s.checkInSuccess,
     );
   }
@@ -141,9 +166,12 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   Future<void> _doCheckOut() async {
     final s = AppLocalizations.of(context);
     await _runAction(
-      () => _repo.selfCheckOut(
-          lat: _position?.latitude, lng: _position?.longitude,
-          isMocked: _position?.isMocked, accuracy: _position?.accuracy),
+      () async {
+        final pos = await _positionAtTap();
+        return _repo.selfCheckOut(
+            lat: pos?.latitude, lng: pos?.longitude,
+            isMocked: pos?.isMocked, accuracy: pos?.accuracy);
+      },
       s.checkOutSuccess,
     );
   }
