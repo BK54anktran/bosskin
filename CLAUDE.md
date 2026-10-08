@@ -14,7 +14,12 @@
    - đổi schema → migration Flyway mới + entity/DTO + tài liệu;
    - đổi giao diện/luồng → cập nhật design và chuỗi l10n;
    - tiến độ kế hoạch → cập nhật `docs/review-2026-10/ke-hoach.html` (và bản artifact).
-3. **Giới hạn sử dụng.** Mỗi đợt làm việc, kiểm tra thời điểm reset hạn mức tiếp theo.
+3. **KHÔNG BAO GIỜ tự xoá / reset dữ liệu** (kể cả DB dev): không chạy `dev\reset-db.cmd`, không DROP/TRUNCATE,
+   không Flyway clean nếu chủ dự án chưa đồng ý rõ ràng trong lần đó. Migration mới chỉ cần khởi động lại backend
+   (Flyway tự chạy phần thêm). Cần dữ liệu mẫu mới → thêm bằng API/script bổ sung, không xoá cái cũ.
+4. **Ưu tiên dòng lệnh, không dùng điều khiển màn hình** khi có cách chạy bằng lệnh: server dev chạy qua
+   `dev\runner.cmd` (xem mục "Chạy & quản lý server dev"). Chỉ dùng điều khiển máy tính khi runner chưa bật.
+5. **Giới hạn sử dụng.** Mỗi đợt làm việc, kiểm tra thời điểm reset hạn mức tiếp theo.
    Khi mức dùng chạm ~99%: dừng, commit/push phần đã xong, tổng hợp tiến độ, và hẹn lịch
    tiếp tục đúng giờ reset (được tạo phiên mới nếu cần).
 
@@ -25,7 +30,11 @@
   ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân, 4 loại phép, công đã duyệt
   01/09–07/10, đơn chờ duyệt (sửa giờ, nghỉ phép, đổi ca), bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
-- Cách chạy: Claude chỉ được click (không gõ) trong File Explorer → mở `D:\bosskin\dev` và double-click file `.cmd`.
+- Cách chạy: chủ dự án bật `dev\runner.cmd` một lần (để cửa sổ mở). Claude ghi tên lệnh vào
+  `dev/run/requests/<id>.req` (start, start-backend, start-frontend, stop, stop-backend, stop-frontend,
+  restart-backend, restart-frontend, status, seed-th), đọc kết quả ở `dev/run/results/<id>.txt` và log ở `dev/logs/`.
+  Runner còn sống nếu `dev/run/runner.alive` được cập nhật trong vài giây. Runner KHÔNG có lệnh reset-db.
+- Runner chưa bật: nhờ chủ dự án bật; chỉ khi họ đồng ý mới dùng điều khiển máy tính (double-click `.cmd` trong File Explorer).
   Kiểm tra trang bằng built-in browser (`http://localhost:3000`).
   Backend cổng 8080 (đọc `backend/.env`, cần MySQL localhost:3306), frontend web debug cổng 3000.
 - Claude khởi động bằng cách chạy `dev\start.cmd` trên máy Windows của chủ dự án (điều khiển máy tính),
