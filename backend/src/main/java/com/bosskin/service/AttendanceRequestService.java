@@ -116,9 +116,11 @@ public class AttendanceRequestService {
 
     @Transactional
     public AttendanceRequestDTO.Response updateApplied(Long requestId, User admin, boolean applied) {
+        requireApprovePermission(admin);
         AttendanceRequest request = getRequestOrThrow(requestId, admin.getCompany().getId());
         periodLockService.requireOpen(admin.getCompany().getId(), request.getRequestDate());
         requireAttendanceViewScope(admin, request.getEmployee());
+        requireNotOwnRequest(admin, request);
         requireApproved(request);
         request.setApplied(applied);
         requestRepository.save(request);
@@ -153,6 +155,7 @@ public class AttendanceRequestService {
         AttendanceRequest request = getRequestOrThrow(requestId, admin.getCompany().getId());
         periodLockService.requireOpen(admin.getCompany().getId(), request.getRequestDate());
         requireAttendanceViewScope(admin, request.getEmployee());
+        requireNotOwnRequest(admin, request);
         requirePending(request);
         request.setStatus(AttendanceRequest.Status.APPROVED);
         request.setApplied(true);
@@ -172,6 +175,7 @@ public class AttendanceRequestService {
         AttendanceRequest request = getRequestOrThrow(requestId, admin.getCompany().getId());
         periodLockService.requireOpen(admin.getCompany().getId(), request.getRequestDate());
         requireAttendanceViewScope(admin, request.getEmployee());
+        requireNotOwnRequest(admin, request);
         requirePending(request);
         request.setStatus(AttendanceRequest.Status.REJECTED);
         request.setApplied(false);
@@ -499,5 +503,13 @@ public class AttendanceRequestService {
             // Fallback to email below
         }
         return processedBy.getEmail();
+    }
+
+    /** Người duyệt không tự duyệt / đổi áp dụng đơn của chính mình. */
+    private void requireNotOwnRequest(User admin, AttendanceRequest request) {
+        if (admin.getEmployee() != null && request.getEmployee() != null
+                && admin.getEmployee().getId().equals(request.getEmployee().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance_request.cannot_process_own");
+        }
     }
 }

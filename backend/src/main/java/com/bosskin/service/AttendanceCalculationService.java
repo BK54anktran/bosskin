@@ -186,21 +186,20 @@ public class AttendanceCalculationService {
     // ── Effective check-in / check-out ────────────────────────────────────────
 
     /**
-     * Check-in hieu qua: som nhat giua thuc te va request da applied.
+     * Check-in hiệu quả: đơn sửa giờ đã duyệt và áp dụng THAY THẾ giờ thực (A16) — để sửa
+     * được cả trường hợp bấm nhầm/giờ thực sai; không có đơn thì dùng giờ thực.
      */
     public LocalTime resolveEffectiveCheckIn(Attendance att, ResolvedRequests req, ShiftTimes shift) {
         LocalTime actualCheckIn    = att != null && att.getCheckIn()  != null ? att.getCheckIn().toLocalTime()  : null;
         LocalTime requestedCheckIn = req.appliedCheckInRequest() != null ? req.appliedCheckInRequest().getRequestedCheckIn() : null;
-        return chooseEarlier(actualCheckIn, requestedCheckIn, shift.start(), shift.end());
+        return requestedCheckIn != null ? requestedCheckIn : actualCheckIn;
     }
 
-    /**
-     * Check-out hieu qua: tre nhat giua thuc te va request da applied.
-     */
+    /** Check-out hiệu quả: đơn đã áp dụng thay thế giờ thực (A16). */
     public LocalTime resolveEffectiveCheckOut(Attendance att, ResolvedRequests req, ShiftTimes shift) {
         LocalTime actualCheckOut    = att != null && att.getCheckOut() != null ? att.getCheckOut().toLocalTime() : null;
         LocalTime requestedCheckOut = req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : null;
-        return chooseLater(actualCheckOut, requestedCheckOut, shift.start(), shift.end());
+        return requestedCheckOut != null ? requestedCheckOut : actualCheckOut;
     }
 
     // ── Work hours ────────────────────────────────────────────────────────────
@@ -230,6 +229,8 @@ public class AttendanceCalculationService {
         int regNightMin = hoursToMinutes(calc.regularNightHours());
         int otDayMin    = hoursToMinutes(calc.otDayHours());
         int otNightMin  = hoursToMinutes(calc.otNightHours());
+        // A15: OT ngoài ca không vượt quá thời gian thực sự có mặt ngoài giờ ca
+        int outsideBudget = hoursToMinutes(calc.outsideShiftHours());
 
         for (AttendanceRequest r : req.appliedOvertimeRequests()) {
             if (r.getRequestedOvertimeMinutes() == null) continue;
@@ -241,6 +242,8 @@ public class AttendanceCalculationService {
                     int moved = Math.min(overtimeMinutes, regDayMin);   regDayMin   -= moved; otDayMin   += moved;
                 }
             } else if (r.getRequestedOvertimeScope() == AttendanceRequest.OvertimeScope.OUTSIDE_SHIFT) {
+                overtimeMinutes = Math.min(overtimeMinutes, outsideBudget);
+                outsideBudget -= overtimeMinutes;
                 actualMin += overtimeMinutes;
                 if (r.getRequestedOvertimePeriod() == AttendanceRequest.OvertimePeriod.NIGHT) otNightMin += overtimeMinutes;
                 else otDayMin += overtimeMinutes;

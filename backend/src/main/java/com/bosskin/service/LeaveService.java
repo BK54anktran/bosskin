@@ -187,6 +187,9 @@ public class LeaveService {
         LeaveRequest request = getRequestOrThrow(id, companyId);
         periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         requireLeaveViewScope(admin, request.getEmployee());
+        if (admin.getEmployeeId() != null && admin.getEmployeeId().equals(request.getEmployee().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.leave.cannot_process_own");
+        }
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ duyệt yêu cầu đang chờ");
         }
@@ -216,6 +219,9 @@ public class LeaveService {
         LeaveRequest request = getRequestOrThrow(id, companyId);
         periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         requireLeaveViewScope(admin, request.getEmployee());
+        if (admin.getEmployeeId() != null && admin.getEmployeeId().equals(request.getEmployee().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.leave.cannot_process_own");
+        }
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ từ chối yêu cầu đang chờ");
         }
@@ -307,6 +313,9 @@ public class LeaveService {
         LeaveRequest request = getRequestOrThrow(id, companyId);
         periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
         requireLeaveViewScope(admin, request.getEmployee());
+        if (admin.getEmployeeId() != null && admin.getEmployeeId().equals(request.getEmployee().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.leave.cannot_process_own");
+        }
         if (request.getStatus() != LeaveRequest.Status.APPROVED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ đổi áp dụng cho yêu cầu đã duyệt");
         }

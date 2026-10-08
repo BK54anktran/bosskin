@@ -13,9 +13,16 @@ public class AttendanceCalculator {
         double regularDayHours,
         double regularNightHours,
         double otDayHours,
-        double otNightHours
+        double otNightHours,
+        /** Thời gian có mặt ngoài giờ ca (đã trừ nghỉ, nghỉ phép) — trần cho OT ngoài ca (A15). */
+        double outsideShiftHours
     ) {
-        static final Result ZERO = new Result(0, 0, 0, 0, 0);
+        static final Result ZERO = new Result(0, 0, 0, 0, 0, 0);
+
+        public Result(double actualHours, double regularDayHours, double regularNightHours,
+                      double otDayHours, double otNightHours) {
+            this(actualHours, regularDayHours, regularNightHours, otDayHours, otNightHours, 0);
+        }
     }
 
     public static Result calculate(
@@ -67,7 +74,7 @@ public class AttendanceCalculator {
         double regNight = toHours(regular) - regDay;
         double inShiftHours = toHours(regular);
 
-        return new Result(inShiftHours, regDay, regNight, 0, 0);
+        return new Result(inShiftHours, regDay, regNight, 0, 0, Math.max(0, actualHours - inShiftHours));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

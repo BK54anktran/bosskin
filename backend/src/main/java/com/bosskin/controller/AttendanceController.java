@@ -73,6 +73,7 @@ public class AttendanceController {
     private final AttendanceExcelService attendanceExcelService;
     private final AttendanceCalculationService calc;
     private final java.time.Clock clock;
+    private final org.springframework.transaction.PlatformTransactionManager transactionManager;
     private final com.bosskin.service.PeriodLockService periodLockService;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -1742,7 +1743,6 @@ public class AttendanceController {
     }
 
     @PostMapping("/import-timesheet")
-    @Transactional
     public ResponseEntity<Map<String, Integer>> importTimesheet(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user) {
@@ -1753,25 +1753,36 @@ public class AttendanceController {
 
         // Xử lý approve/unapprove cho các row có trạng thái duyệt thay đổi
         List<AttendanceExcelService.ApproveTask> approveTasks = attendanceExcelService.getLastImportApproveTasks();
-        int approved = 0;
+        // A18: mỗi dòng duyệt/bỏ duyệt trong transaction riêng — một dòng lỗi không làm
+        // hỏng cả lần import (trước đây lỗi trong cùng transaction → UnexpectedRollbackException)
+        var perRow = new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+        perRow.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        int approved = 0, approveFailed = 0;
         for (AttendanceExcelService.ApproveTask task : approveTasks) {
             try {
-                Attendance att = attendanceRepository.findById(task.attendanceId()).orElse(null);
-                if (att == null) continue;
-                if (task.approve()) {
-                    doApprove(att, user);
-                } else {
-                    att.setApproved(false);
-                    att.setApprovedAt(null); att.setApprovedBy(null);
-                    att.setSnapActualHours(null); att.setSnapDayHours(null);
-                    att.setSnapDayOt(null); att.setSnapNightHours(null);
-                    att.setSnapNightOt(null); att.setWorkFlags(null);
-                    attendanceRepository.save(att);
-                }
-                approved++;
-            } catch (Exception ignored) {}
+                Boolean done = perRow.execute(status -> {
+                    Attendance att = attendanceRepository.findById(task.attendanceId()).orElse(null);
+                    if (att == null) return false;
+                    requireNotOwnAttendance(user, att.getEmployee());
+                    if (task.approve()) {
+                        doApprove(att, user);
+                    } else {
+                        att.setApproved(false);
+                        att.setApprovedAt(null); att.setApprovedBy(null);
+                        att.setSnapActualHours(null); att.setSnapDayHours(null);
+                        att.setSnapDayOt(null); att.setSnapNightHours(null);
+                        att.setSnapNightOt(null); att.setWorkFlags(null);
+                        attendanceRepository.save(att);
+                    }
+                    return true;
+                });
+                if (Boolean.TRUE.equals(done)) approved++;
+            } catch (Exception e) {
+                approveFailed++;
+            }
         }
         if (approved > 0) result.put("approved", approved);
+        if (approveFailed > 0) result.put("approveFailed", approveFailed);
         return ResponseEntity.ok(result);
     }
 

@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "attendances",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"employee_id", "date"}))
+// Unique thật nằm ở DB: uq_attendance_slot(employee_id, date, slot_key) — xem V1__baseline.sql
+@Table(name = "attendances")
 @Getter
 @Setter
 @NoArgsConstructor

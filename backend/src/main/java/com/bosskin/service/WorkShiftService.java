@@ -429,11 +429,18 @@ public class WorkShiftService {
     private Integer calcWorkMinutes(ShiftDTO.ShiftRequest req) {
         if (req.getStartTime() == null || req.getEndTime() == null) return null;
 
-        int total = (int) java.time.Duration.between(req.getStartTime(), req.getEndTime()).toMinutes();
+        // A17: ca qua đêm (giờ kết thúc <= giờ bắt đầu) kết thúc vào ngày hôm sau
+        int total = minutesForward(req.getStartTime(), req.getEndTime());
         if (req.getBreakStart() != null && req.getBreakEnd() != null) {
-            total -= (int) java.time.Duration.between(req.getBreakStart(), req.getBreakEnd()).toMinutes();
+            total -= minutesForward(req.getBreakStart(), req.getBreakEnd());
         }
-        return total;
+        return Math.max(0, total);
+    }
+
+    /** Số phút từ {@code from} tới {@code to}, qua nửa đêm nếu {@code to <= from}. */
+    private static int minutesForward(LocalTime from, LocalTime to) {
+        int m = toMin(to) - toMin(from);
+        return m <= 0 ? m + 1440 : m;
     }
 
     private Company companyRef(Long id) {
