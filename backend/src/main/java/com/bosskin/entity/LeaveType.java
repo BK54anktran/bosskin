@@ -43,6 +43,11 @@ public class LeaveType extends BaseEntity {
     @Builder.Default
     private boolean paid = true;
 
+    /** Có trừ quỹ phép (số dư) hay không. Nghỉ không lương / ốm thường không trừ (L8). */
+    @Column(name = "requires_balance", nullable = false)
+    @Builder.Default
+    private boolean requiresBalance = true;
+
     @Column(name = "active", nullable = false)
     @Builder.Default
     private boolean active = true;

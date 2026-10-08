@@ -51,7 +51,6 @@ class LeavePayrollKnownBugsTest extends IntegrationTest {
     }
 
     @Test
-    @Tag("known-bug")
     @DisplayName("L8 · Nghỉ không lương không cần số dư phép")
     void l8_unpaidLeave_doesNotRequireBalance() {
         var c = fixture.standardCompany();

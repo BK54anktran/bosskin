@@ -54,6 +54,7 @@ public class LeaveService {
             .unit(req.getUnit())
             .deductPerDay(normalizeDeductPerDay(req.getUnit(), req.getDeductPerDay()))
             .paid(Boolean.TRUE.equals(req.getPaid()))
+            .requiresBalance(req.getRequiresBalance() != null ? req.getRequiresBalance() : Boolean.TRUE.equals(req.getPaid()))
             .active(Boolean.TRUE.equals(req.getActive()))
             .description(req.getDescription())
             .build();
@@ -72,6 +73,7 @@ public class LeaveService {
         type.setUnit(req.getUnit());
         type.setDeductPerDay(normalizeDeductPerDay(req.getUnit(), req.getDeductPerDay()));
         type.setPaid(Boolean.TRUE.equals(req.getPaid()));
+        type.setRequiresBalance(req.getRequiresBalance() != null ? req.getRequiresBalance() : Boolean.TRUE.equals(req.getPaid()));
         type.setActive(Boolean.TRUE.equals(req.getActive()));
         type.setDescription(req.getDescription());
         return toLeaveTypeResponse(leaveTypeRepository.save(type));
@@ -135,11 +137,18 @@ public class LeaveService {
         if (!type.isActive()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại phép đã ngưng sử dụng");
         }
+        // L12: loại tính theo ngày xin theo khoảng ngày, loại tính theo giờ xin theo khoảng giờ
+        LeaveRequest.Mode expectedMode = type.getUnit() == LeaveType.Unit.HOUR
+            ? LeaveRequest.Mode.HOUR_RANGE : LeaveRequest.Mode.DAY_RANGE;
+        if (req.getMode() != expectedMode) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.mode_mismatch");
+        }
 
         if (req.getToDate().isBefore(req.getFromDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ");
         }
         periodLockService.requireOpen(emp.getCompany().getId(), req.getFromDate(), req.getToDate());
+        requireNoOverlap(emp.getId(), req);
         BigDecimal hpdReq = loadHoursPerDay(user.getCompanyId());
         boolean isHourType = type.getUnit() == LeaveType.Unit.HOUR;
         boolean isMultiDay = !req.getFromDate().equals(req.getToDate());
@@ -149,21 +158,23 @@ public class LeaveService {
         }
 
         BigDecimal requestedAmount = calculateRequestedAmount(req, type);
-        List<LeaveGrant> usable = leaveGrantRepository.findUsableGrants(emp.getId(), null, req.getFromDate());
-        BigDecimal available = usable.stream()
-            .map(g -> isHourType ? availableHours(g, hpdReq) : availableDays(g, hpdReq))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (available.compareTo(requestedAmount) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số dư phép không đủ");
+        if (type.isRequiresBalance()) { // L8: loại không trừ quỹ thì không kiểm/trừ số dư
+            List<LeaveGrant> usable = leaveGrantRepository.findUsableGrants(emp.getId(), null, req.getFromDate());
+            BigDecimal available = usable.stream()
+                .map(g -> isHourType ? availableHours(g, hpdReq) : availableDays(g, hpdReq))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            if (available.compareTo(requestedAmount) < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số dư phép không đủ");
+            }
+            BigDecimal remainingNeed = requestedAmount;
+            for (LeaveGrant grant : usable) {
+                if (remainingNeed.compareTo(BigDecimal.ZERO) <= 0) break;
+                remainingNeed = isHourType
+                    ? deductHours(grant, remainingNeed, hpdReq)
+                    : deductDays(grant, remainingNeed, hpdReq);
+            }
+            leaveGrantRepository.saveAll(usable);
         }
-        BigDecimal remainingNeed = requestedAmount;
-        for (LeaveGrant grant : usable) {
-            if (remainingNeed.compareTo(BigDecimal.ZERO) <= 0) break;
-            remainingNeed = isHourType
-                ? deductHours(grant, remainingNeed, hpdReq)
-                : deductDays(grant, remainingNeed, hpdReq);
-        }
-        leaveGrantRepository.saveAll(usable);
 
         LeaveRequest request = LeaveRequest.builder()
             .company(companyRef(user.getCompanyId()))
@@ -253,11 +264,18 @@ public class LeaveService {
         Long companyId = user.getCompanyId();
         LeaveRequest request = getRequestOrThrow(id, companyId);
         periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
-        boolean isAdmin = user.getRoles().stream()
-            .anyMatch(r -> r.getName().equals("ADMIN") || r.getName().equals("HR"));
+        // L9: chủ đơn chỉ huỷ được đơn đang chờ; huỷ đơn đã duyệt cần quyền duyệt phép + phạm vi.
+        // Kỳ đã khoá thì không huỷ được (kiểm ở trên). Trước đây xác định admin theo tên vai trò.
         boolean isOwner = user.getEmployeeId() != null
             && user.getEmployeeId().equals(request.getEmployee().getId());
-        if (!isAdmin && !isOwner) {
+        boolean canProcess = user.hasPermission("LEAVE_REQUEST_APPROVE");
+        if (canProcess && !isOwner) {
+            requireLeaveViewScope(user, request.getEmployee());
+        } else if (isOwner) {
+            if (request.getStatus() != LeaveRequest.Status.PENDING && !canProcess) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.leave.cancel_only_pending");
+            }
+        } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền hủy yêu cầu này");
         }
         if (request.getStatus() == LeaveRequest.Status.CANCELLED) {
@@ -485,8 +503,16 @@ public class LeaveService {
     @Transactional
     public Map<String, Integer> runAccrual(User user, LocalDate runDate) {
         requirePermission(user, "LEAVE_ACCRUAL_MANAGE");
-        LocalDate date = runDate != null ? runDate : LocalDate.now();
-        Long companyId = user.getCompanyId();
+        return runAccrualForCompany(user.getCompanyId(), runDate != null ? runDate : LocalDate.now());
+    }
+
+    /**
+     * Cộng phép tự động theo quy tắc cho một công ty vào một ngày (L10).
+     * Chạy lại cùng ngày không cộng trùng (kiểm grant đã có trong kỳ).
+     * Dùng chung cho nút "Chạy" thủ công và job chạy hằng ngày (LeaveAccrualScheduler).
+     */
+    @Transactional
+    public Map<String, Integer> runAccrualForCompany(Long companyId, LocalDate date) {
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy công ty"));
         BigDecimal hoursPerDay = company.getLeaveHoursPerDay() != null && company.getLeaveHoursPerDay().compareTo(BigDecimal.ZERO) > 0
@@ -498,10 +524,10 @@ public class LeaveService {
 
         for (LeaveAccrualRule rule : rules) {
             boolean ruleMatches = switch (rule.getFrequency()) {
-                case MONTHLY -> rule.getDayOfMonth() != null && rule.getDayOfMonth().equals(date.getDayOfMonth());
-                case YEARLY -> rule.getDayOfMonth() != null && rule.getMonthOfYear() != null
-                    && rule.getDayOfMonth().equals(date.getDayOfMonth())
-                    && rule.getMonthOfYear().equals(date.getMonthValue());
+                case MONTHLY -> matchesDayOfMonth(rule.getDayOfMonth(), date);
+                case YEARLY -> rule.getMonthOfYear() != null
+                    && rule.getMonthOfYear().equals(date.getMonthValue())
+                    && matchesDayOfMonth(rule.getDayOfMonth(), date);
             };
             if (!ruleMatches) continue;
 
@@ -510,8 +536,11 @@ public class LeaveService {
                     (e.getDepartment() == null || !rule.getDepartment().getId().equals(e.getDepartment().getId()))) {
                     continue;
                 }
-                if (e.getJoinDate() == null) continue;
-                int tenureYears = date.getYear() - e.getJoinDate().getYear();
+                // Chỉ nhân viên đang làm, đã vào làm trước ngày cộng
+                if (e.getJoinDate() == null || e.getJoinDate().isAfter(date)) continue;
+                if (e.getStatus() != null && e.getStatus() != Employee.Status.ACTIVE) continue;
+                // Thâm niên tính đủ năm theo ngày vào làm (trước đây lấy hiệu số năm dương lịch)
+                int tenureYears = java.time.Period.between(e.getJoinDate(), date).getYears();
                 if (tenureYears < (rule.getMinTenureYears() == null ? 0 : rule.getMinTenureYears())) continue;
 
                 // Skip nếu đã cộng trong kỳ này
@@ -546,6 +575,13 @@ public class LeaveService {
             }
         }
         return Map.of("created", created);
+    }
+
+    /** Ngày cộng 29–31 ở tháng ngắn hơn thì cộng vào ngày cuối tháng. */
+    private static boolean matchesDayOfMonth(Integer dayOfMonth, LocalDate date) {
+        if (dayOfMonth == null) return false;
+        int effective = Math.min(dayOfMonth, date.lengthOfMonth());
+        return effective == date.getDayOfMonth();
     }
 
     private void validateRule(LeaveDTO.LeaveAccrualRuleUpsert req) {
@@ -593,11 +629,13 @@ public class LeaveService {
         }
         BigDecimal totalAmount = amountPerDay.multiply(BigDecimal.valueOf(totalDays));
 
-        List<LeaveGrant> usable = leaveGrantRepository.findUsableGrants(emp.getId(), null, req.getFromDate());
+        List<LeaveGrant> usable = type.isRequiresBalance()
+            ? leaveGrantRepository.findUsableGrants(emp.getId(), null, req.getFromDate())
+            : List.of();
         BigDecimal available = usable.stream()
             .map(g -> isHourType ? availableHours(g, hpd) : availableDays(g, hpd))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (available.compareTo(totalAmount) < 0) {
+        if (type.isRequiresBalance() && available.compareTo(totalAmount) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số dư phép không đủ");
         }
 
@@ -745,7 +783,7 @@ public class LeaveService {
     private LeaveDTO.LeaveTypeResponse toLeaveTypeResponse(LeaveType t) {
         return LeaveDTO.LeaveTypeResponse.builder()
             .id(t.getId()).code(t.getCode()).name(t.getName())
-            .unit(t.getUnit()).deductPerDay(t.getDeductPerDay()).paid(t.isPaid()).active(t.isActive())
+            .unit(t.getUnit()).deductPerDay(t.getDeductPerDay()).paid(t.isPaid()).requiresBalance(t.isRequiresBalance()).active(t.isActive())
             .description(t.getDescription())
             .build();
     }
@@ -861,6 +899,7 @@ public class LeaveService {
 
     /** Hoàn lại phép khi request bị hủy/từ chối. */
     private void refundBalance(LeaveRequest request, BigDecimal hpd) {
+        if (request.getLeaveType() != null && !request.getLeaveType().isRequiresBalance()) return; // L8
         boolean isHour = request.getLeaveType() != null
             && request.getLeaveType().getUnit() == LeaveType.Unit.HOUR;
         BigDecimal amount = request.getRequestedAmount();
@@ -969,9 +1008,9 @@ public class LeaveService {
             BigDecimal availH = g.getGrantHours() != null
                 ? g.getGrantHours().subtract(g.getUsedHours()) : BigDecimal.ZERO;
             if (availH.compareTo(hpd) < 0) break;
+            // L14: mượn giờ chỉ tăng usedHours (trước đây cộng cả usedDays → trừ 2 lần)
             g.setUsedHours(g.getUsedHours().add(hpd));
             BigDecimal consume = BigDecimal.ONE.min(needed);
-            g.setUsedDays(g.getUsedDays().add(consume));
             needed = needed.subtract(consume);
         }
         return needed;
@@ -1024,5 +1063,26 @@ public class LeaveService {
         grant.setGrantDays((grant.getGrantDays() != null ? grant.getGrantDays() : BigDecimal.ZERO)
             .add(extraDays).setScale(2, RoundingMode.HALF_UP));
         grant.setGrantHours(remainHours.setScale(2, RoundingMode.HALF_UP));
+    }
+
+    /**
+     * L11: không cho 2 đơn nghỉ (đang chờ hoặc đã duyệt) chồng ngày của cùng nhân viên.
+     * Hai đơn theo giờ trong cùng một ngày được phép nếu khung giờ không giao nhau.
+     */
+    private void requireNoOverlap(Long employeeId, LeaveDTO.CreateLeaveRequest req) {
+        for (LeaveRequest other : leaveRequestRepository.findByEmployeeIdOrderByCreatedAtDesc(employeeId)) {
+            if (other.getStatus() != LeaveRequest.Status.PENDING && other.getStatus() != LeaveRequest.Status.APPROVED) continue;
+            if (other.getFromDate().isAfter(req.getToDate()) || other.getToDate().isBefore(req.getFromDate())) continue;
+            boolean bothHourSameDay = other.getMode() == LeaveRequest.Mode.HOUR_RANGE
+                && req.getMode() == LeaveRequest.Mode.HOUR_RANGE
+                && other.getFromDate().equals(other.getToDate()) && req.getFromDate().equals(req.getToDate())
+                && other.getFromTime() != null && other.getToTime() != null
+                && req.getFromTime() != null && req.getToTime() != null;
+            if (bothHourSameDay && (!other.getFromTime().isBefore(req.getToTime())
+                    || !req.getFromTime().isBefore(other.getToTime()))) {
+                continue; // khung giờ không giao nhau
+            }
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.leave.overlap");
+        }
     }
 }

@@ -21,6 +21,11 @@ public class LeaveGrant extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Khoá lạc quan: 2 đơn trừ cùng một quỹ phép đồng thời thì đơn sau thất bại (L17). */
+    @Version
+    @Column(name = "version", nullable = false)
+    private long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;

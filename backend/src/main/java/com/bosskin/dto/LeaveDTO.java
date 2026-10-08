@@ -24,6 +24,7 @@ public class LeaveDTO {
         private LeaveType.Unit unit;
         private BigDecimal deductPerDay;
         private boolean paid;
+        private boolean requiresBalance;
         private boolean active;
         private String description;
     }
@@ -35,6 +36,8 @@ public class LeaveDTO {
         @NotNull private LeaveType.Unit unit;
         @NotNull private BigDecimal deductPerDay;
         @NotNull private Boolean paid;
+        /** Trừ quỹ phép hay không; bỏ trống thì theo "có lương" (có lương → trừ). */
+        private Boolean requiresBalance;
         @NotNull private Boolean active;
         private String description;
     }
