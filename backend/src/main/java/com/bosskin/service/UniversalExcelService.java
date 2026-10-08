@@ -41,9 +41,16 @@ public class UniversalExcelService {
 
     public ResponseEntity<byte[]> exportAll(Long companyId, Long userId,
                                              java.util.Locale locale,
-                                             ExportRequest req) {
+                                             ExportRequest req,
+                                             Set<String> allowedTypes) {
         List<String> types = req != null ? req.types() : null;
-        List<ExcelEntityDescriptor<?>> targets = filterDescriptors(types);
+        if (types != null && types.stream().anyMatch(t -> !allowedTypes.contains(t))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        List<ExcelEntityDescriptor<?>> targets = filterDescriptors(types).stream()
+            .filter(d -> allowedTypes.contains(d.type()))
+            .toList();
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             CellStyle headerStyle   = buildHeaderStyle(wb);
             CellStyle roHeaderStyle = buildReadOnlyHeaderStyle(wb);
@@ -178,9 +185,9 @@ public class UniversalExcelService {
     // ─── SEARCH FOR PICK ─────────────────────────────────────────────────────
 
     public List<ExcelEntityDescriptor.PickItem> searchForPick(
-            Long companyId, Long userId, String module, String q) {
+            Long companyId, Long userId, String module, String q, Set<String> allowedTypes) {
         return descriptors.stream()
-            .filter(d -> d.type().equals(module))
+            .filter(d -> d.type().equals(module) && allowedTypes.contains(d.type()))
             .findFirst()
             .map(d -> d.searchForPick(companyId, userId, q))
             .orElse(List.of());
@@ -192,7 +199,7 @@ public class UniversalExcelService {
      * Trả về metadata để frontend render UI chọn cột + filter.
      * Response: { "employee": { columns: [...], filters: [...] }, ... }
      */
-    public Map<String, ExportMeta> getExportMeta(Long companyId, java.util.Locale locale) {
+    public Map<String, ExportMeta> getExportMeta(Long companyId, java.util.Locale locale, Set<String> allowedTypes) {
         List<DeptItem> departments = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream()
             .map(d -> new DeptItem(d.getId(), d.getName(), d.getCode(),
@@ -201,6 +208,7 @@ public class UniversalExcelService {
 
         Map<String, ExportMeta> result = new LinkedHashMap<>();
         for (ExcelEntityDescriptor<?> desc : descriptors) {
+            if (!allowedTypes.contains(desc.type())) continue;
             // Hidden columns không hiện trong dialog chọn cột
             List<ColumnMeta> cols = desc.columns().stream()
                 .filter(col -> !col.isHidden())
@@ -227,7 +235,7 @@ public class UniversalExcelService {
     // ─── PREVIEW ─────────────────────────────────────────────────────────────
 
     public Map<String, List<UniversalImportDiff>> previewImport(
-            Long companyId, Long userId, byte[] fileBytes) {
+            Long companyId, Long userId, byte[] fileBytes, Set<String> allowedTypes) {
         Map<String, List<UniversalImportDiff>> result = new LinkedHashMap<>();
         try (InputStream is = new ByteArrayInputStream(fileBytes);
              XSSFWorkbook wb = new XSSFWorkbook(is)) {
@@ -236,6 +244,7 @@ public class UniversalExcelService {
                 if (!desc.importable()) continue;
                 String sheetName = findSheet(wb, desc.sheetKey());
                 if (sheetName == null) continue;
+                requireImportAllowed(desc, allowedTypes);
                 Sheet sheet = wb.getSheet(sheetName);
                 List<UniversalImportDiff> diffs = previewSheet(sheet, desc, companyId, userId);
                 result.put(desc.type(), diffs);
@@ -274,7 +283,8 @@ public class UniversalExcelService {
     // ─── IMPORT ──────────────────────────────────────────────────────────────
 
     public ResponseEntity<byte[]> importAll(Long companyId, Long userId,
-                                             byte[] fileBytes, java.util.Locale locale) {
+                                             byte[] fileBytes, java.util.Locale locale,
+                                             Set<String> allowedTypes) {
         Map<String, SheetImportResult> allResults = new LinkedHashMap<>();
 
         try (InputStream is = new ByteArrayInputStream(fileBytes);
@@ -284,6 +294,7 @@ public class UniversalExcelService {
                 if (!desc.importable()) continue;
                 String sheetName = findSheet(sourceWb, desc.sheetKey());
                 if (sheetName == null) continue;
+                requireImportAllowed(desc, allowedTypes);
                 Sheet sheet = sourceWb.getSheet(sheetName);
                 SheetImportResult sheetResult = importSheet(sheet, desc, companyId, userId);
                 allResults.put(desc.type(), sheetResult);
@@ -541,6 +552,14 @@ public class UniversalExcelService {
             if (s != null) return s;
         }
         return null;
+    }
+
+    /** File có sheet của module mà người dùng không có quyền nhập → từ chối cả file (S8). */
+    private static void requireImportAllowed(ExcelEntityDescriptor<?> desc, Set<String> allowedTypes) {
+        if (!allowedTypes.contains(desc.type())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "error.excel.module_not_permitted");
+        }
     }
 
     private List<ExcelEntityDescriptor<?>> filterDescriptors(List<String> types) {

@@ -97,4 +97,20 @@ class PermissionTest extends IntegrationTest {
 
         assertThat(res.body().has("salaryTrend")).isTrue();
     }
+
+    @Test
+    @DisplayName("S8 · Excel tổng hợp: có quyền xuất Excel nhưng không có quyền lương thì không xuất được bảng lương")
+    void s8_excelExportRequiresModulePermission() {
+        var c = fixture.standardCompany();
+        c.createRole("Xuất Excel NV", List.of("EXCEL_EXPORT", "EMPLOYEE_VIEW"));
+        var e = c.emp(4);
+        c.setRole(e, "Xuất Excel NV");
+        String token = c.tokenOf(e);
+
+        var payroll = api.post(token, "/api/v1/excel/export", Map.of("types", List.of("payroll")));
+        var employee = api.post(token, "/api/v1/excel/export", Map.of("types", List.of("employee")));
+
+        assertThat(payroll.status()).isEqualTo(403);
+        assertThat(employee.status()).as(employee.raw()).isEqualTo(200);
+    }
 }

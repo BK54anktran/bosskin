@@ -25,6 +25,7 @@ const _viMessages = <String, String>{
   'error.internal': 'Có lỗi hệ thống, vui lòng thử lại sau',
   'error.auth.too_many_attempts': 'Sai mật khẩu quá nhiều lần, vui lòng thử lại sau 15 phút',
   'error.upload.invalid_folder': 'Thư mục tải lên không hợp lệ',
+  'error.excel.module_not_permitted': 'File có sheet của chức năng bạn không có quyền nhập',
 };
 
 const _enMessages = <String, String>{
@@ -50,6 +51,7 @@ const _enMessages = <String, String>{
   'error.internal': 'A system error occurred, please try again later',
   'error.auth.too_many_attempts': 'Too many failed attempts, please try again in 15 minutes',
   'error.upload.invalid_folder': 'Invalid upload folder',
+  'error.excel.module_not_permitted': 'The file contains a sheet you are not allowed to import',
 };
 
 String serverMsg(dynamic e) {

@@ -1,5 +1,7 @@
 package com.bosskin.controller;
 
+import com.bosskin.service.ExcelModulePermissions;
+
 import com.bosskin.entity.ExcelHistory;
 import com.bosskin.entity.User;
 import com.bosskin.repository.ExcelHistoryRepository;
@@ -45,7 +47,8 @@ public class UniversalExcelController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         return ResponseEntity.ok(
-            universalExcelService.searchForPick(user.getCompanyId(), user.getId(), module, q));
+            universalExcelService.searchForPick(user.getCompanyId(), user.getId(), module, q,
+                ExcelModulePermissions.exportableTypes(user)));
     }
 
     @GetMapping("/meta")
@@ -54,8 +57,10 @@ public class UniversalExcelController {
         if (!user.can("excel.export") && !user.can("excel.import")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
+        java.util.Set<String> visible = new java.util.HashSet<>(ExcelModulePermissions.exportableTypes(user));
+        visible.addAll(ExcelModulePermissions.importableTypes(user));
         return ResponseEntity.ok(universalExcelService.getExportMeta(
-                user.getCompanyId(), LocaleContextHolder.getLocale()));
+                user.getCompanyId(), LocaleContextHolder.getLocale(), visible));
     }
 
     @PostMapping("/export")
@@ -67,7 +72,8 @@ public class UniversalExcelController {
         }
         return universalExcelService.exportAll(
                 user.getCompanyId(), user.getId(),
-                LocaleContextHolder.getLocale(), req);
+                LocaleContextHolder.getLocale(), req,
+                ExcelModulePermissions.exportableTypes(user));
     }
 
     @PostMapping("/preview-import")
@@ -78,7 +84,8 @@ public class UniversalExcelController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         Map<String, List<UniversalImportDiff>> diffs =
-                universalExcelService.previewImport(user.getCompanyId(), user.getId(), file.getBytes());
+                universalExcelService.previewImport(user.getCompanyId(), user.getId(), file.getBytes(),
+                    ExcelModulePermissions.importableTypes(user));
         return ResponseEntity.ok(diffs);
     }
 
@@ -92,7 +99,8 @@ public class UniversalExcelController {
         return universalExcelService.importAll(
                 user.getCompanyId(), user.getId(),
                 file.getBytes(),
-                LocaleContextHolder.getLocale());
+                LocaleContextHolder.getLocale(),
+                ExcelModulePermissions.importableTypes(user));
     }
 
     @GetMapping("/history/{id}/download")
