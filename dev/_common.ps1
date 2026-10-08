@@ -24,7 +24,11 @@ function Get-ServicePid($name) {
 }
 
 function Test-Port($port) {
-  [bool](Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
+  if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+    return [bool](Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
+  }
+  # không có Get-NetTCPConnection (PowerShell ngoài Windows): thử kết nối
+  try { $c = [Net.Sockets.TcpClient]::new('127.0.0.1', $port); $c.Close(); return $true } catch { return $false }
 }
 
 function Get-PortOwner($port) {

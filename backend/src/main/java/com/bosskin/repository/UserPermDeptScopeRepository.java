@@ -17,6 +17,26 @@ public class UserPermDeptScopeRepository {
         this.jdbc = jdbc;
     }
 
+    /**
+     * Mã quyền mà người dùng có qua ít nhất một vai trò KHÔNG giới hạn phạm vi
+     * (vai trò cấp quyền đó mà không có dòng scope nào). Nhiều vai trò cộng dồn theo
+     * hướng rộng nhất: "Nhân viên" (chỉ bản thân) + "Quản lý" (toàn công ty) = toàn công ty.
+     */
+    private Set<String> unrestrictedRolePermCodes(Long userId) {
+        return new java.util.HashSet<>(jdbc.queryForList(
+            "SELECT DISTINCT p.code FROM user_roles ur " +
+            "INNER JOIN role_permissions rp ON rp.role_id = ur.role_id " +
+            "INNER JOIN permissions p ON p.id = rp.permission_id " +
+            "WHERE ur.user_id = ? AND NOT EXISTS (SELECT 1 FROM role_permission_dept_scopes s " +
+            "  WHERE s.role_id = ur.role_id AND s.permission_code = p.code)",
+            String.class, userId));
+    }
+
+    private String moduleOf(String permCode) {
+        List<String> m = jdbc.queryForList("SELECT module FROM permissions WHERE code = ?", String.class, permCode);
+        return m.isEmpty() ? null : m.get(0);
+    }
+
     /** Returns map of permissionCode → set of allowed departmentIds (user direct + roles). Empty set = unrestricted. */
     public Map<String, Set<Long>> findScopesMap(Long userId) {
         Set<String> directModules = new java.util.HashSet<>(jdbc.queryForList(
@@ -45,6 +65,10 @@ public class UserPermDeptScopeRepository {
                     .computeIfAbsent((String) r.get("permission_code"), k -> new java.util.HashSet<>())
                     .add(((Number) r.get("department_id")).longValue());
             });
+        // Vai trò không giới hạn thắng vai trò giới hạn (trừ module đã cấu hình quyền trực tiếp)
+        Set<String> unrestricted = unrestrictedRolePermCodes(userId);
+        result.entrySet().removeIf(e -> unrestricted.contains(e.getKey())
+            && !directModules.contains(moduleOf(e.getKey())));
         return result;
     }
 
@@ -64,6 +88,9 @@ public class UserPermDeptScopeRepository {
             Long.class, userId, permCode));
         if (directCount != null && directCount > 0) {
             return result;
+        }
+        if (unrestrictedRolePermCodes(userId).contains(permCode)) {
+            return java.util.Collections.emptySet();
         }
         result.addAll(jdbc.queryForList(
             "SELECT DISTINCT r.department_id FROM role_permission_dept_scopes r " +

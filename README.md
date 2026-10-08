@@ -31,6 +31,7 @@ dev\start.cmd backend      :: chỉ backend
 dev\status.cmd             :: trạng thái + log cuối
 dev\stop.cmd               :: dừng tất cả   (dev\stop.cmd -Force: dừng cả tiến trình lạ chiếm cổng)
 dev\reset-db.cmd           :: XOÁ SẠCH DB dev, chạy lại migration, tạo system admin (BOOTSTRAP_SYSADMIN_* trong .env)
+dev\seed-th.cmd            :: tạo công ty mẫu "TH company" (cần backend đang chạy; mật khẩu = SEED_USER_PASSWORD trong .env)
 ```
 
 - Backend: `mvn spring-boot:run` trong `backend\` (dùng `mvnw.cmd` nếu chưa có `mvn`), đọc `backend\.env`.

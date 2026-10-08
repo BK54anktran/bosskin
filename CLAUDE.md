@@ -20,7 +20,10 @@
 
 ## Chạy & quản lý server dev (khi chủ dự án yêu cầu)
 - Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`,
-  `dev\reset-db.cmd` (xoá sạch DB dev, migrate lại, tạo system admin từ `BOOTSTRAP_SYSADMIN_*` trong `backend/.env`).
+  `dev\reset-db.cmd` (xoá sạch DB dev, migrate lại, tạo system admin từ `BOOTSTRAP_SYSADMIN_*` trong `backend/.env`),
+  `dev\seed-th.cmd` (công ty mẫu "TH company": 4 phòng ban, 8 NV có tài khoản, 4 vai trò, 6 ca gồm ca đêm và ca gãy,
+  phân ca 9–10/2026, 4 loại phép, công đã duyệt 01/09–07/10, đơn chờ duyệt, bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
+  Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
 - Cách chạy: Claude chỉ được click (không gõ) trong File Explorer → mở `D:\bosskin\dev` và double-click file `.cmd`.
   Kiểm tra trang bằng built-in browser (`http://localhost:3000`).
   Backend cổng 8080 (đọc `backend/.env`, cần MySQL localhost:3306), frontend web debug cổng 3000.

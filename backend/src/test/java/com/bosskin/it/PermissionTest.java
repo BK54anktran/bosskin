@@ -113,4 +113,24 @@ class PermissionTest extends IntegrationTest {
         assertThat(payroll.status()).isEqualTo(403);
         assertThat(employee.status()).as(employee.raw()).isEqualTo(200);
     }
+
+    @Test
+    @DisplayName("Nhiều vai trò cộng dồn theo hướng rộng nhất: Nhân viên (chỉ bản thân) + Quản lý (toàn công ty) duyệt được đơn người khác")
+    void multipleRoles_broadestScopeWins() {
+        var c = fixture.standardCompany();
+        var manager = c.emp(1);
+        var worker = c.emp(6);
+        api.put(c.adminToken, "/api/v1/users/" + manager.userId() + "/roles",
+            Map.of("roleIds", List.of(c.roles.get("Nhân viên"), c.roles.get("Quản lý chấm công")))).expectOk();
+        c.grantLeaveDays(worker, "PN", 5);
+        long id = api.post(c.tokenOf(worker), "/api/v1/leaves/requests", Map.of(
+            "leaveTypeId", c.leaveTypes.get("PN"), "mode", "DAY_RANGE",
+            "fromDate", "2026-11-20", "toDate", "2026-11-20", "reason", "Việc riêng")).expectOk().id();
+
+        var res = api.put(c.tokenOf(manager), "/api/v1/leaves/requests/" + id + "/approve", Map.of());
+
+        assertThat(res.status()).as(res.raw()).isEqualTo(200);
+        var list = api.get(c.tokenOf(manager), "/api/v1/leaves/requests/page").expectOk().body();
+        assertThat(list.path("totalElements").asInt()).as("thấy cả đơn của người khác").isGreaterThanOrEqualTo(1);
+    }
 }
