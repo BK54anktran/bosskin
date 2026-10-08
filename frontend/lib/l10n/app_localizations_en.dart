@@ -3013,4 +3013,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get impersonationExit => 'Exit';
+
+  @override
+  String get periodLockButton => 'Lock periods';
+
+  @override
+  String periodLockTitle(String year) {
+    return 'Attendance periods $year';
+  }
+
+  @override
+  String periodLabel(String month, String year) {
+    return 'Period $month/$year';
+  }
+
+  @override
+  String get periodLocked => 'Locked';
+
+  @override
+  String get periodOpen => 'Open';
+
+  @override
+  String get periodLockAction => 'Lock';
+
+  @override
+  String get periodUnlockAction => 'Reopen';
+
+  @override
+  String periodLockConfirm(String period, String from, String to) {
+    return 'Lock period $period ($from – $to)? After locking, nobody can change attendance, requests, leave or shift assignments in this range.';
+  }
+
+  @override
+  String get periodUnlockReasonHint => 'Reason for reopening (required)';
+
+  @override
+  String periodLockedAt(String time) {
+    return 'Locked at $time';
+  }
+
+  @override
+  String periodReopened(String reason) {
+    return 'Reopened: $reason';
+  }
+
+  @override
+  String get periodLockDone => 'Period locked';
+
+  @override
+  String get periodUnlockDone => 'Period reopened';
+
+  @override
+  String get leaveRequiresBalance => 'Deduct from leave balance';
+
+  @override
+  String get leaveRequiresBalanceHint =>
+      'Turn off for unlimited types (unpaid, sick, statutory…): no balance needed, nothing is deducted';
+
+  @override
+  String get leaveNoBalance => 'No balance';
+
+  @override
+  String get permModuleExcel => 'Combined Excel';
+
+  @override
+  String get permUiAttendanceRecordApprove =>
+      'Approve / unapprove buttons on the timesheet';
+
+  @override
+  String get permDescAttendanceRecordApprove =>
+      'Approve / unapprove timesheet entries';
+
+  @override
+  String get permUiAttendancePeriodLock =>
+      'Lock periods button on the Attendance screen';
+
+  @override
+  String get permDescAttendancePeriodLock => 'Lock / reopen attendance periods';
+
+  @override
+  String get permUiExcelExport =>
+      'Export the combined Excel file (only sheets for permitted modules)';
+
+  @override
+  String get permDescExcelExport => 'Export combined Excel';
+
+  @override
+  String get permUiExcelImport =>
+      'Import the combined Excel file (only sheets for permitted modules)';
+
+  @override
+  String get permDescExcelImport => 'Import combined Excel';
 }

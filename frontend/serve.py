@@ -15,9 +15,18 @@ class SPAHandler(SimpleHTTPRequestHandler):
             self.path = '/index.html'
         super().do_GET()
 
+    # F12 — Flutter web không gắn hash vào tên file (main.dart.js, assets/...),
+    # nên mọi file dùng "no-cache": trình duyệt vẫn giữ bản cũ nhưng hỏi lại server
+    # (If-Modified-Since → 304) thay vì tải lại toàn bộ mỗi lần như "no-store".
+    # Thư mục canvaskit/ và icons/ đổi theo phiên bản Flutter / hiếm khi đổi → cache 1 ngày.
+    LONG_CACHE_PREFIXES = ('/canvaskit/', '/icons/')
+
     def end_headers(self):
-        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
-        self.send_header('Pragma', 'no-cache')
+        path = self.path.split('?', 1)[0]
+        if path.startswith(self.LONG_CACHE_PREFIXES):
+            self.send_header('Cache-Control', 'public, max-age=86400')
+        else:
+            self.send_header('Cache-Control', 'no-cache')
         super().end_headers()
 
     def log_message(self, fmt, *args):

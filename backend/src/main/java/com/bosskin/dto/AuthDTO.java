@@ -50,4 +50,11 @@ public class AuthDTO {
         private String refreshToken;
         private String deviceId;
     }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class LogoutRequest {
+        private String refreshToken;
+        /** FCM token của thiết bị đang đăng xuất — backend gỡ để máy không nhận thông báo của tài khoản cũ. */
+        private String fcmToken;
+    }
 }

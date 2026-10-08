@@ -42,8 +42,31 @@ void main() async {
   await LanguageService.instance.load();
   await DeviceService.instance.getOrCreateDeviceId();
   await NotificationService.instance.initialize();
+  AuthService.instance.deviceFcmToken = NotificationService.instance.deviceToken;
   await AuthService.instance.restoreAndVerify();
+  _wireNotificationLifecycle();
   runApp(const ProviderScope(child: BossKinApp()));
+}
+
+/// F10 — vòng đời FCM token theo phiên đăng nhập:
+/// đăng nhập/khôi phục phiên → gắn token máy này; đăng xuất → backend gỡ token;
+/// FCM đổi token khi đang đăng nhập → cập nhật lại.
+void _wireNotificationLifecycle() {
+  final auth = AuthService.instance;
+  final notif = NotificationService.instance;
+  notif.onTokenRefreshWhileSignedIn = () {
+    final u = auth.currentUser;
+    return u != null && !u.isSystemAdmin;
+  };
+  String? keyOf(AuthUser? u) =>
+      (u == null || u.isSystemAdmin) ? null : '${u.companyId}:${u.email}';
+  var lastUserKey = keyOf(auth.currentUser);
+  if (lastUserKey != null) notif.syncDeviceToken(); // phiên khôi phục khi mở app
+  auth.addListener(() {
+    final key = keyOf(auth.currentUser);
+    if (key != null && key != lastUserKey) notif.syncDeviceToken();
+    lastUserKey = key;
+  });
 }
 
 // Routes that require a specific permission to access
@@ -275,12 +298,16 @@ class BossKinApp extends StatelessWidget {
           ],
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
-            final width = MediaQuery.of(context).size.width;
+            final mq = MediaQuery.of(context);
+            final width = mq.size.width;
             // mobile < 600: scale 0.9, tablet 600-900: scale 0.95, desktop: 1.0
             final scale = width < 600 ? 0.9 : (width < 900 ? 0.95 : 1.0);
+            // F12 — tôn trọng cỡ chữ hệ thống (người lớn tuổi / thị lực kém), nhân thêm
+            // hệ số theo màn hình; chặn trên 1.4 để bảng biểu không vỡ.
+            final system = mq.textScaler.clamp(maxScaleFactor: 1.4).scale(1.0);
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(scale),
+              data: mq.copyWith(
+                textScaler: TextScaler.linear(system * scale),
               ),
               child: child!,
             );

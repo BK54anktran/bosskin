@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 
 import '../models/attendance.dart';
+import '../models/attendance_period.dart';
+export '../models/attendance_period.dart';
 export '../models/attendance.dart' show DayViewRow, TimesheetRow;
 import '../services/api_service.dart';
 
@@ -392,4 +394,26 @@ class AttendanceRepository {
     final res = await _api.dio.post('/attendances/import-timesheet', data: form);
     return res.data as Map<String, dynamic>;
   }
+
+  // ── Khoá kỳ công ─────────────────────────────────────────────────────────
+
+  Future<List<AttendancePeriod>> getPeriods(int year) => _api.get(
+        '/attendance-periods',
+        (data) => (data as List)
+            .map((e) => AttendancePeriod.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        queryParams: {'year': year},
+      );
+
+  Future<AttendancePeriod> lockPeriod(int year, int month) => _api.post(
+        '/attendance-periods/$year/$month/lock',
+        (data) => AttendancePeriod.fromJson(data as Map<String, dynamic>),
+        const {},
+      );
+
+  Future<AttendancePeriod> unlockPeriod(int year, int month, String reason) => _api.post(
+        '/attendance-periods/$year/$month/unlock',
+        (data) => AttendancePeriod.fromJson(data as Map<String, dynamic>),
+        {'reason': reason},
+      );
 }

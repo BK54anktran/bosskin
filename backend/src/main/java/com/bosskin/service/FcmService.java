@@ -2,6 +2,7 @@ package com.bosskin.service;
 
 import com.bosskin.entity.FcmNotificationLog;
 import com.bosskin.repository.FcmNotificationLogRepository;
+import com.bosskin.repository.UserRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
@@ -11,6 +12,7 @@ import com.google.firebase.messaging.ApsAlert;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MessagingErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,16 @@ public class FcmService {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final FcmNotificationLogRepository logRepository;
+    private final UserRepository userRepository;
+
+    /** FCM báo token không còn dùng được (gỡ app, đổi máy…) → gỡ khỏi DB để khỏi gửi mãi (F10). */
+    private void dropIfDead(String fcmToken, FirebaseMessagingException e) {
+        MessagingErrorCode code = e.getMessagingErrorCode();
+        if (code == MessagingErrorCode.UNREGISTERED || code == MessagingErrorCode.SENDER_ID_MISMATCH) {
+            int n = userRepository.clearFcmToken(fcmToken);
+            log.info("FCM token hết hiệu lực ({}), đã gỡ khỏi {} tài khoản", code, n);
+        }
+    }
 
     public void sendCheckInOutNotif(String fcmToken, Long userId, String shiftName,
                                     LocalTime shiftTime, LocalDate workDate, boolean isCheckIn) {
@@ -77,6 +89,7 @@ public class FcmService {
             logRepository.save(entry.status("SUCCESS").build());
         } catch (FirebaseMessagingException e) {
             logRepository.save(entry.status("FAILED").errorMessage(e.getMessage()).build());
+            dropIfDead(fcmToken, e);
         }
     }
 
@@ -130,6 +143,7 @@ public class FcmService {
             log.warn("FCM failed → token={}... shift='{}': {}",
                 fcmToken.substring(0, 10), shiftName, e.getMessage());
             logRepository.save(entry.status("FAILED").errorMessage(e.getMessage()).build());
+            dropIfDead(fcmToken, e);
         }
     }
 }

@@ -167,7 +167,8 @@ public class ProfileService {
             User user, ProfileDTO.NotificationSettingsRequest req) {
         User u = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
-        if (req.getFcmToken() != null) {
+        if (req.getFcmToken() != null && !req.getFcmToken().isBlank()) {
+            userRepository.clearFcmTokenFromOthers(req.getFcmToken(), u.getId());
             u.setFcmToken(req.getFcmToken());
         }
         u.setShiftReminderMinutes(req.getShiftReminderMinutes());

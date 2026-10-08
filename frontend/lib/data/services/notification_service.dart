@@ -341,6 +341,9 @@ class NotificationService {
   NotificationService._();
 
   late final _fcm = FirebaseMessaging.instance;
+
+  /// main.dart gắn hàm kiểm tra đã đăng nhập (tránh import vòng với AuthService).
+  bool Function()? onTokenRefreshWhileSignedIn;
   String? _pendingRoute;
   String? _pendingAutoAction;
 
@@ -409,14 +412,51 @@ class NotificationService {
     _saveInbox();
   }
 
+  bool _firebaseReady = false;
+
+  /// FCM token của thiết bị này (null trên web / khi Firebase chưa sẵn sàng).
+  Future<String?> deviceToken() async {
+    if (!_firebaseReady) return null;
+    try {
+      return await _fcm.getToken();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Gọi sau khi đăng nhập / khôi phục phiên và khi FCM đổi token (F10):
+  /// nếu tài khoản đang bật thông báo thì gắn thông báo về thiết bị hiện tại.
+  /// Backend gỡ token này khỏi tài khoản khác (máy dùng chung) và chỉ giữ một thiết bị.
+  Future<void> syncDeviceToken({String? token}) async {
+    if (!_firebaseReady) return;
+    try {
+      final t = token ?? await deviceToken();
+      if (t == null) return;
+      final settings = await ProfileService.instance.getNotificationSettings();
+      if (!settings.enabled) return;
+      await ProfileService.instance.updateNotificationSettings(
+        fcmToken: t,
+        shiftReminderMinutes: settings.shiftReminderMinutes,
+        checkInOutNotifMinutes: settings.checkInOutNotifMinutes,
+      );
+    } catch (_) {
+      // chưa đăng nhập / mất mạng: lần đăng nhập sau sẽ đồng bộ lại
+    }
+  }
+
   Future<void> initialize() async {
     if (kIsWeb) return;
 
     try {
       await Firebase.initializeApp();
+      _firebaseReady = true;
     } catch (_) {
       return;
     }
+
+    _fcm.onTokenRefresh.listen((t) {
+      if (onTokenRefreshWhileSignedIn?.call() ?? false) syncDeviceToken(token: t);
+    });
 
     FirebaseMessaging.onBackgroundMessage(_onBackgroundMessage);
 
@@ -481,8 +521,7 @@ class NotificationService {
     required int? shiftReminderMinutes,
     required int? checkInOutNotifMinutes,
   }) async {
-    String? token;
-    if (!kIsWeb) token = await _fcm.getToken();
+    final token = await deviceToken();
     await ProfileService.instance.updateNotificationSettings(
       fcmToken: token,
       shiftReminderMinutes: shiftReminderMinutes,

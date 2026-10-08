@@ -662,13 +662,19 @@ class AuthService extends ChangeNotifier {
   // LOGOUT
   // =========================================================
 
+  /// main.dart gắn NotificationService.deviceToken (tránh import vòng).
+  Future<String?> Function()? deviceFcmToken;
+
   Future<void> logout() async {
     // Thu hồi phiên ở backend (bỏ qua lỗi mạng)
     final refresh = _currentRefreshToken ?? await _safeRead(AppConstants.refreshTokenKey);
     if (refresh != null) {
       try {
+        // Gửi kèm FCM token của máy này để backend gỡ — người sau đăng nhập
+        // trên cùng máy không nhận nhầm thông báo của người trước (F10).
+        final fcmToken = await deviceFcmToken?.call();
         await _dio.post('/api/v1/auth/logout',
-            data: {'refreshToken': refresh},
+            data: {'refreshToken': refresh, if (fcmToken != null) 'fcmToken': fcmToken},
             options: Options(headers: _requestHeaders()));
       } catch (_) {}
     }

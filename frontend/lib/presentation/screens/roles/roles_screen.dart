@@ -1,6 +1,7 @@
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/permission_labels.dart';
 import '../../../core/utils/text_utils.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
@@ -267,96 +268,6 @@ class _RolesTabState extends State<_RolesTab> {
     );
     if (saved == true) _load();
   }
-
-  String _moduleLabel(AppLocalizations s, String module) => switch (module) {
-        'EMPLOYEE' => s.employees,
-        'DEPARTMENT' => s.departments,
-        'ATTENDANCE' => s.attendance,
-        'SHIFT' => s.shifts,
-        'PAYROLL' => s.payroll,
-        'ROLE' => s.roles,
-        'USER' => s.user,
-        'COMPANY' => s.company,
-        _ => module,
-      };
-
-  String? _permUiHint(AppLocalizations s, String code) => switch (code) {
-        'DASHBOARD_VIEW' => s.permUiDashboardView,
-        'EMPLOYEE_VIEW' => s.permUiEmployeeView,
-        'EMPLOYEE_CREATE' => s.permUiEmployeeCreate,
-        'EMPLOYEE_UPDATE' => s.permUiEmployeeUpdate,
-        'EMPLOYEE_DELETE' => s.permUiEmployeeDelete,
-        'DEPARTMENT_VIEW' => s.permUiDepartmentView,
-        'DEPARTMENT_MANAGE' => s.permUiDepartmentManage,
-        'POSITION_MANAGE' => s.permUiPositionManage,
-        'ATTENDANCE_VIEW' => s.permUiAttendanceView,
-        'ATTENDANCE_MANAGE' => s.permUiAttendanceManage,
-        'ATTENDANCE_SELF' => s.permUiAttendanceSelf,
-        'ATTENDANCE_REQUEST_APPROVE' => s.permUiAttendanceApprove,
-        'SHIFT_VIEW' => s.permUiShiftView,
-        'SHIFT_MANAGE' => s.permUiShiftManage,
-        'PAYROLL_VIEW' => s.permUiPayrollView,
-        'PAYROLL_CREATE' => s.permUiPayrollCreate,
-        'PAYROLL_APPROVE' => s.permUiPayrollApprove,
-        'PAYROLL_PAY' => s.permUiPayrollPay,
-        'ROLE_VIEW' => s.permUiRoleView,
-        'ROLE_MANAGE' => s.permUiRoleManage,
-        'USER_MANAGE' => s.permUiUserManage,
-        'COMPANY_MANAGE' => s.permUiCompanyManage,
-        'LEAVE_VIEW' => s.permUiLeaveView,
-        'LEAVE_REQUEST_CREATE' => s.permUiLeaveRequestCreate,
-        'LEAVE_REQUEST_APPROVE' => s.permUiLeaveRequestApprove,
-        'LEAVE_GRANT_MANUAL' => s.permUiLeaveGrantManual,
-        'LEAVE_TYPE_VIEW' => s.permUiLeaveTypeView,
-        'LEAVE_TYPE_MANAGE' => s.permUiLeaveTypeManage,
-        'LEAVE_ACCRUAL_VIEW' => s.permUiLeaveAccrualView,
-        'LEAVE_ACCRUAL_MANAGE' => s.permUiLeaveAccrualManage,
-        'COMPANY_SETTING_VIEW' => s.permUiCompanySettingView,
-        'COMPANY_SETTING_MANAGE' => s.permUiCompanySettingManage,
-        'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permUiLeaveCreateForOthers,
-        _ => null,
-      };
-
-  String _permissionDescription(
-    AppLocalizations s,
-    AppPermission perm,
-  ) =>
-      switch (perm.code) {
-        'EMPLOYEE_VIEW' => s.permDescEmployeeView,
-        'EMPLOYEE_CREATE' => s.permDescEmployeeCreate,
-        'EMPLOYEE_UPDATE' => s.permDescEmployeeUpdate,
-        'EMPLOYEE_DELETE' => s.permDescEmployeeDelete,
-        'DEPARTMENT_VIEW' => s.permDescDepartmentView,
-        'DEPARTMENT_MANAGE' => s.permDescDepartmentManage,
-        'POSITION_MANAGE' => s.permDescPositionManage,
-        'ATTENDANCE_VIEW' => s.permDescAttendanceView,
-        'ATTENDANCE_MANAGE' => s.permDescAttendanceManage,
-        'ATTENDANCE_SELF' => s.permDescAttendanceSelf,
-        'ATTENDANCE_REQUEST_APPROVE' => s.permDescAttendanceApprove,
-        'SHIFT_VIEW' => s.permDescShiftView,
-        'SHIFT_MANAGE' => s.permDescShiftManage,
-        'PAYROLL_VIEW' => s.permDescPayrollView,
-        'PAYROLL_CREATE' => s.permDescPayrollCreate,
-        'PAYROLL_APPROVE' => s.permDescPayrollApprove,
-        'PAYROLL_PAY' => s.permDescPayrollPay,
-        'ROLE_VIEW' => s.permDescRoleView,
-        'ROLE_MANAGE' => s.permDescRoleManage,
-        'USER_MANAGE' => s.permDescUserManage,
-        'COMPANY_MANAGE' => s.permDescCompanyManage,
-        'LEAVE_VIEW' => s.permDescLeaveView,
-        'LEAVE_REQUEST_CREATE' => s.permDescLeaveRequestCreate,
-        'LEAVE_REQUEST_APPROVE' => s.permDescLeaveRequestApprove,
-        'LEAVE_GRANT_MANUAL' => s.permDescLeaveGrantManual,
-        'LEAVE_TYPE_VIEW' => s.permDescLeaveTypeView,
-        'LEAVE_TYPE_MANAGE' => s.permDescLeaveTypeManage,
-        'LEAVE_ACCRUAL_VIEW' => s.permDescLeaveAccrualView,
-        'LEAVE_ACCRUAL_MANAGE' => s.permDescLeaveAccrualManage,
-        'COMPANY_SETTING_VIEW' => s.permDescCompanySettingView,
-        'COMPANY_SETTING_MANAGE' => s.permDescCompanySettingManage,
-        'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permDescLeaveCreateForOthers,
-        'DASHBOARD_VIEW' => s.permDescDashboardView,
-        _ => perm.description,
-      };
 
   Future<void> _delete(AppRole role) async {
     final s = AppLocalizations.of(context);
@@ -704,95 +615,12 @@ class _RoleEditDialogState extends State<_RoleEditDialog> {
     super.dispose();
   }
 
-  String _moduleLabel(AppLocalizations s, String module) => switch (module) {
-        'EMPLOYEE' => s.employees,
-        'DEPARTMENT' => s.departments,
-        'ATTENDANCE' => s.attendance,
-        'SHIFT' => s.shifts,
-        'PAYROLL' => s.payroll,
-        'ROLE' => s.roles,
-        'USER' => s.user,
-        'COMPANY' => s.company,
-        _ => module,
-      };
+  String _moduleLabel(AppLocalizations s, String module) => permissionModuleLabel(s, module);
 
-  String? _permUiHint(AppLocalizations s, String code) => switch (code) {
-        'DASHBOARD_VIEW' => s.permUiDashboardView,
-        'EMPLOYEE_VIEW' => s.permUiEmployeeView,
-        'EMPLOYEE_CREATE' => s.permUiEmployeeCreate,
-        'EMPLOYEE_UPDATE' => s.permUiEmployeeUpdate,
-        'EMPLOYEE_DELETE' => s.permUiEmployeeDelete,
-        'DEPARTMENT_VIEW' => s.permUiDepartmentView,
-        'DEPARTMENT_MANAGE' => s.permUiDepartmentManage,
-        'POSITION_MANAGE' => s.permUiPositionManage,
-        'ATTENDANCE_VIEW' => s.permUiAttendanceView,
-        'ATTENDANCE_MANAGE' => s.permUiAttendanceManage,
-        'ATTENDANCE_SELF' => s.permUiAttendanceSelf,
-        'ATTENDANCE_REQUEST_APPROVE' => s.permUiAttendanceApprove,
-        'SHIFT_VIEW' => s.permUiShiftView,
-        'SHIFT_MANAGE' => s.permUiShiftManage,
-        'PAYROLL_VIEW' => s.permUiPayrollView,
-        'PAYROLL_CREATE' => s.permUiPayrollCreate,
-        'PAYROLL_APPROVE' => s.permUiPayrollApprove,
-        'PAYROLL_PAY' => s.permUiPayrollPay,
-        'ROLE_VIEW' => s.permUiRoleView,
-        'ROLE_MANAGE' => s.permUiRoleManage,
-        'USER_MANAGE' => s.permUiUserManage,
-        'COMPANY_MANAGE' => s.permUiCompanyManage,
-        'LEAVE_VIEW' => s.permUiLeaveView,
-        'LEAVE_REQUEST_CREATE' => s.permUiLeaveRequestCreate,
-        'LEAVE_REQUEST_APPROVE' => s.permUiLeaveRequestApprove,
-        'LEAVE_GRANT_MANUAL' => s.permUiLeaveGrantManual,
-        'LEAVE_TYPE_VIEW' => s.permUiLeaveTypeView,
-        'LEAVE_TYPE_MANAGE' => s.permUiLeaveTypeManage,
-        'LEAVE_ACCRUAL_VIEW' => s.permUiLeaveAccrualView,
-        'LEAVE_ACCRUAL_MANAGE' => s.permUiLeaveAccrualManage,
-        'COMPANY_SETTING_VIEW' => s.permUiCompanySettingView,
-        'COMPANY_SETTING_MANAGE' => s.permUiCompanySettingManage,
-        'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permUiLeaveCreateForOthers,
-        _ => null,
-      };
+  String? _permUiHint(AppLocalizations s, String code) => permissionUiHint(s, code);
 
-  String _permissionDescription(
-    AppLocalizations s,
-    AppPermission perm,
-  ) =>
-      switch (perm.code) {
-        'EMPLOYEE_VIEW' => s.permDescEmployeeView,
-        'EMPLOYEE_CREATE' => s.permDescEmployeeCreate,
-        'EMPLOYEE_UPDATE' => s.permDescEmployeeUpdate,
-        'EMPLOYEE_DELETE' => s.permDescEmployeeDelete,
-        'DEPARTMENT_VIEW' => s.permDescDepartmentView,
-        'DEPARTMENT_MANAGE' => s.permDescDepartmentManage,
-        'POSITION_MANAGE' => s.permDescPositionManage,
-        'ATTENDANCE_VIEW' => s.permDescAttendanceView,
-        'ATTENDANCE_MANAGE' => s.permDescAttendanceManage,
-        'ATTENDANCE_SELF' => s.permDescAttendanceSelf,
-        'ATTENDANCE_REQUEST_APPROVE' => s.permDescAttendanceApprove,
-        'SHIFT_VIEW' => s.permDescShiftView,
-        'SHIFT_MANAGE' => s.permDescShiftManage,
-        'PAYROLL_VIEW' => s.permDescPayrollView,
-        'PAYROLL_CREATE' => s.permDescPayrollCreate,
-        'PAYROLL_APPROVE' => s.permDescPayrollApprove,
-        'PAYROLL_PAY' => s.permDescPayrollPay,
-        'ROLE_VIEW' => s.permDescRoleView,
-        'ROLE_MANAGE' => s.permDescRoleManage,
-        'USER_MANAGE' => s.permDescUserManage,
-        'COMPANY_MANAGE' => s.permDescCompanyManage,
-        'LEAVE_VIEW' => s.permDescLeaveView,
-        'LEAVE_REQUEST_CREATE' => s.permDescLeaveRequestCreate,
-        'LEAVE_REQUEST_APPROVE' => s.permDescLeaveRequestApprove,
-        'LEAVE_GRANT_MANUAL' => s.permDescLeaveGrantManual,
-        'LEAVE_TYPE_VIEW' => s.permDescLeaveTypeView,
-        'LEAVE_TYPE_MANAGE' => s.permDescLeaveTypeManage,
-        'LEAVE_ACCRUAL_VIEW' => s.permDescLeaveAccrualView,
-        'LEAVE_ACCRUAL_MANAGE' => s.permDescLeaveAccrualManage,
-        'COMPANY_SETTING_VIEW' => s.permDescCompanySettingView,
-        'COMPANY_SETTING_MANAGE' => s.permDescCompanySettingManage,
-        'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permDescLeaveCreateForOthers,
-        'DASHBOARD_VIEW' => s.permDescDashboardView,
-        _ => perm.description,
-      };
+  String _permissionDescription(AppLocalizations s, AppPermission perm) =>
+      permissionDescription(s, perm.code, perm.description);
 
   String _scopeLabel(AppLocalizations s, String permCode) {
     final ids = _deptScopes[permCode];
@@ -1595,95 +1423,12 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
     super.dispose();
   }
 
-  String _moduleLabel(AppLocalizations s, String module) => switch (module) {
-        'EMPLOYEE' => s.employees,
-        'DEPARTMENT' => s.departments,
-        'ATTENDANCE' => s.attendance,
-        'SHIFT' => s.shifts,
-        'PAYROLL' => s.payroll,
-        'ROLE' => s.roles,
-        'USER' => s.user,
-        'COMPANY' => s.company,
-        _ => module,
-      };
+  String _moduleLabel(AppLocalizations s, String module) => permissionModuleLabel(s, module);
 
-  String? _permUiHint(AppLocalizations s, String code) => switch (code) {
-        'DASHBOARD_VIEW' => s.permUiDashboardView,
-        'EMPLOYEE_VIEW' => s.permUiEmployeeView,
-        'EMPLOYEE_CREATE' => s.permUiEmployeeCreate,
-        'EMPLOYEE_UPDATE' => s.permUiEmployeeUpdate,
-        'EMPLOYEE_DELETE' => s.permUiEmployeeDelete,
-        'DEPARTMENT_VIEW' => s.permUiDepartmentView,
-        'DEPARTMENT_MANAGE' => s.permUiDepartmentManage,
-        'POSITION_MANAGE' => s.permUiPositionManage,
-        'ATTENDANCE_VIEW' => s.permUiAttendanceView,
-        'ATTENDANCE_MANAGE' => s.permUiAttendanceManage,
-        'ATTENDANCE_SELF' => s.permUiAttendanceSelf,
-        'ATTENDANCE_REQUEST_APPROVE' => s.permUiAttendanceApprove,
-        'SHIFT_VIEW' => s.permUiShiftView,
-        'SHIFT_MANAGE' => s.permUiShiftManage,
-        'PAYROLL_VIEW' => s.permUiPayrollView,
-        'PAYROLL_CREATE' => s.permUiPayrollCreate,
-        'PAYROLL_APPROVE' => s.permUiPayrollApprove,
-        'PAYROLL_PAY' => s.permUiPayrollPay,
-        'ROLE_VIEW' => s.permUiRoleView,
-        'ROLE_MANAGE' => s.permUiRoleManage,
-        'USER_MANAGE' => s.permUiUserManage,
-        'COMPANY_MANAGE' => s.permUiCompanyManage,
-        'LEAVE_VIEW' => s.permUiLeaveView,
-        'LEAVE_REQUEST_CREATE' => s.permUiLeaveRequestCreate,
-        'LEAVE_REQUEST_APPROVE' => s.permUiLeaveRequestApprove,
-        'LEAVE_GRANT_MANUAL' => s.permUiLeaveGrantManual,
-        'LEAVE_TYPE_VIEW' => s.permUiLeaveTypeView,
-        'LEAVE_TYPE_MANAGE' => s.permUiLeaveTypeManage,
-        'LEAVE_ACCRUAL_VIEW' => s.permUiLeaveAccrualView,
-        'LEAVE_ACCRUAL_MANAGE' => s.permUiLeaveAccrualManage,
-        'COMPANY_SETTING_VIEW' => s.permUiCompanySettingView,
-        'COMPANY_SETTING_MANAGE' => s.permUiCompanySettingManage,
-        'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permUiLeaveCreateForOthers,
-        _ => null,
-      };
+  String? _permUiHint(AppLocalizations s, String code) => permissionUiHint(s, code);
 
-  String _permissionDescription(
-    AppLocalizations s,
-    AppPermission perm,
-  ) =>
-      switch (perm.code) {
-        'EMPLOYEE_VIEW' => s.permDescEmployeeView,
-        'EMPLOYEE_CREATE' => s.permDescEmployeeCreate,
-        'EMPLOYEE_UPDATE' => s.permDescEmployeeUpdate,
-        'EMPLOYEE_DELETE' => s.permDescEmployeeDelete,
-        'DEPARTMENT_VIEW' => s.permDescDepartmentView,
-        'DEPARTMENT_MANAGE' => s.permDescDepartmentManage,
-        'POSITION_MANAGE' => s.permDescPositionManage,
-        'ATTENDANCE_VIEW' => s.permDescAttendanceView,
-        'ATTENDANCE_MANAGE' => s.permDescAttendanceManage,
-        'ATTENDANCE_SELF' => s.permDescAttendanceSelf,
-        'ATTENDANCE_REQUEST_APPROVE' => s.permDescAttendanceApprove,
-        'SHIFT_VIEW' => s.permDescShiftView,
-        'SHIFT_MANAGE' => s.permDescShiftManage,
-        'PAYROLL_VIEW' => s.permDescPayrollView,
-        'PAYROLL_CREATE' => s.permDescPayrollCreate,
-        'PAYROLL_APPROVE' => s.permDescPayrollApprove,
-        'PAYROLL_PAY' => s.permDescPayrollPay,
-        'ROLE_VIEW' => s.permDescRoleView,
-        'ROLE_MANAGE' => s.permDescRoleManage,
-        'USER_MANAGE' => s.permDescUserManage,
-        'COMPANY_MANAGE' => s.permDescCompanyManage,
-        'LEAVE_VIEW' => s.permDescLeaveView,
-        'LEAVE_REQUEST_CREATE' => s.permDescLeaveRequestCreate,
-        'LEAVE_REQUEST_APPROVE' => s.permDescLeaveRequestApprove,
-        'LEAVE_GRANT_MANUAL' => s.permDescLeaveGrantManual,
-        'LEAVE_TYPE_VIEW' => s.permDescLeaveTypeView,
-        'LEAVE_TYPE_MANAGE' => s.permDescLeaveTypeManage,
-        'LEAVE_ACCRUAL_VIEW' => s.permDescLeaveAccrualView,
-        'LEAVE_ACCRUAL_MANAGE' => s.permDescLeaveAccrualManage,
-        'COMPANY_SETTING_VIEW' => s.permDescCompanySettingView,
-        'COMPANY_SETTING_MANAGE' => s.permDescCompanySettingManage,
-        'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permDescLeaveCreateForOthers,
-        'DASHBOARD_VIEW' => s.permDescDashboardView,
-        _ => perm.description,
-      };
+  String _permissionDescription(AppLocalizations s, AppPermission perm) =>
+      permissionDescription(s, perm.code, perm.description);
 
   String _scopeLabel(AppLocalizations s, String permCode) {
     final ids = _deptScopes[permCode];

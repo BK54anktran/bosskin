@@ -4,6 +4,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import 'attendance_shared.dart';
 import 'tabs/attendance_timesheet_tab.dart';
 import 'tabs/attendance_day_tab.dart';
+import 'widgets/period_lock_dialog.dart';
 export 'tabs/attendance_day_tab.dart' show AttendanceDayTabKey;
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -49,6 +50,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     final isSysAdmin = AuthService.instance.currentUser?.isSystemAdmin ?? false;
     final canView   = isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_VIEW')   ?? false);
     final canManage = isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_MANAGE') ?? false);
+    final canLockPeriod = canView &&
+        (isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_PERIOD_LOCK') ?? false));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -78,6 +81,14 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    if (canLockPeriod) ...[
+                      OutlinedButton.icon(
+                        onPressed: () => showPeriodLockDialog(context),
+                        icon: const Icon(Icons.lock_clock_outlined, size: 16),
+                        label: Text(s.periodLockButton),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     OutlinedButton.icon(
                       onPressed: _exporting ? null : () async {
                         setState(() => _exporting = true);

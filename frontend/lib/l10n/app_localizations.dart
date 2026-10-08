@@ -5846,6 +5846,156 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Thoát'**
   String get impersonationExit;
+
+  /// No description provided for @periodLockButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá kỳ công'**
+  String get periodLockButton;
+
+  /// No description provided for @periodLockTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá kỳ công năm {year}'**
+  String periodLockTitle(String year);
+
+  /// No description provided for @periodLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ {month}/{year}'**
+  String periodLabel(String month, String year);
+
+  /// No description provided for @periodLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã khoá'**
+  String get periodLocked;
+
+  /// No description provided for @periodOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang mở'**
+  String get periodOpen;
+
+  /// No description provided for @periodLockAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá'**
+  String get periodLockAction;
+
+  /// No description provided for @periodUnlockAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở lại'**
+  String get periodUnlockAction;
+
+  /// No description provided for @periodLockConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá kỳ {period} ({from} – {to})? Sau khi khoá sẽ không ai sửa được chấm công, đơn từ, nghỉ phép và phân ca trong khoảng này.'**
+  String periodLockConfirm(String period, String from, String to);
+
+  /// No description provided for @periodUnlockReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do mở lại kỳ (bắt buộc)'**
+  String get periodUnlockReasonHint;
+
+  /// No description provided for @periodLockedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá lúc {time}'**
+  String periodLockedAt(String time);
+
+  /// No description provided for @periodReopened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã mở lại: {reason}'**
+  String periodReopened(String reason);
+
+  /// No description provided for @periodLockDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã khoá kỳ công'**
+  String get periodLockDone;
+
+  /// No description provided for @periodUnlockDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã mở lại kỳ công'**
+  String get periodUnlockDone;
+
+  /// No description provided for @leaveRequiresBalance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trừ vào quỹ phép'**
+  String get leaveRequiresBalance;
+
+  /// No description provided for @leaveRequiresBalanceHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt cho loại nghỉ không giới hạn (nghỉ không lương, ốm, chế độ…): không cần cấp quỹ, không trừ phép'**
+  String get leaveRequiresBalanceHint;
+
+  /// No description provided for @leaveNoBalance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không trừ quỹ'**
+  String get leaveNoBalance;
+
+  /// No description provided for @permModuleExcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Excel tổng hợp'**
+  String get permModuleExcel;
+
+  /// No description provided for @permUiAttendanceRecordApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nút duyệt / bỏ duyệt trên bảng công'**
+  String get permUiAttendanceRecordApprove;
+
+  /// No description provided for @permDescAttendanceRecordApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt / bỏ duyệt bảng công'**
+  String get permDescAttendanceRecordApprove;
+
+  /// No description provided for @permUiAttendancePeriodLock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nút Khoá kỳ công trên màn Chấm công'**
+  String get permUiAttendancePeriodLock;
+
+  /// No description provided for @permDescAttendancePeriodLock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá / mở lại kỳ công'**
+  String get permDescAttendancePeriodLock;
+
+  /// No description provided for @permUiExcelExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất file Excel tổng hợp (chỉ các sheet thuộc module có quyền)'**
+  String get permUiExcelExport;
+
+  /// No description provided for @permDescExcelExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất Excel tổng hợp'**
+  String get permDescExcelExport;
+
+  /// No description provided for @permUiExcelImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập file Excel tổng hợp (chỉ các sheet thuộc module có quyền)'**
+  String get permUiExcelImport;
+
+  /// No description provided for @permDescExcelImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập Excel tổng hợp'**
+  String get permDescExcelImport;
 }
 
 class _AppLocalizationsDelegate

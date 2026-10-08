@@ -2,6 +2,10 @@ package com.bosskin.repository;
 
 import com.bosskin.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,4 +23,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByFcmTokenIsNotNullAndShiftReminderMinutesIsNotNull();
     List<User> findAllByFcmTokenIsNotNullAndCheckInOutNotifMinutesIsNotNull();
+
+    /** Một thiết bị chỉ thuộc một tài khoản: gỡ token khỏi các tài khoản khác (máy dùng chung). */
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.fcmToken = NULL WHERE u.fcmToken = :token AND u.id <> :userId")
+    int clearFcmTokenFromOthers(@Param("token") String token, @Param("userId") Long userId);
+
+    /** Gỡ token khỏi mọi tài khoản (đăng xuất trên thiết bị đó, hoặc FCM báo token hết hiệu lực). */
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.fcmToken = NULL WHERE u.fcmToken = :token")
+    int clearFcmToken(@Param("token") String token);
 }

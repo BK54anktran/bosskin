@@ -25,10 +25,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.refresh(request));
     }
 
-    // Đăng xuất: POST /api/v1/auth/logout  { "refreshToken": "..." }
+    // Đăng xuất: POST /api/v1/auth/logout  { "refreshToken": "...", "fcmToken": "..." }
     @PostMapping("/api/v1/auth/logout")
-    public ResponseEntity<Void> logout(@RequestBody(required = false) AuthDTO.RefreshRequest request) {
-        authService.logout(request != null ? request.getRefreshToken() : null);
+    public ResponseEntity<Void> logout(@RequestBody(required = false) AuthDTO.LogoutRequest request) {
+        authService.logout(request != null ? request.getRefreshToken() : null,
+                           request != null ? request.getFcmToken() : null);
         return ResponseEntity.noContent().build();
     }
 

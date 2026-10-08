@@ -1054,4 +1054,34 @@
   ,"impersonationBanner": "Viewing company {company} as system administrator"
   ,"@impersonationBanner": { "placeholders": { "company": { "type": "String" } } }
   ,"impersonationExit": "Exit"
+  ,"periodLockButton": "Lock periods"
+  ,"periodLockTitle": "Attendance periods {year}"
+  ,"@periodLockTitle": { "placeholders": { "year": { "type": "String" } } }
+  ,"periodLabel": "Period {month}/{year}"
+  ,"@periodLabel": { "placeholders": { "month": { "type": "String" }, "year": { "type": "String" } } }
+  ,"periodLocked": "Locked"
+  ,"periodOpen": "Open"
+  ,"periodLockAction": "Lock"
+  ,"periodUnlockAction": "Reopen"
+  ,"periodLockConfirm": "Lock period {period} ({from} – {to})? After locking, nobody can change attendance, requests, leave or shift assignments in this range."
+  ,"@periodLockConfirm": { "placeholders": { "period": { "type": "String" }, "from": { "type": "String" }, "to": { "type": "String" } } }
+  ,"periodUnlockReasonHint": "Reason for reopening (required)"
+  ,"periodLockedAt": "Locked at {time}"
+  ,"@periodLockedAt": { "placeholders": { "time": { "type": "String" } } }
+  ,"periodReopened": "Reopened: {reason}"
+  ,"@periodReopened": { "placeholders": { "reason": { "type": "String" } } }
+  ,"periodLockDone": "Period locked"
+  ,"periodUnlockDone": "Period reopened"
+  ,"leaveRequiresBalance": "Deduct from leave balance"
+  ,"leaveRequiresBalanceHint": "Turn off for unlimited types (unpaid, sick, statutory…): no balance needed, nothing is deducted"
+  ,"leaveNoBalance": "No balance"
+  ,"permModuleExcel": "Combined Excel"
+  ,"permUiAttendanceRecordApprove": "Approve / unapprove buttons on the timesheet"
+  ,"permDescAttendanceRecordApprove": "Approve / unapprove timesheet entries"
+  ,"permUiAttendancePeriodLock": "Lock periods button on the Attendance screen"
+  ,"permDescAttendancePeriodLock": "Lock / reopen attendance periods"
+  ,"permUiExcelExport": "Export the combined Excel file (only sheets for permitted modules)"
+  ,"permDescExcelExport": "Export combined Excel"
+  ,"permUiExcelImport": "Import the combined Excel file (only sheets for permitted modules)"
+  ,"permDescExcelImport": "Import combined Excel"
 }

@@ -1057,4 +1057,34 @@
   ,"impersonationBanner": "Đang xem công ty {company} với quyền quản trị hệ thống"
   ,"@impersonationBanner": { "placeholders": { "company": { "type": "String" } } }
   ,"impersonationExit": "Thoát"
+  ,"periodLockButton": "Khoá kỳ công"
+  ,"periodLockTitle": "Khoá kỳ công năm {year}"
+  ,"@periodLockTitle": { "placeholders": { "year": { "type": "String" } } }
+  ,"periodLabel": "Kỳ {month}/{year}"
+  ,"@periodLabel": { "placeholders": { "month": { "type": "String" }, "year": { "type": "String" } } }
+  ,"periodLocked": "Đã khoá"
+  ,"periodOpen": "Đang mở"
+  ,"periodLockAction": "Khoá"
+  ,"periodUnlockAction": "Mở lại"
+  ,"periodLockConfirm": "Khoá kỳ {period} ({from} – {to})? Sau khi khoá sẽ không ai sửa được chấm công, đơn từ, nghỉ phép và phân ca trong khoảng này."
+  ,"@periodLockConfirm": { "placeholders": { "period": { "type": "String" }, "from": { "type": "String" }, "to": { "type": "String" } } }
+  ,"periodUnlockReasonHint": "Lý do mở lại kỳ (bắt buộc)"
+  ,"periodLockedAt": "Khoá lúc {time}"
+  ,"@periodLockedAt": { "placeholders": { "time": { "type": "String" } } }
+  ,"periodReopened": "Đã mở lại: {reason}"
+  ,"@periodReopened": { "placeholders": { "reason": { "type": "String" } } }
+  ,"periodLockDone": "Đã khoá kỳ công"
+  ,"periodUnlockDone": "Đã mở lại kỳ công"
+  ,"leaveRequiresBalance": "Trừ vào quỹ phép"
+  ,"leaveRequiresBalanceHint": "Tắt cho loại nghỉ không giới hạn (nghỉ không lương, ốm, chế độ…): không cần cấp quỹ, không trừ phép"
+  ,"leaveNoBalance": "Không trừ quỹ"
+  ,"permModuleExcel": "Excel tổng hợp"
+  ,"permUiAttendanceRecordApprove": "Nút duyệt / bỏ duyệt trên bảng công"
+  ,"permDescAttendanceRecordApprove": "Duyệt / bỏ duyệt bảng công"
+  ,"permUiAttendancePeriodLock": "Nút Khoá kỳ công trên màn Chấm công"
+  ,"permDescAttendancePeriodLock": "Khoá / mở lại kỳ công"
+  ,"permUiExcelExport": "Xuất file Excel tổng hợp (chỉ các sheet thuộc module có quyền)"
+  ,"permDescExcelExport": "Xuất Excel tổng hợp"
+  ,"permUiExcelImport": "Nhập file Excel tổng hợp (chỉ các sheet thuộc module có quyền)"
+  ,"permDescExcelImport": "Nhập Excel tổng hợp"
 }

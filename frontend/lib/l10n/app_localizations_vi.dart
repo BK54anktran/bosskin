@@ -3015,4 +3015,94 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get impersonationExit => 'Thoát';
+
+  @override
+  String get periodLockButton => 'Khoá kỳ công';
+
+  @override
+  String periodLockTitle(String year) {
+    return 'Khoá kỳ công năm $year';
+  }
+
+  @override
+  String periodLabel(String month, String year) {
+    return 'Kỳ $month/$year';
+  }
+
+  @override
+  String get periodLocked => 'Đã khoá';
+
+  @override
+  String get periodOpen => 'Đang mở';
+
+  @override
+  String get periodLockAction => 'Khoá';
+
+  @override
+  String get periodUnlockAction => 'Mở lại';
+
+  @override
+  String periodLockConfirm(String period, String from, String to) {
+    return 'Khoá kỳ $period ($from – $to)? Sau khi khoá sẽ không ai sửa được chấm công, đơn từ, nghỉ phép và phân ca trong khoảng này.';
+  }
+
+  @override
+  String get periodUnlockReasonHint => 'Lý do mở lại kỳ (bắt buộc)';
+
+  @override
+  String periodLockedAt(String time) {
+    return 'Khoá lúc $time';
+  }
+
+  @override
+  String periodReopened(String reason) {
+    return 'Đã mở lại: $reason';
+  }
+
+  @override
+  String get periodLockDone => 'Đã khoá kỳ công';
+
+  @override
+  String get periodUnlockDone => 'Đã mở lại kỳ công';
+
+  @override
+  String get leaveRequiresBalance => 'Trừ vào quỹ phép';
+
+  @override
+  String get leaveRequiresBalanceHint =>
+      'Tắt cho loại nghỉ không giới hạn (nghỉ không lương, ốm, chế độ…): không cần cấp quỹ, không trừ phép';
+
+  @override
+  String get leaveNoBalance => 'Không trừ quỹ';
+
+  @override
+  String get permModuleExcel => 'Excel tổng hợp';
+
+  @override
+  String get permUiAttendanceRecordApprove =>
+      'Nút duyệt / bỏ duyệt trên bảng công';
+
+  @override
+  String get permDescAttendanceRecordApprove => 'Duyệt / bỏ duyệt bảng công';
+
+  @override
+  String get permUiAttendancePeriodLock =>
+      'Nút Khoá kỳ công trên màn Chấm công';
+
+  @override
+  String get permDescAttendancePeriodLock => 'Khoá / mở lại kỳ công';
+
+  @override
+  String get permUiExcelExport =>
+      'Xuất file Excel tổng hợp (chỉ các sheet thuộc module có quyền)';
+
+  @override
+  String get permDescExcelExport => 'Xuất Excel tổng hợp';
+
+  @override
+  String get permUiExcelImport =>
+      'Nhập file Excel tổng hợp (chỉ các sheet thuộc module có quyền)';
+
+  @override
+  String get permDescExcelImport => 'Nhập Excel tổng hợp';
 }

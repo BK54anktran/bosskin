@@ -169,7 +169,10 @@ public class AuthService {
     // ── System admin login ──────────────────────────────────────────────
     /** Đăng xuất: thu hồi phiên refresh. Token sai/hết hạn thì bỏ qua (đăng xuất luôn thành công). */
     @org.springframework.transaction.annotation.Transactional
-    public void logout(String refreshToken) {
+    public void logout(String refreshToken, String fcmToken) {
+        if (fcmToken != null && !fcmToken.isBlank()) {
+            userRepository.clearFcmToken(fcmToken);
+        }
         if (refreshToken == null || refreshToken.isBlank()) return;
         try {
             Claims claims = jwtUtil.extractAllClaimsIgnoreExpiry(refreshToken);

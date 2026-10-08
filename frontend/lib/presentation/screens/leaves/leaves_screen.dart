@@ -880,7 +880,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '${s.leaveUnit}: ${t['unit']} • ${s.leaveDeductPerDay}: ${t['deductPerDay'] ?? 1} • ${t['paid'] == true ? s.leavePaid : s.leaveUnpaid}',
+                            '${s.leaveUnit}: ${t['unit']} • ${s.leaveDeductPerDay}: ${t['deductPerDay'] ?? 1} • ${t['paid'] == true ? s.leavePaid : s.leaveUnpaid}${t['requiresBalance'] == false ? ' • ${s.leaveNoBalance}' : ''}',
                             style: const TextStyle(
                                 fontSize: 13,
                                 color: AppTheme.textSecondary),
@@ -1478,6 +1478,7 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
   final _descCtrl = TextEditingController();
   String _unit = 'DAY';
   bool _paid = true;
+  bool _requiresBalance = true;
   bool _active = true;
 
   @override
@@ -1491,6 +1492,7 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
       _descCtrl.text = (i['description'] ?? '').toString();
       _unit = (i['unit'] ?? 'DAY').toString();
       _paid = i['paid'] == true;
+      _requiresBalance = (i['requiresBalance'] ?? _paid) == true;
       _active = i['active'] == true;
     }
   }
@@ -1548,6 +1550,13 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
+                title: Text(s.leaveRequiresBalance),
+                subtitle: Text(s.leaveRequiresBalanceHint),
+                value: _requiresBalance,
+                onChanged: (v) => setState(() => _requiresBalance = v),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
                 title: Text(s.activate),
                 value: _active,
                 onChanged: (v) => setState(() => _active = v),
@@ -1573,6 +1582,7 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
                   ? double.parse(_deductPerDayCtrl.text.trim())
                   : 1,
               'paid': _paid,
+              'requiresBalance': _requiresBalance,
               'active': _active,
               'description': _descCtrl.text.trim(),
             };
