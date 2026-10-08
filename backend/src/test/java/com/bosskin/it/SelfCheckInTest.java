@@ -136,4 +136,19 @@ class SelfCheckInTest extends IntegrationTest {
         assertThat(checkIn(token, MON.atTime(8, 1))).isEqualTo(403);
         assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON)).hasSize(1);
     }
+
+    @Test
+    @DisplayName("A19 · Vị trí giả lập (isMocked) bị từ chối")
+    void mockedLocation_isRejected() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        c.assign(e, "HC", MON);
+        clock.set(MON.atTime(7, 58));
+
+        var res = api.post(c.tokenOf(e), "/api/v1/attendances/self/check-in",
+            Map.of("latitude", 10.77, "longitude", 106.70, "isMocked", true, "accuracy", 5.0));
+
+        assertThat(res.status()).isEqualTo(403);
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON)).isEmpty();
+    }
 }

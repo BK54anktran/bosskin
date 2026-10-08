@@ -899,47 +899,85 @@ public class ShiftExcelService {
             .map(com.bosskin.entity.Employee::getId)
             .distinct().toList();
 
-        // ── Bulk soft-delete old assignments (1 query) ────────────────────────
-        int deleted = 0;
-        if (!affectedEmpIds.isEmpty()) {
-            deleted = assignRepo.softDeleteByEmployeeIdsAndDateRange(affectedEmpIds, minDate, maxDate);
-        }
+        // ── Đối chiếu từng ngày rồi cập nhật (A6) ─────────────────────────────
+        // Trước đây xoá mềm toàn bộ phân ca trong khoảng ngày rồi tạo mới (id mới) → dòng công
+        // cũ trỏ vào phân ca đã xoá, mất khỏi bảng công. Nay: giữ phân ca trùng, chỉ tạo phần
+        // thiếu, xoá phần thừa; phân ca đã có dữ liệu chấm công thì giữ lại và báo "conflicts".
+        Set<Long> affected = new java.util.HashSet<>(affectedEmpIds);
+        Map<String, List<ShiftAssignment>> existingByDay = assignRepo
+            .findByCompanyAndDateRange(companyId, minDate, maxDate).stream()
+            .filter(a -> affected.contains(a.getEmployee().getId()))
+            .collect(Collectors.groupingBy(a -> a.getEmployee().getId() + "|" + a.getWorkDate()));
 
-        // ── Build new assignments in memory ───────────────────────────────────
         List<ShiftAssignment> toCreate = new ArrayList<>();
-        int skipped = 0;
+        int skipped = 0, deleted = 0, kept = 0, conflicts = 0;
         for (Map.Entry<AssignDayKey, List<String>> entry : grouped.entrySet()) {
             AssignDayKey day = entry.getKey();
             com.bosskin.entity.Employee emp = empMap.get(day.getEmpCode());
             if (emp == null) { skipped++; continue; }
-            List<String> desired = entry.getValue().stream()
+            List<String> desiredRaw = entry.getValue().stream()
                 .filter(Objects::nonNull).map(String::trim).filter(s -> !s.isBlank()).toList();
+
+            // Dựng danh sách phân ca mong muốn của ngày
+            List<ShiftAssignment> desired = new ArrayList<>();
             boolean invalid = false;
-            for (String raw : desired) {
+            for (String raw : desiredRaw) {
                 WorkShift shift = shiftMap.get(raw);
                 if (shift != null) {
                     ShiftAssignment a = ShiftAssignment.builder()
                         .employee(emp).shift(shift).workDate(day.getDate()).build();
                     applyAssignSnapshot(a, shift);
-                    toCreate.add(a);
+                    desired.add(a);
                 } else {
                     LocalTime[] custom = parseCustomTime(raw);
                     if (custom == null) { invalid = true; break; }
-                    toCreate.add(ShiftAssignment.builder()
+                    desired.add(ShiftAssignment.builder()
                         .employee(emp).workDate(day.getDate())
                         .customStartTime(custom[0]).customEndTime(custom[1])
                         .customBreakStart(custom[2]).customBreakEnd(custom[3])
                         .build());
                 }
             }
-            if (invalid) skipped++;
+            if (invalid) { skipped++; continue; }
+
+            List<ShiftAssignment> existing = new ArrayList<>(
+                existingByDay.getOrDefault(emp.getId() + "|" + day.getDate(), List.of()));
+            // Giữ phân ca đã có nếu trùng ca mong muốn
+            for (ShiftAssignment want : desired) {
+                ShiftAssignment match = existing.stream()
+                    .filter(ex -> assignKey(ex).equals(assignKey(want))).findFirst().orElse(null);
+                if (match != null) {
+                    existing.remove(match);
+                    kept++;
+                } else {
+                    toCreate.add(want);
+                }
+            }
+            // Phần còn lại không còn trong file → xoá, trừ khi đã có dữ liệu chấm công
+            for (ShiftAssignment extra : existing) {
+                if (extra.isApproved() || shiftService.hasAttendanceData(emp.getId(), day.getDate(), extra.getId())) {
+                    conflicts++;
+                } else {
+                    assignRepo.softDeleteById(extra.getId());
+                    deleted++;
+                }
+            }
         }
 
-        // ── Batch insert (1 query) ─────────────────────────────────────────────
         assignRepo.saveAll(toCreate);
 
         return Map.of("created", createdShifts, "updated", updatedShifts,
-                      "assigned", toCreate.size(), "deleted", deleted, "skipped", skipped);
+                      "assigned", toCreate.size(), "kept", kept, "deleted", deleted,
+                      "skipped", skipped, "conflicts", conflicts);
+    }
+
+    /** Khoá so sánh phân ca: cùng ca mẫu, hoặc cùng giờ tuỳ chỉnh. */
+    private static String assignKey(ShiftAssignment a) {
+        if (a.getShift() != null && a.getCustomStartTime() == null && a.getCustomEndTime() == null) {
+            return "S:" + a.getShift().getId();
+        }
+        return "C:" + a.getCustomStartTime() + "-" + a.getCustomEndTime()
+            + "-" + a.getCustomBreakStart() + "-" + a.getCustomBreakEnd();
     }
 
     private static void applyAssignSnapshot(ShiftAssignment a, WorkShift shift) {

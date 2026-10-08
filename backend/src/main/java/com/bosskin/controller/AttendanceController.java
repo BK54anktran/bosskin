@@ -1063,7 +1063,7 @@ public class AttendanceController {
     @PostMapping("/self/check-in")
     public ResponseEntity<AttendanceDTO.SelfTodayResponse> selfCheckIn(
             @AuthenticationPrincipal User user,
-            @RequestBody(required = false) Map<String, Double> body,
+            @RequestBody(required = false) Map<String, Object> body,
             Locale locale) {
         requirePermission(user, "ATTENDANCE_SELF");
         var employee = getSelfEmployee(user);
@@ -1072,8 +1072,9 @@ public class AttendanceController {
         ShiftTarget target = requireCheckInTarget(employee, getSelfCompany(user), now);
         periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
         Attendance.Status status = checkInStatus(employee, target, now);
-        Double lat = body != null ? body.get("latitude") : null;
-        Double lng = body != null ? body.get("longitude") : null;
+        Double lat = numberOrNull(body, "latitude");
+        Double lng = numberOrNull(body, "longitude");
+        validateGpsSignal(employee, body);
         validateCheckInLocation(employee, lat, lng);
         target.attendance().setCheckIn(now);
         target.attendance().setStatus(status);
@@ -1087,7 +1088,7 @@ public class AttendanceController {
     @PostMapping("/self/check-out")
     public ResponseEntity<AttendanceDTO.SelfTodayResponse> selfCheckOut(
             @AuthenticationPrincipal User user,
-            @RequestBody(required = false) Map<String, Double> body,
+            @RequestBody(required = false) Map<String, Object> body,
             Locale locale) {
         requirePermission(user, "ATTENDANCE_SELF");
         var employee = getSelfEmployee(user);
@@ -1095,8 +1096,9 @@ public class AttendanceController {
         LocalDateTime checkOut = LocalDateTime.now(clock);
         ShiftTarget target = requireCheckOutTarget(employee, getSelfCompany(user), checkOut);
         periodLockService.requireOpen(user.getCompany().getId(), target.attendance().getDate());
-        Double lat = body != null ? body.get("latitude") : null;
-        Double lng = body != null ? body.get("longitude") : null;
+        Double lat = numberOrNull(body, "latitude");
+        Double lng = numberOrNull(body, "longitude");
+        validateGpsSignal(employee, body);
         validateCheckInLocation(employee, lat, lng);
         target.attendance().setCheckOut(checkOut);
         target.attendance().setCheckOutLatitude(lat);
@@ -1352,6 +1354,29 @@ public class AttendanceController {
         int diff = (in.toSecondOfDay() / 60 - start.toSecondOfDay() / 60 + 1440) % 1440;
         if (diff > 720) diff -= 1440; // vào trước giờ bắt đầu (kể cả ca qua nửa đêm)
         return diff > tolerance ? Attendance.Status.LATE : Attendance.Status.PRESENT;
+    }
+
+    private static Double numberOrNull(Map<String, Object> body, String key) {
+        Object v = body != null ? body.get(key) : null;
+        return v instanceof Number n ? n.doubleValue() : null;
+    }
+
+    /** Sai số GPS tối đa (mét) khi công ty bật kiểm vị trí. */
+    private static final double MAX_GPS_ACCURACY_METERS = 150;
+
+    /**
+     * Chống gian lận vị trí (A19): từ chối toạ độ giả lập (app báo isMocked) và toạ độ
+     * quá thiếu chính xác khi công ty bật kiểm vị trí.
+     */
+    private void validateGpsSignal(Employee employee, Map<String, Object> body) {
+        if (body != null && Boolean.TRUE.equals(body.get("isMocked"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.mock_location");
+        }
+        Double accuracy = numberOrNull(body, "accuracy");
+        if (accuracy != null && accuracy > MAX_GPS_ACCURACY_METERS
+            && employee.getCompany().isLocationCheckEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.gps_inaccurate");
+        }
     }
 
     private ShiftTarget findCheckInTarget(Employee employee, Company company, LocalDateTime now) {
