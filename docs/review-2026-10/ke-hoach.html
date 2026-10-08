@@ -18,6 +18,11 @@
 .ms .when b{display:block;font-size:22px;color:var(--brand);line-height:1.2}
 .exit{margin-top:8px;font-size:14px;color:var(--ink-2)}
 .exit b{color:var(--ok)}
+.st{display:inline-block;margin-top:6px;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.st.done{background:var(--low-bg);color:var(--ok)}
+.st.todo{background:var(--brand-soft);color:var(--ink-3)}
+.muted{color:var(--ink-3);font-size:13px}
+.note ul.clean{margin:8px 0 0}
 @media (max-width:700px){.ms{grid-template-columns:1fr;gap:6px}}
 </style>
 </head>
@@ -40,6 +45,33 @@
     <p>Hệ thống <b>chưa chạy production</b>, mới có môi trường dev. Đây là lợi thế lớn: chưa có dữ liệu khách hàng, nên được phép làm sạch database và sửa thẳng schema thay vì viết migration vá. Kế hoạch dưới đây sắp các việc theo thứ tự để mỗi phần code chỉ phải động vào <b>một lần</b>, và việc làm trước là nền cho việc làm sau.</p>
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
+
+  <h2>Tiến độ <span class="tag">cập nhật 08/10/2026</span></h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
+    <tbody>
+      <tr><td><b>0</b> · Khung test</td><td><span class="st done">Đã xong 08/10</span></td><td><code>golive/m0-tests</code></td>
+        <td>Testcontainers MySQL 8 + toàn bộ migration; <code>fixture.standardCompany()</code>; 16 test <code>known-bug</code> tái hiện lỗi; CI chạy test trước khi deploy.
+          <br><span class="muted">Chuyển sang Mốc 2: test ca đêm (cần đưa Clock vào code chấm công trước).</span></td></tr>
+      <tr><td><b>1</b> · Schema & bảo mật</td><td><span class="st done">Đã xong 08/10</span></td><td><code>golive/m1-security</code> → đã gộp vào <code>main</code></td>
+        <td>41 test xanh. Đã sửa S1–S10, S12, S13, D1–D4, A1, A2, A9; gộp V1–V117 thành <code>V1__baseline.sql</code>; thêm quyền <code>ATTENDANCE_APPROVE</code>, <code>EXCEL_EXPORT</code>, <code>EXCEL_IMPORT</code>.
+          <br><span class="muted">Còn lại: access token 24 giờ (rút ngắn cùng Mốc 4), chính sách mật khẩu và 2FA, phạm vi "toàn công ty" ghi tường minh thay vì suy từ rỗng.</span></td></tr>
+      <tr><td><b>2</b> · Chấm công & khoá kỳ</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td>Test <code>known-bug</code> còn đỏ: A5, A7.</td></tr>
+      <tr><td><b>2b</b> · Ca đa năng</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
+      <tr><td><b>3</b> · Phép & lương</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td>Test <code>known-bug</code> còn đỏ: L1, L3, L8.</td></tr>
+      <tr><td><b>4</b> · Frontend</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td>Đã làm trước: bản dịch mã lỗi mới, nút duyệt công theo quyền <code>ATTENDANCE_APPROVE</code>.</td></tr>
+      <tr><td><b>5</b> · Vận hành & UAT</td><td><span class="st todo">Chưa bắt đầu</span></td><td>—</td><td></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note warn"><b>Việc cần làm ngoài code</b>
+    <ul class="clean">
+      <li>Trước khi push <code>main</code> (tự deploy): đặt <code>JWT_SECRET</code>, <code>BOOTSTRAP_SYSADMIN_EMAIL/PASSWORD</code>, <code>CORS_ALLOWED_ORIGINS</code>, <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> trên Elastic Beanstalk và tạo lại DB (DB cũ ở V117 không chạy được baseline).</li>
+      <li>Thu hồi khoá Firebase cũ (từng nằm trong git) và tạo khoá mới — để sau theo quyết định 08/10.</li>
+      <li>Chạy <code>flutter analyze</code> cho 2 file frontend đã sửa (môi trường cloud không có Flutter).</li>
+      <li>Ghi chú cho Mốc 5: <code>Procfile</code> trỏ <code>target/bosskin-1.0.0.jar</code> nhưng CI nén jar ở thư mục gốc — kiểm lại khi dựng EB.</li>
+    </ul>
+  </div>
 
   <h2>Nguyên tắc sắp thứ tự</h2>
   <div class="grid g2">
@@ -75,8 +107,8 @@ gantt
   axisFormat %d/%m
   excludes weekends
   section Backend
-  Mốc 0 · Khung test và dữ liệu mẫu           :m0, 2026-10-12, 3d
-  Mốc 1 · Schema sạch và bảo mật              :crit, m1, after m0, 9d
+  Mốc 0 · Khung test và dữ liệu mẫu (xong)    :done, m0, 2026-10-08, 1d
+  Mốc 1 · Schema sạch và bảo mật (xong)       :done, m1, 2026-10-08, 1d
   Mốc 2 · Chấm công đúng và khoá kỳ           :crit, m2, after m1, 10d
   Mốc 2b · Ca đa năng                         :m2b, after m2, 6d
   Mốc 3a · Nghỉ phép                          :m3a, after m2b, 4d
@@ -97,7 +129,7 @@ gantt
   <h2>Các mốc chi tiết</h2>
 
   <div class="card ms">
-    <div class="when"><b>Mốc 0</b>3 ngày · BE</div>
+    <div class="when"><b>Mốc 0</b>3 ngày · BE<br><span class="st done">Đã xong 08/10</span></div>
     <div>
       <h3 style="margin-top:0">Khung test và dữ liệu mẫu</h3>
       <ul class="clean">
@@ -110,7 +142,7 @@ gantt
   </div>
 
   <div class="card ms" style="margin-top:14px">
-    <div class="when"><b>Mốc 1</b>9 ngày · BE</div>
+    <div class="when"><b>Mốc 1</b>9 ngày · BE<br><span class="st done">Đã xong 08/10</span></div>
     <div>
       <h3 style="margin-top:0">Schema sạch và bảo mật</h3>
       <p class="lead">Làm trước vì mọi mốc sau đều đọc/ghi các bảng này và đi qua lớp xác thực.</p>
