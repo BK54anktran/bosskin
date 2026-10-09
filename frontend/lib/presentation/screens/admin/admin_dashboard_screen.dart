@@ -329,6 +329,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     }
   }
 
+  /// Bước C — buộc quản trị (có ROLE_MANAGE) của công ty dùng 2FA.
+  Future<void> _toggleRequire2fa(int id, bool current) async {
+    try {
+      await _dio.put('/companies/$id/require-admin-2fa', data: {'required': !current});
+      if (mounted) _loadCompanies();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(serverMsg(e))));
+      }
+    }
+  }
+
   Future<void> _toggleActive(int id, bool currentActive) async {
     try {
       await _dio.patch('/companies/$id/toggle-active');
@@ -814,6 +826,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             itemBuilder: (_, i) => _CompanyCard(
               company: _companies[i],
               onToggleActive: _toggleActive,
+              onToggleRequire2fa: _toggleRequire2fa,
               onImpersonate: _impersonateCompany,
             ),
           );
@@ -845,14 +858,17 @@ class _CompanyCard extends StatelessWidget {
   final Map<String, dynamic> company;
   final Future<void> Function(int id, bool currentActive) onToggleActive;
   final Future<void> Function(int id) onImpersonate;
+  final Future<void> Function(int id, bool current) onToggleRequire2fa;
 
-  const _CompanyCard({required this.company, required this.onToggleActive, required this.onImpersonate});
+  const _CompanyCard({required this.company, required this.onToggleActive, required this.onImpersonate,
+      required this.onToggleRequire2fa});
 
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final isActive = company['active'] as bool? ?? true;
     final empCount = company['employeeCount'] as int? ?? 0;
+    final require2fa = company['requireAdmin2fa'] as bool? ?? false;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -928,6 +944,15 @@ class _CompanyCard extends StatelessWidget {
                   ),
                   child: Text(isActive ? s.deactivate : s.activate, style: const TextStyle(fontSize: 12)),
                 ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Tooltip(
+              message: require2fa ? s.twoFactorCompanyRequiredOn : s.twoFactorCompanyRequiredOff,
+              child: IconButton(
+                onPressed: () => onToggleRequire2fa(company['id'] as int, require2fa),
+                icon: Icon(require2fa ? Icons.verified_user : Icons.shield_outlined,
+                    size: 18, color: require2fa ? AppTheme.secondary : const Color(0xFF94A3B8)),
               ),
             ),
           ]),

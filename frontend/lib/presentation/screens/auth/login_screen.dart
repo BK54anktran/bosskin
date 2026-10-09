@@ -9,6 +9,7 @@ import '../../../core/utils/dialog_utils.dart';
 import 'package:dio/dio.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/services/auth_service.dart';
+import 'two_factor_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -63,11 +64,19 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await AuthService.instance.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-        rememberMe: _rememberMe,
-      );
+      try {
+        await AuthService.instance.login(
+          _emailController.text.trim(),
+          _passwordController.text,
+          rememberMe: _rememberMe,
+        );
+      } on TwoFactorChallenge catch (ch) {
+        if (!mounted) return;
+        final ok = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(builder: (_) => TwoFactorScreen(challenge: ch)),
+        );
+        if (ok != true) return;
+      }
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_rememberMeKey, _rememberMe);
       if (_rememberMe) {
@@ -77,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       if (mounted) context.go(AppRoutes.dashboard);
     } catch (e) {
+      if (!mounted) return;
       final s = AppLocalizations.of(context);
       String msg = s.loginFailed;
       if (e is DioException) {

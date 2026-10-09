@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class User extends BaseEntity implements UserDetails {
+public class User extends BaseEntity implements UserDetails, com.bosskin.core.TwoFactorHolder {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -81,6 +81,18 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "must_change_password", nullable = false)
     @Builder.Default
     private boolean mustChangePassword = false;
+
+    /** Bước C — 2FA (TOTP). */
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled", nullable = false)
+    @Builder.Default
+    private boolean totpEnabled = false;
+
+    /** JSON mảng mã dự phòng đã băm bcrypt. */
+    @Column(name = "totp_recovery_codes", columnDefinition = "text")
+    private String totpRecoveryCodes;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default

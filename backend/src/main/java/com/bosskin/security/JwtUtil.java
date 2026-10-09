@@ -91,6 +91,30 @@ public class JwtUtil {
         return buildToken(claims, admin.getEmail(), expiration);
     }
 
+    // ── Bước C: phiếu chờ bước 2 (2FA) — 5 phút, không dùng làm access token ──
+    public static final String TYPE_2FA = "2FA";
+    public static final long CHALLENGE_EXPIRATION_MS = 5 * 60 * 1000L;
+
+    /** {@code account}: COMPANY | SYSTEM; {@code purpose}: VERIFY (nhập mã) | SETUP (cài lần đầu). */
+    public String generateChallengeToken(String email, String account, String purpose, String deviceId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", TYPE_2FA);
+        claims.put("account", account);
+        claims.put("purpose", purpose);
+        if (deviceId != null) claims.put("deviceId", deviceId);
+        return buildToken(claims, email, CHALLENGE_EXPIRATION_MS);
+    }
+
+    /** Đọc phiếu 2FA còn hạn, sai loại/hết hạn → null. */
+    public Claims parseChallenge(String token) {
+        try {
+            Claims c = extractAllClaims(token);
+            return TYPE_2FA.equals(c.get("type")) ? c : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // ── Extract helpers ─────────────────────────────────────────────────
     public String  extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

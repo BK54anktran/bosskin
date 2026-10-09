@@ -27,6 +27,12 @@ public class AuthDTO {
         private String tokenType;
         private Long   expiresIn;
         private UserInfo user;
+        /** Bước C: null = đăng nhập xong; REQUIRED = nhập mã 2FA; SETUP_REQUIRED = phải cài 2FA trước. */
+        private String twoFactor;
+        /** Phiếu chờ bước 2 (gửi kèm mã ở /2fa/verify hoặc /2fa/setup, /2fa/enable). */
+        private String challengeToken;
+        /** Mã dự phòng — chỉ trả một lần khi vừa bật 2FA. */
+        private java.util.List<String> recoveryCodes;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -58,5 +64,29 @@ public class AuthDTO {
         private String refreshToken;
         /** FCM token của thiết bị đang đăng xuất — backend gỡ để máy không nhận thông báo của tài khoản cũ. */
         private String fcmToken;
+    }
+
+    /** Bước C — bước 2 khi đăng nhập / cài 2FA. */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class TwoFactorRequest {
+        private String challengeToken;
+        /** Mã 6 số từ app, hoặc mã dự phòng dạng xxxx-xxxx. */
+        private String code;
+        /** Chỉ dùng khi tắt 2FA. */
+        private String password;
+    }
+
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class TwoFactorSetupResponse {
+        private String secret;
+        private String otpauthUri;
+    }
+
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class TwoFactorStatus {
+        private boolean enabled;
+        /** Công ty bắt buộc 2FA với tài khoản này (không tắt được). */
+        private boolean required;
+        private int recoveryCodesLeft;
     }
 }

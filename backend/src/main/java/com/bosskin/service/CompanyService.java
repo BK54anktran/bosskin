@@ -140,6 +140,7 @@ public class CompanyService {
             .domain(c.getDomain()).address(c.getAddress())
             .phone(c.getPhone()).email(c.getEmail())
             .active(c.isActive())
+            .requireAdmin2fa(c.isRequireAdmin2fa())
             .selfAttendanceEnabled(c.isSelfAttendanceEnabled())
             .employeeCount(empCount)
             .adminEmail(adminEmail)

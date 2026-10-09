@@ -3980,4 +3980,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActAttendanceBulkApprove => 'Attendance approved in bulk';
+
+  @override
+  String get twoFactorTitle => 'Two-factor authentication';
+
+  @override
+  String get twoFactorSetupDesc =>
+      'Scan the QR code with an authenticator app (Google Authenticator, Microsoft Authenticator…), then enter the 6-digit code it shows.';
+
+  @override
+  String get twoFactorVerifyDesc =>
+      'Enter the 6-digit code from your authenticator app.';
+
+  @override
+  String get twoFactorManualKey => 'Can\'t scan? Enter this key in the app:';
+
+  @override
+  String get twoFactorCodeLabel => 'Verification code';
+
+  @override
+  String get twoFactorRecoveryHint => 'Lost your phone? Enter a recovery code';
+
+  @override
+  String get twoFactorEnableButton => 'Turn on two-factor';
+
+  @override
+  String get twoFactorVerifyButton => 'Verify';
+
+  @override
+  String get twoFactorDisableButton => 'Turn off two-factor';
+
+  @override
+  String get twoFactorRecoveryTitle => 'Save your recovery codes';
+
+  @override
+  String get twoFactorRecoveryDesc =>
+      'Each code works once if you lose your phone. They are shown only now — copy them somewhere safe.';
+
+  @override
+  String get twoFactorCopyCodes => 'Copy codes';
+
+  @override
+  String get twoFactorSavedContinue => 'Saved, continue';
+
+  @override
+  String get twoFactorOn => 'On';
+
+  @override
+  String get twoFactorOff => 'Off';
+
+  @override
+  String get twoFactorProfileDesc =>
+      'When on, signing in also needs a code from the authenticator app on your phone.';
+
+  @override
+  String twoFactorCodesLeft(String count) {
+    return '$count recovery codes left';
+  }
+
+  @override
+  String get twoFactorRequiredByCompany =>
+      'Your company requires two-factor for administrators.';
+
+  @override
+  String get twoFactorDisabled => 'Two-factor authentication turned off';
+
+  @override
+  String get twoFactorResetTooltip => 'Reset two-factor';
+
+  @override
+  String twoFactorResetConfirm(String name) {
+    return 'Reset two-factor for $name? Their next sign-in needs only the password; they can turn it on again in Profile.';
+  }
+
+  @override
+  String get twoFactorCompanyRequiredOn =>
+      'Admins must use 2FA — click to stop requiring';
+
+  @override
+  String get twoFactorCompanyRequiredOff => 'Require 2FA for admins';
+
+  @override
+  String get auditAct2faEnable => 'Two-factor turned on';
+
+  @override
+  String get auditAct2faDisable => 'Two-factor turned off';
+
+  @override
+  String get auditAct2faReset => 'Two-factor reset for a user';
+
+  @override
+  String get auditActCompanyRequire2fa => 'Admin 2FA requirement changed';
 }

@@ -51,6 +51,10 @@ server:
     connection-timeout: 120000   # 2 phút cho import file lớn
 
 app:
+  security:
+    # Bước C: system admin luôn phải dùng 2FA (TOTP). Chỉ tắt cho test tự động.
+    require-sysadmin-2fa: ${REQUIRE_SYSADMIN_2FA:true}
+
   # System admin đầu tiên, chỉ dùng khi DB chưa có system admin nào (xem SystemAdminBootstrap)
   bootstrap:
     sysadmin-email: ${BOOTSTRAP_SYSADMIN_EMAIL:}

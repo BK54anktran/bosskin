@@ -4,6 +4,7 @@ import '../../../core/constants/app_constants.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/services/auth_service.dart';
+import '../auth/two_factor_screen.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -34,10 +35,18 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       _errorMessage = null;
     });
     try {
-      await AuthService.instance.adminLogin(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      try {
+        await AuthService.instance.adminLogin(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+      } on TwoFactorChallenge catch (ch) {
+        if (!mounted) return;
+        final ok = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(builder: (_) => TwoFactorScreen(challenge: ch)),
+        );
+        if (ok != true) return;
+      }
       if (mounted) context.go(AppRoutes.adminDashboard);
     } catch (e) {
       setState(() => _errorMessage = AppLocalizations.of(context).loginFailed);

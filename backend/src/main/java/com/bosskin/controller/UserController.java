@@ -292,6 +292,7 @@ public class UserController {
             ? user.getEmployee().getDepartment().getId() : null;
         map.put("departmentId", departmentId);
         map.put("enabled", user.isEnabled());
+        map.put("totpEnabled", user.isTotpEnabled());
         List<Map<String, Object>> roleList = user.getRoles().stream()
             .map(r -> {
                 Map<String, Object> rm = new LinkedHashMap<>();

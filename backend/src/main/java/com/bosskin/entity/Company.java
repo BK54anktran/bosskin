@@ -72,6 +72,11 @@ public class Company extends BaseEntity {
     @Builder.Default
     private boolean deviceBindingEnabled = false;
 
+    /** Bước C — bắt buộc 2FA với người có quyền ROLE_MANAGE (system admin bật). */
+    @Column(name = "require_admin_2fa", nullable = false)
+    @Builder.Default
+    private boolean requireAdmin2fa = false;
+
     @Column(name = "check_in_latitude")
     private Double checkInLatitude;
 

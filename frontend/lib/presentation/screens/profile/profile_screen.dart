@@ -11,6 +11,7 @@ import '../../../data/repositories/upload_repository.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../data/services/profile_service.dart';
+import 'two_factor_card.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
 
@@ -505,6 +506,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onCheckInOutMinutesChanged: (val) => setState(() => _checkInOutMinutes = val),
                 onSave: _saveNotificationSettings,
               ),
+              const SizedBox(height: 16),
+              const TwoFactorCard(),
               const SizedBox(height: 16),
               _InfoCard(
                 title: s.changePassword,

@@ -23,6 +23,7 @@ dependencies:
 
   # Local storage
   flutter_secure_storage: ^9.0.0
+  qr_flutter: ^4.1.0   # Bước C: mã QR cài 2FA
   shared_preferences: ^2.2.3
 
   # UI Components

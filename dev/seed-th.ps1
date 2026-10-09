@@ -3,6 +3,7 @@
   Gọi API backend (http://localhost:8080) nên dữ liệu đi qua đúng nghiệp vụ.
   Cần trong backend\.env: BOOTSTRAP_SYSADMIN_EMAIL / _PASSWORD (system admin) và
   SEED_USER_PASSWORD (mật khẩu chung cho mọi tài khoản TH company).
+  System admin bắt buộc 2FA: lần đầu script tự cài và ghi SEED_SYSADMIN_TOTP_SECRET vào .env (xem runbook mục 11).
   Muốn làm lại từ đầu: dev\reset-db.cmd rồi chạy lại script này.
 #>
 param([string]$Api = 'http://localhost:8080')
@@ -50,6 +51,48 @@ function Activate($email) {
   $t = Login $email $TMP
   Call PATCH '/api/v1/profile/password' @{ currentPassword = $TMP; newPassword = $PW; confirmPassword = $PW } $t | Out-Null
 }
+# ── 2FA system admin (bước C) ──────────────────────────────────────────────
+# System admin bắt buộc 2FA. Script đọc SEED_SYSADMIN_TOTP_SECRET trong backend\.env để tự sinh mã;
+# lần đầu (chưa cài) script tự cài, ghi khoá vào .env và in mã QR (otpauth) + mã dự phòng để thêm vào app.
+function Base32Decode([string]$s) {
+  $alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+  $bits = 0; $val = 0; $out = New-Object System.Collections.Generic.List[byte]
+  foreach ($c in $s.ToUpper().TrimEnd('=').ToCharArray()) {
+    $i = $alpha.IndexOf($c); if ($i -lt 0) { continue }
+    $val = ($val -shl 5) -bor $i; $bits += 5
+    if ($bits -ge 8) { $bits -= 8; $out.Add([byte](($val -shr $bits) -band 0xFF)) }
+  }
+  return ,$out.ToArray()
+}
+function Totp([string]$secret) {
+  $step = [long][Math]::Floor([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() / 30)
+  $msg = [BitConverter]::GetBytes($step); if ([BitConverter]::IsLittleEndian) { [Array]::Reverse($msg) }
+  $h = (New-Object System.Security.Cryptography.HMACSHA1 (,(Base32Decode $secret))).ComputeHash($msg)
+  $o = $h[19] -band 0x0F
+  $bin = (([int]$h[$o] -band 0x7F) -shl 24) -bor ([int]$h[$o+1] -shl 16) -bor ([int]$h[$o+2] -shl 8) -bor [int]$h[$o+3]
+  return ($bin % 1000000).ToString('000000')
+}
+function SysLogin {
+  $r = Call POST '/admin/auth/login' @{ email = $cfg['BOOTSTRAP_SYSADMIN_EMAIL']; password = $cfg['BOOTSTRAP_SYSADMIN_PASSWORD'] } $null
+  if (-not $r.twoFactor) { return $r.accessToken }
+  $ch = $r.challengeToken
+  if ($r.twoFactor -eq 'SETUP_REQUIRED') {
+    $setup = Call POST '/admin/auth/2fa/setup' @{ challengeToken = $ch } $null
+    $done = Call POST '/admin/auth/2fa/enable' @{ challengeToken = $ch; code = (Totp $setup.secret) } $null
+    Add-Content -Path $envFile -Encoding UTF8 -Value "`r`nSEED_SYSADMIN_TOTP_SECRET=$($setup.secret)"
+    $cfg['SEED_SYSADMIN_TOTP_SECRET'] = $setup.secret
+    Write-Host ''
+    Write-Host '!! Đã bật 2FA cho system admin. Thêm vào app xác thực bằng khoá hoặc liên kết dưới đây:' -ForegroundColor Yellow
+    Write-Host "   Khoá: $($setup.secret)"
+    Write-Host "   $($setup.otpauthUri)"
+    Write-Host "   Mã dự phòng (mỗi mã dùng 1 lần, chép lại cất kỹ): $($done.recoveryCodes -join ' ')"
+    Write-Host '   Khoá đã ghi vào backend\.env (SEED_SYSADMIN_TOTP_SECRET).'
+    return $done.accessToken
+  }
+  $sec = $cfg['SEED_SYSADMIN_TOTP_SECRET']
+  if (-not $sec) { throw 'System admin đã bật 2FA: thêm SEED_SYSADMIN_TOTP_SECRET=<khoá 2FA> vào backend\.env' }
+  return (Call POST '/admin/auth/2fa/verify' @{ challengeToken = $ch; code = (Totp $sec) } $null).accessToken
+}
 function D($d) { $d.ToString('yyyy-MM-dd') }
 function Items($r) { if ($r -is [array]) { return ,$r }; if ($null -ne $r.content) { return ,@($r.content) }; return ,@($r) }
 function Step($t) { Write-Host ''; Write-Host "== $t" }
@@ -58,7 +101,7 @@ if (-not (Test-Port 8080)) { throw 'Backend chưa chạy (cổng 8080). Chạy d
 
 # ── 1. Công ty ──────────────────────────────────────────────────────────────
 Step 'Công ty'
-$sys = Login $cfg['BOOTSTRAP_SYSADMIN_EMAIL'] $cfg['BOOTSTRAP_SYSADMIN_PASSWORD'] '/admin/auth/login'
+$sys = SysLogin
 $existing = Call GET '/admin/companies' $null $sys
 $list = Items $existing
 if ($list | Where-Object { $_.code -eq 'THCO' }) {

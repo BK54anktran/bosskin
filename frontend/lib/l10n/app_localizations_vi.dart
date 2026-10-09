@@ -3978,4 +3978,95 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActAttendanceBulkApprove => 'Duyệt công hàng loạt';
+
+  @override
+  String get twoFactorTitle => 'Xác thực 2 lớp';
+
+  @override
+  String get twoFactorSetupDesc =>
+      'Quét mã QR bằng ứng dụng xác thực (Google Authenticator, Microsoft Authenticator…), rồi nhập mã 6 số đang hiện.';
+
+  @override
+  String get twoFactorVerifyDesc => 'Nhập mã 6 số trong ứng dụng xác thực.';
+
+  @override
+  String get twoFactorManualKey =>
+      'Không quét được? Nhập khoá này vào ứng dụng:';
+
+  @override
+  String get twoFactorCodeLabel => 'Mã xác thực';
+
+  @override
+  String get twoFactorRecoveryHint => 'Mất điện thoại? Nhập một mã dự phòng';
+
+  @override
+  String get twoFactorEnableButton => 'Bật xác thực 2 lớp';
+
+  @override
+  String get twoFactorVerifyButton => 'Xác nhận';
+
+  @override
+  String get twoFactorDisableButton => 'Tắt xác thực 2 lớp';
+
+  @override
+  String get twoFactorRecoveryTitle => 'Lưu mã dự phòng';
+
+  @override
+  String get twoFactorRecoveryDesc =>
+      'Mỗi mã dùng được một lần khi mất điện thoại. Mã chỉ hiện lúc này — hãy chép lại và cất ở nơi an toàn.';
+
+  @override
+  String get twoFactorCopyCodes => 'Chép mã';
+
+  @override
+  String get twoFactorSavedContinue => 'Đã lưu, tiếp tục';
+
+  @override
+  String get twoFactorOn => 'Đang bật';
+
+  @override
+  String get twoFactorOff => 'Đang tắt';
+
+  @override
+  String get twoFactorProfileDesc =>
+      'Khi bật, đăng nhập cần thêm mã từ ứng dụng xác thực trên điện thoại.';
+
+  @override
+  String twoFactorCodesLeft(String count) {
+    return 'Còn $count mã dự phòng';
+  }
+
+  @override
+  String get twoFactorRequiredByCompany =>
+      'Công ty bắt buộc quản trị dùng xác thực 2 lớp.';
+
+  @override
+  String get twoFactorDisabled => 'Đã tắt xác thực 2 lớp';
+
+  @override
+  String get twoFactorResetTooltip => 'Gỡ xác thực 2 lớp';
+
+  @override
+  String twoFactorResetConfirm(String name) {
+    return 'Gỡ xác thực 2 lớp của $name? Lần đăng nhập tới chỉ cần mật khẩu; họ có thể bật lại trong Hồ sơ.';
+  }
+
+  @override
+  String get twoFactorCompanyRequiredOn =>
+      'Đang bắt buộc quản trị dùng 2FA — bấm để bỏ';
+
+  @override
+  String get twoFactorCompanyRequiredOff => 'Bắt buộc quản trị dùng 2FA';
+
+  @override
+  String get auditAct2faEnable => 'Bật xác thực 2 lớp';
+
+  @override
+  String get auditAct2faDisable => 'Tắt xác thực 2 lớp';
+
+  @override
+  String get auditAct2faReset => 'Gỡ xác thực 2 lớp của người khác';
+
+  @override
+  String get auditActCompanyRequire2fa => 'Bắt buộc 2FA cho quản trị';
 }

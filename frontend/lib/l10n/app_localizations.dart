@@ -7504,6 +7504,168 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Duyệt công hàng loạt'**
   String get auditActAttendanceBulkApprove;
+
+  /// No description provided for @twoFactorTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác thực 2 lớp'**
+  String get twoFactorTitle;
+
+  /// No description provided for @twoFactorSetupDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã QR bằng ứng dụng xác thực (Google Authenticator, Microsoft Authenticator…), rồi nhập mã 6 số đang hiện.'**
+  String get twoFactorSetupDesc;
+
+  /// No description provided for @twoFactorVerifyDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã 6 số trong ứng dụng xác thực.'**
+  String get twoFactorVerifyDesc;
+
+  /// No description provided for @twoFactorManualKey.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không quét được? Nhập khoá này vào ứng dụng:'**
+  String get twoFactorManualKey;
+
+  /// No description provided for @twoFactorCodeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã xác thực'**
+  String get twoFactorCodeLabel;
+
+  /// No description provided for @twoFactorRecoveryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất điện thoại? Nhập một mã dự phòng'**
+  String get twoFactorRecoveryHint;
+
+  /// No description provided for @twoFactorEnableButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật xác thực 2 lớp'**
+  String get twoFactorEnableButton;
+
+  /// No description provided for @twoFactorVerifyButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận'**
+  String get twoFactorVerifyButton;
+
+  /// No description provided for @twoFactorDisableButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt xác thực 2 lớp'**
+  String get twoFactorDisableButton;
+
+  /// No description provided for @twoFactorRecoveryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu mã dự phòng'**
+  String get twoFactorRecoveryTitle;
+
+  /// No description provided for @twoFactorRecoveryDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi mã dùng được một lần khi mất điện thoại. Mã chỉ hiện lúc này — hãy chép lại và cất ở nơi an toàn.'**
+  String get twoFactorRecoveryDesc;
+
+  /// No description provided for @twoFactorCopyCodes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chép mã'**
+  String get twoFactorCopyCodes;
+
+  /// No description provided for @twoFactorSavedContinue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu, tiếp tục'**
+  String get twoFactorSavedContinue;
+
+  /// No description provided for @twoFactorOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bật'**
+  String get twoFactorOn;
+
+  /// No description provided for @twoFactorOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tắt'**
+  String get twoFactorOff;
+
+  /// No description provided for @twoFactorProfileDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khi bật, đăng nhập cần thêm mã từ ứng dụng xác thực trên điện thoại.'**
+  String get twoFactorProfileDesc;
+
+  /// No description provided for @twoFactorCodesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {count} mã dự phòng'**
+  String twoFactorCodesLeft(String count);
+
+  /// No description provided for @twoFactorRequiredByCompany.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty bắt buộc quản trị dùng xác thực 2 lớp.'**
+  String get twoFactorRequiredByCompany;
+
+  /// No description provided for @twoFactorDisabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tắt xác thực 2 lớp'**
+  String get twoFactorDisabled;
+
+  /// No description provided for @twoFactorResetTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ xác thực 2 lớp'**
+  String get twoFactorResetTooltip;
+
+  /// No description provided for @twoFactorResetConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ xác thực 2 lớp của {name}? Lần đăng nhập tới chỉ cần mật khẩu; họ có thể bật lại trong Hồ sơ.'**
+  String twoFactorResetConfirm(String name);
+
+  /// No description provided for @twoFactorCompanyRequiredOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bắt buộc quản trị dùng 2FA — bấm để bỏ'**
+  String get twoFactorCompanyRequiredOn;
+
+  /// No description provided for @twoFactorCompanyRequiredOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc quản trị dùng 2FA'**
+  String get twoFactorCompanyRequiredOff;
+
+  /// No description provided for @auditAct2faEnable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật xác thực 2 lớp'**
+  String get auditAct2faEnable;
+
+  /// No description provided for @auditAct2faDisable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt xác thực 2 lớp'**
+  String get auditAct2faDisable;
+
+  /// No description provided for @auditAct2faReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ xác thực 2 lớp của người khác'**
+  String get auditAct2faReset;
+
+  /// No description provided for @auditActCompanyRequire2fa.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc 2FA cho quản trị'**
+  String get auditActCompanyRequire2fa;
 }
 
 class _AppLocalizationsDelegate

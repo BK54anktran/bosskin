@@ -7,6 +7,7 @@ class AppUser {
   final String? avatar;
   final int? departmentId;
   final bool enabled;
+  final bool totpEnabled;
   final List<AppRole> roles;
   final List<String> directPermissions;
 
@@ -17,6 +18,7 @@ class AppUser {
     this.avatar,
     this.departmentId,
     required this.enabled,
+    this.totpEnabled = false,
     required this.roles,
     this.directPermissions = const [],
   });
@@ -28,6 +30,7 @@ class AppUser {
         avatar: json['avatar'] as String?,
         departmentId: json['departmentId'] as int?,
         enabled: json['enabled'] as bool? ?? true,
+        totpEnabled: json['totpEnabled'] as bool? ?? false,
         roles: (json['roles'] as List<dynamic>? ?? [])
             .map((e) => AppRole.fromJson(e as Map<String, dynamic>))
             .toList(),

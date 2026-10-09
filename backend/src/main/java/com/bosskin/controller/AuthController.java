@@ -38,4 +38,35 @@ public class AuthController {
     public ResponseEntity<AuthDTO.LoginResponse> systemLogin(@Valid @RequestBody AuthDTO.LoginRequest request) {
         return ResponseEntity.ok(authService.systemLogin(request));
     }
+
+    // ── Bước C: bước 2 đăng nhập (2FA) — dùng challengeToken nhận từ /login ──
+    @PostMapping("/api/v1/auth/2fa/verify")
+    public ResponseEntity<AuthDTO.LoginResponse> verify2fa(@RequestBody AuthDTO.TwoFactorRequest req) {
+        return ResponseEntity.ok(authService.verifyCompany(req));
+    }
+
+    @PostMapping("/api/v1/auth/2fa/setup")
+    public ResponseEntity<AuthDTO.TwoFactorSetupResponse> setup2fa(@RequestBody AuthDTO.TwoFactorRequest req) {
+        return ResponseEntity.ok(authService.setupCompany(req));
+    }
+
+    @PostMapping("/api/v1/auth/2fa/enable")
+    public ResponseEntity<AuthDTO.LoginResponse> enable2fa(@RequestBody AuthDTO.TwoFactorRequest req) {
+        return ResponseEntity.ok(authService.enableCompany(req));
+    }
+
+    @PostMapping("/admin/auth/2fa/verify")
+    public ResponseEntity<AuthDTO.LoginResponse> verifySystem2fa(@RequestBody AuthDTO.TwoFactorRequest req) {
+        return ResponseEntity.ok(authService.verifySystem(req));
+    }
+
+    @PostMapping("/admin/auth/2fa/setup")
+    public ResponseEntity<AuthDTO.TwoFactorSetupResponse> setupSystem2fa(@RequestBody AuthDTO.TwoFactorRequest req) {
+        return ResponseEntity.ok(authService.setupSystem(req));
+    }
+
+    @PostMapping("/admin/auth/2fa/enable")
+    public ResponseEntity<AuthDTO.LoginResponse> enableSystem2fa(@RequestBody AuthDTO.TwoFactorRequest req) {
+        return ResponseEntity.ok(authService.enableSystem(req));
+    }
 }

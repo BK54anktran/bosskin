@@ -14,6 +14,8 @@ public class CompanyResponse {
     private String phone;
     private String email;
     private boolean active;
+    /** Bước C: bắt buộc 2FA với quản trị công ty. */
+    private boolean requireAdmin2fa;
     private boolean selfAttendanceEnabled;
     private long   employeeCount;
     private String adminEmail;

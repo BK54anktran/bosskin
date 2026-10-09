@@ -75,6 +75,11 @@ frontend/lib/l10n/
 - JWT Bearer token
 - Roles (thứ tự quyền): `ADMIN > HR_MANAGER > HR_STAFF > EMPLOYEE`
 - Controller dùng `@AuthenticationPrincipal User user` để lấy user hiện tại
+- 2FA (TOTP, V11): `core/Totp`, `service/TwoFactorService`. Login trả `twoFactor` = `REQUIRED` | `SETUP_REQUIRED` + `challengeToken`
+  (JWT type `2FA`, 5 phút) thay cho access token → `/api/v1/auth/2fa/{verify,setup,enable}` (system admin: `/admin/auth/2fa/...`).
+  System admin luôn bắt buộc (`REQUIRE_SYSADMIN_2FA`, test tắt); admin công ty tuỳ chọn, system admin bật buộc theo công ty
+  (`companies.require_admin_2fa`, áp cho user có `ROLE_MANAGE`). FE: `TwoFactorChallenge` → `TwoFactorScreen`; Hồ sơ có `TwoFactorCard`;
+  gỡ 2FA cho NV ở tab Người dùng (`DELETE /users/{id}/2fa`).
 
 ---
 
@@ -326,8 +331,9 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V10** (`V10__attendance_lookup_indexes.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký
-→ Migration tiếp theo phải là **V11**
+Cao nhất: **V11** (`V11__two_factor.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+V10 index chấm công, V11 xác thực 2 lớp
+→ Migration tiếp theo phải là **V12**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ

@@ -6,6 +6,9 @@ spring:
     show-sql: false
 
 app:
+  security:
+    # Test nghiệp vụ đăng nhập system admin không cần 2FA; luồng 2FA có test riêng (TwoFactorTest)
+    require-sysadmin-2fa: false
   jwt:
     # Chỉ dùng cho test
     secret: test-only-jwt-secret-0123456789-abcdefghijklmnopqrstuvwxyz

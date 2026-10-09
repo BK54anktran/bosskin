@@ -14,6 +14,22 @@ import 'device_service.dart';
 
 enum UserType { company, system }
 
+/// Bước C — đăng nhập cần bước 2 (2FA). Màn đăng nhập bắt ngoại lệ này và mở màn nhập / cài mã.
+class TwoFactorChallenge implements Exception {
+  final String challengeToken;
+  final bool setupRequired;
+  final bool system;
+  final bool rememberMe;
+  const TwoFactorChallenge({
+    required this.challengeToken,
+    required this.setupRequired,
+    required this.system,
+    this.rememberMe = true,
+  });
+
+  String get base => system ? '/admin/auth/2fa' : '/api/v1/auth/2fa';
+}
+
 class AuthUser {
   final String email;
   final String? fullName;
@@ -347,15 +363,59 @@ class AuthService extends ChangeNotifier {
       },
       options: Options(headers: _requestHeaders()),
     );
+    final data = Map<String, dynamic>.from(res.data as Map);
+    if (data['twoFactor'] != null) {
+      throw TwoFactorChallenge(
+        challengeToken: data['challengeToken'] as String,
+        setupRequired: data['twoFactor'] == 'SETUP_REQUIRED',
+        system: false,
+        rememberMe: rememberMe,
+      );
+    }
+    return _applyCompanyLogin(data, rememberMe);
+  }
 
+  // ── Bước C: bước 2 đăng nhập ───────────────────────────────────────
+  /// Bắt đầu cài 2FA khi bị buộc: trả {secret, otpauthUri} để hiện mã QR.
+  Future<Map<String, dynamic>> twoFactorSetup(TwoFactorChallenge ch) async {
+    final res = await _dio.post('${ch.base}/setup',
+        data: {'challengeToken': ch.challengeToken},
+        options: Options(headers: _requestHeaders()));
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Nhập mã đầu tiên để bật 2FA rồi đăng nhập luôn; trả mã dự phòng (hiện một lần).
+  Future<List<String>> twoFactorEnable(TwoFactorChallenge ch, String code) async {
+    final res = await _dio.post('${ch.base}/enable',
+        data: {'challengeToken': ch.challengeToken, 'code': code},
+        options: Options(headers: _requestHeaders()));
+    final data = Map<String, dynamic>.from(res.data as Map);
+    if (ch.system) {
+      await _applyAdminLogin(data);
+    } else {
+      await _applyCompanyLogin(data, ch.rememberMe);
+    }
+    return ((data['recoveryCodes'] as List?) ?? const []).map((e) => e.toString()).toList();
+  }
+
+  /// Nhập mã 2FA (hoặc mã dự phòng) để hoàn tất đăng nhập.
+  Future<AuthUser> twoFactorVerify(TwoFactorChallenge ch, String code) async {
+    final res = await _dio.post('${ch.base}/verify',
+        data: {'challengeToken': ch.challengeToken, 'code': code},
+        options: Options(headers: _requestHeaders()));
+    final data = Map<String, dynamic>.from(res.data as Map);
+    return ch.system ? _applyAdminLogin(data) : _applyCompanyLogin(data, ch.rememberMe);
+  }
+
+  Future<AuthUser> _applyCompanyLogin(Map<String, dynamic> data, bool rememberMe) async {
     final token =
-        res.data['accessToken'] as String;
+        data['accessToken'] as String;
 
     final refreshToken =
-        res.data['refreshToken'] as String?;
+        data['refreshToken'] as String?;
 
     final userMap =
-        res.data['user'] as Map<String, dynamic>;
+        data['user'] as Map<String, dynamic>;
 
     final rawPerms = userMap['permissions'];
 
@@ -574,12 +634,23 @@ class AuthService extends ChangeNotifier {
       },
       options: Options(headers: _requestHeaders()),
     );
+    final data = Map<String, dynamic>.from(res.data as Map);
+    if (data['twoFactor'] != null) {
+      throw TwoFactorChallenge(
+        challengeToken: data['challengeToken'] as String,
+        setupRequired: data['twoFactor'] == 'SETUP_REQUIRED',
+        system: true,
+      );
+    }
+    return _applyAdminLogin(data);
+  }
 
+  Future<AuthUser> _applyAdminLogin(Map<String, dynamic> data) async {
     final token =
-        res.data['accessToken'] as String;
+        data['accessToken'] as String;
 
     final userMap =
-        res.data['user'] as Map<String, dynamic>;
+        data['user'] as Map<String, dynamic>;
 
     _currentUser = AuthUser(
       email: userMap['email'] as String,

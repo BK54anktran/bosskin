@@ -1100,6 +1100,33 @@ class _UsersTabState extends State<_UsersTab> {
     }
   }
 
+  /// Bước C — gỡ 2FA cho người mất điện thoại; lần đăng nhập sau không cần mã.
+  Future<void> _reset2fa(AppUser user) async {
+    final s = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.twoFactorResetTooltip),
+        content: Text(s.twoFactorResetConfirm(user.fullName ?? user.email)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.confirm)),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ApiService.instance.dio.delete('/users/${user.id}/2fa');
+      if (mounted) _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
@@ -1174,6 +1201,7 @@ class _UsersTabState extends State<_UsersTab> {
                         user: u,
                         onTap: () => _openRoleDialog(u),
                         onToggleEnabled: () => _toggleEnabled(u),
+                        onReset2fa: () => _reset2fa(u),
                       );
                     },
                   ),
@@ -1196,11 +1224,13 @@ class _UserCard extends StatelessWidget {
   final AppUser user;
   final VoidCallback onTap;
   final VoidCallback onToggleEnabled;
+  final VoidCallback onReset2fa;
 
   const _UserCard({
     required this.user,
     required this.onTap,
     required this.onToggleEnabled,
+    required this.onReset2fa,
   });
 
   @override
@@ -1310,6 +1340,15 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (user.totpEnabled)
+                PermissionGuard(
+                  permission: 'USER_MANAGE',
+                  child: IconButton(
+                    tooltip: s.twoFactorResetTooltip,
+                    icon: const Icon(Icons.phonelink_lock, size: 18, color: AppTheme.secondary),
+                    onPressed: onReset2fa,
+                  ),
+                ),
               PermissionGuard(
                 permission: 'USER_MANAGE',
                 child: Transform.scale(

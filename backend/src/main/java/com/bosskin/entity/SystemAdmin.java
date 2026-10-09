@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "system_admins")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class SystemAdmin extends BaseEntity implements UserDetails {
+public class SystemAdmin extends BaseEntity implements UserDetails, com.bosskin.core.TwoFactorHolder {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,6 +29,18 @@ public class SystemAdmin extends BaseEntity implements UserDetails {
     @Column(name = "enabled", nullable = false)
     @Builder.Default
     private boolean enabled = true;
+
+    /** Bước C — 2FA (TOTP). */
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled", nullable = false)
+    @Builder.Default
+    private boolean totpEnabled = false;
+
+    /** JSON mảng mã dự phòng đã băm bcrypt. */
+    @Column(name = "totp_recovery_codes", columnDefinition = "text")
+    private String totpRecoveryCodes;
 
     @Override public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_SYSTEM_ADMIN"));

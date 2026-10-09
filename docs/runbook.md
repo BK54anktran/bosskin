@@ -24,6 +24,7 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 | `BOOTSTRAP_SYSADMIN_EMAIL`, `BOOTSTRAP_SYSADMIN_PASSWORD` | Lần đầu | Chỉ dùng khi DB chưa có system admin. Xoá sau khi đăng nhập được |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có | Nội dung JSON hoặc base64. Không đặt → tắt push |
 | `AWS_S3_BUCKET`, `AWS_REGION` | Nên có | Trên EB dùng IAM role của instance, không cần `AWS_ACCESS_KEY` |
+| `REQUIRE_SYSADMIN_2FA` | Không | Mặc định `true`: system admin phải cài 2FA ở lần đăng nhập đầu. Chỉ đặt `false` khi khẩn cấp (mục 11) |
 | `JWT_EXPIRATION_MS` | Không | Mặc định 1800000 (30 phút) |
 | `LOG_LEVEL_APP` | Không | Mặc định `INFO` ở prod |
 | `DB_POOL_SIZE` | Không | Mặc định 10 |
@@ -93,7 +94,7 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 1. Tạo DB trống `bosskin` (utf8mb4) và user cho app.
 2. Đặt biến môi trường mục 2, kèm `BOOTSTRAP_SYSADMIN_*`.
 3. Chạy workflow deploy. Flyway tạo toàn bộ schema từ `V1`.
-4. Đăng nhập `/admin` bằng system admin, tạo công ty đầu tiên. Admin công ty phải đổi mật khẩu ở lần đăng nhập đầu.
+4. Đăng nhập `/admin` bằng system admin — lần đầu phải quét QR cài 2FA và cất mã dự phòng — rồi tạo công ty đầu tiên. Admin công ty phải đổi mật khẩu ở lần đăng nhập đầu.
 5. Xoá `BOOTSTRAP_SYSADMIN_PASSWORD` khỏi biến môi trường.
 
 ## 9. Môi trường dev (máy chủ dự án)
@@ -132,3 +133,16 @@ Chưa có secrets → APK vẫn build nhưng ký bằng khoá debug (chỉ để
 Build máy cá nhân: tạo `frontend/android/key.properties` (`storeFile=`, `storePassword=`, `keyAlias=`, `keyPassword=`)
 rồi `flutter build apk --release --dart-define=API_HOST=...`.
 
+## 11. Xác thực 2 lớp (2FA, Bước C)
+
+- **System admin**: luôn bắt buộc. Lần đăng nhập đầu hiện mã QR → quét bằng Google/Microsoft Authenticator → nhập mã → nhận 8 mã dự phòng (mỗi mã dùng 1 lần, chỉ hiện một lần).
+- **Admin công ty**: tự bật trong Hồ sơ. System admin có thể bắt buộc theo công ty (nút khiên trên thẻ công ty ở `/admin`):
+  người có quyền `ROLE_MANAGE` chưa cài sẽ phải cài ở lần đăng nhập tới và không tự tắt được.
+- **Nhân viên mất điện thoại**: đăng nhập bằng một mã dự phòng, hoặc người có quyền `USER_MANAGE` gỡ 2FA ở Phân quyền → Người dùng (biểu tượng khoá cạnh công tắc). Ghi nhật ký `2FA_RESET`.
+- **System admin mất điện thoại và hết mã dự phòng**: tạm đặt `REQUIRE_SYSADMIN_2FA=false` không giúp được vì tài khoản đã bật 2FA.
+  Gỡ trực tiếp trong DB (cần người có quyền DB, ghi lại lý do):
+  `UPDATE system_admins SET totp_enabled=0, totp_secret=NULL, totp_recovery_codes=NULL WHERE email='<email>';`
+  rồi đăng nhập lại và cài 2FA mới.
+- Đồng hồ máy chủ phải đúng (NTP): mã chấp nhận lệch ±30 giây.
+- Seed dev (`dev\seed-th.cmd`): script tự cài 2FA cho system admin ở lần đầu, ghi khoá vào `backend\.env` (`SEED_SYSADMIN_TOTP_SECRET`)
+  và in khoá/mã dự phòng để thêm vào app xác thực.
