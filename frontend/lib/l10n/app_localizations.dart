@@ -7738,6 +7738,126 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xử lý yêu cầu dùng thử'**
   String get auditActTrialRequestUpdate;
+
+  /// No description provided for @adminTabSystemAdmins.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị viên'**
+  String get adminTabSystemAdmins;
+
+  /// No description provided for @sysAdminIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản quản trị hệ thống (trang /admin). Mật khẩu do hệ thống tạo và chỉ hiện một lần; lần đăng nhập đầu phải cài xác thực 2 lớp.'**
+  String get sysAdminIntro;
+
+  /// No description provided for @sysAdminAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm quản trị viên'**
+  String get sysAdminAdd;
+
+  /// No description provided for @sysAdminAddNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu sẽ được tạo tự động và hiện một lần sau khi tạo.'**
+  String get sysAdminAddNote;
+
+  /// No description provided for @sysAdminCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tài khoản'**
+  String get sysAdminCreate;
+
+  /// No description provided for @sysAdminPasswordTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu đăng nhập'**
+  String get sysAdminPasswordTitle;
+
+  /// No description provided for @sysAdminPasswordDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu cho {email}. Chép lại và gửi riêng cho người dùng — mật khẩu chỉ hiện lần này.'**
+  String sysAdminPasswordDesc(String email);
+
+  /// No description provided for @sysAdminCopyPassword.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chép mật khẩu'**
+  String get sysAdminCopyPassword;
+
+  /// No description provided for @sysAdminYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn'**
+  String get sysAdminYou;
+
+  /// No description provided for @sysAdmin2faOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cài 2FA'**
+  String get sysAdmin2faOn;
+
+  /// No description provided for @sysAdmin2faPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa cài 2FA'**
+  String get sysAdmin2faPending;
+
+  /// No description provided for @sysAdminResetPassword.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại mật khẩu'**
+  String get sysAdminResetPassword;
+
+  /// No description provided for @sysAdminDisableConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá tài khoản {email}? Người này sẽ không đăng nhập được nữa.'**
+  String sysAdminDisableConfirm(String email);
+
+  /// No description provided for @sysAdminResetPasswordConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mật khẩu mới cho {email}? Mật khẩu cũ sẽ không dùng được.'**
+  String sysAdminResetPasswordConfirm(String email);
+
+  /// No description provided for @sysAdminReset2faConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ xác thực 2 lớp của {email}? Lần đăng nhập tới họ phải cài lại.'**
+  String sysAdminReset2faConfirm(String email);
+
+  /// No description provided for @auditActSysadminCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm quản trị viên hệ thống'**
+  String get auditActSysadminCreate;
+
+  /// No description provided for @auditActSysadminEnable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở khoá quản trị viên hệ thống'**
+  String get auditActSysadminEnable;
+
+  /// No description provided for @auditActSysadminDisable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá quản trị viên hệ thống'**
+  String get auditActSysadminDisable;
+
+  /// No description provided for @auditActSysadminResetPassword.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại mật khẩu quản trị viên'**
+  String get auditActSysadminResetPassword;
+
+  /// No description provided for @auditActSysadminReset2fa.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gỡ 2FA quản trị viên'**
+  String get auditActSysadminReset2fa;
 }
 
 class _AppLocalizationsDelegate

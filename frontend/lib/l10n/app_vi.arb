@@ -1428,4 +1428,28 @@
   ,"trialStatusLabel": "Trạng thái"
   ,"trialNote": "Ghi chú xử lý"
   ,"auditActTrialRequestUpdate": "Xử lý yêu cầu dùng thử"
+  ,"adminTabSystemAdmins": "Quản trị viên"
+  ,"sysAdminIntro": "Tài khoản quản trị hệ thống (trang /admin). Mật khẩu do hệ thống tạo và chỉ hiện một lần; lần đăng nhập đầu phải cài xác thực 2 lớp."
+  ,"sysAdminAdd": "Thêm quản trị viên"
+  ,"sysAdminAddNote": "Mật khẩu sẽ được tạo tự động và hiện một lần sau khi tạo."
+  ,"sysAdminCreate": "Tạo tài khoản"
+  ,"sysAdminPasswordTitle": "Mật khẩu đăng nhập"
+  ,"sysAdminPasswordDesc": "Mật khẩu cho {email}. Chép lại và gửi riêng cho người dùng — mật khẩu chỉ hiện lần này."
+  ,"@sysAdminPasswordDesc": { "placeholders": { "email": { "type": "String" } } }
+  ,"sysAdminCopyPassword": "Chép mật khẩu"
+  ,"sysAdminYou": "Bạn"
+  ,"sysAdmin2faOn": "Đã cài 2FA"
+  ,"sysAdmin2faPending": "Chưa cài 2FA"
+  ,"sysAdminResetPassword": "Đặt lại mật khẩu"
+  ,"sysAdminDisableConfirm": "Khoá tài khoản {email}? Người này sẽ không đăng nhập được nữa."
+  ,"@sysAdminDisableConfirm": { "placeholders": { "email": { "type": "String" } } }
+  ,"sysAdminResetPasswordConfirm": "Tạo mật khẩu mới cho {email}? Mật khẩu cũ sẽ không dùng được."
+  ,"@sysAdminResetPasswordConfirm": { "placeholders": { "email": { "type": "String" } } }
+  ,"sysAdminReset2faConfirm": "Gỡ xác thực 2 lớp của {email}? Lần đăng nhập tới họ phải cài lại."
+  ,"@sysAdminReset2faConfirm": { "placeholders": { "email": { "type": "String" } } }
+  ,"auditActSysadminCreate": "Thêm quản trị viên hệ thống"
+  ,"auditActSysadminEnable": "Mở khoá quản trị viên hệ thống"
+  ,"auditActSysadminDisable": "Khoá quản trị viên hệ thống"
+  ,"auditActSysadminResetPassword": "Đặt lại mật khẩu quản trị viên"
+  ,"auditActSysadminReset2fa": "Gỡ 2FA quản trị viên"
 }

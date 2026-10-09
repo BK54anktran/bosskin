@@ -4111,4 +4111,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActTrialRequestUpdate => 'Trial request handled';
+
+  @override
+  String get adminTabSystemAdmins => 'Administrators';
+
+  @override
+  String get sysAdminIntro =>
+      'System administrator accounts (/admin). Passwords are generated and shown once; two-factor setup is required at first sign-in.';
+
+  @override
+  String get sysAdminAdd => 'Add administrator';
+
+  @override
+  String get sysAdminAddNote =>
+      'A password is generated and shown once after creating.';
+
+  @override
+  String get sysAdminCreate => 'Create account';
+
+  @override
+  String get sysAdminPasswordTitle => 'Sign-in password';
+
+  @override
+  String sysAdminPasswordDesc(String email) {
+    return 'Password for $email. Copy it and send it privately — it is shown only once.';
+  }
+
+  @override
+  String get sysAdminCopyPassword => 'Copy password';
+
+  @override
+  String get sysAdminYou => 'You';
+
+  @override
+  String get sysAdmin2faOn => '2FA on';
+
+  @override
+  String get sysAdmin2faPending => '2FA not set';
+
+  @override
+  String get sysAdminResetPassword => 'Reset password';
+
+  @override
+  String sysAdminDisableConfirm(String email) {
+    return 'Disable $email? They will no longer be able to sign in.';
+  }
+
+  @override
+  String sysAdminResetPasswordConfirm(String email) {
+    return 'Generate a new password for $email? The old one stops working.';
+  }
+
+  @override
+  String sysAdminReset2faConfirm(String email) {
+    return 'Reset two-factor for $email? They must set it up again at next sign-in.';
+  }
+
+  @override
+  String get auditActSysadminCreate => 'System admin created';
+
+  @override
+  String get auditActSysadminEnable => 'System admin enabled';
+
+  @override
+  String get auditActSysadminDisable => 'System admin disabled';
+
+  @override
+  String get auditActSysadminResetPassword => 'System admin password reset';
+
+  @override
+  String get auditActSysadminReset2fa => 'System admin 2FA reset';
 }

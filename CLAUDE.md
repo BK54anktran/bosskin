@@ -81,6 +81,9 @@ frontend/lib/l10n/
   System admin luôn bắt buộc (`REQUIRE_SYSADMIN_2FA`, test tắt); admin công ty tuỳ chọn, system admin bật buộc theo công ty
   (`companies.require_admin_2fa`, áp cho user có `ROLE_MANAGE`). FE: `TwoFactorChallenge` → `TwoFactorScreen`; Hồ sơ có `TwoFactorCard`;
   gỡ 2FA cho NV ở tab Người dùng (`DELETE /users/{id}/2fa`).
+- Quản lý system admin: `/admin/system-admins` (danh sách, tạo — mật khẩu 16 ký tự sinh tự động trả một lần, khoá/mở,
+  đặt lại mật khẩu, gỡ 2FA; không thao tác lên chính mình, luôn còn ≥ 1 admin hoạt động; nhật ký `SYSADMIN_*`).
+  FE tab "Quản trị viên" (`screens/admin/system_admins_tab.dart`).
 
 ---
 

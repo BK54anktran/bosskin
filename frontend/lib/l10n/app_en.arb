@@ -1425,4 +1425,28 @@
   ,"trialStatusLabel": "Status"
   ,"trialNote": "Handling note"
   ,"auditActTrialRequestUpdate": "Trial request handled"
+  ,"adminTabSystemAdmins": "Administrators"
+  ,"sysAdminIntro": "System administrator accounts (/admin). Passwords are generated and shown once; two-factor setup is required at first sign-in."
+  ,"sysAdminAdd": "Add administrator"
+  ,"sysAdminAddNote": "A password is generated and shown once after creating."
+  ,"sysAdminCreate": "Create account"
+  ,"sysAdminPasswordTitle": "Sign-in password"
+  ,"sysAdminPasswordDesc": "Password for {email}. Copy it and send it privately — it is shown only once."
+  ,"@sysAdminPasswordDesc": { "placeholders": { "email": { "type": "String" } } }
+  ,"sysAdminCopyPassword": "Copy password"
+  ,"sysAdminYou": "You"
+  ,"sysAdmin2faOn": "2FA on"
+  ,"sysAdmin2faPending": "2FA not set"
+  ,"sysAdminResetPassword": "Reset password"
+  ,"sysAdminDisableConfirm": "Disable {email}? They will no longer be able to sign in."
+  ,"@sysAdminDisableConfirm": { "placeholders": { "email": { "type": "String" } } }
+  ,"sysAdminResetPasswordConfirm": "Generate a new password for {email}? The old one stops working."
+  ,"@sysAdminResetPasswordConfirm": { "placeholders": { "email": { "type": "String" } } }
+  ,"sysAdminReset2faConfirm": "Reset two-factor for {email}? They must set it up again at next sign-in."
+  ,"@sysAdminReset2faConfirm": { "placeholders": { "email": { "type": "String" } } }
+  ,"auditActSysadminCreate": "System admin created"
+  ,"auditActSysadminEnable": "System admin enabled"
+  ,"auditActSysadminDisable": "System admin disabled"
+  ,"auditActSysadminResetPassword": "System admin password reset"
+  ,"auditActSysadminReset2fa": "System admin 2FA reset"
 }

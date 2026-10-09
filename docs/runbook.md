@@ -140,7 +140,9 @@ rồi `flutter build apk --release --dart-define=API_HOST=...`.
 - **Admin công ty**: tự bật trong Hồ sơ. System admin có thể bắt buộc theo công ty (nút khiên trên thẻ công ty ở `/admin`):
   người có quyền `ROLE_MANAGE` chưa cài sẽ phải cài ở lần đăng nhập tới và không tự tắt được.
 - **Nhân viên mất điện thoại**: đăng nhập bằng một mã dự phòng, hoặc người có quyền `USER_MANAGE` gỡ 2FA ở Phân quyền → Người dùng (biểu tượng khoá cạnh công tắc). Ghi nhật ký `2FA_RESET`.
-- **System admin mất điện thoại và hết mã dự phòng**: tạm đặt `REQUIRE_SYSADMIN_2FA=false` không giúp được vì tài khoản đã bật 2FA.
+- **Thêm / khoá system admin**: `/admin` → tab "Quản trị viên". Mật khẩu sinh tự động, chỉ hiện một lần — gửi riêng cho người đó;
+  họ phải cài 2FA ở lần đăng nhập đầu. Một admin mất điện thoại: admin khác gỡ 2FA cho họ ở tab này.
+- **System admin mất điện thoại và hết mã dự phòng, và không còn admin nào khác**: tạm đặt `REQUIRE_SYSADMIN_2FA=false` không giúp được vì tài khoản đã bật 2FA.
   Gỡ trực tiếp trong DB (cần người có quyền DB, ghi lại lý do):
   `UPDATE system_admins SET totp_enabled=0, totp_secret=NULL, totp_recovery_codes=NULL WHERE email='<email>';`
   rồi đăng nhập lại và cài 2FA mới.

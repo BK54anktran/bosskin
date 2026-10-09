@@ -4109,4 +4109,74 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActTrialRequestUpdate => 'Xử lý yêu cầu dùng thử';
+
+  @override
+  String get adminTabSystemAdmins => 'Quản trị viên';
+
+  @override
+  String get sysAdminIntro =>
+      'Tài khoản quản trị hệ thống (trang /admin). Mật khẩu do hệ thống tạo và chỉ hiện một lần; lần đăng nhập đầu phải cài xác thực 2 lớp.';
+
+  @override
+  String get sysAdminAdd => 'Thêm quản trị viên';
+
+  @override
+  String get sysAdminAddNote =>
+      'Mật khẩu sẽ được tạo tự động và hiện một lần sau khi tạo.';
+
+  @override
+  String get sysAdminCreate => 'Tạo tài khoản';
+
+  @override
+  String get sysAdminPasswordTitle => 'Mật khẩu đăng nhập';
+
+  @override
+  String sysAdminPasswordDesc(String email) {
+    return 'Mật khẩu cho $email. Chép lại và gửi riêng cho người dùng — mật khẩu chỉ hiện lần này.';
+  }
+
+  @override
+  String get sysAdminCopyPassword => 'Chép mật khẩu';
+
+  @override
+  String get sysAdminYou => 'Bạn';
+
+  @override
+  String get sysAdmin2faOn => 'Đã cài 2FA';
+
+  @override
+  String get sysAdmin2faPending => 'Chưa cài 2FA';
+
+  @override
+  String get sysAdminResetPassword => 'Đặt lại mật khẩu';
+
+  @override
+  String sysAdminDisableConfirm(String email) {
+    return 'Khoá tài khoản $email? Người này sẽ không đăng nhập được nữa.';
+  }
+
+  @override
+  String sysAdminResetPasswordConfirm(String email) {
+    return 'Tạo mật khẩu mới cho $email? Mật khẩu cũ sẽ không dùng được.';
+  }
+
+  @override
+  String sysAdminReset2faConfirm(String email) {
+    return 'Gỡ xác thực 2 lớp của $email? Lần đăng nhập tới họ phải cài lại.';
+  }
+
+  @override
+  String get auditActSysadminCreate => 'Thêm quản trị viên hệ thống';
+
+  @override
+  String get auditActSysadminEnable => 'Mở khoá quản trị viên hệ thống';
+
+  @override
+  String get auditActSysadminDisable => 'Khoá quản trị viên hệ thống';
+
+  @override
+  String get auditActSysadminResetPassword => 'Đặt lại mật khẩu quản trị viên';
+
+  @override
+  String get auditActSysadminReset2fa => 'Gỡ 2FA quản trị viên';
 }
