@@ -14,5 +14,6 @@ async def one(s):
                 sub.feed(ch)
     open(f"{out}/{s['id']}.srt", 'w', encoding='utf-8').write(sub.get_srt())
 async def main():
-    for s in cfg['scenes']: await one(s); print('ok', s['id'])
+    for s in cfg['scenes']:
+        if s.get('vo'): await one(s); print('ok', s['id'])
 asyncio.run(main())
