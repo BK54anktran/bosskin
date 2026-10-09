@@ -1,13 +1,13 @@
 {
-  "voice": "vi-VN-HoaiMyNeural",
-  "rate": "+8%",
+  "voice": "vi-VN-NamMinhNeural",
+  "rate": "+2%",
   "scenes": [
     {"id": "r1_logo", "vo": ""},
     {"id": "r2_hook", "vo": "Chấm công, xếp ca, tính lương... không nên phức tạp đến thế."},
     {"id": "r3_allinone", "vo": "Đã có BossKin. Mọi việc nhân sự hằng ngày, gom về một nơi."},
     {"id": "r4_checkin", "vo": "Nhân viên chấm công ngay trên điện thoại, đúng vị trí và đúng máy đã đăng ký."},
     {"id": "r5_shifts", "vo": "Xếp ca cho cả xưởng, chỉ trong vài phút."},
-    {"id": "r6_leaves", "vo": "Đơn nghỉ phép, đơn sửa giờ. Quản lý duyệt trong một chạm."},
+    {"id": "r6_leaves", "vo": "Đơn nghỉ phép, đơn sửa giờ, quản lý duyệt chỉ trong một chạm."},
     {"id": "r7_payroll", "vo": "Bảng lương tự tính. Phiếu lương gửi thẳng tới điện thoại nhân viên."},
     {"id": "r8_stats", "vo": "Chốt công cho ba trăm nhân viên, chưa tới một phút."},
     {"id": "r9_cta", "vo": "BossKin. Chấm công đúng, tính lương nhanh. Đăng ký dùng thử ngay hôm nay."}

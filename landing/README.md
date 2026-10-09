@@ -41,7 +41,7 @@ Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi tr�
 Đổi giao diện app thì chụp lại (bước 4) — toạ độ bấm trong `capture_*.py` và `make_video.py` là toạ độ CSS của bản web hiện tại.
 Poster video: `ffmpeg -ss 9.6 -i assets/bosskin-gioi-thieu.mp4 -frames:v 1 assets/video-poster.jpg`.
 
-## Video chính trên trang `assets/bosskin-reel.mp4` (~51 giây, 16:9, nền tối, nhạc + giọng đọc; poster `reel-poster.jpg`)
+## Video chính trên trang `assets/bosskin-reel.mp4` (~51 giây, 16:9, nền tối, nhạc + giọng nam Nam Minh; poster `reel-poster.jpg`)
 Cùng bộ ảnh chụp ở trên. Lời đọc ở `video/script_reel.json`:
 `python3 video/tts.py video/script_reel.json <thư mục giọng>` rồi
 `python3 video/make_reel.py <thư mục ảnh> <thư mục giọng> landing/assets/bosskin-reel.mp4` (xem trước: thêm `--frames 5,20`).
