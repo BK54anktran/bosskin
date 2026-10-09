@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../data/repositories/company_setting_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../widgets/app_dropdown.dart';
 import '../../widgets/location_picker_field.dart';
 
 class CompanySettingsScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   final _hoursPerDayCtrl = TextEditingController(text: '8');
   final _standardWorkDaysCtrl = TextEditingController(text: '22');
   final _cutoffDayCtrl = TextEditingController(text: '1');
+  int _minWageRegion = 1;
 
   bool _locationCheckEnabled = false;
   bool _deviceBindingEnabled = false;
@@ -82,6 +84,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         final payroll = data['payroll'] as Map<String, dynamic>?;
         _standardWorkDaysCtrl.text = ((payroll?['standardWorkDays'] as num?)?.toInt() ?? 22).toString();
         _cutoffDayCtrl.text = ((payroll?['payrollCutoffDay'] as num?)?.toInt() ?? 1).toString();
+        _minWageRegion = (payroll?['minWageRegion'] as num?)?.toInt() ?? 1;
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
         _deviceBindingEnabled = attendance['deviceBindingEnabled'] == true;
         _checkInLat = (attendance['checkInLatitude'] as num?)?.toDouble();
@@ -214,6 +217,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         'payroll': {
           'standardWorkDays': int.tryParse(_standardWorkDaysCtrl.text.trim()) ?? 22,
           'payrollCutoffDay': int.tryParse(_cutoffDayCtrl.text.trim()) ?? 1,
+          'minWageRegion': _minWageRegion,
         },
       });
       if (!mounted) return;
@@ -349,6 +353,19 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                               helperText: s.uiPayrollCutoffDayHelper,
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          AppDropdown<int>(
+                            value: _minWageRegion,
+                            label: s.minWageRegionLabel,
+                            items: [
+                              for (var r = 1; r <= 4; r++)
+                                DropdownMenuItem(value: r, child: Text(s.minWageRegionOption(r))),
+                            ],
+                            onChanged: (v) => setState(() => _minWageRegion = v ?? 1),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(s.minWageRegionHelper,
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                         ],
                       ),
                     ),

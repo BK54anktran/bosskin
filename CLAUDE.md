@@ -322,6 +322,13 @@ XxxSetting  // sub-object response (AttendanceSetting)
 
 ## Database / Payroll
 - Tính lương theo quy định Việt Nam: BHXH 8%, BHYT 1.5%, BHTN 1%, thuế TNCN lũy tiến
+- Thông số thuế / BH theo ngày hiệu lực ở bảng `tax_policies` (V13, bước I): giảm trừ bản thân / người phụ thuộc, biểu thuế (JSON),
+  mức tham chiếu × hệ số = trần BHXH/BHYT, lương tối thiểu 4 vùng × hệ số = trần BHTN (`companies.min_wage_region`).
+  Kỳ lương dùng chính sách hiệu lực ở **ngày cuối kỳ** (`TaxPolicyService.forDate(period.to())`); `PIT_VN(...)` dùng biểu của kỳ
+  (`FormulaEngine.withPitBrackets`). Không viết cứng mức giảm trừ / biểu thuế trong code nữa. System admin sửa ở `/admin/tax-policies`
+  (tab "Thuế & BH", nhật ký `TAX_POLICY_*`). Biến: `PERSONAL_DEDUCTION`, `DEPENDENT_DEDUCTION`, `DEPENDENTS` (0 tới bước M),
+  `FAMILY_DEDUCTION`, `INSURANCE_BASE/CAP`, `UNEMPLOYMENT_BASE/CAP`. Phiếu lưu snapshot `family_deduction`, `insurance_base`.
+  Test tạo chính sách phải dùng ngày xa (vd. 2099) và xoá lại — bảng dùng chung mọi công ty.
 - `pay_type`: `DAILY` (lương theo ngày) hoặc `HOURLY` (lương theo giờ) — lấy từ `SalaryGrade`
 - `standard_work_days`: số ngày công tiêu chuẩn/tháng, lưu trong `Company` (default 22), snapshot vào `Payroll` khi generate
 
@@ -332,6 +339,7 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `Employee` | `employees` | FK → Company, SalaryGrade |
 | `SalaryGrade` | `salary_grades` | `pay_type` ENUM(DAILY, HOURLY), `base_salary` |
 | `Payroll` | `payrolls` | snapshot lương, unique(employee_id, year, month) |
+| `TaxPolicy` | `tax_policies` | thông số thuế / BH theo `effective_from`, dùng chung mọi công ty |
 | `Role` | `roles` | `roleViewAllCompany` bool, `roleViewDepartment` FK |
 | `Permission` | `permissions` | `code` string, `module`, `requiredRule` |
 | `Attendance` | `attendances` | chấm công, FK → Employee |
@@ -339,9 +347,9 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V12** (`V12__trial_requests.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
-V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử
-→ Migration tiếp theo phải là **V13**
+Cao nhất: **V13** (`V13__tax_policies.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 chính sách thuế / BH
+→ Migration tiếp theo phải là **V14**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ

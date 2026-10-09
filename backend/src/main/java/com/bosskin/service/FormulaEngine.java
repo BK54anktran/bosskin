@@ -33,6 +33,9 @@ public class FormulaEngine {
             "SOCIAL_INS", "HEALTH_INS", "UNEMPLOYMENT_INS", "TOTAL_INSURANCE", "PIT",
             // Khoản chỉnh tay trên bảng lương nháp (L6)
             "ALLOWANCE_MANUAL", "BONUS", "OTHER_DEDUCTIONS",
+            // Thuế & bảo hiểm theo chính sách kỳ (bước I)
+            "PERSONAL_DEDUCTION", "DEPENDENT_DEDUCTION", "DEPENDENTS", "FAMILY_DEDUCTION",
+            "INSURANCE_BASE", "INSURANCE_CAP", "UNEMPLOYMENT_BASE", "UNEMPLOYMENT_CAP",
             // Hợp đồng & thâm niên
             "CONTRACT_SALARY",
             "TENURE_YEARS", "TENURE_MONTHS", "TENURE_DAYS",
@@ -46,30 +49,52 @@ public class FormulaEngine {
     // Keywords reserved — không được dùng làm tên biến tùy chỉnh
     public static final Set<String> RESERVED_KEYWORDS = Set.of("AND", "OR", "IF", "MIN", "MAX", "ABS", "PIT_VN", "ROUND", "FLOOR", "CEIL");
 
-    /** Vietnamese progressive PIT (Thuế TNCN lũy tiến theo biểu thuế 7 bậc). */
-    static BigDecimal pitVN(BigDecimal taxableIncome) {
-        if (taxableIncome.compareTo(BigDecimal.ZERO) <= 0) return BigDecimal.ZERO;
-        BigDecimal[] brackets = {
-            new BigDecimal("5000000"),
-            new BigDecimal("10000000"),
-            new BigDecimal("18000000"),
-            new BigDecimal("32000000"),
-            new BigDecimal("52000000"),
-            new BigDecimal("80000000"),
-        };
-        double[] rates = { 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35 };
-        BigDecimal tax = BigDecimal.ZERO;
-        BigDecimal remaining = taxableIncome;
-        BigDecimal lower = BigDecimal.ZERO;
-        for (int i = 0; i < brackets.length && remaining.compareTo(BigDecimal.ZERO) > 0; i++) {
-            BigDecimal slice = brackets[i].subtract(lower);
-            BigDecimal taxable = remaining.min(slice);
-            tax = tax.add(taxable.multiply(BigDecimal.valueOf(rates[i]), MC));
-            remaining = remaining.subtract(taxable);
-            lower = brackets[i];
+    /** Một bậc thuế TNCN: thu nhập tính thuế / tháng đến {@code upTo} (null = phần còn lại), thuế suất {@code rate}. */
+    public record PitBracket(BigDecimal upTo, BigDecimal rate) {}
+
+    /**
+     * Biểu mặc định khi chưa đặt chính sách cho luồng hiện tại (kiểm tra công thức, test công thức):
+     * 5 bậc theo Luật Thuế TNCN 109/2025/QH15, áp dụng từ kỳ tính thuế 2026.
+     * Bảng lương thật dùng biểu của chính sách theo kỳ ({@link #withPitBrackets}).
+     */
+    public static final List<PitBracket> DEFAULT_PIT_BRACKETS = List.of(
+        new PitBracket(new BigDecimal("10000000"),  new BigDecimal("0.05")),
+        new PitBracket(new BigDecimal("30000000"),  new BigDecimal("0.10")),
+        new PitBracket(new BigDecimal("60000000"),  new BigDecimal("0.20")),
+        new PitBracket(new BigDecimal("100000000"), new BigDecimal("0.30")),
+        new PitBracket(null,                        new BigDecimal("0.35")));
+
+    private static final ThreadLocal<List<PitBracket>> PIT_BRACKETS = new ThreadLocal<>();
+
+    /** Chạy {@code body} với biểu thuế {@code brackets} cho PIT_VN(...) và thuế hệ thống (bước I). */
+    public <T> T withPitBrackets(List<PitBracket> brackets, java.util.function.Supplier<T> body) {
+        List<PitBracket> prev = PIT_BRACKETS.get();
+        PIT_BRACKETS.set(brackets);
+        try {
+            return body.get();
+        } finally {
+            if (prev == null) PIT_BRACKETS.remove(); else PIT_BRACKETS.set(prev);
         }
-        if (remaining.compareTo(BigDecimal.ZERO) > 0) {
-            tax = tax.add(remaining.multiply(BigDecimal.valueOf(0.35), MC));
+    }
+
+    /** Thuế TNCN lũy tiến từng phần theo biểu đang áp dụng cho luồng hiện tại. */
+    static BigDecimal pitVN(BigDecimal taxableIncome) {
+        List<PitBracket> b = PIT_BRACKETS.get();
+        return pitVN(taxableIncome, b != null && !b.isEmpty() ? b : DEFAULT_PIT_BRACKETS);
+    }
+
+    /** Thuế TNCN lũy tiến từng phần theo biểu {@code brackets} (bậc cuối có upTo = null). */
+    public static BigDecimal pitVN(BigDecimal taxableIncome, List<PitBracket> brackets) {
+        if (taxableIncome == null || taxableIncome.compareTo(BigDecimal.ZERO) <= 0) return BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
+        BigDecimal lower = BigDecimal.ZERO;
+        for (PitBracket br : brackets) {
+            if (taxableIncome.compareTo(lower) <= 0) break;
+            BigDecimal top = br.upTo() == null ? taxableIncome : taxableIncome.min(br.upTo());
+            BigDecimal slice = top.subtract(lower);
+            if (slice.signum() > 0) tax = tax.add(slice.multiply(br.rate(), MC));
+            if (br.upTo() == null) break;
+            lower = br.upTo();
         }
         return tax.setScale(2, RoundingMode.HALF_UP);
     }
@@ -98,6 +123,15 @@ public class FormulaEngine {
         put("STANDARD_WORK_DAYS", new SystemVar("Số ngày công chuẩn/tháng",      "Lương & Hợp đồng"));
         put("HOURS_PER_DAY",      new SystemVar("Số giờ làm/ngày",              "Lương & Hợp đồng"));
         put("GROSS",              new SystemVar("Lương gộp (kết quả công thức Gross)", "Lương & Hợp đồng"));
+        // Thuế & bảo hiểm (bước I — theo chính sách thuế của kỳ)
+        put("PERSONAL_DEDUCTION",  new SystemVar("Giảm trừ bản thân / tháng",              "Thuế & bảo hiểm"));
+        put("DEPENDENT_DEDUCTION", new SystemVar("Giảm trừ mỗi người phụ thuộc / tháng",  "Thuế & bảo hiểm"));
+        put("DEPENDENTS",          new SystemVar("Số người phụ thuộc",                      "Thuế & bảo hiểm"));
+        put("FAMILY_DEDUCTION",    new SystemVar("Tổng giảm trừ gia cảnh",                  "Thuế & bảo hiểm"));
+        put("INSURANCE_BASE",      new SystemVar("Lương đóng BHXH/BHYT (đã áp trần)",       "Thuế & bảo hiểm"));
+        put("INSURANCE_CAP",       new SystemVar("Trần lương đóng BHXH/BHYT",               "Thuế & bảo hiểm"));
+        put("UNEMPLOYMENT_BASE",   new SystemVar("Lương đóng BHTN (đã áp trần)",            "Thuế & bảo hiểm"));
+        put("UNEMPLOYMENT_CAP",    new SystemVar("Trần lương đóng BHTN theo vùng",          "Thuế & bảo hiểm"));
         // Thâm niên
         put("TENURE_YEARS",  new SystemVar("Số năm đã làm việc tại công ty",    "Thâm niên"));
         put("TENURE_MONTHS", new SystemVar("Tổng số tháng đã làm việc",         "Thâm niên"));

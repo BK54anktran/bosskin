@@ -125,6 +125,14 @@ public class Payroll extends BaseEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    /** Giảm trừ gia cảnh đã dùng khi tính thuế (bản thân + người phụ thuộc), V13. */
+    @Column(name = "family_deduction", precision = 15, scale = 2)
+    private BigDecimal familyDeduction;
+
+    /** Lương đóng BHXH/BHYT sau khi áp trần, V13. */
+    @Column(name = "insurance_base", precision = 15, scale = 2)
+    private BigDecimal insuranceBase;
+
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 

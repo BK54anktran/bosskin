@@ -1451,4 +1451,52 @@
   ,"auditActSysadminReset2fa": "System admin 2FA reset"
   ,"profileAccountTitle": "Account"
   ,"profileNoEmployeeNote": "This administrator account is not linked to an employee — only sign-in security settings apply."
+  ,"adminTabTaxPolicies": "Tax & insurance"
+  ,"taxPolicyIntro": "Personal income tax and insurance parameters shared by all companies. Each payroll period uses the latest policy effective on or before the period end; approved payslips do not change."
+  ,"taxPolicyAdd": "Add policy"
+  ,"taxPolicyEdit": "Edit policy"
+  ,"taxPolicyEmpty": "No tax policy yet — payroll cannot be calculated."
+  ,"taxPolicyCurrent": "In effect"
+  ,"taxPolicyFrom": "Effective from {date}"
+  ,"@taxPolicyFrom": { "placeholders": { "date": { "type": "String" } } }
+  ,"taxPolicyDeleteConfirm": "Delete the policy effective from {date}? Later payroll periods will fall back to the previous policy when recalculated."
+  ,"@taxPolicyDeleteConfirm": { "placeholders": { "date": { "type": "String" } } }
+  ,"taxPolicyUpdatedBy": "Updated by {by}"
+  ,"@taxPolicyUpdatedBy": { "placeholders": { "by": { "type": "String" } } }
+  ,"taxPersonalDeduction": "Personal deduction / month"
+  ,"taxDependentDeduction": "Deduction per dependant / month"
+  ,"taxBrackets": "Progressive tax brackets"
+  ,"taxBracketsHint": "By monthly taxable income; the last bracket applies to the remainder."
+  ,"taxBracketUpTo": "up to {amount}: {rate}"
+  ,"@taxBracketUpTo": { "placeholders": { "amount": { "type": "String" }, "rate": { "type": "String" } } }
+  ,"taxBracketAbove": "above {amount}: {rate}"
+  ,"@taxBracketAbove": { "placeholders": { "amount": { "type": "String" }, "rate": { "type": "String" } } }
+  ,"taxBracketUpToLabel": "Up to (taxable income)"
+  ,"taxBracketRest": "Remainder"
+  ,"taxBracketRate": "Rate"
+  ,"taxBracketAdd": "Add bracket"
+  ,"taxReferenceWage": "Reference wage (base salary)"
+  ,"taxInsuranceCap": "social/health insurance cap {amount} ({multiplier} ×)"
+  ,"@taxInsuranceCap": { "placeholders": { "amount": { "type": "String" }, "multiplier": { "type": "String" } } }
+  ,"taxCapMultiplier": "Social/health cap"
+  ,"taxMinWages": "Regional minimum wage"
+  ,"taxUnemploymentCap": "Unemployment insurance cap"
+  ,"taxUnemploymentCapValue": "{multiplier} × the company region minimum wage"
+  ,"@taxUnemploymentCapValue": { "placeholders": { "multiplier": { "type": "String" } } }
+  ,"taxUnemploymentCapMultiplier": "Unemployment cap (× regional minimum wage)"
+  ,"taxPolicyNote": "Note / legal basis"
+  ,"taxPolicyFormInvalid": "Please fill in all amounts, multipliers and rates."
+  ,"minWageRegionLabel": "Minimum wage region"
+  ,"minWageRegionOption": "Region {region}"
+  ,"@minWageRegionOption": { "placeholders": { "region": { "type": "int" } } }
+  ,"minWageRegionShort": "Region {region}"
+  ,"@minWageRegionShort": { "placeholders": { "region": { "type": "int" } } }
+  ,"minWageRegionHelper": "Used for the unemployment insurance cap (20 × regional minimum wage). Rates are maintained by the system administrator."
+  ,"payslipInsuranceBase": "Salary for social/health insurance"
+  ,"payslipFamilyDeduction": "Family deduction"
+  ,"auditActTaxPolicyCreate": "Add tax / insurance policy"
+  ,"auditActTaxPolicyUpdate": "Edit tax / insurance policy"
+  ,"auditActTaxPolicyDelete": "Delete tax / insurance policy"
+  ,"currencyVndSuffix": "₫"
+  ,"multiplierSuffix": "×"
 }

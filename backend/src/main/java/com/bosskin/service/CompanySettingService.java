@@ -55,6 +55,13 @@ public class CompanySettingService {
                 }
                 c.setPayrollCutoffDay(cutoff);
             }
+            if (req.getPayroll().getMinWageRegion() != null) {
+                int region = req.getPayroll().getMinWageRegion();
+                if (region < 1 || region > 4) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.min_wage_region_invalid");
+                }
+                c.setMinWageRegion(region);
+            }
         }
         if (req.getAttendance().getDeviceBindingEnabled() != null) {
             c.setDeviceBindingEnabled(req.getAttendance().getDeviceBindingEnabled());
@@ -146,6 +153,7 @@ public class CompanySettingService {
             .payroll(CompanySettingDTO.PayrollSetting.builder()
                 .standardWorkDays(c.getStandardWorkDays())
                 .payrollCutoffDay(c.getPayrollCutoffDay())
+                .minWageRegion(c.getMinWageRegion())
                 .build())
             .build();
     }

@@ -234,7 +234,7 @@ flowchart LR
   GEN --> V["Biến hệ thống: giờ/ngày công, ngày phép có/không lương,<br/>STANDARD_WORK_DAYS, HOURS_PER_DAY, BASE_RATE..."]
   V --> CV["Biến global + riêng<br/>theo thứ tự phụ thuộc, trước / sau GROSS"]
   CV --> GR["GROSS = biểu thức gross<br/>(IF chỉ tính nhánh chọn, ROUND)"]
-  GR --> INS["BH / thuế là biến hệ thống<br/>dùng được trong NET"]
+  GR --> INS["BH / thuế là biến hệ thống<br/>theo chính sách thuế của kỳ (trần BH, giảm trừ, biểu thuế)<br/>dùng được trong NET"]
   INS --> NET["NET = biểu thức net<br/>tổng khấu trừ = GROSS − NET"]
   NET --> DR["DRAFT"]
   DR --> ED["Sửa nháp / Tính lại tại chỗ<br/>(một transaction, giữ phần chỉnh tay)"]

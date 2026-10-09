@@ -13,6 +13,7 @@ import '../../../data/services/auth_service.dart';
 import '../../../core/config/server_config.dart';
 import 'trial_requests_tab.dart';
 import 'system_admins_tab.dart';
+import 'tax_policies_tab.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -47,7 +48,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final now = DateTime.now();
     _selectedYear  = now.year;
     _selectedMonth = now.month;
-    _tabCtrl = TabController(length: 4, vsync: this);
+    _tabCtrl = TabController(length: 5, vsync: this);
     _dio = Dio(BaseOptions(
       baseUrl: ServerConfig.adminUrl,
       connectTimeout: const Duration(seconds: 30),
@@ -405,6 +406,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               text: s.adminTabTrialRequests,
             ),
             Tab(icon: const Icon(Icons.admin_panel_settings_outlined, size: 18), text: s.adminTabSystemAdmins),
+            Tab(icon: const Icon(Icons.receipt_long_outlined, size: 18), text: s.adminTabTaxPolicies),
           ],
         ),
         actions: [
@@ -429,6 +431,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           _buildCompaniesTab(),
           TrialRequestsTab(dio: _dio, onChanged: _loadNewTrials),
           SystemAdminsTab(dio: _dio),
+          TaxPoliciesTab(dio: _dio),
         ],
       ),
     );

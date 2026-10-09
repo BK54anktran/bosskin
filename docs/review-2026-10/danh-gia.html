@@ -131,13 +131,13 @@
       <li>Còn thiếu: đăng ký ca, đi công tác / làm việc ngoài.</li>
     </ul></div>
     <div class="card"><b>Thuế TNCN</b><ul class="clean">
-      <li>Giảm trừ bản thân cố định 11 triệu, không có người phụ thuộc.</li>
-      <li>Biểu thuế 7 bậc cố định trong code; cần biểu thuế cấu hình theo ngày hiệu lực (mức giảm trừ và biểu thuế 2026 có thay đổi — cần đối chiếu văn bản chính thức).</li>
+      <li><b>Đã có (10/10/2026, V13):</b> giảm trừ, biểu thuế, trần BH cấu hình theo ngày hiệu lực; mẫu sẵn 2024 (11 triệu, 7 bậc) và 2026 (15,5 / 6,2 triệu, 5 bậc theo Luật 109/2025/QH15, NQ 110/2025/UBTVQH15).</li>
+      <li>Còn thiếu: người phụ thuộc của từng NV (bước M).</li>
       <li>Không tách thu nhập miễn thuế; không có khấu trừ 10% HĐ dưới 3 tháng; không quyết toán năm.</li>
     </ul></div>
     <div class="card"><b>Bảo hiểm</b><ul class="clean">
       <li>Chỉ có tỷ lệ phần NV 8 / 1,5 / 1%, tính trên đơn giá ngày/giờ.</li>
-      <li>Không có lương đóng BH theo HĐ, sàn lương tối thiểu vùng, trần 20 lần.</li>
+      <li><b>Đã có (V13):</b> trần BHXH/BHYT 20 × mức tham chiếu, trần BHTN 20 × lương tối thiểu vùng của công ty. Còn thiếu: lương đóng BH riêng theo HĐ (bước L), cảnh báo dưới lương tối thiểu vùng.</li>
       <li>Không có phần doanh nghiệp đóng (21,5%) và KPCĐ 2%.</li>
     </ul></div>
     <div class="card"><b>Phép năm & chi trả</b><ul class="clean">
@@ -258,11 +258,11 @@ const STC = { done: 'done', part: 'doing', later: 'todo', open: 'open' };
 const expand = (spec) => spec.flatMap(x => { const m = x.match(/^([A-Z])(\d+)-(\d+)$/); if (!m) return [x]; const out = []; for (let i = +m[2]; i <= +m[3]; i++) out.push(m[1] + i); return out; });
 const ST = {};
 expand(['S1-10','S12','S13','S14','A1-9','A11-19','L1-3','L5-16','L18','D1-4','D7','F1-10','F12','O1','O3']).forEach(k => ST[k] = 'done');
-expand(['O2','O4']).forEach(k => ST[k] = 'part');
-expand(['S11','A10','L4','L17','D5','F11']).forEach(k => ST[k] = 'later');
+expand(['O2','O4','L4']).forEach(k => ST[k] = 'part');
+expand(['S11','A10','L17','D5','F11']).forEach(k => ST[k] = 'later');
 /** Ghi chú trạng thái (09/10/2026). */
 const STN = {
-  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Sau go-live, đợt 2', L17: 'Sau go-live, đợt 3',
+  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Trần BH theo chính sách xong (V13); lương đóng BH theo HĐ ở bước L', L17: 'Sau go-live, đợt 3',
   D5: 'Sau go-live, đợt 4', F11: 'Để sau go-live (tái cấu trúc dần)', F12: 'Cỡ chữ, cache xong; dark mode = bước F',
   O2: 'Múi giờ JVM + so khớp theo khoảng xong; chưa có khoá phân tán', O4: 'Health, request-id, .ebextensions xong; metrics/cảnh báo ở Mốc 5'
 };

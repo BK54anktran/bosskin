@@ -1454,4 +1454,52 @@
   ,"auditActSysadminReset2fa": "Gỡ 2FA quản trị viên"
   ,"profileAccountTitle": "Tài khoản"
   ,"profileNoEmployeeNote": "Tài khoản quản trị không gắn với hồ sơ nhân viên — chỉ có phần bảo mật đăng nhập."
+  ,"adminTabTaxPolicies": "Thuế & BH"
+  ,"taxPolicyIntro": "Thông số thuế TNCN và bảo hiểm dùng chung cho mọi công ty. Bảng lương mỗi kỳ dùng chính sách có ngày hiệu lực gần nhất trước ngày cuối kỳ; phiếu đã duyệt không đổi."
+  ,"taxPolicyAdd": "Thêm chính sách"
+  ,"taxPolicyEdit": "Sửa chính sách"
+  ,"taxPolicyEmpty": "Chưa có chính sách thuế nào — bảng lương sẽ không tính được."
+  ,"taxPolicyCurrent": "Đang áp dụng"
+  ,"taxPolicyFrom": "Hiệu lực từ {date}"
+  ,"@taxPolicyFrom": { "placeholders": { "date": { "type": "String" } } }
+  ,"taxPolicyDeleteConfirm": "Xoá chính sách hiệu lực từ {date}? Các kỳ lương sau ngày này sẽ dùng chính sách trước đó khi tính lại."
+  ,"@taxPolicyDeleteConfirm": { "placeholders": { "date": { "type": "String" } } }
+  ,"taxPolicyUpdatedBy": "Cập nhật bởi {by}"
+  ,"@taxPolicyUpdatedBy": { "placeholders": { "by": { "type": "String" } } }
+  ,"taxPersonalDeduction": "Giảm trừ bản thân / tháng"
+  ,"taxDependentDeduction": "Giảm trừ mỗi người phụ thuộc / tháng"
+  ,"taxBrackets": "Biểu thuế lũy tiến"
+  ,"taxBracketsHint": "Theo thu nhập tính thuế mỗi tháng; bậc cuối áp cho phần còn lại."
+  ,"taxBracketUpTo": "đến {amount}: {rate}"
+  ,"@taxBracketUpTo": { "placeholders": { "amount": { "type": "String" }, "rate": { "type": "String" } } }
+  ,"taxBracketAbove": "trên {amount}: {rate}"
+  ,"@taxBracketAbove": { "placeholders": { "amount": { "type": "String" }, "rate": { "type": "String" } } }
+  ,"taxBracketUpToLabel": "Đến (thu nhập tính thuế)"
+  ,"taxBracketRest": "Phần còn lại"
+  ,"taxBracketRate": "Thuế suất"
+  ,"taxBracketAdd": "Thêm bậc"
+  ,"taxReferenceWage": "Mức tham chiếu (lương cơ sở)"
+  ,"taxInsuranceCap": "trần BHXH/BHYT {amount} ({multiplier} ×)"
+  ,"@taxInsuranceCap": { "placeholders": { "amount": { "type": "String" }, "multiplier": { "type": "String" } } }
+  ,"taxCapMultiplier": "Trần BHXH/BHYT"
+  ,"taxMinWages": "Lương tối thiểu vùng"
+  ,"taxUnemploymentCap": "Trần BHTN"
+  ,"taxUnemploymentCapValue": "{multiplier} × lương tối thiểu vùng của công ty"
+  ,"@taxUnemploymentCapValue": { "placeholders": { "multiplier": { "type": "String" } } }
+  ,"taxUnemploymentCapMultiplier": "Trần BHTN (× lương tối thiểu vùng)"
+  ,"taxPolicyNote": "Ghi chú / căn cứ pháp lý"
+  ,"taxPolicyFormInvalid": "Vui lòng nhập đủ các số tiền, hệ số và thuế suất."
+  ,"minWageRegionLabel": "Vùng lương tối thiểu"
+  ,"minWageRegionOption": "Vùng {region}"
+  ,"@minWageRegionOption": { "placeholders": { "region": { "type": "int" } } }
+  ,"minWageRegionShort": "Vùng {region}"
+  ,"@minWageRegionShort": { "placeholders": { "region": { "type": "int" } } }
+  ,"minWageRegionHelper": "Dùng để tính trần lương đóng BHTN (20 × lương tối thiểu vùng). Thông số do quản trị hệ thống cập nhật."
+  ,"payslipInsuranceBase": "Lương đóng BHXH/BHYT"
+  ,"payslipFamilyDeduction": "Giảm trừ gia cảnh"
+  ,"auditActTaxPolicyCreate": "Thêm chính sách thuế / BH"
+  ,"auditActTaxPolicyUpdate": "Sửa chính sách thuế / BH"
+  ,"auditActTaxPolicyDelete": "Xoá chính sách thuế / BH"
+  ,"currencyVndSuffix": "đ"
+  ,"multiplierSuffix": "×"
 }

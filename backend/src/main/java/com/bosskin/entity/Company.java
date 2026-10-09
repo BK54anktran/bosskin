@@ -125,4 +125,9 @@ public class Company extends BaseEntity {
     @Column(name = "payroll_cutoff_day", nullable = false)
     @Builder.Default
     private int payrollCutoffDay = 1;
+
+    /** Vùng lương tối thiểu 1–4 (NĐ 293/2025) — trần đóng BHTN = 20 × lương tối thiểu vùng (V13). */
+    @Column(name = "min_wage_region", nullable = false)
+    @Builder.Default
+    private int minWageRegion = 1;
 }

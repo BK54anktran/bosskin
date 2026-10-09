@@ -8,6 +8,7 @@ import '../../../data/models/payroll.dart';
 import '../../../data/repositories/payroll_repository.dart';
 import '../../../data/services/auth_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../widgets/payslip_tax_info.dart';
 
 final _currFmt2 = NumberFormat('#,###', 'vi_VN');
 String _fmt2(double v) => '${_currFmt2.format(v)}đ';
@@ -248,6 +249,7 @@ class _SelfPayslipDialog extends StatelessWidget {
               _Row(s.netSalary, _fmt2(p.netSalary),
                   bold: true, large: true,
                   color: p.netSalary < 0 ? AppTheme.error : AppTheme.secondary),
+              PayslipTaxInfo(payroll: p),
               const SizedBox(height: 16),
               TextButton(onPressed: () => Navigator.pop(context), child: Text(s.close)),
             ],

@@ -4188,4 +4188,145 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileNoEmployeeNote =>
       'This administrator account is not linked to an employee — only sign-in security settings apply.';
+
+  @override
+  String get adminTabTaxPolicies => 'Tax & insurance';
+
+  @override
+  String get taxPolicyIntro =>
+      'Personal income tax and insurance parameters shared by all companies. Each payroll period uses the latest policy effective on or before the period end; approved payslips do not change.';
+
+  @override
+  String get taxPolicyAdd => 'Add policy';
+
+  @override
+  String get taxPolicyEdit => 'Edit policy';
+
+  @override
+  String get taxPolicyEmpty =>
+      'No tax policy yet — payroll cannot be calculated.';
+
+  @override
+  String get taxPolicyCurrent => 'In effect';
+
+  @override
+  String taxPolicyFrom(String date) {
+    return 'Effective from $date';
+  }
+
+  @override
+  String taxPolicyDeleteConfirm(String date) {
+    return 'Delete the policy effective from $date? Later payroll periods will fall back to the previous policy when recalculated.';
+  }
+
+  @override
+  String taxPolicyUpdatedBy(String by) {
+    return 'Updated by $by';
+  }
+
+  @override
+  String get taxPersonalDeduction => 'Personal deduction / month';
+
+  @override
+  String get taxDependentDeduction => 'Deduction per dependant / month';
+
+  @override
+  String get taxBrackets => 'Progressive tax brackets';
+
+  @override
+  String get taxBracketsHint =>
+      'By monthly taxable income; the last bracket applies to the remainder.';
+
+  @override
+  String taxBracketUpTo(String amount, String rate) {
+    return 'up to $amount: $rate';
+  }
+
+  @override
+  String taxBracketAbove(String amount, String rate) {
+    return 'above $amount: $rate';
+  }
+
+  @override
+  String get taxBracketUpToLabel => 'Up to (taxable income)';
+
+  @override
+  String get taxBracketRest => 'Remainder';
+
+  @override
+  String get taxBracketRate => 'Rate';
+
+  @override
+  String get taxBracketAdd => 'Add bracket';
+
+  @override
+  String get taxReferenceWage => 'Reference wage (base salary)';
+
+  @override
+  String taxInsuranceCap(String amount, String multiplier) {
+    return 'social/health insurance cap $amount ($multiplier ×)';
+  }
+
+  @override
+  String get taxCapMultiplier => 'Social/health cap';
+
+  @override
+  String get taxMinWages => 'Regional minimum wage';
+
+  @override
+  String get taxUnemploymentCap => 'Unemployment insurance cap';
+
+  @override
+  String taxUnemploymentCapValue(String multiplier) {
+    return '$multiplier × the company region minimum wage';
+  }
+
+  @override
+  String get taxUnemploymentCapMultiplier =>
+      'Unemployment cap (× regional minimum wage)';
+
+  @override
+  String get taxPolicyNote => 'Note / legal basis';
+
+  @override
+  String get taxPolicyFormInvalid =>
+      'Please fill in all amounts, multipliers and rates.';
+
+  @override
+  String get minWageRegionLabel => 'Minimum wage region';
+
+  @override
+  String minWageRegionOption(int region) {
+    return 'Region $region';
+  }
+
+  @override
+  String minWageRegionShort(int region) {
+    return 'Region $region';
+  }
+
+  @override
+  String get minWageRegionHelper =>
+      'Used for the unemployment insurance cap (20 × regional minimum wage). Rates are maintained by the system administrator.';
+
+  @override
+  String get payslipInsuranceBase => 'Salary for social/health insurance';
+
+  @override
+  String get payslipFamilyDeduction => 'Family deduction';
+
+  @override
+  String get auditActTaxPolicyCreate => 'Add tax / insurance policy';
+
+  @override
+  String get auditActTaxPolicyUpdate => 'Edit tax / insurance policy';
+
+  @override
+  String get auditActTaxPolicyDelete => 'Delete tax / insurance policy';
+
+  @override
+  String get currencyVndSuffix => '₫';
+
+  @override
+  String get multiplierSuffix => '×';
 }

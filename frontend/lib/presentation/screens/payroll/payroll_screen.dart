@@ -14,6 +14,7 @@ import '../../../data/repositories/payroll_repository.dart';
 import '../../../data/repositories/salary_formula_repository.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/department_service.dart';
+import '../../widgets/payslip_tax_info.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/permission_guard.dart';
@@ -1626,6 +1627,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
                   bold: true,
                   large: true,
                   color: p.netSalary < 0 ? AppTheme.error : AppTheme.secondary),
+              PayslipTaxInfo(payroll: p),
               const SizedBox(height: 8),
               if (p.note != null && p.note!.isNotEmpty)
                 Text('${s.note}: ${p.note}',

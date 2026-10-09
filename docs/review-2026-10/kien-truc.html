@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>1. Kiến trúc hệ thống</h1>
     <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap. Trang giới thiệu tĩnh (Netlify) gửi yêu cầu dùng thử vào Supabase.</p>
-    <p class="meta">Review gốc 08/10/2026, cập nhật 09/10/2026 theo code trên <code>main</code> (migration V12, 31 controller).</p>
+    <p class="meta">Review gốc 08/10/2026, cập nhật 09/10/2026 theo code trên <code>main</code> (migration V13, 32 controller).</p>
   </section>
   <ul class="toc">
     <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
@@ -54,14 +54,14 @@ flowchart LR
     LB["ALB / EB"]
     subgraph BE["Spring Boot 3.3 (monolith)"]
       SEC["Security chains<br/>/admin/** · /api/v1/**<br/>JwtAuthFilter"]
-      CTL["31 Controller"]
-      SVC["40 Service + 12 Excel descriptor<br/>AuditService · TwoFactorService"]
+      CTL["32 Controller"]
+      SVC["41 Service + 12 Excel descriptor<br/>AuditService · TwoFactorService"]
       ENG["AttendanceCalculator<br/>FormulaEngine"]
       SCH["Scheduler nhắc ca (60s)<br/>cộng phép (00:15 hằng ngày)"]
       TILE["MapTile proxy + cache đĩa"]
     end
   end
-  DB[("MySQL 8<br/>39 bảng · Flyway V1 baseline → V12")]
+  DB[("MySQL 8<br/>40 bảng · Flyway V1 baseline → V13")]
   S3[("AWS S3<br/>ảnh, tài liệu, file Excel")]
   FCM["Firebase FCM"]
   OSM["tile.openstreetmap.org"]
@@ -165,7 +165,7 @@ flowchart LR
   </pre></div>
   <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Netlify. Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
-  <h2 id="api">Danh sách API (31 controller)</h2>
+  <h2 id="api">Danh sách API (32 controller)</h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Controller</th><th>Đường dẫn gốc</th><th>Chức năng</th></tr></thead>
     <tbody>
@@ -173,6 +173,7 @@ flowchart LR
       <tr><td>CompanyController</td><td><code>/admin/companies</code></td><td>Tạo/sửa/bật tắt công ty, impersonate</td></tr>
       <tr><td>AdminStatsController</td><td><code>/admin/stats</code></td><td>Thống kê toàn hệ thống (kể cả tổng lương từng công ty)</td></tr>
       <tr><td>SystemAdminController</td><td><code>/admin/system-admins</code></td><td>Danh sách, tạo (mật khẩu sinh tự động), khoá/mở, đặt lại mật khẩu, gỡ 2FA system admin</td></tr>
+      <tr><td>TaxPolicyController</td><td><code>/admin/tax-policies</code></td><td>Thông số thuế TNCN / BH theo ngày hiệu lực (giảm trừ, biểu thuế, trần BH, lương tối thiểu vùng), dùng chung mọi công ty</td></tr>
       <tr><td>TwoFactorController</td><td><code>/api/v1/profile/2fa/*</code>, <code>DELETE /api/v1/users/{id}/2fa</code>, <code>/admin/companies/{id}/require-admin-2fa</code></td><td>Bật/tắt 2FA, gỡ 2FA cho NV, bắt buộc 2FA admin theo công ty</td></tr>
       <tr><td>TrialRequestController</td><td><code>POST /api/v1/public/trial-requests</code>, <code>/admin/trial-requests</code></td><td>Form dùng thử (công khai, chống spam); system admin lọc, đổi trạng thái, xuất Excel</td></tr>
       <tr><td>AttendanceController</td><td><code>/api/v1/attendances</code></td><td>Bảng công, xem theo ngày, duyệt/bỏ duyệt, duyệt cả kỳ (<code>/approve-bulk</code>), sửa tay (override), check-in/out (admin & tự chấm, gắn thiết bị), import/export</td></tr>

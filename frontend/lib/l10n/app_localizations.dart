@@ -7870,6 +7870,240 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tài khoản quản trị không gắn với hồ sơ nhân viên — chỉ có phần bảo mật đăng nhập.'**
   String get profileNoEmployeeNote;
+
+  /// No description provided for @adminTabTaxPolicies.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế & BH'**
+  String get adminTabTaxPolicies;
+
+  /// No description provided for @taxPolicyIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông số thuế TNCN và bảo hiểm dùng chung cho mọi công ty. Bảng lương mỗi kỳ dùng chính sách có ngày hiệu lực gần nhất trước ngày cuối kỳ; phiếu đã duyệt không đổi.'**
+  String get taxPolicyIntro;
+
+  /// No description provided for @taxPolicyAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm chính sách'**
+  String get taxPolicyAdd;
+
+  /// No description provided for @taxPolicyEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa chính sách'**
+  String get taxPolicyEdit;
+
+  /// No description provided for @taxPolicyEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có chính sách thuế nào — bảng lương sẽ không tính được.'**
+  String get taxPolicyEmpty;
+
+  /// No description provided for @taxPolicyCurrent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang áp dụng'**
+  String get taxPolicyCurrent;
+
+  /// No description provided for @taxPolicyFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu lực từ {date}'**
+  String taxPolicyFrom(String date);
+
+  /// No description provided for @taxPolicyDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá chính sách hiệu lực từ {date}? Các kỳ lương sau ngày này sẽ dùng chính sách trước đó khi tính lại.'**
+  String taxPolicyDeleteConfirm(String date);
+
+  /// No description provided for @taxPolicyUpdatedBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật bởi {by}'**
+  String taxPolicyUpdatedBy(String by);
+
+  /// No description provided for @taxPersonalDeduction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm trừ bản thân / tháng'**
+  String get taxPersonalDeduction;
+
+  /// No description provided for @taxDependentDeduction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm trừ mỗi người phụ thuộc / tháng'**
+  String get taxDependentDeduction;
+
+  /// No description provided for @taxBrackets.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biểu thuế lũy tiến'**
+  String get taxBrackets;
+
+  /// No description provided for @taxBracketsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo thu nhập tính thuế mỗi tháng; bậc cuối áp cho phần còn lại.'**
+  String get taxBracketsHint;
+
+  /// No description provided for @taxBracketUpTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'đến {amount}: {rate}'**
+  String taxBracketUpTo(String amount, String rate);
+
+  /// No description provided for @taxBracketAbove.
+  ///
+  /// In vi, this message translates to:
+  /// **'trên {amount}: {rate}'**
+  String taxBracketAbove(String amount, String rate);
+
+  /// No description provided for @taxBracketUpToLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến (thu nhập tính thuế)'**
+  String get taxBracketUpToLabel;
+
+  /// No description provided for @taxBracketRest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phần còn lại'**
+  String get taxBracketRest;
+
+  /// No description provided for @taxBracketRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế suất'**
+  String get taxBracketRate;
+
+  /// No description provided for @taxBracketAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm bậc'**
+  String get taxBracketAdd;
+
+  /// No description provided for @taxReferenceWage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mức tham chiếu (lương cơ sở)'**
+  String get taxReferenceWage;
+
+  /// No description provided for @taxInsuranceCap.
+  ///
+  /// In vi, this message translates to:
+  /// **'trần BHXH/BHYT {amount} ({multiplier} ×)'**
+  String taxInsuranceCap(String amount, String multiplier);
+
+  /// No description provided for @taxCapMultiplier.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trần BHXH/BHYT'**
+  String get taxCapMultiplier;
+
+  /// No description provided for @taxMinWages.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương tối thiểu vùng'**
+  String get taxMinWages;
+
+  /// No description provided for @taxUnemploymentCap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trần BHTN'**
+  String get taxUnemploymentCap;
+
+  /// No description provided for @taxUnemploymentCapValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'{multiplier} × lương tối thiểu vùng của công ty'**
+  String taxUnemploymentCapValue(String multiplier);
+
+  /// No description provided for @taxUnemploymentCapMultiplier.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trần BHTN (× lương tối thiểu vùng)'**
+  String get taxUnemploymentCapMultiplier;
+
+  /// No description provided for @taxPolicyNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú / căn cứ pháp lý'**
+  String get taxPolicyNote;
+
+  /// No description provided for @taxPolicyFormInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập đủ các số tiền, hệ số và thuế suất.'**
+  String get taxPolicyFormInvalid;
+
+  /// No description provided for @minWageRegionLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vùng lương tối thiểu'**
+  String get minWageRegionLabel;
+
+  /// No description provided for @minWageRegionOption.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vùng {region}'**
+  String minWageRegionOption(int region);
+
+  /// No description provided for @minWageRegionShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vùng {region}'**
+  String minWageRegionShort(int region);
+
+  /// No description provided for @minWageRegionHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng để tính trần lương đóng BHTN (20 × lương tối thiểu vùng). Thông số do quản trị hệ thống cập nhật.'**
+  String get minWageRegionHelper;
+
+  /// No description provided for @payslipInsuranceBase.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương đóng BHXH/BHYT'**
+  String get payslipInsuranceBase;
+
+  /// No description provided for @payslipFamilyDeduction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm trừ gia cảnh'**
+  String get payslipFamilyDeduction;
+
+  /// No description provided for @auditActTaxPolicyCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm chính sách thuế / BH'**
+  String get auditActTaxPolicyCreate;
+
+  /// No description provided for @auditActTaxPolicyUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa chính sách thuế / BH'**
+  String get auditActTaxPolicyUpdate;
+
+  /// No description provided for @auditActTaxPolicyDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá chính sách thuế / BH'**
+  String get auditActTaxPolicyDelete;
+
+  /// No description provided for @currencyVndSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **'đ'**
+  String get currencyVndSuffix;
+
+  /// No description provided for @multiplierSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **'×'**
+  String get multiplierSuffix;
 }
 
 class _AppLocalizationsDelegate

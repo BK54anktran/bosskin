@@ -4186,4 +4186,145 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get profileNoEmployeeNote =>
       'Tài khoản quản trị không gắn với hồ sơ nhân viên — chỉ có phần bảo mật đăng nhập.';
+
+  @override
+  String get adminTabTaxPolicies => 'Thuế & BH';
+
+  @override
+  String get taxPolicyIntro =>
+      'Thông số thuế TNCN và bảo hiểm dùng chung cho mọi công ty. Bảng lương mỗi kỳ dùng chính sách có ngày hiệu lực gần nhất trước ngày cuối kỳ; phiếu đã duyệt không đổi.';
+
+  @override
+  String get taxPolicyAdd => 'Thêm chính sách';
+
+  @override
+  String get taxPolicyEdit => 'Sửa chính sách';
+
+  @override
+  String get taxPolicyEmpty =>
+      'Chưa có chính sách thuế nào — bảng lương sẽ không tính được.';
+
+  @override
+  String get taxPolicyCurrent => 'Đang áp dụng';
+
+  @override
+  String taxPolicyFrom(String date) {
+    return 'Hiệu lực từ $date';
+  }
+
+  @override
+  String taxPolicyDeleteConfirm(String date) {
+    return 'Xoá chính sách hiệu lực từ $date? Các kỳ lương sau ngày này sẽ dùng chính sách trước đó khi tính lại.';
+  }
+
+  @override
+  String taxPolicyUpdatedBy(String by) {
+    return 'Cập nhật bởi $by';
+  }
+
+  @override
+  String get taxPersonalDeduction => 'Giảm trừ bản thân / tháng';
+
+  @override
+  String get taxDependentDeduction => 'Giảm trừ mỗi người phụ thuộc / tháng';
+
+  @override
+  String get taxBrackets => 'Biểu thuế lũy tiến';
+
+  @override
+  String get taxBracketsHint =>
+      'Theo thu nhập tính thuế mỗi tháng; bậc cuối áp cho phần còn lại.';
+
+  @override
+  String taxBracketUpTo(String amount, String rate) {
+    return 'đến $amount: $rate';
+  }
+
+  @override
+  String taxBracketAbove(String amount, String rate) {
+    return 'trên $amount: $rate';
+  }
+
+  @override
+  String get taxBracketUpToLabel => 'Đến (thu nhập tính thuế)';
+
+  @override
+  String get taxBracketRest => 'Phần còn lại';
+
+  @override
+  String get taxBracketRate => 'Thuế suất';
+
+  @override
+  String get taxBracketAdd => 'Thêm bậc';
+
+  @override
+  String get taxReferenceWage => 'Mức tham chiếu (lương cơ sở)';
+
+  @override
+  String taxInsuranceCap(String amount, String multiplier) {
+    return 'trần BHXH/BHYT $amount ($multiplier ×)';
+  }
+
+  @override
+  String get taxCapMultiplier => 'Trần BHXH/BHYT';
+
+  @override
+  String get taxMinWages => 'Lương tối thiểu vùng';
+
+  @override
+  String get taxUnemploymentCap => 'Trần BHTN';
+
+  @override
+  String taxUnemploymentCapValue(String multiplier) {
+    return '$multiplier × lương tối thiểu vùng của công ty';
+  }
+
+  @override
+  String get taxUnemploymentCapMultiplier =>
+      'Trần BHTN (× lương tối thiểu vùng)';
+
+  @override
+  String get taxPolicyNote => 'Ghi chú / căn cứ pháp lý';
+
+  @override
+  String get taxPolicyFormInvalid =>
+      'Vui lòng nhập đủ các số tiền, hệ số và thuế suất.';
+
+  @override
+  String get minWageRegionLabel => 'Vùng lương tối thiểu';
+
+  @override
+  String minWageRegionOption(int region) {
+    return 'Vùng $region';
+  }
+
+  @override
+  String minWageRegionShort(int region) {
+    return 'Vùng $region';
+  }
+
+  @override
+  String get minWageRegionHelper =>
+      'Dùng để tính trần lương đóng BHTN (20 × lương tối thiểu vùng). Thông số do quản trị hệ thống cập nhật.';
+
+  @override
+  String get payslipInsuranceBase => 'Lương đóng BHXH/BHYT';
+
+  @override
+  String get payslipFamilyDeduction => 'Giảm trừ gia cảnh';
+
+  @override
+  String get auditActTaxPolicyCreate => 'Thêm chính sách thuế / BH';
+
+  @override
+  String get auditActTaxPolicyUpdate => 'Sửa chính sách thuế / BH';
+
+  @override
+  String get auditActTaxPolicyDelete => 'Xoá chính sách thuế / BH';
+
+  @override
+  String get currencyVndSuffix => 'đ';
+
+  @override
+  String get multiplierSuffix => '×';
 }

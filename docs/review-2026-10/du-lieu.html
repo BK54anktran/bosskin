@@ -29,8 +29,8 @@
 <main>
   <section class="hero">
     <h1>2. Mô hình dữ liệu</h1>
-    <p>MySQL 8, 39 bảng, quản lý bằng Flyway: <code>V1__baseline.sql</code> gộp 117 migration cũ (10/2026, trước go-live), tiếp theo V2 → V12 với <code>ddl-auto: validate</code>. Multi-tenant chung schema: hầu hết bảng có <code>company_id</code>, việc lọc theo công ty làm ở tầng ứng dụng (không có row-level security). <code>BaseEntity</code> chỉ có <code>created_at/updated_at</code>, không có <code>created_by/updated_by</code>.</p>
-      <p class="meta">Cập nhật 09/10/2026 theo schema trên <code>main</code> (V12). Bảng mới sau review: <code>attendance_period_locks</code> (V2), <code>shift_rotations</code>, <code>shift_swap_requests</code> (V5), <code>leave_ledger_entries</code> (V8), <code>audit_logs</code> (V9), <code>trial_requests</code> (V12). Ngoài MySQL, yêu cầu dùng thử và lịch đăng bài nằm trên Supabase (<code>landing/supabase/</code>).</p>
+    <p>MySQL 8, 40 bảng, quản lý bằng Flyway: <code>V1__baseline.sql</code> gộp 117 migration cũ (10/2026, trước go-live), tiếp theo V2 → V13 với <code>ddl-auto: validate</code>. Multi-tenant chung schema: hầu hết bảng có <code>company_id</code>, việc lọc theo công ty làm ở tầng ứng dụng (không có row-level security). <code>BaseEntity</code> chỉ có <code>created_at/updated_at</code>, không có <code>created_by/updated_by</code>.</p>
+      <p class="meta">Cập nhật 09/10/2026 theo schema trên <code>main</code> (V13). Bảng mới sau review: <code>attendance_period_locks</code> (V2), <code>shift_rotations</code>, <code>shift_swap_requests</code> (V5), <code>leave_ledger_entries</code> (V8), <code>audit_logs</code> (V9), <code>trial_requests</code> (V12), <code>tax_policies</code> (V13). Ngoài MySQL, yêu cầu dùng thử và lịch đăng bài nằm trên Supabase (<code>landing/supabase/</code>).</p>
   </section>
 
   <h2>Sơ đồ quan hệ (ER)</h2>
@@ -290,6 +290,13 @@ erDiagram
       enum status
       varchar handled_by
     }
+    TAX_POLICIES {
+      bigint id PK
+      date effective_from UK
+      decimal personal_deduction
+      varchar pit_brackets
+      decimal reference_wage
+    }
     COMPANIES ||--o{ DEPARTMENTS : has
     COMPANIES ||--o{ EMPLOYEES : employs
     COMPANIES ||--o{ USERS : has
@@ -357,7 +364,7 @@ erDiagram
       <tr><td><b>Tài khoản & quyền</b></td><td><code>users</code>, <code>roles</code>, <code>permissions</code>, <code>role_permissions</code>, <code>user_roles</code>, <code>user_permissions</code>, <code>role_/user_permission_dept_scopes</code>, <code>user_sessions</code></td><td>Email đăng nhập duy nhất toàn hệ thống (theo <code>email_key</code>). 44 mã quyền. Scope dùng mã âm cho phạm vi đặc biệt; "toàn công ty" ghi tường minh. <code>users</code> có cờ bắt đổi mật khẩu và 2FA.</td></tr>
       <tr><td><b>Ca & chấm công</b></td><td><code>work_shifts</code>, <code>department_shifts</code>, <code>shift_assignments</code>, <code>shift_rotations</code>, <code>shift_swap_requests</code>, <code>attendances</code>, <code>attendance_requests</code>, <code>attendance_approve_leaves</code>, <code>attendance_period_locks</code></td><td>Ca <code>FIXED</code> / <code>FLEXIBLE</code>; mỗi ca (slot) một dòng công, tối đa 4 ca/ngày, unique theo <code>slot_key</code>. Snapshot giờ, loại ca và số phút khi phân ca/duyệt. Khoá kỳ theo tháng + ngày chốt. <code>attendances</code> không có <code>company_id</code> (lọc qua nhân viên; index tra cứu V10).</td></tr>
       <tr><td><b>Nghỉ phép</b></td><td><code>leave_types</code>, <code>leave_accrual_rules</code>, <code>leave_grants</code>, <code>leave_requests</code>, <code>leave_ledger_entries</code></td><td>Quỹ phép gắn loại (<code>leave_type_id</code> NULL = quỹ chung); loại phép có cờ <code>requires_balance</code>. Sổ trừ/hoàn ghi phần đổi trên từng quỹ theo đơn. Đơn nhiều ngày = đơn cha + đơn con theo ngày có ca. <code>@Version</code> chống trừ song song.</td></tr>
-      <tr><td><b>Lương</b></td><td><code>salary_grades</code>, <code>salary_formulas</code>, <code>formula_variables</code>, <code>payrolls</code></td><td>Bậc lương DAILY/HOURLY. Công thức gross/net + biến JSON, biến hệ thống tính trước/sau GROSS. Mỗi NV một phiếu/tháng (unique), lưu người duyệt/người trả, <code>@Version</code>.</td></tr>
+      <tr><td><b>Lương</b></td><td><code>salary_grades</code>, <code>salary_formulas</code>, <code>formula_variables</code>, <code>payrolls</code>, <code>tax_policies</code></td><td>Bậc lương DAILY/HOURLY. Thuế / BH theo chính sách hiệu lực ở ngày cuối kỳ (giảm trừ, biểu thuế, trần BH; dùng chung mọi công ty, V13), phiếu lưu giảm trừ gia cảnh và lương đóng BH đã dùng. Công thức gross/net + biến JSON, biến hệ thống tính trước/sau GROSS. Mỗi NV một phiếu/tháng (unique), lưu người duyệt/người trả, <code>@Version</code>.</td></tr>
       <tr><td><b>Nhật ký</b></td><td><code>audit_logs</code>, <code>excel_history</code>, <code>fcm_notification_logs</code></td><td><code>audit_logs</code>: ai làm gì (người dùng, system admin, impersonate), mã request, IP. Chưa có chính sách xoá dữ liệu cũ.</td></tr>
       <tr><td><b>Bán hàng</b></td><td><code>trial_requests</code></td><td>Kho dự phòng cho yêu cầu dùng thử khi backend không cấu hình Supabase; nguồn chính là bảng cùng tên trên Supabase.</td></tr>
     </tbody>
@@ -383,7 +390,7 @@ erDiagram
   <h2>Dữ liệu HR còn thiếu</h2>
   <div class="grid g3">
     <div class="card"><b>Hợp đồng lao động</b><p class="lead">Loại HĐ, số HĐ, ngày ký/hiệu lực/hết hạn, phụ lục, lương & phụ cấp theo HĐ, cảnh báo sắp hết hạn.</p></div>
-    <div class="card"><b>Thuế & bảo hiểm</b><p class="lead">MST cá nhân, số sổ BHXH, mức lương đóng BH, người phụ thuộc (giảm trừ gia cảnh).</p></div>
+    <div class="card"><b>Thuế & bảo hiểm</b><p class="lead">MST cá nhân, số sổ BHXH, mức lương đóng BH, người phụ thuộc (giảm trừ gia cảnh). <i>Đã có (V13): thông số thuế / trần BH theo ngày hiệu lực; còn thiếu phần của từng nhân viên (bước M).</i></p></div>
     <div class="card"><b>Lịch sử công tác</b><p class="lead">Thuyên chuyển phòng ban/chức vụ/bậc lương có ngày hiệu lực; hiện cập nhật đè.</p></div>
     <div class="card"><b>Tài liệu nhân sự</b><p class="lead">CCCD scan, bằng cấp, HĐ đã ký gắn vào nhân viên, phân loại, hạn.</p></div>
     <div class="card"><b>Ngày lễ & lịch làm việc</b><p class="lead">Bảng ngày lễ, lịch tuần theo phòng ban (T7 nửa ngày...), hiện cuối tuần đang cố định T7/CN.</p></div>

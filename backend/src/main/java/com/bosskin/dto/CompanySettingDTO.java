@@ -43,6 +43,8 @@ public class CompanySettingDTO {
     public static class PayrollSetting {
         private int standardWorkDays;
         private int payrollCutoffDay;
+        /** Vùng lương tối thiểu 1–4 (trần BHTN), V13. */
+        private int minWageRegion;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -85,6 +87,8 @@ public class CompanySettingDTO {
     public static class PayrollUpsert {
         @NotNull private Integer standardWorkDays;
         @NotNull private Integer payrollCutoffDay;
+        /** Không gửi = giữ nguyên. */
+        private Integer minWageRegion;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

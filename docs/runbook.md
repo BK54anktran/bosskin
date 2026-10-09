@@ -162,3 +162,17 @@ rồi `flutter build apk --release --dart-define=API_HOST=...`.
   (`TRIAL_MAX_PER_IP_HOUR`).
 - Supabase không gọi được (sai khoá, mất mạng) → tab báo `error.trial.store_unavailable`; dữ liệu vẫn nằm trên Supabase, xem tạm ở Dashboard.
 - Đây là dữ liệu cá nhân của khách: chỉ system admin xem; form có ô đồng ý liên hệ. Không đưa khoá bí mật vào trang hay vào git.
+
+## 13. Thông số thuế TNCN và bảo hiểm (bước I)
+
+- Bảng `tax_policies` (V13) giữ giảm trừ bản thân / người phụ thuộc, biểu thuế lũy tiến, mức tham chiếu (trần BHXH/BHYT = hệ số × mức
+  tham chiếu) và lương tối thiểu 4 vùng (trần BHTN = hệ số × lương tối thiểu vùng). Dùng chung mọi công ty; mỗi công ty chọn vùng ở
+  Cài đặt công ty → Lương.
+- Kỳ lương dùng chính sách có ngày hiệu lực gần nhất **trước hoặc bằng ngày cuối kỳ**. Phiếu đã duyệt / đã trả không đổi; phiếu nháp
+  đổi khi bấm Tính lại.
+- Khi luật đổi (lương cơ sở, lương tối thiểu vùng, mức giảm trừ, biểu thuế): system admin vào /admin → tab "Thuế & BH" → "Thêm chính
+  sách" với ngày hiệu lực mới (form điền sẵn từ chính sách gần nhất), ghi căn cứ pháp lý vào ô ghi chú. Không sửa chính sách cũ đã dùng
+  cho kỳ đã chốt. Mọi thao tác ghi nhật ký `TAX_POLICY_CREATE/UPDATE/DELETE`.
+- Dữ liệu có sẵn khi migrate: 01/07/2024 (11 triệu / 4,4 triệu, 7 bậc, mức tham chiếu 2.340.000), 01/01/2026 (15,5 / 6,2 triệu, 5 bậc,
+  lương tối thiểu vùng NĐ 293/2025), 01/07/2026 (mức tham chiếu 2.530.000). Đối chiếu văn bản gốc trước khi chạy lương thật.
+- Không có chính sách nào hiệu lực cho kỳ → tạo lương báo `error.tax_policy.not_found`.

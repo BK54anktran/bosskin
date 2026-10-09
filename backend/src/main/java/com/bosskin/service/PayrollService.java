@@ -6,6 +6,7 @@ import com.bosskin.entity.Company;
 import com.bosskin.entity.Employee;
 import com.bosskin.entity.FormulaVariable;
 import com.bosskin.entity.Payroll;
+import com.bosskin.entity.TaxPolicy;
 import com.bosskin.entity.SalaryFormula;
 import com.bosskin.entity.SalaryHistory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +38,6 @@ public class PayrollService {
     private static final BigDecimal DEFAULT_SOCIAL_INS_RATE   = new BigDecimal("0.08");
     private static final BigDecimal DEFAULT_HEALTH_INS_RATE   = new BigDecimal("0.015");
     private static final BigDecimal DEFAULT_UNEMPLOYMENT_RATE = new BigDecimal("0.01");
-    private static final BigDecimal PERSONAL_DEDUCTION        = new BigDecimal("11000000");
 
     private final PayrollRepository          payrollRepository;
     private final EmployeeRepository         employeeRepository;
@@ -48,6 +48,7 @@ public class PayrollService {
     private final FormulaEngine              formulaEngine;
     private final com.bosskin.repository.AttendanceApproveLeaveRepository approveLeaveRepository;
     private final ObjectMapper               objectMapper;
+    private final TaxPolicyService           taxPolicyService;
 
     @Transactional
     public Payroll generatePayroll(Long employeeId, int year, int month) {
@@ -86,6 +87,15 @@ public class PayrollService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
 
         PayrollPeriod period = PayrollPeriod.of(year, month, employee.getCompany().getPayrollCutoffDay());
+        // Bước I: thông số thuế / BH theo chính sách hiệu lực ở ngày cuối kỳ; PIT_VN dùng biểu của chính sách đó
+        TaxPolicy policy = taxPolicyService.forDate(period.to());
+        return formulaEngine.withPitBrackets(taxPolicyService.bracketsOf(policy),
+            () -> computePayroll(employee, period, policy, year, month, formulaId, inlineFormula, manual));
+    }
+
+    private Payroll computePayroll(Employee employee, PayrollPeriod period, TaxPolicy policy, int year, int month,
+                                   Long formulaId, SalaryFormula inlineFormula, ManualAdjustments manual) {
+        Long employeeId = employee.getId();
 
         BigDecimal baseSalary;
         if (employee.getSalaryGrade() != null) {
@@ -153,6 +163,7 @@ public class PayrollService {
         Map<String, Payroll.DeductionEntry> allowanceEntries = new java.util.LinkedHashMap<>();
 
         Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period);
+        putTaxPolicyVars(vars, policy, employee, baseSalary);
 
         List<FormulaVariable> globalVarList = formulaVariableRepository
             .findByCompanyIdOrderByName(employee.getCompany().getId());
@@ -195,10 +206,9 @@ public class PayrollService {
             // Giai đoạn 2: biến phụ thuộc GROSS (trừ bảo hiểm/thuế hệ thống)
             vars = formulaEngine.resolveCustomVarsExcept(usedCustomExprs, vars, systemComputed);
 
-            // Bảo hiểm tính trên lương hợp đồng nếu có, không thì trên đơn giá bậc lương
-            BigDecimal contractSalary = employee.getContractSalary();
-            BigDecimal insuranceBase = contractSalary != null && contractSalary.compareTo(BigDecimal.ZERO) > 0
-                ? contractSalary : baseSalary;
+            // Bảo hiểm tính trên lương HĐ (không có thì đơn giá bậc lương), đã áp trần theo chính sách (bước I)
+            BigDecimal insuranceBase    = vars.get("INSURANCE_BASE");
+            BigDecimal unemploymentBase = vars.get("UNEMPLOYMENT_BASE");
             BigDecimal socialRate   = vars.getOrDefault("SOCIAL_INS_RATE",  DEFAULT_SOCIAL_INS_RATE);
             BigDecimal healthRate   = vars.getOrDefault("HEALTH_INS_RATE",  DEFAULT_HEALTH_INS_RATE);
             BigDecimal unemployRate = vars.getOrDefault("UNEMPLOYMENT_RATE", DEFAULT_UNEMPLOYMENT_RATE);
@@ -207,10 +217,10 @@ public class PayrollService {
             healthInsurance       = vars.getOrDefault("HEALTH_INS",
                     insuranceBase.multiply(healthRate)).setScale(2, RoundingMode.HALF_UP);
             unemploymentInsurance = vars.getOrDefault("UNEMPLOYMENT_INS",
-                    insuranceBase.multiply(unemployRate)).setScale(2, RoundingMode.HALF_UP);
+                    unemploymentBase.multiply(unemployRate)).setScale(2, RoundingMode.HALF_UP);
             BigDecimal taxableIncome = grossSalary
                 .subtract(socialInsurance).subtract(healthInsurance)
-                .subtract(unemploymentInsurance).subtract(PERSONAL_DEDUCTION);
+                .subtract(unemploymentInsurance).subtract(vars.get("FAMILY_DEDUCTION"));
             personalIncomeTax = vars.getOrDefault("PIT",
                     taxableIncome.compareTo(BigDecimal.ZERO) > 0
                         ? FormulaEngine.pitVN(taxableIncome) : BigDecimal.ZERO);
@@ -259,6 +269,8 @@ public class PayrollService {
             .salaryGradeCode(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getCode() : null)
             .salaryGradeName(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getName() : null)
             .standardWorkDays(employee.getCompany().getStandardWorkDays())
+            .familyDeduction(vars.get("FAMILY_DEDUCTION"))
+            .insuranceBase(vars.get("INSURANCE_BASE"))
             .periodFrom(period.from())
             .periodTo(period.to())
             .presentDays((int) presentDays)
@@ -329,6 +341,8 @@ public class PayrollService {
         dst.setSalaryGradeCode(src.getSalaryGradeCode());
         dst.setSalaryGradeName(src.getSalaryGradeName());
         dst.setStandardWorkDays(src.getStandardWorkDays());
+        dst.setFamilyDeduction(src.getFamilyDeduction());
+        dst.setInsuranceBase(src.getInsuranceBase());
         dst.setPeriodFrom(src.getPeriodFrom());
         dst.setPeriodTo(src.getPeriodTo());
         dst.setPresentDays(src.getPresentDays());
@@ -460,6 +474,31 @@ public class PayrollService {
     /** Biến hệ thống chỉ có giá trị sau khi tính GROSS. */
     private static final java.util.Set<String> SYSTEM_COMPUTED_VARS = java.util.Set.of(
         "SOCIAL_INS", "HEALTH_INS", "UNEMPLOYMENT_INS", "TOTAL_INSURANCE", "PIT");
+
+    /**
+     * Bước I: biến thuế / BH theo chính sách của kỳ. Lương đóng BH = lương HĐ (không có thì đơn giá bậc lương),
+     * BHXH/BHYT tối đa {@code insurance_cap_multiplier} × mức tham chiếu, BHTN tối đa
+     * {@code unemployment_cap_multiplier} × lương tối thiểu vùng của công ty. Người phụ thuộc: bước M (hiện 0).
+     */
+    private static void putTaxPolicyVars(Map<String, BigDecimal> vars, TaxPolicy policy, Employee employee,
+                                         BigDecimal baseSalary) {
+        BigDecimal contractSalary = employee.getContractSalary();
+        BigDecimal raw = contractSalary != null && contractSalary.signum() > 0 ? contractSalary : baseSalary;
+        if (raw == null) raw = BigDecimal.ZERO;
+        BigDecimal insuranceCap = policy.getReferenceWage()
+            .multiply(BigDecimal.valueOf(policy.getInsuranceCapMultiplier()));
+        BigDecimal unemploymentCap = policy.minWageOfRegion(employee.getCompany().getMinWageRegion())
+            .multiply(BigDecimal.valueOf(policy.getUnemploymentCapMultiplier()));
+        BigDecimal dependents = BigDecimal.ZERO;
+        vars.put("PERSONAL_DEDUCTION",  policy.getPersonalDeduction());
+        vars.put("DEPENDENT_DEDUCTION", policy.getDependentDeduction());
+        vars.put("DEPENDENTS",          dependents);
+        vars.put("FAMILY_DEDUCTION",    policy.getPersonalDeduction().add(policy.getDependentDeduction().multiply(dependents)));
+        vars.put("INSURANCE_CAP",       insuranceCap);
+        vars.put("INSURANCE_BASE",      raw.min(insuranceCap));
+        vars.put("UNEMPLOYMENT_CAP",    unemploymentCap);
+        vars.put("UNEMPLOYMENT_BASE",   raw.min(unemploymentCap));
+    }
 
     private Map<String, BigDecimal> buildFormulaVariables(
             List<Attendance> attendances, BigDecimal baseRate,
