@@ -147,6 +147,72 @@
     </tbody>
   </table></div>
 
+  <h3 id="hr">Dữ liệu HR &amp; lịch làm việc <span class="tag">lập 09/10/2026</span></h3>
+  <p class="muted">Gom các phần HR còn thiếu thành 6 bước (I–N). Thứ tự xếp theo rủi ro: lương 2026 đang tính sai thuế nên sửa trước; ngày lễ cần xong trước 24/11 và Tết 2027 (kỳ pilot); lịch sử công tác làm nền cho quản lý trực tiếp, hợp đồng, BH. Mỗi bước: migration Flyway mới, entity/DTO, quyền + phạm vi, nhật ký thao tác, xuất/nhập Excel qua <code>/preview-import</code>, l10n vi/en, design, seed TH company, test, cập nhật trang Dữ liệu/Luồng nghiệp vụ.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Bước</th><th>Nội dung</th><th>Dữ liệu &amp; API</th><th>Xong khi</th><th>Ước lượng</th><th>Trạng thái</th></tr></thead>
+    <tbody>
+      <tr><td><b>I</b> · Thuế TNCN 2026 <span class="sev crit">gấp</span></td><td>
+        <ul class="clean">
+          <li>Hiện <code>PayrollService</code> cố định giảm trừ bản thân 11 triệu và <code>FormulaEngine.pitVN</code> dùng biểu 7 bậc — đã cũ: từ kỳ tính thuế 2026 giảm trừ bản thân 15,5 triệu, người phụ thuộc 6,2 triệu/người (NQ 110/2025/UBTVQH15); biểu lũy tiến 5 bậc 5/10/20/30/35% với ngưỡng 10/30/60/100 triệu (Luật Thuế TNCN 109/2025/QH15).</li>
+          <li>Đưa các thông số vào bảng chính sách thuế/BH có ngày hiệu lực thay cho hằng số; thêm trần đóng BH (BHXH/BHYT 20 × mức tham chiếu, BHTN 20 × lương tối thiểu vùng).</li>
+        </ul></td>
+        <td><code>V13</code> <code>tax_policies</code> (effective_from, personal_deduction, dependent_deduction, brackets JSON, insurance_ref_wage, cap multipliers) + <code>companies.region</code> (vùng I–IV, NĐ 293/2025). System admin sửa ở /admin; biến <code>PERSONAL_DEDUCTION</code>, <code>DEPENDENT_DEDUCTION</code>, <code>INSURANCE_BASE</code>.</td>
+        <td>Bộ phiếu lương mẫu 2026 khớp số tính tay (lương 20/50/120 triệu, có/không người phụ thuộc, lương vượt trần BH); phiếu kỳ 2025 tính lại vẫn ra số cũ</td><td class="nw">2 BE · 1 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>J</b> · Ngày lễ &amp; lịch làm việc</td><td>
+        <ul class="clean">
+          <li>Bảng ngày lễ theo năm: mẫu hệ thống (Tết Dương, Tết Âm, 10/3 ÂL, 30/4, 1/5, 2/9 và ngày liền kề, 24/11 từ 01/07/2026 theo NQ 28/2026/QH16) + công ty chỉnh, thêm ngày nghỉ bù / hoán đổi.</li>
+          <li>Lịch tuần theo công ty, ghi đè theo phòng ban: mỗi thứ là nghỉ / nửa ngày / cả ngày (vd. T7 làm sáng). Bỏ 5 chỗ đang cố định T7/CN trong <code>AttendanceController</code>, <code>AttendanceExcelService</code>, <code>ShiftExcelService</code>.</li>
+          <li>Ảnh hưởng: công chuẩn kỳ tính từ lịch (tuỳ chọn giữ số cố định 22); biến <code>HOLIDAY_DAYS</code> (lễ hưởng lương), <code>HOLIDAY_OT_HOURS</code> (làm ngày lễ); đơn nghỉ không tính ngày lễ; xoay ca có tuỳ chọn bỏ qua ngày lễ.</li>
+        </ul></td>
+        <td><code>V14</code> <code>holidays</code> (company_id NULL = mẫu hệ thống, date, name, paid, type HOLIDAY/COMPENSATORY/SWAP_WORKDAY), <code>work_calendars</code> + <code>work_calendar_days</code>, <code>departments.work_calendar_id</code>. API <code>/api/v1/holidays</code>, <code>/api/v1/work-calendars</code>; quyền <code>CALENDAR_VIEW</code>/<code>CALENDAR_MANAGE</code>. FE: tab "Lịch làm việc" trong Cài đặt công ty, ngày lễ tô màu ở lưới phân ca và bảng công.</td>
+        <td>Kỳ 11/2026 nghỉ 24/11 có lương; phòng làm T7 nửa ngày ra công chuẩn đúng; làm ngày lễ ra giờ OT lễ; import lịch Tết 2027 qua xem trước</td><td class="nw">4 BE · 3 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>K</b> · Lịch sử công tác + quản lý trực tiếp</td><td>
+        <ul class="clean">
+          <li>Mỗi thay đổi phòng ban / chức vụ / bậc lương / quản lý là một bản ghi có ngày hiệu lực và lý do (tuyển mới, thuyên chuyển, thăng chức, điều chỉnh lương); hồ sơ NV giữ bản hiện hành, bản tương lai tự áp dụng đúng ngày. Hết cập nhật đè.</li>
+          <li><code>employees.manager_id</code> (quản lý trực tiếp, chặn vòng lặp); sơ đồ tổ chức theo người và theo phòng ban (đã có <code>departments.manager_id</code>).</li>
+          <li>Luồng duyệt: cài đặt công ty chọn người duyệt đơn nghỉ / đơn chấm công / đổi ca = theo quyền + phạm vi (như hiện tại), hoặc quản lý trực tiếp trước rồi HR; thông báo cho đúng người duyệt.</li>
+          <li>Bảng lương và báo cáo lấy phòng ban / bậc lương theo bản ghi hiệu lực trong kỳ (NV chuyển giữa kỳ vẫn đúng).</li>
+        </ul></td>
+        <td><code>V15</code> <code>employee_job_histories</code> (effective_from, change_type, department_id, position_id, salary_grade_id, manager_id, note, created_by), <code>employees.manager_id</code>; nạp bản ghi đầu tiên từ dữ liệu hiện có. API <code>/api/v1/employees/{id}/job-histories</code>, <code>/api/v1/org-chart</code>. FE: tab "Quá trình công tác" trong hồ sơ NV, màn "Sơ đồ tổ chức".</td>
+        <td>Chuyển phòng có hiệu lực tương lai không đổi dữ liệu hôm nay; quản lý trực tiếp thấy và duyệt đơn cấp dưới khi bật chế độ đó; không tạo được vòng quản lý</td><td class="nw">5 BE · 5 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>L</b> · Hợp đồng lao động</td><td>
+        <ul class="clean">
+          <li>Loại HĐ theo Bộ luật Lao động 2019: thử việc, xác định thời hạn (≤ 36 tháng), không xác định thời hạn; thêm thời vụ / cộng tác (không đóng BH) để phân loại.</li>
+          <li>Số HĐ (đánh số theo mẫu công ty), ngày ký, ngày hiệu lực, ngày hết hạn, trạng thái (nháp, hiệu lực, hết hạn, chấm dứt); phụ lục có ngày hiệu lực sửa lương / phụ cấp / chức danh.</li>
+          <li>Lương &amp; phụ cấp theo HĐ (phụ cấp có cờ tính BH / chịu thuế), lương đóng BH. Bảng lương lấy theo HĐ + phụ lục hiệu lực trong kỳ, thay cột <code>employees.contract_salary</code> (xoá cột sau khi chuyển dữ liệu).</li>
+          <li>Cảnh báo: HĐ / thử việc sắp hết hạn (mặc định trước 30 ngày, cài được), ô trên Tổng quan, thông báo cho HR, danh sách "cần gia hạn"; chặn hai HĐ hiệu lực chồng nhau.</li>
+        </ul></td>
+        <td><code>V16</code> <code>labor_contracts</code>, <code>contract_appendices</code>, <code>contract_allowances</code>; quyền <code>CONTRACT_VIEW</code>/<code>CONTRACT_EDIT</code>/<code>CONTRACT_DELETE</code> (phạm vi theo view). API <code>/api/v1/contracts</code> (+ preview-import/import, xuất Excel, <code>/expiring</code>). Biến lương <code>CONTRACT_SALARY</code>, <code>INSURANCE_SALARY</code>, <code>ALLOWANCE_*</code>. Nhật ký <code>CONTRACT_*</code>.</td>
+        <td>Lương kỳ có phụ lục tăng lương giữa kỳ tính đúng; HĐ hết hạn sau 30 ngày hiện cảnh báo; xuất → sửa → nhập lại HĐ không lệch</td><td class="nw">6 BE · 5 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>M</b> · Thuế &amp; bảo hiểm của nhân viên</td><td>
+        <ul class="clean">
+          <li>MST cá nhân, số sổ BHXH, nơi đăng ký KCB, ngày tham gia BH; lương đóng BH lấy từ HĐ (bước L), có sàn / trần theo bước I.</li>
+          <li>Người phụ thuộc: họ tên, quan hệ, ngày sinh, MST / CCCD, giảm trừ từ tháng → đến tháng, trạng thái đăng ký với cơ quan thuế. Bảng lương tự tính <code>DEPENDENTS</code> và giảm trừ gia cảnh theo tháng của kỳ.</li>
+          <li>Phần doanh nghiệp đóng (BHXH 17,5%, BHYT 3%, BHTN 1% — cấu hình được) hiện trên báo cáo chi phí lương; báo cáo danh sách đóng BH, danh sách người phụ thuộc.</li>
+        </ul></td>
+        <td><code>V17</code> cột <code>tax_code</code>, <code>social_insurance_no</code>, <code>health_insurance_place</code>, <code>insurance_join_date</code> ở <code>employees</code>; bảng <code>employee_dependents</code>. Trường nhạy cảm che bớt khi hiển thị, chỉ người có quyền mới xem đủ (<code>EMPLOYEE_SENSITIVE_VIEW</code>, gồm cả CCCD, số tài khoản — đóng D5).</td>
+        <td>NV có 2 người phụ thuộc ra thuế đúng; người phụ thuộc hết hạn giữa năm thôi giảm trừ đúng tháng; người không có quyền chỉ thấy MST / CCCD đã che</td><td class="nw">4 BE · 3 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>N</b> · Tài liệu nhân sự</td><td>
+        <ul class="clean">
+          <li>Gắn file vào NV: CCCD 2 mặt, bằng cấp / chứng chỉ, HĐ và phụ lục đã ký (liên kết bản ghi HĐ), giấy khám sức khoẻ…; danh mục loại tài liệu do công ty cấu hình, có cờ "bắt buộc" và "có hạn".</li>
+          <li>Ngày cấp / hết hạn, cảnh báo sắp hết hạn dùng chung cơ chế với bước L; danh sách NV còn thiếu tài liệu bắt buộc.</li>
+          <li>File lưu S3 riêng tư, chỉ trả link ký tạm (vài phút) — hiện upload trả URL công khai, không dùng được cho giấy tờ cá nhân; mỗi lần xem / tải ghi nhật ký.</li>
+          <li>NV tự xem và gửi bổ sung tài liệu của mình (qua luồng yêu cầu chỉnh sửa hồ sơ có sẵn).</li>
+        </ul></td>
+        <td><code>V18</code> <code>document_types</code>, <code>employee_documents</code> (type, file_key, issued_on, expires_on, contract_id, uploaded_by, xoá mềm). <code>S3Service</code> thêm upload riêng tư + presigned GET. Quyền <code>EMPLOYEE_DOCUMENT_VIEW</code>/<code>EMPLOYEE_DOCUMENT_EDIT</code>. Nhật ký <code>DOCUMENT_UPLOAD/VIEW/DELETE</code>.</td>
+        <td>Link tài liệu hết hạn sau vài phút; người ngoài phạm vi không xem được; tài liệu sắp hết hạn có cảnh báo</td><td class="nw">4 BE · 4 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">Tổng ≈ 25 ngày BE + 21 ngày FE (đội 1 BE + 1 FE ≈ 5–6 tuần). I và J nên xong trước kỳ lương tháng 11/2026; K → L → M phụ thuộc nhau theo thứ tự; N làm song song với M được. Mobile: chỉ thêm phần NV tự xem (HĐ của tôi, người phụ thuộc, tài liệu của tôi); quản lý dữ liệu HR làm trên web.</p>
+  <div class="note"><b>Cần chủ dự án chốt</b> (đề xuất in đậm)
+    <ul class="clean">
+      <li>Ngày lễ: <b>hệ thống cấp mẫu theo năm, công ty chỉnh lại</b> — hay mỗi công ty tự nhập từ đầu?</li>
+      <li>Nguồn lương: <b>hợp đồng + phụ lục là nguồn lương / lương đóng BH duy nhất</b>, bỏ <code>employees.contract_salary</code> và gộp <code>salary_histories</code> vào lịch sử HĐ — hay giữ song song?</li>
+      <li>Duyệt theo quản lý trực tiếp: <b>tuỳ chọn theo công ty, mặc định giữ cách duyệt theo quyền + phạm vi như hiện tại</b>?</li>
+      <li>Thông số thuế / BH: <b>system admin cập nhật một chỗ cho mọi công ty</b>; công ty chỉ chọn vùng lương tối thiểu?</li>
+    </ul></div>
+
   <div class="note warn"><b>Việc cần làm ngoài code</b>
     <ul class="clean">
       <li>Trước khi push <code>main</code> (tự deploy): đặt <code>JWT_SECRET</code>, <code>BOOTSTRAP_SYSADMIN_EMAIL/PASSWORD</code>, <code>CORS_ALLOWED_ORIGINS</code>, <code>FIREBASE_SERVICE_ACCOUNT_JSON</code> trên Elastic Beanstalk và tạo lại DB (DB cũ ở V117 không chạy được baseline).</li>
@@ -387,10 +453,10 @@ gantt
   <div class="tbl-wrap"><table>
     <thead><tr><th>Đợt</th><th>Nội dung</th><th>Công</th></tr></thead>
     <tbody>
-      <tr><td>1</td><td>Ngày lễ, lịch tuần theo phòng ban, hệ số OT 150/200/300%, phụ cấp đêm, trần OT, quy đổi giờ → công, phút đi muộn/về sớm</td><td class="nw">2–3 tuần</td></tr>
-      <tr><td>2</td><td>BH theo lương HĐ có trần/sàn, phần doanh nghiệp đóng, người phụ thuộc, biểu thuế và mức giảm trừ cấu hình theo hiệu lực (đối chiếu văn bản 2026) (L4)</td><td class="nw">2–3 tuần</td></tr>
+      <tr><td>1</td><td><s>Ngày lễ, lịch tuần theo phòng ban</s> (→ bước J), hệ số OT 150/200/300%, phụ cấp đêm, trần OT, quy đổi giờ → công, phút đi muộn/về sớm</td><td class="nw">2–3 tuần</td></tr>
+      <tr><td>2</td><td><s>BH theo lương HĐ có trần/sàn, phần doanh nghiệp đóng, người phụ thuộc, biểu thuế và mức giảm trừ cấu hình theo hiệu lực (L4)</s> → đưa lên trước go-live: bước I, M ở <a href="#hr">Dữ liệu HR</a></td><td class="nw">2–3 tuần</td></tr>
       <tr><td>3</td><td>Bậc lương tháng, lịch sử bậc/HĐ, nhiều lần chi trong tháng, phiếu lương PDF/email, file chi lương ngân hàng (L17)</td><td class="nw">3 tuần</td></tr>
-      <tr><td>4</td><td>Hợp đồng lao động, MST, sổ BHXH, lịch sử công tác, mã hoá dữ liệu cá nhân (D5)</td><td class="nw">2 tuần</td></tr>
+      <tr><td>4</td><td><s>Hợp đồng lao động, MST, sổ BHXH, lịch sử công tác</s> → bước K, L, M ở <a href="#hr">Dữ liệu HR</a>; còn lại: mã hoá cột dữ liệu cá nhân (D5)</td><td class="nw">2 tuần</td></tr>
       <tr><td>5</td><td><b>TODO:</b> selfie/khuôn mặt khi chấm công; máy chấm công, QR, Wi-Fi; nghỉ bù</td><td class="nw">3–5 tuần</td></tr>
       <tr><td>6</td><td>Tái cấu trúc: tách file FE lớn, dùng Riverpod, gom kiểm quyền BE thành annotation; dark mode, cỡ chữ hệ thống</td><td class="nw">làm dần</td></tr>
     </tbody>
