@@ -20,7 +20,8 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 | `DB_URL` | ✔ | `jdbc:mysql://<rds-endpoint>:3306/bosskin?sslMode=REQUIRED&serverTimezone=Asia/Ho_Chi_Minh` |
 | `DB_USERNAME`, `DB_PASSWORD` | ✔ | Tài khoản riêng cho app, không dùng master |
 | `JWT_SECRET` | ✔ | ≥ 32 byte ngẫu nhiên: `openssl rand -base64 48`. Thiếu → app không khởi động |
-| `CORS_ALLOWED_ORIGINS` | ✔ (bản web) | `https://app.<tên-miền>` (nhiều giá trị cách dấu phẩy) |
+| `CORS_ALLOWED_ORIGINS` | ✔ (bản web) | `https://app.<tên-miền>,https://<tên-miền trang giới thiệu>` (nhiều giá trị cách dấu phẩy; trang giới thiệu gửi form dùng thử vào API) |
+| `TRIAL_MAX_PER_IP_HOUR` | Không | Số yêu cầu dùng thử tối đa mỗi IP mỗi giờ, mặc định 5 |
 | `BOOTSTRAP_SYSADMIN_EMAIL`, `BOOTSTRAP_SYSADMIN_PASSWORD` | Lần đầu | Chỉ dùng khi DB chưa có system admin. Xoá sau khi đăng nhập được |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có | Nội dung JSON hoặc base64. Không đặt → tắt push |
 | `AWS_S3_BUCKET`, `AWS_REGION` | Nên có | Trên EB dùng IAM role của instance, không cần `AWS_ACCESS_KEY` |
@@ -146,3 +147,12 @@ rồi `flutter build apk --release --dart-define=API_HOST=...`.
 - Đồng hồ máy chủ phải đúng (NTP): mã chấp nhận lệch ±30 giây.
 - Seed dev (`dev\seed-th.cmd`): script tự cài 2FA cho system admin ở lần đầu, ghi khoá vào `backend\.env` (`SEED_SYSADMIN_TOTP_SECRET`)
   và in khoá/mã dự phòng để thêm vào app xác thực.
+
+## 12. Trang giới thiệu và yêu cầu dùng thử
+
+- Trang tĩnh `landing/` (xem `landing/README.md`); đặt `window.BOSSKIN.apiUrl` = địa chỉ backend (hoặc `''` nếu cùng tên miền qua proxy)
+  và thêm tên miền trang vào `CORS_ALLOWED_ORIGINS`.
+- Yêu cầu dùng thử lưu ở bảng `trial_requests`; xử lý tại `/admin` → tab "Yêu cầu dùng thử" (đổi trạng thái, ghi chú, xuất Excel).
+- Chống spam: ô ẩn bẫy bot, bỏ qua gửi trùng số điện thoại trong 10 phút, giới hạn theo IP (`TRIAL_MAX_PER_IP_HOUR`).
+  Bộ đếm nằm trong bộ nhớ một instance; chạy nhiều instance cần WAF/rate limit ở load balancer.
+- Đây là dữ liệu cá nhân của khách: chỉ system admin xem; form có ô đồng ý liên hệ.

@@ -4071,4 +4071,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActCompanyRequire2fa => 'Admin 2FA requirement changed';
+
+  @override
+  String get adminTabTrialRequests => 'Trial requests';
+
+  @override
+  String get trialStatusNew => 'New';
+
+  @override
+  String get trialStatusContacted => 'Contacted';
+
+  @override
+  String get trialStatusTrial => 'On trial';
+
+  @override
+  String get trialStatusRejected => 'Not a fit';
+
+  @override
+  String get trialSearchHint => 'Search name, company, phone, email';
+
+  @override
+  String get trialEmpty => 'No trial requests yet';
+
+  @override
+  String trialEmployees(String size) {
+    return '$size employees';
+  }
+
+  @override
+  String trialNoteLine(String note, String by) {
+    return 'Note: $note — $by';
+  }
+
+  @override
+  String get trialStatusLabel => 'Status';
+
+  @override
+  String get trialNote => 'Handling note';
+
+  @override
+  String get auditActTrialRequestUpdate => 'Trial request handled';
 }

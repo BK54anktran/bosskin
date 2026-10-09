@@ -1414,4 +1414,18 @@
   ,"auditAct2faDisable": "Tắt xác thực 2 lớp"
   ,"auditAct2faReset": "Gỡ xác thực 2 lớp của người khác"
   ,"auditActCompanyRequire2fa": "Bắt buộc 2FA cho quản trị"
+  ,"adminTabTrialRequests": "Yêu cầu dùng thử"
+  ,"trialStatusNew": "Mới"
+  ,"trialStatusContacted": "Đã liên hệ"
+  ,"trialStatusTrial": "Đang dùng thử"
+  ,"trialStatusRejected": "Không phù hợp"
+  ,"trialSearchHint": "Tìm theo tên, công ty, điện thoại, email"
+  ,"trialEmpty": "Chưa có yêu cầu dùng thử nào"
+  ,"trialEmployees": "{size} nhân viên"
+  ,"@trialEmployees": { "placeholders": { "size": { "type": "String" } } }
+  ,"trialNoteLine": "Ghi chú: {note} — {by}"
+  ,"@trialNoteLine": { "placeholders": { "note": { "type": "String" }, "by": { "type": "String" } } }
+  ,"trialStatusLabel": "Trạng thái"
+  ,"trialNote": "Ghi chú xử lý"
+  ,"auditActTrialRequestUpdate": "Xử lý yêu cầu dùng thử"
 }

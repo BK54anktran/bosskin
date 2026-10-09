@@ -332,9 +332,9 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V11** (`V11__two_factor.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
-V10 index chấm công, V11 xác thực 2 lớp
-→ Migration tiếp theo phải là **V12**
+Cao nhất: **V12** (`V12__trial_requests.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử
+→ Migration tiếp theo phải là **V13**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -477,4 +477,8 @@ V10 index chấm công, V11 xác thực 2 lớp
 - `landing/`: trang tĩnh `index.html` (cấu hình `window.BOSSKIN`: appUrl, contactEmail, contactPhone) + `assets/` (ảnh webp, video).
 - Video `landing/assets/bosskin-gioi-thieu.mp4` dựng lại bằng `landing/video/` (seed công ty hư cấu "Nội thất An Phát" trên DB thử,
   chụp màn hình bằng Playwright, giọng edge-tts `vi-VN-HoaiMyNeural`, dựng bằng `make_video.py`). Hướng dẫn: `landing/README.md`.
+- Form dùng thử → `POST /api/v1/public/trial-requests` (công khai, `/api/v1/public/**` permitAll): ô bẫy bot `website`,
+  trùng số điện thoại trong 10 phút bỏ qua, giới hạn `app.trial-request.max-per-ip-hour` (mặc định 5, bộ nhớ 1 instance),
+  bắt buộc `consent`. System admin xử lý ở `/admin/trial-requests` (lọc, đổi trạng thái NEW/CONTACTED/TRIAL/REJECTED + ghi chú,
+  `count-new`, xuất Excel); FE tab "Yêu cầu dùng thử" (`screens/admin/trial_requests_tab.dart`). Chưa gửi email báo (chưa có SMTP).
 - Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).

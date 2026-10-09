@@ -11,6 +11,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../core/config/server_config.dart';
+import 'trial_requests_tab.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -36,13 +37,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   late int _selectedYear;
   late int _selectedMonth;
 
+  // Yêu cầu dùng thử: số yêu cầu mới hiện trên tab
+  int _newTrials = 0;
+
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
     _selectedYear  = now.year;
     _selectedMonth = now.month;
-    _tabCtrl = TabController(length: 2, vsync: this);
+    _tabCtrl = TabController(length: 3, vsync: this);
     _dio = Dio(BaseOptions(
       baseUrl: ServerConfig.adminUrl,
       connectTimeout: const Duration(seconds: 30),
@@ -61,8 +65,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       if (mounted) {
         _loadCompanies();
         _loadStats();
+        _loadNewTrials();
       }
     });
+  }
+
+  Future<void> _loadNewTrials() async {
+    try {
+      final r = await _dio.get('/trial-requests/count-new');
+      if (mounted) setState(() => _newTrials = ((r.data as Map)['count'] as num).toInt());
+    } catch (_) {}
   }
 
   @override
@@ -383,6 +395,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           tabs: [
             Tab(icon: const Icon(Icons.bar_chart_outlined, size: 18), text: s.adminTabOverview),
             Tab(icon: const Icon(Icons.business_outlined, size: 18), text: s.adminTabCompanies),
+            Tab(
+              icon: Badge(
+                isLabelVisible: _newTrials > 0,
+                label: Text('$_newTrials'),
+                child: const Icon(Icons.mark_email_unread_outlined, size: 18),
+              ),
+              text: s.adminTabTrialRequests,
+            ),
           ],
         ),
         actions: [
@@ -405,6 +425,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         children: [
           _buildOverviewTab(),
           _buildCompaniesTab(),
+          TrialRequestsTab(dio: _dio, onChanged: _loadNewTrials),
         ],
       ),
     );

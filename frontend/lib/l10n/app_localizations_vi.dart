@@ -4069,4 +4069,44 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActCompanyRequire2fa => 'Bắt buộc 2FA cho quản trị';
+
+  @override
+  String get adminTabTrialRequests => 'Yêu cầu dùng thử';
+
+  @override
+  String get trialStatusNew => 'Mới';
+
+  @override
+  String get trialStatusContacted => 'Đã liên hệ';
+
+  @override
+  String get trialStatusTrial => 'Đang dùng thử';
+
+  @override
+  String get trialStatusRejected => 'Không phù hợp';
+
+  @override
+  String get trialSearchHint => 'Tìm theo tên, công ty, điện thoại, email';
+
+  @override
+  String get trialEmpty => 'Chưa có yêu cầu dùng thử nào';
+
+  @override
+  String trialEmployees(String size) {
+    return '$size nhân viên';
+  }
+
+  @override
+  String trialNoteLine(String note, String by) {
+    return 'Ghi chú: $note — $by';
+  }
+
+  @override
+  String get trialStatusLabel => 'Trạng thái';
+
+  @override
+  String get trialNote => 'Ghi chú xử lý';
+
+  @override
+  String get auditActTrialRequestUpdate => 'Xử lý yêu cầu dùng thử';
 }

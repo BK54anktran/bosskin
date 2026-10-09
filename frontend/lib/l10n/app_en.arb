@@ -1411,4 +1411,18 @@
   ,"auditAct2faDisable": "Two-factor turned off"
   ,"auditAct2faReset": "Two-factor reset for a user"
   ,"auditActCompanyRequire2fa": "Admin 2FA requirement changed"
+  ,"adminTabTrialRequests": "Trial requests"
+  ,"trialStatusNew": "New"
+  ,"trialStatusContacted": "Contacted"
+  ,"trialStatusTrial": "On trial"
+  ,"trialStatusRejected": "Not a fit"
+  ,"trialSearchHint": "Search name, company, phone, email"
+  ,"trialEmpty": "No trial requests yet"
+  ,"trialEmployees": "{size} employees"
+  ,"@trialEmployees": { "placeholders": { "size": { "type": "String" } } }
+  ,"trialNoteLine": "Note: {note} — {by}"
+  ,"@trialNoteLine": { "placeholders": { "note": { "type": "String" }, "by": { "type": "String" } } }
+  ,"trialStatusLabel": "Status"
+  ,"trialNote": "Handling note"
+  ,"auditActTrialRequestUpdate": "Trial request handled"
 }

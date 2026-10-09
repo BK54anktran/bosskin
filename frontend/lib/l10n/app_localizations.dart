@@ -7666,6 +7666,78 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Bắt buộc 2FA cho quản trị'**
   String get auditActCompanyRequire2fa;
+
+  /// No description provided for @adminTabTrialRequests.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu dùng thử'**
+  String get adminTabTrialRequests;
+
+  /// No description provided for @trialStatusNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới'**
+  String get trialStatusNew;
+
+  /// No description provided for @trialStatusContacted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã liên hệ'**
+  String get trialStatusContacted;
+
+  /// No description provided for @trialStatusTrial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng thử'**
+  String get trialStatusTrial;
+
+  /// No description provided for @trialStatusRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không phù hợp'**
+  String get trialStatusRejected;
+
+  /// No description provided for @trialSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm theo tên, công ty, điện thoại, email'**
+  String get trialSearchHint;
+
+  /// No description provided for @trialEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có yêu cầu dùng thử nào'**
+  String get trialEmpty;
+
+  /// No description provided for @trialEmployees.
+  ///
+  /// In vi, this message translates to:
+  /// **'{size} nhân viên'**
+  String trialEmployees(String size);
+
+  /// No description provided for @trialNoteLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú: {note} — {by}'**
+  String trialNoteLine(String note, String by);
+
+  /// No description provided for @trialStatusLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get trialStatusLabel;
+
+  /// No description provided for @trialNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú xử lý'**
+  String get trialNote;
+
+  /// No description provided for @auditActTrialRequestUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xử lý yêu cầu dùng thử'**
+  String get auditActTrialRequestUpdate;
 }
 
 class _AppLocalizationsDelegate
