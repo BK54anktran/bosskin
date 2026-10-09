@@ -1376,13 +1376,13 @@
   ,"permDescAuditView": "Xem nhật ký thao tác (ai sửa công, duyệt lương, đổi quyền…)"
   ,"bulkApproveMonthButton": "Duyệt cả kỳ"
   ,"bulkApproveMonthTitle": "Duyệt công cả kỳ"
-  ,"bulkApproveMonthDesc": "Duyệt mọi ca chưa duyệt trong kỳ của phòng ban đã chọn. Bỏ qua công của chính bạn, kỳ đã khoá và ngày không có ca."
+  ,"bulkApproveMonthDesc": "Duyệt mọi ca chưa duyệt của các ngày đã qua trong kỳ, theo phòng ban đã chọn. Bỏ qua hôm nay và các ngày sau, dòng chấm thiếu giờ ra/vào (duyệt từng dòng sau khi kiểm tra), công của chính bạn, kỳ đã khoá và ngày không có ca."
   ,"bulkApprovePeriod": "Kỳ công"
   ,"bulkApproveAllDepartments": "Tất cả phòng ban trong phạm vi"
   ,"bulkApproveRun": "Duyệt"
   ,"bulkApproveRunning": "Đang duyệt… (có thể mất tới 1 phút)"
-  ,"bulkApproveResult": "Đã duyệt {approved} · đã duyệt trước {already} · kỳ khoá {locked} · lỗi {failed}"
-  ,"@bulkApproveResult": { "placeholders": { "approved": { "type": "String" }, "already": { "type": "String" }, "locked": { "type": "String" }, "failed": { "type": "String" } } }
+  ,"bulkApproveResult": "Đã duyệt {approved} · đã duyệt trước {already} · chưa hết ngày {notEnded} · chấm thiếu giờ ra/vào {incomplete} · kỳ khoá {locked} · lỗi {failed}"
+  ,"@bulkApproveResult": { "placeholders": { "approved": { "type": "String" }, "already": { "type": "String" }, "locked": { "type": "String" }, "failed": { "type": "String" }, "notEnded": { "type": "String" }, "incomplete": { "type": "String" } } }
   ,"bulkApproveErrors": "Các dòng lỗi"
   ,"auditActAttendanceBulkApprove": "Duyệt công hàng loạt"
   ,"twoFactorTitle": "Xác thực 2 lớp"

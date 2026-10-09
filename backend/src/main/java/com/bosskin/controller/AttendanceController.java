@@ -908,10 +908,19 @@ public class AttendanceController {
         if (audit) auditAttendance("ATTENDANCE_APPROVE", att, null);
     }
 
+    /** Chấm thiếu một đầu: có giờ vào mà không có giờ ra (quên chấm ra) hoặc ngược lại — không duyệt tự động. */
+    private static boolean isIncompletePunch(Attendance a) {
+        boolean hasIn = a.getCheckIn() != null || a.getOverrideCheckIn() != null;
+        boolean hasOut = a.getCheckOut() != null || a.getOverrideCheckOut() != null;
+        return hasIn != hasOut;
+    }
+
     /**
      * Duyệt hàng loạt cả phòng (hoặc cả công ty trong phạm vi) cho một khoảng ngày (≤ 62 ngày).
      * Mỗi dòng chạy trong transaction riêng: dòng lỗi không làm hỏng cả lô. Bỏ qua dòng đã duyệt,
      * ngày thuộc kỳ đã khoá, công của chính mình và ngày không có ca lẫn dữ liệu.
+     * Chỉ duyệt các ngày đã qua (trước hôm nay): ngày hôm nay/tương lai còn đang làm → {@code notEnded}.
+     * Dòng chấm thiếu (có giờ vào mà không có giờ ra, hoặc ngược lại) để quản lý xem từng dòng → {@code incomplete}.
      * Body: { "from": "2026-09-01", "to": "2026-09-30", "departmentId": 4 (tuỳ chọn) }.
      */
     @PostMapping("/approve-bulk")
@@ -942,6 +951,7 @@ public class AttendanceController {
             && (scope.isEmpty() || scope.contains(e.getDepartment().getId()))
             && (selfEmpId == null || !selfEmpId.equals(e.getId()));
 
+        LocalDate today = LocalDate.now(clock);
         List<Attendance> atts = attendanceRepository.findByCompanyAndDateRangeAndDept(companyId, from, to, departmentId);
         Map<String, Attendance> attByKey = new java.util.HashMap<>();
         for (Attendance a : atts) {
@@ -951,13 +961,15 @@ public class AttendanceController {
         // Dòng cần duyệt: mỗi phân ca, cộng bản ghi công không gắn ca nhưng có dữ liệu (làm ngày nghỉ)
         record Row(Employee emp, LocalDate date, Map<String, Object> body) {}
         List<Row> rows = new ArrayList<>();
-        int alreadyApproved = 0, locked = 0;
+        int alreadyApproved = 0, locked = 0, notEnded = 0, incomplete = 0;
         Map<LocalDate, Boolean> lockCache = new java.util.HashMap<>();
         for (ShiftAssignment sa : shiftAssignmentRepository.findByCompanyAndDateRange(companyId, from, to)) {
             Employee e = sa.getEmployee();
             if (!inScope.test(e)) continue;
             Attendance a = attByKey.remove(e.getId() + "|" + sa.getWorkDate() + "|" + sa.getId());
             if (a != null && a.isApproved()) { alreadyApproved++; continue; }
+            if (!sa.getWorkDate().isBefore(today)) { notEnded++; continue; }
+            if (a != null && isIncompletePunch(a)) { incomplete++; continue; }
             if (lockCache.computeIfAbsent(sa.getWorkDate(), d -> periodLockService.isLocked(companyId, d))) { locked++; continue; }
             Map<String, Object> b = new java.util.HashMap<>();
             if (a != null) b.put("attendanceId", a.getId());
@@ -969,6 +981,8 @@ public class AttendanceController {
             boolean hasData = a.getCheckIn() != null || a.getCheckOut() != null
                 || a.getOverrideCheckIn() != null || a.getOverrideCheckOut() != null;
             if (!hasData) continue;
+            if (!a.getDate().isBefore(today)) { notEnded++; continue; }
+            if (isIncompletePunch(a)) { incomplete++; continue; }
             if (lockCache.computeIfAbsent(a.getDate(), d -> periodLockService.isLocked(companyId, d))) { locked++; continue; }
             rows.add(new Row(a.getEmployee(), a.getDate(), Map.of("attendanceId", a.getId())));
         }
@@ -1017,16 +1031,19 @@ public class AttendanceController {
             }
         }
         Map<String, Object> result = new java.util.LinkedHashMap<>();
-        result.put("total", rows.size() + alreadyApproved + locked);
+        result.put("total", rows.size() + alreadyApproved + locked + notEnded + incomplete);
         result.put("approved", approved);
         result.put("alreadyApproved", alreadyApproved);
         result.put("locked", locked);
+        result.put("notEnded", notEnded);
+        result.put("incomplete", incomplete);
         result.put("failed", failed);
         result.put("errors", errors);
         audit.log("ATTENDANCE_BULK_APPROVE").entity("DEPARTMENT", departmentId)
             .summary(from + " → " + to + " · " + approved + "/" + rows.size())
             .detail(com.bosskin.audit.AuditService.map("from", from, "to", to, "departmentId", departmentId,
-                "approved", approved, "failed", failed, "alreadyApproved", alreadyApproved, "locked", locked))
+                "approved", approved, "failed", failed, "alreadyApproved", alreadyApproved, "locked", locked,
+                "notEnded", notEnded, "incomplete", incomplete))
             .save();
         return ResponseEntity.ok(result);
     }

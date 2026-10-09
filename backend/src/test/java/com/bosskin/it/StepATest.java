@@ -6,12 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Kế hoạch khi chưa có AWS — bước A: các việc còn lại sau thử nghiệm nội bộ. */
 class StepATest extends IntegrationTest {
+
+    @org.springframework.beans.factory.annotation.Autowired com.bosskin.repository.AttendanceRepository attendanceRepository;
 
     @Test
     @DisplayName("Duyệt hàng loạt cả phòng cả tháng: duyệt mọi phân ca, bỏ qua công của chính mình, chạy lại không duyệt trùng")
@@ -25,6 +28,7 @@ class StepATest extends IntegrationTest {
             c.assign(manager, "HC", d);
         }
         String token = c.tokenOf(manager);
+        clock.set(java.time.LocalDateTime.of(2026, 12, 1, 9, 0)); // cả tháng 11 đã qua
         Map<String, Object> body = Map.of("from", "2026-11-01", "to", "2026-11-30",
             "departmentId", c.departments.get("SX"));
 
@@ -43,6 +47,38 @@ class StepATest extends IntegrationTest {
 
         assertThat(api.get(c.adminToken, "/api/v1/audit-logs?action=ATTENDANCE_BULK_APPROVE")
             .expectOk().body().path("content")).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("Duyệt cả kỳ: bỏ qua hôm nay/tương lai (chưa hết ngày) và dòng chấm thiếu giờ ra; dòng đủ ngày trước vẫn duyệt")
+    void bulkApprove_skipsTodayAndIncompletePunches() {
+        var c = fixture.standardCompany();
+        var manager = c.emp(1);
+        var a = c.emp(6);
+        var b = c.emp(7);
+        LocalDate d2 = LocalDate.of(2026, 11, 2), d3 = LocalDate.of(2026, 11, 3), d4 = LocalDate.of(2026, 11, 4);
+        for (LocalDate d : List.of(d2, d3, d4)) { c.assign(a, "HC", d); c.assign(b, "HC", d); }
+
+        // 02/11: A chấm đủ vào/ra; B chỉ chấm vào (quên chấm ra)
+        clock.set(d2.atTime(7, 55));
+        assertThat(api.post(c.tokenOf(a), "/api/v1/attendances/self/check-in", Map.of()).status()).isEqualTo(201);
+        assertThat(api.post(c.tokenOf(b), "/api/v1/attendances/self/check-in", Map.of()).status()).isEqualTo(201);
+        clock.set(d2.atTime(17, 5));
+        api.post(c.tokenOf(a), "/api/v1/attendances/self/check-out", Map.of()).expectOk();
+        // Hôm nay 04/11 10:00: A mới chấm vào, ca chưa kết thúc
+        clock.set(d4.atTime(7, 58));
+        assertThat(api.post(c.tokenOf(a), "/api/v1/attendances/self/check-in", Map.of()).status()).isEqualTo(201);
+        clock.set(d4.atTime(10, 0));
+
+        var res = api.post(c.tokenOf(manager), "/api/v1/attendances/approve-bulk", Map.of(
+            "from", "2026-11-01", "to", "2026-11-30", "departmentId", c.departments.get("SX"))).expectOk().body();
+        // Duyệt: A 02/11 (đủ), A 03/11 + B 03/11 (vắng, ngày đã qua) = 3; B 02/11 chấm thiếu; 04/11 → 30/11 chưa qua
+        assertThat(res.path("approved").asInt()).isEqualTo(3);
+        assertThat(res.path("incomplete").asInt()).isEqualTo(1);
+        assertThat(res.path("notEnded").asInt()).isEqualTo(2);
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(a.id(), d4)).allMatch(x -> !x.isApproved());
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(b.id(), d2)).allMatch(x -> !x.isApproved());
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(a.id(), d2)).anyMatch(x -> x.isApproved() && x.getSnapActualHours() != null && x.getSnapActualHours() > 0);
     }
 
     private long hourLeaveType(com.bosskin.support.Fixture.TestCompany c) {

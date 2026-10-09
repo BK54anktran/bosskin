@@ -142,7 +142,7 @@ class _BulkApproveDialogState extends State<_BulkApproveDialog> {
                       const SizedBox(height: 16),
                       Text(
                         s.bulkApproveResult('${r['approved'] ?? 0}', '${r['alreadyApproved'] ?? 0}',
-                            '${r['locked'] ?? 0}', '${r['failed'] ?? 0}'),
+                            '${r['locked'] ?? 0}', '${r['failed'] ?? 0}', '${r['notEnded'] ?? 0}', '${r['incomplete'] ?? 0}'),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       if (errors.isNotEmpty) ...[

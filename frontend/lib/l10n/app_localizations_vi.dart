@@ -3953,7 +3953,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bulkApproveMonthDesc =>
-      'Duyệt mọi ca chưa duyệt trong kỳ của phòng ban đã chọn. Bỏ qua công của chính bạn, kỳ đã khoá và ngày không có ca.';
+      'Duyệt mọi ca chưa duyệt của các ngày đã qua trong kỳ, theo phòng ban đã chọn. Bỏ qua hôm nay và các ngày sau, dòng chấm thiếu giờ ra/vào (duyệt từng dòng sau khi kiểm tra), công của chính bạn, kỳ đã khoá và ngày không có ca.';
 
   @override
   String get bulkApprovePeriod => 'Kỳ công';
@@ -3968,9 +3968,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bulkApproveRunning => 'Đang duyệt… (có thể mất tới 1 phút)';
 
   @override
-  String bulkApproveResult(
-      String approved, String already, String locked, String failed) {
-    return 'Đã duyệt $approved · đã duyệt trước $already · kỳ khoá $locked · lỗi $failed';
+  String bulkApproveResult(String approved, String already, String locked,
+      String failed, String notEnded, String incomplete) {
+    return 'Đã duyệt $approved · đã duyệt trước $already · chưa hết ngày $notEnded · chấm thiếu giờ ra/vào $incomplete · kỳ khoá $locked · lỗi $failed';
   }
 
   @override

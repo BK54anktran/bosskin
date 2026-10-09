@@ -3955,7 +3955,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bulkApproveMonthDesc =>
-      'Approves every unapproved shift in the period for the selected department. Your own attendance, locked periods and days without shifts are skipped.';
+      'Approves every unapproved shift on past days of the period for the selected department. Skips today and later days, rows missing a check-in or check-out (review them one by one), your own attendance, locked periods and days without shifts.';
 
   @override
   String get bulkApprovePeriod => 'Period';
@@ -3970,9 +3970,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bulkApproveRunning => 'Approving… (may take up to a minute)';
 
   @override
-  String bulkApproveResult(
-      String approved, String already, String locked, String failed) {
-    return 'Approved $approved · already approved $already · locked $locked · failed $failed';
+  String bulkApproveResult(String approved, String already, String locked,
+      String failed, String notEnded, String incomplete) {
+    return 'Approved $approved · already approved $already · not ended yet $notEnded · missing check-in/out $incomplete · locked $locked · failed $failed';
   }
 
   @override

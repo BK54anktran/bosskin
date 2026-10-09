@@ -7459,7 +7459,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkApproveMonthDesc.
   ///
   /// In vi, this message translates to:
-  /// **'Duyệt mọi ca chưa duyệt trong kỳ của phòng ban đã chọn. Bỏ qua công của chính bạn, kỳ đã khoá và ngày không có ca.'**
+  /// **'Duyệt mọi ca chưa duyệt của các ngày đã qua trong kỳ, theo phòng ban đã chọn. Bỏ qua hôm nay và các ngày sau, dòng chấm thiếu giờ ra/vào (duyệt từng dòng sau khi kiểm tra), công của chính bạn, kỳ đã khoá và ngày không có ca.'**
   String get bulkApproveMonthDesc;
 
   /// No description provided for @bulkApprovePeriod.
@@ -7489,9 +7489,9 @@ abstract class AppLocalizations {
   /// No description provided for @bulkApproveResult.
   ///
   /// In vi, this message translates to:
-  /// **'Đã duyệt {approved} · đã duyệt trước {already} · kỳ khoá {locked} · lỗi {failed}'**
-  String bulkApproveResult(
-      String approved, String already, String locked, String failed);
+  /// **'Đã duyệt {approved} · đã duyệt trước {already} · chưa hết ngày {notEnded} · chấm thiếu giờ ra/vào {incomplete} · kỳ khoá {locked} · lỗi {failed}'**
+  String bulkApproveResult(String approved, String already, String locked,
+      String failed, String notEnded, String incomplete);
 
   /// No description provided for @bulkApproveErrors.
   ///

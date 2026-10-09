@@ -358,7 +358,8 @@ V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử
   + phạm vi phòng ban (`ReportController.checkModule`); file báo cáo dùng khoá `excel.report.*`, `excel.enum.*`.
 - S3: không có `AWS_ACCESS_KEY` → DefaultCredentialsProvider (IAM role trên EB).
 - Bước A: duyệt hàng loạt `POST /api/v1/attendances/approve-bulk` {from,to,departmentId?} (≤ 62 ngày, lô 50 dòng/transaction,
-  `entityManager.clear()` sau mỗi lô — phiên JPA open-in-view phình làm chậm dần). Nghỉ theo giờ trừ giờ nghỉ giữa ca
+  `entityManager.clear()` sau mỗi lô — phiên JPA open-in-view phình làm chậm dần). Chỉ duyệt ngày đã qua (hôm nay/tương lai → `notEnded`),
+  bỏ dòng chấm thiếu một đầu vào/ra (`incomplete`, quản lý duyệt từng dòng). Nghỉ theo giờ trừ giờ nghỉ giữa ca
   (`LeaveService.hoursExcludingBreaks`); có lịch ca ±7 ngày mà ngày xin không có ca → `error.leave.no_shift_days`.
   Tổng quan: ô lương = kỳ gần nhất không còn phiếu nháp (`DashboardService.latestPayroll`).
 
