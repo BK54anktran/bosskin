@@ -99,3 +99,36 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 ## 9. Môi trường dev (máy chủ dự án)
 
 Xem CLAUDE.md, mục *Chạy & quản lý server dev*: `dev\runner.cmd`, `dev\start.cmd`, seed công ty mẫu `dev\seed-th.cmd`.
+
+## 10. Phát hành web và app Android (Bước B)
+
+Workflow **Frontend build** (`.github/workflows/frontend-build.yml`) chạy cho mỗi push đụng `frontend/**`
+(hoặc chạy tay): `flutter analyze` (lỗi mới chặn), kiểm tra chuỗi tiếng Việt viết cứng, build web và APK.
+Kết quả tải ở GitHub → Actions → lần chạy → *Artifacts*: `bosskin-web-<số>` và `bosskin-apk-<số>`.
+Số build = số lần chạy workflow (versionCode luôn tăng, cài đè được lên bản cũ).
+
+**Biến repo** (Settings → Secrets and variables → Actions → *Variables*):
+`API_HOST` = địa chỉ backend mà bản web/app gọi, vd. `https://api.<tên-miền>`.
+
+**Khoá ký APK — chủ dự án tự tạo một lần, giữ suốt đời app.** Mất khoá hoặc mật khẩu thì không phát hành
+được bản cập nhật cho máy đã cài (phải gỡ app, cài lại).
+
+1. Tạo khoá (máy có JDK; trên Windows dùng `keytool` trong thư mục JDK `bin`):
+   ```
+   keytool -genkeypair -v -keystore bosskin-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias bosskin
+   ```
+   Nhập mật khẩu kho khoá, thông tin đơn vị; mật khẩu khoá có thể trùng mật khẩu kho.
+2. Lấy nội dung base64 của file (PowerShell):
+   ```
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("bosskin-release.jks")) | Set-Clipboard
+   ```
+3. GitHub → Settings → Secrets and variables → Actions → *New repository secret*:
+   `ANDROID_KEYSTORE_BASE64` (dán nội dung bước 2), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (= `bosskin`),
+   `ANDROID_KEY_PASSWORD`.
+4. Cất file `.jks` + hai mật khẩu ở **hai nơi an toàn** (trình quản lý mật khẩu + bản sao ngoại tuyến).
+   **Không** đưa file vào git (đã chặn trong `frontend/android/.gitignore`).
+
+Chưa có secrets → APK vẫn build nhưng ký bằng khoá debug (chỉ để thử nội bộ, workflow báo cảnh báo).
+Build máy cá nhân: tạo `frontend/android/key.properties` (`storeFile=`, `storePassword=`, `keyAlias=`, `keyPassword=`)
+rồi `flutter build apk --release --dart-define=API_HOST=...`.
+

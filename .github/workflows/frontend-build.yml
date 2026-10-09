@@ -1,0 +1,90 @@
+name: Frontend build
+
+# Bước B: tự build bản web và APK Android cho mỗi push đụng frontend (và chạy tay được).
+# - Kiểm tra: flutter analyze (lỗi mới chặn; cảnh báo cũ chưa chặn), chuỗi tiếng Việt viết cứng.
+# - Web: build release, API_HOST lấy từ biến repo vars.API_HOST (Settings → Variables).
+# - APK: có secrets ANDROID_KEYSTORE_BASE64 (+ ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD)
+#   thì ký bằng khoá thật; chưa có thì APK ký khoá debug (chỉ để thử nội bộ). Xem docs/runbook.md mục 10.
+# - Số phiên bản: tên theo pubspec, số build = số lần chạy workflow (versionCode luôn tăng).
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - 'tools/ci/**'
+      - '.github/workflows/frontend-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Android)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Ghim phiên bản đã build thử thành công (Gradle 8.14.3, AGP 8.11.1, Kotlin 2.2.20).
+          # Nâng Flutter → nâng cả ba nếu Flutter đòi, build thử rồi mới đổi số ở đây.
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Analyze (chặn lỗi)
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Chuỗi tiếng Việt viết cứng
+        working-directory: .
+        run: python3 tools/ci/check_vi_literals.py
+
+      - name: Build web
+        run: flutter build web --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
+
+      - name: Android signing (nếu có khoá)
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::warning::Chưa có ANDROID_KEYSTORE_BASE64 — APK ký bằng khoá debug, không dùng để phát hành."
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > android/app/release.jks
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+
+      - name: Build APK
+        run: flutter build apk --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
+
+      - name: Upload web
+        uses: actions/upload-artifact@v4
+        with:
+          name: bosskin-web-${{ github.run_number }}
+          path: frontend/build/web
+          retention-days: 30
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: bosskin-apk-${{ github.run_number }}
+          path: frontend/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

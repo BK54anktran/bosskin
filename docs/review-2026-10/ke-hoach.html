@@ -113,7 +113,7 @@
           <li>GitHub Actions: <code>flutter analyze</code> + build web (release, <code>API_HOST</code> theo môi trường) + APK Android, lưu file build làm artifact.</li>
           <li>Ký APK bằng keystore riêng (để trong GitHub Secrets), đánh số phiên bản tự động.</li>
           <li>Runbook thêm mục phát hành web/app.</li>
-        </ul></td><td>Mỗi push có bản web + APK tải được từ Actions</td><td>Tạo keystore Android (tôi hướng dẫn) hoặc đồng ý dùng keystore tôi tạo</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+        </ul><span class="muted">Đã làm: workflow <code>frontend-build.yml</code> (analyze, kiểm chuỗi, web, APK ký bằng khoá từ Secrets, số build tự tăng); nâng Gradle 8.14.3 / AGP 8.11.1 / Kotlin 2.2.20 cho Flutter 3.47; build thử APK ký khoá thử thành công. Hướng dẫn tạo khoá: runbook mục 10.</span></td><td>Mỗi push có bản web + APK tải được từ Actions</td><td><b>Chủ dự án tự tạo keystore</b> và thêm 4 secrets (runbook mục 10); đặt biến <code>API_HOST</code></td><td><span class="st done">Xong 09/10 — chờ khoá</span></td></tr>
       <tr><td><b>C</b> · 2FA cho quản trị</td><td>
         <ul class="clean">
           <li>Mã TOTP (Google Authenticator…) cho system admin, bật tuỳ chọn cho admin công ty; mã dự phòng dùng một lần.</li>
