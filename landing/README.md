@@ -1,6 +1,7 @@
 # Trang giới thiệu + video BossKin
 
-Trang tĩnh (`index.html` + `assets/`), không cần build. Mở thử: `python3 -m http.server -d landing 8099` → http://localhost:8099.
+Trang tĩnh (`index.html` + `assets/`), không cần build. Máy dev Windows: `dev\start.cmd landing` (hoặc `dev\start.cmd` chạy tất cả)
+→ http://localhost:8099. Máy khác: `python3 -m http.server -d landing 8099`.
 
 ## Cấu hình trước khi đăng
 Sửa khối `window.BOSSKIN` đầu `index.html`:

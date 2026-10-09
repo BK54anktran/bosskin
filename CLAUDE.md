@@ -32,7 +32,8 @@
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
 - Cách chạy: chủ dự án bật `dev\runner.cmd` một lần (để cửa sổ mở). Claude ghi tên lệnh vào
   `dev/run/requests/<id>.req` (start, start-backend, start-frontend, stop, stop-backend, stop-frontend,
-  restart-backend, restart-frontend, status, seed-th), đọc kết quả ở `dev/run/results/<id>.txt` và log ở `dev/logs/`.
+  restart-backend, restart-frontend, status, seed-th, start-landing, stop-landing — hai lệnh landing cần bật lại runner
+  mới có; `start` đã gồm trang giới thiệu), đọc kết quả ở `dev/run/results/<id>.txt` và log ở `dev/logs/`.
   Runner còn sống nếu `dev/run/runner.alive` được cập nhật trong vài giây. Runner KHÔNG có lệnh reset-db.
 - Runner chưa bật: nhờ chủ dự án bật; chỉ khi họ đồng ý mới dùng điều khiển máy tính (double-click `.cmd` trong File Explorer).
   Kiểm tra trang bằng built-in browser (`http://localhost:3000`).
@@ -472,6 +473,7 @@ V10 index chấm công, V11 xác thực 2 lớp
 - CI: `.github/workflows/test.yml` chạy cho mọi nhánh/PR; `deploy.yml` chỉ deploy khi test xanh.
 
 ## Trang giới thiệu & video (10/2026)
+- Chạy thử trên máy dev: `dev\start.cmd landing` → http://localhost:8099 (`dev/landing-server.ps1`, HttpListener có Range cho video).
 - `landing/`: trang tĩnh `index.html` (cấu hình `window.BOSSKIN`: appUrl, contactEmail, contactPhone) + `assets/` (ảnh webp, video).
 - Video `landing/assets/bosskin-gioi-thieu.mp4` dựng lại bằng `landing/video/` (seed công ty hư cấu "Nội thất An Phát" trên DB thử,
   chụp màn hình bằng Playwright, giọng edge-tts `vi-VN-HoaiMyNeural`, dựng bằng `make_video.py`). Hướng dẫn: `landing/README.md`.

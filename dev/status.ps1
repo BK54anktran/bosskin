@@ -6,7 +6,7 @@ param([int]$Lines = 15)
 . "$PSScriptRoot\_common.ps1"
 
 Write-Host ("MySQL     cổng {0}: {1}" -f $MySqlPort, $(if (Test-Port $MySqlPort) {'đang nghe'} else {'KHÔNG chạy'}))
-foreach ($name in 'backend','frontend') {
+foreach ($name in 'backend','frontend','landing') {
   $port = $Services[$name].Port
   $id = Get-ServicePid $name
   $state = if ($id -and (Test-Port $port)) { 'SẴN SÀNG' } elseif ($id) { 'đang khởi động' } elseif (Test-Port $port) { "cổng bị tiến trình $(Get-PortOwner $port) chiếm" } else { 'dừng' }

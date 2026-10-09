@@ -1,12 +1,13 @@
 ﻿<#
   Khởi động môi trường dev (chạy nền, ghi log vào dev\logs).
-    .\dev\start.ps1               # cả backend và frontend
+    .\dev\start.ps1               # backend, frontend và trang giới thiệu
     .\dev\start.ps1 backend       # chỉ backend  (http://localhost:8080)
     .\dev\start.ps1 frontend      # chỉ frontend (http://localhost:3000)
+    .\dev\start.ps1 landing       # chỉ trang giới thiệu (http://localhost:8099, landing\)
   Backend: mvn spring-boot:run trong backend\ (đọc backend\.env). Cần MySQL ở localhost:3306.
   Frontend: flutter run -d web-server (bản debug, có ô đổi server), API_HOST=http://localhost:8080.
 #>
-param([ValidateSet('all','backend','frontend')][string]$Target = 'all',
+param([ValidateSet('all','backend','frontend','landing')][string]$Target = 'all',
       [switch]$ResetDb)   # -ResetDb: xoá sạch DB dev và migrate lại (dùng qua dev\reset-db.cmd)
 . "$PSScriptRoot\_common.ps1"
 
@@ -51,5 +52,17 @@ function Start-Frontend {
   else { Write-Warning 'frontend: KHÔNG khởi động được (thoát sớm hoặc quá 5 phút)'; Show-LogTail 'frontend' }
 }
 
+function Start-Landing {
+  if (Get-ServicePid 'landing') { Write-Host 'landing: đang chạy rồi'; return }
+  if (Get-PortOwner 8099) { throw 'Cổng 8099 đang bị chiếm. Dừng nó hoặc chạy .\dev\stop.ps1 landing -Force' }
+  $log = Join-Path $LogDir 'landing.log'; $err = Join-Path $LogDir 'landing.err.log'
+  $srv = Join-Path $DevDir 'landing-server.ps1'
+  $p = Start-Detached "powershell -NoProfile -ExecutionPolicy Bypass -File `"$srv`" -Port 8099" $Services.landing.Dir $log $err
+  Set-Content (Get-PidFile 'landing') $p.Id
+  if (Wait-Port 8099 30 $p.Id) { Write-Host 'landing: SẴN SÀNG  http://localhost:8099' }
+  else { Write-Warning 'landing: KHÔNG khởi động được'; Show-LogTail 'landing' }
+}
+
 if ($Target -in 'all','backend')  { Start-Backend }
 if ($Target -in 'all','frontend') { Start-Frontend }
+if ($Target -in 'all','landing')  { Start-Landing }

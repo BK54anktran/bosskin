@@ -15,7 +15,7 @@
 <script>
   /* Cấu hình trang — sửa ở đây khi triển khai (xem landing/README.md) */
   window.BOSSKIN = {
-    appUrl: '/login',          // đường dẫn trang đăng nhập app web
+    appUrl: location.port === '8099' ? 'http://localhost:3000/login' : '/login',   // trang đăng nhập app web (8099 = chạy thử trên máy dev)
     contactEmail: '',          // email nhận yêu cầu dùng thử, vd 'lienhe@ten-mien.vn'
     contactPhone: '',          // số điện thoại / Zalo, vd '0901 234 567'
   };

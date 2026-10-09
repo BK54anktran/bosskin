@@ -9,6 +9,7 @@ New-Item -ItemType Directory -Force -Path $LogDir, $RunDir | Out-Null
 $Services = @{
   backend  = @{ Port = 8080; Dir = (Join-Path $Root 'backend') }
   frontend = @{ Port = 3000; Dir = (Join-Path $Root 'frontend') }
+  landing  = @{ Port = 8099; Dir = (Join-Path $Root 'landing') }
 }
 $MySqlPort = 3306
 

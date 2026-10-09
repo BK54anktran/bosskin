@@ -1,13 +1,13 @@
 ﻿<#
   Dừng môi trường dev.
-    .\dev\stop.ps1                 # dừng cả hai
+    .\dev\stop.ps1                 # dừng tất cả
     .\dev\stop.ps1 backend         # chỉ backend
     .\dev\stop.ps1 -Force          # dừng luôn tiến trình lạ đang chiếm cổng 8080/3000
 #>
-param([ValidateSet('all','backend','frontend')][string]$Target = 'all', [switch]$Force)
+param([ValidateSet('all','backend','frontend','landing')][string]$Target = 'all', [switch]$Force)
 . "$PSScriptRoot\_common.ps1"
 
-foreach ($name in 'backend','frontend') {
+foreach ($name in 'backend','frontend','landing') {
   if ($Target -ne 'all' -and $Target -ne $name) { continue }
   $id = Get-ServicePid $name
   $modeFile = Join-Path $RunDir "$name.mode"
