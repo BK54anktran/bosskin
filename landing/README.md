@@ -62,3 +62,12 @@ Bản dọc 9:16 cho Reels / TikTok / Shorts (cùng giọng, nhạc, cảnh; kh�
 - Nội dung chính nằm trong `<main>`; video có phụ đề `<track kind="captions">`.
 - Ảnh chụp màn hình có bản nhỏ `*-w800.webp` / `*-w360.webp` (srcset), ảnh dưới màn hình đầu `loading="lazy"`, poster video dạng webp, font Google tải không chặn hiển thị. Thay ảnh thì tạo lại bản nhỏ cùng tên.
 
+
+## Bài đăng hằng ngày (Facebook + TikTok qua Metricool)
+- `video/make_post.py <spec.json> <thư mục ra>` → ảnh `.jpg` + video ngắn `.mp4` 9:16 (mô tả spec ở đầu file;
+  ảnh giao diện lấy từ `video/shots/*.webp` — d_* màn hình máy tính, p_* điện thoại; lồng tiếng tuỳ chọn bằng edge-tts `vi-VN-NamMinhNeural`).
+- Media đăng lên bucket công khai `social` của Supabase `bosskin` (upload bằng `SUPABASE_SECRET_KEY` trong `backend/.env`):
+  `https://apcppqwwnoyliwlhqtyx.supabase.co/storage/v1/object/public/social/<ngày>/<file>`. Bản gốc giữ ở `marketing/social/<ngày>/` (không commit).
+- Một scheduled task của Claude chạy mỗi sáng: chọn chủ đề (tính năng BossKin hoặc tin/quy định nhân sự – lương Việt Nam có nguồn),
+  dựng bài, upload, rồi hẹn giờ đăng qua Metricool (brand BossKin: Trang Facebook + TikTok `bosskin_hrm`). Nhật ký chủ đề đã đăng:
+  `marketing/social/log.md` để không lặp.
