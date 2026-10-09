@@ -1452,4 +1452,6 @@
   ,"auditActSysadminDisable": "Khoá quản trị viên hệ thống"
   ,"auditActSysadminResetPassword": "Đặt lại mật khẩu quản trị viên"
   ,"auditActSysadminReset2fa": "Gỡ 2FA quản trị viên"
+  ,"profileAccountTitle": "Tài khoản"
+  ,"profileNoEmployeeNote": "Tài khoản quản trị không gắn với hồ sơ nhân viên — chỉ có phần bảo mật đăng nhập."
 }

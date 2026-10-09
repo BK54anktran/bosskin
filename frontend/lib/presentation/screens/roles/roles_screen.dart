@@ -1340,7 +1340,7 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (user.totpEnabled)
+              if (user.totpEnabled && user.email != AuthService.instance.currentUser?.email)   // tự gỡ ở Hồ sơ
                 PermissionGuard(
                   permission: 'USER_MANAGE',
                   child: IconButton(

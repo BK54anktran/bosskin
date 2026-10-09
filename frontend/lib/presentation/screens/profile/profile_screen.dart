@@ -88,6 +88,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _loading = false);
       return;
     }
+    if (AuthService.instance.currentUser?.employeeId == null) {
+      setState(() => _loading = false);
+      return;
+    }
     final s = AppLocalizations.of(context);
     setState(() { _loading = true; _error = null; });
     try {
@@ -345,8 +349,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return _buildImpersonatePlaceholder(context);
     }
     if (_loading) return const Center(child: CircularProgressIndicator());
+    if (AuthService.instance.currentUser?.employeeId == null) return _buildAccountOnly();
     if (_error != null) return Center(child: Text(_error!, style: const TextStyle(color: AppTheme.error)));
     return _buildBody();
+  }
+
+  Widget _buildPasswordCard(AppLocalizations s) {
+    return _InfoCard(
+      title: s.changePassword,
+      subtitle: s.passwordNote,
+      children: [
+        _EditableField(
+          label: s.currentPassword,
+          controller: _currentPasswordCtrl,
+          obscureText: true,
+        ),
+        const SizedBox(height: 12),
+        _EditableField(
+          label: s.newPassword,
+          controller: _newPasswordCtrl,
+          obscureText: true,
+        ),
+        const SizedBox(height: 12),
+        _EditableField(
+          label: s.confirmPassword,
+          controller: _confirmPasswordCtrl,
+          obscureText: true,
+        ),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerRight,
+          child: FilledButton.icon(
+            onPressed: _saving ? null : _changePassword,
+            icon: const Icon(Icons.lock_reset_outlined),
+            label: Text(s.changePassword),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Tài khoản quản trị không gắn nhân viên (vd. admin công ty): chỉ có phần tài khoản — 2FA và đổi mật khẩu.
+  Widget _buildAccountOnly() {
+    final s = AppLocalizations.of(context);
+    final user = AuthService.instance.currentUser;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _InfoCard(
+                title: s.profileAccountTitle,
+                subtitle: s.profileNoEmployeeNote,
+                children: [
+                  Text(user?.email ?? '', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const TwoFactorCard(),
+              const SizedBox(height: 16),
+              _buildPasswordCard(s),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildImpersonatePlaceholder(BuildContext context) {
@@ -509,38 +579,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               const TwoFactorCard(),
               const SizedBox(height: 16),
-              _InfoCard(
-                title: s.changePassword,
-                subtitle: s.passwordNote,
-                children: [
-                  _EditableField(
-                    label: s.currentPassword,
-                    controller: _currentPasswordCtrl,
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 12),
-                  _EditableField(
-                    label: s.newPassword,
-                    controller: _newPasswordCtrl,
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 12),
-                  _EditableField(
-                    label: s.confirmPassword,
-                    controller: _confirmPasswordCtrl,
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton.icon(
-                      onPressed: _saving ? null : _changePassword,
-                      icon: const Icon(Icons.lock_reset_outlined),
-                      label: Text(s.changePassword),
-                    ),
-                  ),
-                ],
-              ),
+              _buildPasswordCard(s),
             ],
           ),
         ),

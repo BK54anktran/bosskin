@@ -4179,4 +4179,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActSysadminReset2fa => 'Gỡ 2FA quản trị viên';
+
+  @override
+  String get profileAccountTitle => 'Tài khoản';
+
+  @override
+  String get profileNoEmployeeNote =>
+      'Tài khoản quản trị không gắn với hồ sơ nhân viên — chỉ có phần bảo mật đăng nhập.';
 }

@@ -4181,4 +4181,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActSysadminReset2fa => 'System admin 2FA reset';
+
+  @override
+  String get profileAccountTitle => 'Account';
+
+  @override
+  String get profileNoEmployeeNote =>
+      'This administrator account is not linked to an employee — only sign-in security settings apply.';
 }

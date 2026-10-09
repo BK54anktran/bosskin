@@ -7858,6 +7858,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Gỡ 2FA quản trị viên'**
   String get auditActSysadminReset2fa;
+
+  /// No description provided for @profileAccountTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản'**
+  String get profileAccountTitle;
+
+  /// No description provided for @profileNoEmployeeNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản quản trị không gắn với hồ sơ nhân viên — chỉ có phần bảo mật đăng nhập.'**
+  String get profileNoEmployeeNote;
 }
 
 class _AppLocalizationsDelegate

@@ -1449,4 +1449,6 @@
   ,"auditActSysadminDisable": "System admin disabled"
   ,"auditActSysadminResetPassword": "System admin password reset"
   ,"auditActSysadminReset2fa": "System admin 2FA reset"
+  ,"profileAccountTitle": "Account"
+  ,"profileNoEmployeeNote": "This administrator account is not linked to an employee — only sign-in security settings apply."
 }
