@@ -2632,7 +2632,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardKpiAttritionRate => 'Attrition';
 
   @override
-  String get dashboardKpiCurrentPayroll => 'Payroll (MTD)';
+  String get dashboardKpiCurrentPayroll => 'Latest payroll';
 
   @override
   String get dashboardKpiThisMonth => 'this month';
@@ -3946,4 +3946,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permDescAuditView =>
       'View the audit log (who edited attendance, approved payroll, changed permissions…)';
+
+  @override
+  String get bulkApproveMonthButton => 'Approve period';
+
+  @override
+  String get bulkApproveMonthTitle => 'Approve a whole period';
+
+  @override
+  String get bulkApproveMonthDesc =>
+      'Approves every unapproved shift in the period for the selected department. Your own attendance, locked periods and days without shifts are skipped.';
+
+  @override
+  String get bulkApprovePeriod => 'Period';
+
+  @override
+  String get bulkApproveAllDepartments => 'All departments in your scope';
+
+  @override
+  String get bulkApproveRun => 'Approve';
+
+  @override
+  String get bulkApproveRunning => 'Approving… (may take up to a minute)';
+
+  @override
+  String bulkApproveResult(
+      String approved, String already, String locked, String failed) {
+    return 'Approved $approved · already approved $already · locked $locked · failed $failed';
+  }
+
+  @override
+  String get bulkApproveErrors => 'Rows with errors';
+
+  @override
+  String get auditActAttendanceBulkApprove => 'Attendance approved in bulk';
 }

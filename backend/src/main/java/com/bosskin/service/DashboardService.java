@@ -151,11 +151,7 @@ public class DashboardService {
             .late(late)
             .build();
 
-        YearMonth ym = YearMonth.now();
-        DashboardDTO.RecentPayroll recentPayroll = buildRecentPayroll(companyId, ym);
-        if (recentPayroll.getEmployeeCount() == 0) {
-            recentPayroll = buildRecentPayroll(companyId, ym.minusMonths(1));
-        }
+        DashboardDTO.RecentPayroll recentPayroll = latestPayroll(companyId, YearMonth.now());
 
         return DashboardDTO.Response.builder()
             .date(today)
@@ -455,17 +451,20 @@ public class DashboardService {
 
         long todayPresent = todayAtts.stream().filter(a -> calcSvc.isActuallyPresent(a)).count();
         long todayLate    = todayAtts.stream().filter(a -> calcSvc.isActuallyPresent(a) && calcSvc.isLate(a)).count();
-        long todayAbsent  = Math.max(0, total - todayPresent - onLeave);
+        // Vắng = NV có ca hôm nay chưa có mặt, không nghỉ phép (giống todayStats)
+        java.util.Set<Long> kpiPresentIds = todayAtts.stream().filter(a -> calcSvc.isActuallyPresent(a))
+            .map(a -> a.getEmployee().getId()).collect(Collectors.toSet());
+        java.util.Set<Long> kpiScheduled = shiftAssignmentRepository.findByCompanyAndDate(companyId, today).stream()
+            .filter(sa -> departmentId == null || (sa.getEmployee().getDepartment() != null
+                && departmentId.equals(sa.getEmployee().getDepartment().getId())))
+            .map(sa -> sa.getEmployee().getId()).collect(Collectors.toSet());
+        long todayAbsent  = Math.max(0, kpiScheduled.stream().filter(id -> !kpiPresentIds.contains(id)).count() - onLeave);
 
         double attendanceRate = total > onLeave
             ? Math.round((double) todayPresent / (total - onLeave) * 1000.0) / 10.0
             : 0.0;
 
-        YearMonth ym = YearMonth.from(today);
-        DashboardDTO.RecentPayroll payroll = buildRecentPayroll(companyId, ym);
-        if (payroll.getEmployeeCount() == 0) {
-            payroll = buildRecentPayroll(companyId, ym.minusMonths(1));
-        }
+        DashboardDTO.RecentPayroll payroll = latestPayroll(companyId, YearMonth.from(today));
 
         return DashboardDTO.KpiResponse.builder()
             .totalActiveEmployees((int) total)
@@ -481,6 +480,8 @@ public class DashboardService {
             .currentMonthPayroll(canSeeSalary(user) ? payroll.getTotalNetSalary() : null)
             .currentMonthPayrollCount(canSeeSalary(user) ? payroll.getEmployeeCount() : 0)
             .currentMonthPayrollStatus(canSeeSalary(user) ? payroll.getStatus() : null)
+            .currentMonthPayrollYear(canSeeSalary(user) ? payroll.getYear() : null)
+            .currentMonthPayrollMonth(canSeeSalary(user) ? payroll.getMonth() : null)
             .date(today)
             .build();
     }
@@ -630,6 +631,26 @@ public class DashboardService {
         if (attendance.getSnapDayOt() != null) total += attendance.getSnapDayOt();
         if (attendance.getSnapNightOt() != null) total += attendance.getSnapNightOt();
         return total;
+    }
+
+    /**
+     * Kỳ lương hiển thị ở Tổng quan: kỳ gần nhất (12 tháng trở lại) đã chốt xong — có phiếu lương và không còn
+     * phiếu nháp. Chưa có kỳ nào chốt xong → kỳ gần nhất có phiếu bất kỳ. Trước đây lấy tháng hiện tại dù
+     * mới có 1 phiếu nháp.
+     */
+    private DashboardDTO.RecentPayroll latestPayroll(Long companyId, YearMonth from) {
+        DashboardDTO.RecentPayroll firstAny = null;
+        for (int i = 0; i < 12; i++) {
+            YearMonth ym = from.minusMonths(i);
+            long count = payrollRepository.countByCompanyAndMonth(companyId, ym.getYear(), ym.getMonthValue());
+            if (count == 0) continue;
+            DashboardDTO.RecentPayroll p = buildRecentPayroll(companyId, ym);
+            boolean hasDraft = payrollRepository.findStatusSummaryByCompanyAndMonth(companyId, ym.getYear(), ym.getMonthValue())
+                .stream().anyMatch(row -> row[0] == Payroll.Status.DRAFT);
+            if (!hasDraft) return p;
+            if (firstAny == null) firstAny = p;
+        }
+        return firstAny != null ? firstAny : buildRecentPayroll(companyId, from);
     }
 
     private DashboardDTO.RecentPayroll buildRecentPayroll(Long companyId, YearMonth ym) {

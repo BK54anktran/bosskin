@@ -2635,7 +2635,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get dashboardKpiAttritionRate => 'Tỷ lệ nghỉ việc';
 
   @override
-  String get dashboardKpiCurrentPayroll => 'Lương (MTD)';
+  String get dashboardKpiCurrentPayroll => 'Lương kỳ gần nhất';
 
   @override
   String get dashboardKpiThisMonth => 'tháng này';
@@ -3944,4 +3944,38 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get permDescAuditView =>
       'Xem nhật ký thao tác (ai sửa công, duyệt lương, đổi quyền…)';
+
+  @override
+  String get bulkApproveMonthButton => 'Duyệt cả kỳ';
+
+  @override
+  String get bulkApproveMonthTitle => 'Duyệt công cả kỳ';
+
+  @override
+  String get bulkApproveMonthDesc =>
+      'Duyệt mọi ca chưa duyệt trong kỳ của phòng ban đã chọn. Bỏ qua công của chính bạn, kỳ đã khoá và ngày không có ca.';
+
+  @override
+  String get bulkApprovePeriod => 'Kỳ công';
+
+  @override
+  String get bulkApproveAllDepartments => 'Tất cả phòng ban trong phạm vi';
+
+  @override
+  String get bulkApproveRun => 'Duyệt';
+
+  @override
+  String get bulkApproveRunning => 'Đang duyệt… (có thể mất tới 1 phút)';
+
+  @override
+  String bulkApproveResult(
+      String approved, String already, String locked, String failed) {
+    return 'Đã duyệt $approved · đã duyệt trước $already · kỳ khoá $locked · lỗi $failed';
+  }
+
+  @override
+  String get bulkApproveErrors => 'Các dòng lỗi';
+
+  @override
+  String get auditActAttendanceBulkApprove => 'Duyệt công hàng loạt';
 }

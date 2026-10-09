@@ -24,6 +24,7 @@ class AttendanceDayTabKey extends GlobalKey<_AttendanceDayTabState> {
   const AttendanceDayTabKey() : super.constructor();
   Future<void> exportExcel() => currentState?._exportExcel() ?? Future.value();
   Future<void> importExcel() => currentState?._importExcel() ?? Future.value();
+  Future<void> reload() => currentState?._loadRows() ?? Future.value();
 }
 
 // ── Tab widget ────────────────────────────────────────────────────────────────

@@ -263,6 +263,17 @@ class AttendanceRepository {
     );
   }
 
+  /// Duyệt hàng loạt cả phòng (null = mọi phòng trong phạm vi) cho khoảng ngày; trả số liệu + lỗi từng dòng.
+  Future<Map<String, dynamic>> approveBulk({required DateTime from, required DateTime to, int? departmentId}) async {
+    String d(DateTime x) => '${x.year}-${x.month.toString().padLeft(2, '0')}-${x.day.toString().padLeft(2, '0')}';
+    final res = await _api.dio.post('/attendances/approve-bulk', data: {
+      'from': d(from),
+      'to': d(to),
+      if (departmentId != null) 'departmentId': departmentId,
+    });
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
   Future<void> unapproveAttendance(int attendanceId) async {
     await _api.dio.post(
       '/attendances/unapprove',

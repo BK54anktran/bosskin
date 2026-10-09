@@ -74,6 +74,8 @@ public class AttendanceController {
     private final AttendanceCalculationService calc;
     private final java.time.Clock clock;
     private final org.springframework.transaction.PlatformTransactionManager transactionManager;
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
     private final com.bosskin.service.PeriodLockService periodLockService;
     private final com.bosskin.audit.AuditService audit;
 
@@ -749,6 +751,20 @@ public class AttendanceController {
         @RequestBody Map<String, Object> body
     ) {
         requirePermission(user, "ATTENDANCE_APPROVE");
+        approveRow(user, body, true);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Duyệt một dòng công: theo attendanceId, hoặc theo employeeId + date (+ shiftAssignmentId).
+     * Dùng chung cho duyệt từng dòng và duyệt hàng loạt ({@link #approveBulk}).
+     */
+    private void approveRow(User user, Map<String, Object> body, boolean audit) {
+        approveRow(user, body, audit, false);
+    }
+
+    /** {@code prechecked}: phạm vi, công của chính mình và khoá kỳ đã kiểm cho cả lô (duyệt hàng loạt). */
+    private void approveRow(User user, Map<String, Object> body, boolean audit, boolean prechecked) {
         Long attendanceId = body.get("attendanceId") instanceof Number n ? n.longValue() : null;
 
         Attendance att;
@@ -762,8 +778,10 @@ public class AttendanceController {
             employeeId = att.getEmployee().getId();
             date = att.getDate();
             sa = att.getShiftAssignment();
-            requireCanApprove(user, att.getEmployee());
-            periodLockService.requireOpen(user.getCompany().getId(), date);
+            if (!prechecked) {
+                requireCanApprove(user, att.getEmployee());
+                periodLockService.requireOpen(user.getCompany().getId(), date);
+            }
         } else {
             employeeId = body.get("employeeId") instanceof Number n ? n.longValue() : null;
             String dateStr = body.get("date") instanceof String s ? s : null;
@@ -773,8 +791,10 @@ public class AttendanceController {
             date = LocalDate.parse(dateStr);
             Employee employee = employeeRepository.findByIdAndCompanyId(employeeId, user.getCompany().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
-            requireCanApprove(user, employee);
-            periodLockService.requireOpen(user.getCompany().getId(), date);
+            if (!prechecked) {
+                requireCanApprove(user, employee);
+                periodLockService.requireOpen(user.getCompany().getId(), date);
+            }
             // A2: phân ca phải thuộc đúng nhân viên và đúng ngày (chặn gắn phân ca công ty khác)
             final Long empIdForSa = employeeId;
             final LocalDate dateForSa = date;
@@ -885,8 +905,130 @@ public class AttendanceController {
                 .build());
         }
 
-        auditAttendance("ATTENDANCE_APPROVE", att, null);
-        return ResponseEntity.ok().build();
+        if (audit) auditAttendance("ATTENDANCE_APPROVE", att, null);
+    }
+
+    /**
+     * Duyệt hàng loạt cả phòng (hoặc cả công ty trong phạm vi) cho một khoảng ngày (≤ 62 ngày).
+     * Mỗi dòng chạy trong transaction riêng: dòng lỗi không làm hỏng cả lô. Bỏ qua dòng đã duyệt,
+     * ngày thuộc kỳ đã khoá, công của chính mình và ngày không có ca lẫn dữ liệu.
+     * Body: { "from": "2026-09-01", "to": "2026-09-30", "departmentId": 4 (tuỳ chọn) }.
+     */
+    @PostMapping("/approve-bulk")
+    public ResponseEntity<Map<String, Object>> approveBulk(
+        @AuthenticationPrincipal User user,
+        @RequestBody Map<String, Object> body
+    ) {
+        requirePermission(user, "ATTENDANCE_APPROVE");
+        Long companyId = user.getCompany().getId();
+        LocalDate from, to;
+        try {
+            from = LocalDate.parse(String.valueOf(body.get("from")));
+            to = LocalDate.parse(String.valueOf(body.get("to")));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.date.range_invalid");
+        }
+        if (to.isBefore(from) || java.time.temporal.ChronoUnit.DAYS.between(from, to) > 62) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.date.range_invalid");
+        }
+        Long departmentId = body.get("departmentId") instanceof Number n ? n.longValue() : null;
+        Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "ATTENDANCE_VIEW");
+        if (scope.contains(DeptScopeService.SCOPE_SELF_ONLY) && scope.size() == 1) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        Long selfEmpId = user.getEmployee() != null ? user.getEmployee().getId() : null;
+        java.util.function.Predicate<Employee> inScope = e -> e.getDepartment() != null
+            && (departmentId == null || departmentId.equals(e.getDepartment().getId()))
+            && (scope.isEmpty() || scope.contains(e.getDepartment().getId()))
+            && (selfEmpId == null || !selfEmpId.equals(e.getId()));
+
+        List<Attendance> atts = attendanceRepository.findByCompanyAndDateRangeAndDept(companyId, from, to, departmentId);
+        Map<String, Attendance> attByKey = new java.util.HashMap<>();
+        for (Attendance a : atts) {
+            Long saId = a.getShiftAssignment() != null ? a.getShiftAssignment().getId() : null;
+            attByKey.put(a.getEmployee().getId() + "|" + a.getDate() + "|" + saId, a);
+        }
+        // Dòng cần duyệt: mỗi phân ca, cộng bản ghi công không gắn ca nhưng có dữ liệu (làm ngày nghỉ)
+        record Row(Employee emp, LocalDate date, Map<String, Object> body) {}
+        List<Row> rows = new ArrayList<>();
+        int alreadyApproved = 0, locked = 0;
+        Map<LocalDate, Boolean> lockCache = new java.util.HashMap<>();
+        for (ShiftAssignment sa : shiftAssignmentRepository.findByCompanyAndDateRange(companyId, from, to)) {
+            Employee e = sa.getEmployee();
+            if (!inScope.test(e)) continue;
+            Attendance a = attByKey.remove(e.getId() + "|" + sa.getWorkDate() + "|" + sa.getId());
+            if (a != null && a.isApproved()) { alreadyApproved++; continue; }
+            if (lockCache.computeIfAbsent(sa.getWorkDate(), d -> periodLockService.isLocked(companyId, d))) { locked++; continue; }
+            Map<String, Object> b = new java.util.HashMap<>();
+            if (a != null) b.put("attendanceId", a.getId());
+            else { b.put("employeeId", e.getId()); b.put("date", sa.getWorkDate().toString()); b.put("shiftAssignmentId", sa.getId()); }
+            rows.add(new Row(e, sa.getWorkDate(), b));
+        }
+        for (Attendance a : attByKey.values()) {
+            if (!inScope.test(a.getEmployee()) || a.isApproved()) continue;
+            boolean hasData = a.getCheckIn() != null || a.getCheckOut() != null
+                || a.getOverrideCheckIn() != null || a.getOverrideCheckOut() != null;
+            if (!hasData) continue;
+            if (lockCache.computeIfAbsent(a.getDate(), d -> periodLockService.isLocked(companyId, d))) { locked++; continue; }
+            rows.add(new Row(a.getEmployee(), a.getDate(), Map.of("attendanceId", a.getId())));
+        }
+
+        var perRow = new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+        perRow.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        int approved = 0;
+        List<Map<String, Object>> errors = new ArrayList<>();
+        int failed = 0;
+        // Phiên JPA mở suốt request (open-in-view): xoá cache sau mỗi dòng, nếu không mỗi lần flush phải
+        // dò toàn bộ hàng nghìn bản ghi đã nạp → chậm dần (đo thử 300 NV × 23 ngày: 7 dòng/giây).
+        entityManager.clear();
+        // Theo lô 50 dòng / transaction cho nhanh; lô nào lỗi thì chạy lại từng dòng của lô đó
+        // để biết dòng nào lỗi và không làm hỏng các dòng còn lại.
+        final int chunkSize = 50;
+        for (int i = 0; i < rows.size(); i += chunkSize) {
+            List<Row> chunk = rows.subList(i, Math.min(rows.size(), i + chunkSize));
+            try {
+                perRow.executeWithoutResult(st -> {
+                    for (Row row : chunk) approveRow(user, row.body(), false, true);
+                    entityManager.flush();
+                    entityManager.clear();
+                });
+                approved += chunk.size();
+                continue;
+            } catch (Exception chunkError) {
+                entityManager.clear();
+            }
+            for (Row row : chunk) {
+                try {
+                    perRow.executeWithoutResult(st -> {
+                        approveRow(user, row.body(), false, true);
+                        entityManager.flush();
+                        entityManager.clear();
+                    });
+                    approved++;
+                } catch (Exception ex) {
+                    entityManager.clear();
+                    failed++;
+                    if (errors.size() < 50) {
+                        String reason = ex instanceof ResponseStatusException rse && rse.getReason() != null
+                            ? rse.getReason() : "error.internal";
+                        errors.add(Map.of("employeeName", row.emp().getFullName(), "date", row.date().toString(), "reason", reason));
+                    }
+                }
+            }
+        }
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("total", rows.size() + alreadyApproved + locked);
+        result.put("approved", approved);
+        result.put("alreadyApproved", alreadyApproved);
+        result.put("locked", locked);
+        result.put("failed", failed);
+        result.put("errors", errors);
+        audit.log("ATTENDANCE_BULK_APPROVE").entity("DEPARTMENT", departmentId)
+            .summary(from + " → " + to + " · " + approved + "/" + rows.size())
+            .detail(com.bosskin.audit.AuditService.map("from", from, "to", to, "departmentId", departmentId,
+                "approved", approved, "failed", failed, "alreadyApproved", alreadyApproved, "locked", locked))
+            .save();
+        return ResponseEntity.ok(result);
     }
 
     /** Bước 2 — nhật ký thao tác trên bảng công. */

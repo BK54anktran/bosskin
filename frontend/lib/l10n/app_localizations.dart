@@ -5136,7 +5136,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardKpiCurrentPayroll.
   ///
   /// In vi, this message translates to:
-  /// **'Lương (MTD)'**
+  /// **'Lương kỳ gần nhất'**
   String get dashboardKpiCurrentPayroll;
 
   /// No description provided for @dashboardKpiThisMonth.
@@ -7443,6 +7443,67 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xem nhật ký thao tác (ai sửa công, duyệt lương, đổi quyền…)'**
   String get permDescAuditView;
+
+  /// No description provided for @bulkApproveMonthButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt cả kỳ'**
+  String get bulkApproveMonthButton;
+
+  /// No description provided for @bulkApproveMonthTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt công cả kỳ'**
+  String get bulkApproveMonthTitle;
+
+  /// No description provided for @bulkApproveMonthDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt mọi ca chưa duyệt trong kỳ của phòng ban đã chọn. Bỏ qua công của chính bạn, kỳ đã khoá và ngày không có ca.'**
+  String get bulkApproveMonthDesc;
+
+  /// No description provided for @bulkApprovePeriod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ công'**
+  String get bulkApprovePeriod;
+
+  /// No description provided for @bulkApproveAllDepartments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả phòng ban trong phạm vi'**
+  String get bulkApproveAllDepartments;
+
+  /// No description provided for @bulkApproveRun.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt'**
+  String get bulkApproveRun;
+
+  /// No description provided for @bulkApproveRunning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang duyệt… (có thể mất tới 1 phút)'**
+  String get bulkApproveRunning;
+
+  /// No description provided for @bulkApproveResult.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt {approved} · đã duyệt trước {already} · kỳ khoá {locked} · lỗi {failed}'**
+  String bulkApproveResult(
+      String approved, String already, String locked, String failed);
+
+  /// No description provided for @bulkApproveErrors.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các dòng lỗi'**
+  String get bulkApproveErrors;
+
+  /// No description provided for @auditActAttendanceBulkApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt công hàng loạt'**
+  String get auditActAttendanceBulkApprove;
 }
 
 class _AppLocalizationsDelegate

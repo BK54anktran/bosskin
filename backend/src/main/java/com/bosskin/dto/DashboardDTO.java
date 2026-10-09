@@ -154,6 +154,9 @@ public class DashboardDTO {
         private BigDecimal currentMonthPayroll;
         private long currentMonthPayrollCount;
         private String currentMonthPayrollStatus;
+        /** Kỳ của số liệu lương ở trên (kỳ gần nhất đã chốt). */
+        private Integer currentMonthPayrollYear;
+        private Integer currentMonthPayrollMonth;
         private LocalDate date;
     }
 

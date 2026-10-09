@@ -326,8 +326,8 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V9** (`V9__audit_log.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép
-→ Migration tiếp theo phải là **V10**
+Cao nhất: **V10** (`V10__attendance_lookup_indexes.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký
+→ Migration tiếp theo phải là **V11**
 
 ## Vận hành (Bước 2)
 - Runbook: `docs/runbook.md` (biến môi trường, deploy, rollback, sao lưu/khôi phục DB, sự cố). Đổi cách deploy/biến môi trường → sửa runbook.
@@ -343,6 +343,10 @@ Cao nhất: **V9** (`V9__audit_log.sql`) — V1 là baseline gộp V1–V117 cũ
   không duyệt công ngày không ca + không dữ liệu; đơn nghỉ nhiều ngày chỉ tính ngày có ca; báo cáo cần quyền xem module
   + phạm vi phòng ban (`ReportController.checkModule`); file báo cáo dùng khoá `excel.report.*`, `excel.enum.*`.
 - S3: không có `AWS_ACCESS_KEY` → DefaultCredentialsProvider (IAM role trên EB).
+- Bước A: duyệt hàng loạt `POST /api/v1/attendances/approve-bulk` {from,to,departmentId?} (≤ 62 ngày, lô 50 dòng/transaction,
+  `entityManager.clear()` sau mỗi lô — phiên JPA open-in-view phình làm chậm dần). Nghỉ theo giờ trừ giờ nghỉ giữa ca
+  (`LeaveService.hoursExcludingBreaks`); có lịch ca ±7 ngày mà ngày xin không có ca → `error.leave.no_shift_days`.
+  Tổng quan: ô lương = kỳ gần nhất không còn phiếu nháp (`DashboardService.latestPayroll`).
 
 ## Nghỉ phép & lương (Bước 1)
 - Quỹ phép tách theo loại: `leave_grants.leave_type_id` = loại được dùng; NULL = quỹ chung cho mọi loại trừ quỹ.

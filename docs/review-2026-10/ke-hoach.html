@@ -107,7 +107,7 @@
           <li>Đơn nghỉ theo giờ trừ phần trùng giờ nghỉ trưa của ca.</li>
           <li>Đơn nghỉ 1 ngày vào ngày không có ca: không trừ phép khi NV đã có lịch ca quanh ngày đó.</li>
           <li>Ô "Lương (MTD)" ở Tổng quan lấy kỳ gần nhất có bảng lương đầy đủ.</li>
-        </ul></td><td>Test hồi quy cho từng mục; duyệt 300 NV × 22 ngày dưới 1 phút trên dữ liệu thử</td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+        </ul><span class="muted">Đã làm: API + nút "Duyệt cả kỳ"; đo 300 NV × 22 ngày = 47–50 giây (index V10); nghỉ theo giờ trừ giờ nghỉ trưa; chặn nghỉ 1 ngày vào ngày không ca; ô "Lương kỳ gần nhất". 100 test xanh.</span></td><td>Test hồi quy cho từng mục; duyệt 300 NV × 22 ngày dưới 1 phút trên dữ liệu thử</td><td>Không</td><td><span class="st done">Xong 09/10</span></td></tr>
       <tr><td><b>B</b> · Tự build frontend</td><td>
         <ul class="clean">
           <li>GitHub Actions: <code>flutter analyze</code> + build web (release, <code>API_HOST</code> theo môi trường) + APK Android, lưu file build làm artifact.</li>

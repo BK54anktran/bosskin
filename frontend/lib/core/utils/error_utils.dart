@@ -199,6 +199,7 @@ const _viMessages = <String, String>{
   'error.payroll.cannot_process_own': 'Không thể tự sửa, duyệt hoặc trả bảng lương của chính mình',
   'error.leave.no_shift_days': 'Khoảng ngày đã chọn không có ngày nào có ca làm',
   'error.report.department_required': 'Bạn chỉ được xem một số phòng ban — hãy chọn phòng ban trước khi xuất báo cáo',
+  'error.leave.within_break': 'Khoảng giờ đã chọn nằm trọn trong giờ nghỉ giữa ca',
 };
 
 const _enMessages = <String, String>{
@@ -397,6 +398,7 @@ const _enMessages = <String, String>{
   'error.payroll.cannot_process_own': 'You cannot edit, approve or pay your own payroll',
   'error.leave.no_shift_days': 'The selected dates contain no scheduled shifts',
   'error.report.department_required': 'Your access is limited to some departments — choose a department before exporting',
+  'error.leave.within_break': 'The selected hours fall entirely within the shift break',
 };
 
 /// Tra bản dịch; key dạng "error.x.y.<chi tiết>" thử lại với phần đầu "error.x.y".

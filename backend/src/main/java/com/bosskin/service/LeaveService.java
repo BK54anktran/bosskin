@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -195,6 +196,19 @@ public class LeaveService {
         }
 
         BigDecimal requestedAmount = calculateRequestedAmount(req, type);
+        // L11: NV có lịch ca quanh ngày xin nghỉ mà ngày đó không có ca → không có gì để nghỉ
+        Map<LocalDate, List<ShiftAssignment>> schedule = scheduleAround(emp.getId(), req.getFromDate(), req.getToDate());
+        if (!schedule.isEmpty() && !schedule.containsKey(req.getFromDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.no_shift_days");
+        }
+        if (req.getMode() == LeaveRequest.Mode.HOUR_RANGE && req.getFromTime() != null && req.getToTime() != null
+                && req.getToTime().isAfter(req.getFromTime())) {
+            requestedAmount = hoursExcludingBreaks(req.getFromTime(), req.getToTime(),
+                schedule.getOrDefault(req.getFromDate(), List.of()));
+            if (requestedAmount.signum() <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.within_break");
+            }
+        }
         if (type.isRequiresBalance()) { // L8: loại không trừ quỹ thì không kiểm/trừ số dư
             List<LeaveGrant> usable = leaveGrantRepository.findUsableGrantsForType(emp.getId(), type.getId(), req.getFromDate());
             BigDecimal available = usable.stream()
@@ -645,13 +659,10 @@ public class LeaveService {
             && req.getToTime().isBefore(req.getFromTime());
         // L11: chỉ tính ngày có ca. NV đã được xếp ca trong khoảng này → bỏ ngày không có ca (T7, CN, ngày nghỉ);
         // chưa xếp ca ngày nào → giữ cách tính theo lịch như cũ.
-        java.util.Set<LocalDate> shiftDays = shiftAssignmentRepository
-            .findByEmployeeAndDateRange(emp.getId(), req.getFromDate(), req.getToDate()).stream()
-            .map(ShiftAssignment::getWorkDate)
-            .collect(java.util.stream.Collectors.toCollection(java.util.TreeSet::new));
+        Map<LocalDate, List<ShiftAssignment>> schedule = scheduleAround(emp.getId(), req.getFromDate(), req.getToDate());
         java.util.List<LocalDate> leaveDays = new java.util.ArrayList<>();
         for (LocalDate d = req.getFromDate(); !d.isAfter(req.getToDate()); d = d.plusDays(1)) {
-            if (shiftDays.isEmpty() || shiftDays.contains(d)) leaveDays.add(d);
+            if (schedule.isEmpty() || schedule.containsKey(d)) leaveDays.add(d);
         }
         if (leaveDays.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.no_shift_days");
@@ -673,7 +684,19 @@ public class LeaveService {
         } else {
             amountPerDay = isHourType ? hpd : BigDecimal.ONE;
         }
-        BigDecimal totalAmount = amountPerDay.multiply(BigDecimal.valueOf(totalDays));
+        // Nghỉ theo giờ trong ngày: mỗi ngày trừ phần trùng giờ nghỉ giữa ca của ngày đó
+        boolean sameDayHours = req.getMode() == LeaveRequest.Mode.HOUR_RANGE && req.getFromTime() != null
+            && req.getToTime() != null && req.getToTime().isAfter(req.getFromTime());
+        Map<LocalDate, BigDecimal> dayAmounts = new LinkedHashMap<>();
+        for (LocalDate d : leaveDays) {
+            dayAmounts.put(d, sameDayHours
+                ? hoursExcludingBreaks(req.getFromTime(), req.getToTime(), schedule.getOrDefault(d, List.of()))
+                : amountPerDay);
+        }
+        BigDecimal totalAmount = dayAmounts.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (totalAmount.signum() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.within_break");
+        }
 
         List<LeaveGrant> usable = type.isRequiresBalance()
             ? leaveGrantRepository.findUsableGrantsForType(emp.getId(), type.getId(), req.getFromDate())
@@ -717,7 +740,7 @@ public class LeaveService {
                 .toDate(childToDate)
                 .fromTime(req.getFromTime())
                 .toTime(req.getToTime())
-                .requestedAmount(amountPerDay)
+                .requestedAmount(dayAmounts.get(d))
                 .reason(req.getReason())
                 .parent(parent)
                 .build();
@@ -725,6 +748,25 @@ public class LeaveService {
         }
 
         return saveAndReload(parent, user.getCompanyId());
+    }
+
+    /** Lịch ca của NV từ 7 ngày trước đến 7 ngày sau khoảng xin nghỉ, theo ngày (rỗng = chưa xếp ca). */
+    private Map<LocalDate, List<ShiftAssignment>> scheduleAround(Long employeeId, LocalDate from, LocalDate to) {
+        return shiftAssignmentRepository.findByEmployeeAndDateRange(employeeId, from.minusDays(7), to.plusDays(7))
+            .stream().collect(Collectors.groupingBy(ShiftAssignment::getWorkDate));
+    }
+
+    /** Số giờ từ {@code from} đến {@code to} trừ phần trùng giờ nghỉ giữa ca của các ca trong ngày. */
+    static BigDecimal hoursExcludingBreaks(LocalTime from, LocalTime to, List<ShiftAssignment> shifts) {
+        long minutes = java.time.Duration.between(from, to).toMinutes();
+        for (ShiftAssignment sa : shifts) {
+            LocalTime bs = sa.effectiveBreakStart(), be = sa.effectiveBreakEnd();
+            if (bs == null || be == null || !be.isAfter(bs)) continue;
+            LocalTime os = from.isAfter(bs) ? from : bs;
+            LocalTime oe = to.isBefore(be) ? to : be;
+            if (oe.isAfter(os)) minutes -= java.time.Duration.between(os, oe).toMinutes();
+        }
+        return BigDecimal.valueOf(Math.max(0, minutes)).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateRequestedAmount(LeaveDTO.CreateLeaveRequest req, LeaveType type) {

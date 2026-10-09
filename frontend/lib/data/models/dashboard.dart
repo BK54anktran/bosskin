@@ -383,6 +383,9 @@ class DashboardKpiData {
   final double currentMonthPayroll;
   final int currentMonthPayrollCount;
   final String currentMonthPayrollStatus;
+  /// Kỳ của số liệu lương (kỳ gần nhất đã chốt); null khi chưa có bảng lương.
+  final int? currentMonthPayrollYear;
+  final int? currentMonthPayrollMonth;
   final DateTime date;
 
   const DashboardKpiData({
@@ -399,6 +402,8 @@ class DashboardKpiData {
     required this.currentMonthPayroll,
     required this.currentMonthPayrollCount,
     required this.currentMonthPayrollStatus,
+    this.currentMonthPayrollYear,
+    this.currentMonthPayrollMonth,
     required this.date,
   });
 
@@ -416,6 +421,8 @@ class DashboardKpiData {
         currentMonthPayroll: (j['currentMonthPayroll'] as num?)?.toDouble() ?? 0,
         currentMonthPayrollCount: (j['currentMonthPayrollCount'] as num).toInt(),
         currentMonthPayrollStatus: j['currentMonthPayrollStatus'] ?? 'DRAFT',
+        currentMonthPayrollYear: (j['currentMonthPayrollYear'] as num?)?.toInt(),
+        currentMonthPayrollMonth: (j['currentMonthPayrollMonth'] as num?)?.toInt(),
         date: DateTime.parse(j['date']),
       );
 }

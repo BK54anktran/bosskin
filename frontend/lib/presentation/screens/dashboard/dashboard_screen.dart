@@ -563,7 +563,14 @@ class _KpiStrip extends StatelessWidget {
           _KpiCard(
             label: s.dashboardKpiCurrentPayroll,
             value: d.currentMonthPayroll > 0 ? fmtCompact.format(d.currentMonthPayroll) : '—',
-            sub: d.currentMonthPayrollStatus,
+            // Kỳ gần nhất đã chốt + trạng thái theo ngôn ngữ (trước đây hiện thô "DRAFT")
+            sub: d.currentMonthPayrollMonth == null
+                ? ''
+                : '${d.currentMonthPayrollMonth}/${d.currentMonthPayrollYear} · ${switch (d.currentMonthPayrollStatus) {
+                    'PAID' => s.payrollStatusPaid,
+                    'APPROVED' => s.payrollStatusApproved,
+                    _ => s.payrollStatusDraft,
+                  }}',
             subColor: AppTheme.textSecondary,
             icon: Icons.payments_outlined,
             color: AppTheme.primary,

@@ -4,6 +4,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import 'attendance_shared.dart';
 import 'tabs/attendance_timesheet_tab.dart';
 import 'tabs/attendance_day_tab.dart';
+import 'widgets/bulk_approve_dialog.dart';
 import 'widgets/period_lock_dialog.dart';
 export 'tabs/attendance_day_tab.dart' show AttendanceDayTabKey;
 
@@ -50,6 +51,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     final isSysAdmin = AuthService.instance.currentUser?.isSystemAdmin ?? false;
     final canView   = isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_VIEW')   ?? false);
     final canManage = isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_MANAGE') ?? false);
+    final canApprove = canView &&
+        (isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_APPROVE') ?? false));
     final canLockPeriod = canView &&
         (isSysAdmin || (AuthService.instance.currentUser?.can('ATTENDANCE_PERIOD_LOCK') ?? false));
 
@@ -81,6 +84,23 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    if (canApprove) ...[
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          final changed = await showBulkApproveDialog(context);
+                          if (changed == true) {
+                            if (_tab.index == 0) {
+                              await _dayKey.reload();
+                            } else {
+                              await _activeTimesheetKey?.reload();
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.done_all, size: 16),
+                        label: Text(s.bulkApproveMonthButton),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     if (canLockPeriod) ...[
                       OutlinedButton.icon(
                         onPressed: () => showPeriodLockDialog(context),
