@@ -1,0 +1,24 @@
+{
+  "voice": "vi-VN-HoaiMyNeural",
+  "rate": "+6%",
+  "scenes": [
+    {"id": "s1_intro", "title": "BossKin",
+     "vo": "Cuối tháng lại chạy theo bảng chấm công, đối chiếu ngày nghỉ, rồi ngồi tính lương bằng Excel? BossKin gom tất cả vào một nơi."},
+    {"id": "s2_dashboard", "title": "Tổng quan trong một màn hình",
+     "vo": "Vừa mở BossKin, bạn thấy ngay hôm nay ai đã có mặt, ai đi muộn, ai nghỉ phép, cùng chi phí lương của kỳ gần nhất."},
+    {"id": "s3_checkin", "title": "Chấm công trên điện thoại",
+     "vo": "Nhân viên chấm công ngay trên điện thoại. BossKin kiểm tra vị trí GPS trong bán kính văn phòng, và chỉ chấp nhận đúng chiếc máy đã đăng ký, nên không thể chấm công hộ."},
+    {"id": "s4_shifts", "title": "Xếp ca linh hoạt",
+     "vo": "Xếp ca cho cả xưởng chỉ trong vài phút: ca cố định, ca linh hoạt, xoay ca theo tuần. Nhân viên còn có thể xin đổi ca với nhau."},
+    {"id": "s5_leaves", "title": "Nghỉ phép, duyệt một chạm",
+     "vo": "Đơn xin nghỉ và đơn sửa giờ gửi ngay trên app. Quản lý duyệt bằng một chạm, sổ phép tự trừ đúng số ngày có ca."},
+    {"id": "s6_approve", "title": "Chốt công cả kỳ",
+     "vo": "Cuối kỳ, duyệt công cả công ty bằng một nút bấm, rồi khoá kỳ để số liệu không bị sửa sau đó."},
+    {"id": "s7_payroll", "title": "Tính lương tự động",
+     "vo": "Bảng lương tự tính từ ngày công, phép có lương, bảo hiểm và thuế thu nhập cá nhân, theo công thức riêng của doanh nghiệp. Nhân viên xem phiếu lương của mình ngay trên điện thoại."},
+    {"id": "s8_security", "title": "Báo cáo, phân quyền, bảo mật",
+     "vo": "Báo cáo Excel xuất trong vài giây. Phân quyền chi tiết theo vai trò và phòng ban, nhật ký ghi lại mọi thao tác quan trọng, và xác thực hai lớp bảo vệ tài khoản quản trị."},
+    {"id": "s9_cta", "title": "Dùng thử BossKin",
+     "vo": "BossKin: chấm công đúng, tính lương nhanh, quản lý nhẹ nhàng. Liên hệ với chúng tôi để dùng thử ngay hôm nay."}
+  ]
+}

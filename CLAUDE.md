@@ -470,3 +470,9 @@ V10 index chấm công, V11 xác thực 2 lớp
   Chạy riêng: `mvn test -Pknown-bugs`. Sửa xong lỗi nào thì **bỏ tag** của test đó để nó thành test hồi quy.
 - Sửa lỗi nghiệp vụ → viết/bật test tương ứng trong cùng commit.
 - CI: `.github/workflows/test.yml` chạy cho mọi nhánh/PR; `deploy.yml` chỉ deploy khi test xanh.
+
+## Trang giới thiệu & video (10/2026)
+- `landing/`: trang tĩnh `index.html` (cấu hình `window.BOSSKIN`: appUrl, contactEmail, contactPhone) + `assets/` (ảnh webp, video).
+- Video `landing/assets/bosskin-gioi-thieu.mp4` dựng lại bằng `landing/video/` (seed công ty hư cấu "Nội thất An Phát" trên DB thử,
+  chụp màn hình bằng Playwright, giọng edge-tts `vi-VN-HoaiMyNeural`, dựng bằng `make_video.py`). Hướng dẫn: `landing/README.md`.
+- Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).
