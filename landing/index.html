@@ -17,8 +17,13 @@
   window.BOSSKIN = {
     // Trang đăng nhập app web. '' = ẩn nút "Đăng nhập" (khi app chưa lên mạng). 8099 = chạy thử trên máy dev.
     appUrl: location.port === '8099' ? 'http://localhost:3000/login' : '',
-    // Backend BossKin nhận form dùng thử, vd 'https://api.ten-mien.vn'. '' = gửi vào Netlify Forms (khi host trên Netlify).
+    // Nơi nhận form dùng thử, theo thứ tự ưu tiên:
+    //  1. apiUrl — backend BossKin (vd 'https://api.ten-mien.vn'), xem ở /admin → Yêu cầu dùng thử;
+    //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase (khi backend chưa lên mạng);
+    //  3. không có cả hai — Netlify Forms (khi host trên Netlify).
     apiUrl: location.port === '8099' ? 'http://localhost:8080' : '',
+    supabaseUrl: 'https://apcppqwwnoyliwlhqtyx.supabase.co',
+    supabaseKey: 'sb_publishable_lmZvVB_ao3EZrwiKl4174A_1dCrGFWV',   // khoá công khai: chỉ được THÊM dòng (RLS)
     contactEmail: '',          // email liên hệ hiện ở mục dùng thử (tuỳ chọn), vd 'lienhe@ten-mien.vn'
     contactPhone: '',          // số điện thoại / Zalo, vd '0901 234 567'
   };
@@ -428,9 +433,16 @@
                    source: (location.host + location.pathname).slice(0, 200) };
       btn.disabled = true; say('Đang gửi…', '#475569');
       // Có backend → lưu vào BossKin (/admin → Yêu cầu dùng thử); chưa có → Netlify Forms (xem trong trang quản lý Netlify).
+      if (body.website) { form.reset(); say('Đã nhận yêu cầu của bạn.', '#0f766e'); btn.disabled = false; return; }   // bẫy bot
       var req = cfg.apiUrl
         ? fetch(cfg.apiUrl + '/api/v1/public/trial-requests', {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept-Language': 'vi' }, body: JSON.stringify(body) })
+        : cfg.supabaseUrl
+        ? fetch(cfg.supabaseUrl + '/rest/v1/trial_requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', apikey: cfg.supabaseKey, Prefer: 'return=minimal' },
+            body: JSON.stringify({ full_name: body.fullName, company_name: body.companyName, phone: body.phone, email: body.email,
+                                   company_size: body.companySize, need: body.need, consent: true, source: body.source }) })
         : fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams(Array.from(d.entries()).map(function (kv) { return [kv[0], String(kv[1])]; })).toString() });
       req.then(function (r) {

@@ -9,12 +9,19 @@ Sửa khối `window.BOSSKIN` đầu `index.html`:
 | Khoá | Ý nghĩa |
 |---|---|
 | `appUrl` | Link nút "Đăng nhập" tới app web. Để trống thì ẩn nút (khi app chưa lên mạng) |
-| `apiUrl` | Backend BossKin nhận form dùng thử (vd `https://api.ten-mien.vn`, phải có trong `CORS_ALLOWED_ORIGINS`). Để trống thì form gửi vào **Netlify Forms** |
+| `apiUrl` | Backend BossKin nhận form dùng thử (vd `https://api.ten-mien.vn`, phải có trong `CORS_ALLOWED_ORIGINS`). Ưu tiên cao nhất |
+| `supabaseUrl`, `supabaseKey` | Khi chưa có `apiUrl`: form ghi vào bảng `trial_requests` trên Supabase (khoá publishable, RLS chỉ cho THÊM). Không có cả hai → **Netlify Forms** |
 | `contactEmail` | Email liên hệ hiện ở mục dùng thử (tuỳ chọn) |
 | `contactPhone` | Số điện thoại / Zalo hiện ở mục liên hệ (để trống thì ẩn) |
 
 Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 22 ngày đo được 47–50 giây (`docs/pilot-2026-10.md`),
 8 báo cáo Excel, BHXH 8% / BHYT 1,5% / BHTN 1% + thuế TNCN luỹ tiến. Đổi tính năng thì sửa trang theo (quy tắc 2).
+
+## Yêu cầu dùng thử trên Supabase (đang dùng, 10/2026)
+- Project Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `public.trial_requests` — cấu trúc ở `supabase/001_trial_requests.sql`.
+- Trang chỉ được thêm dòng (RLS + quyền theo cột); trigger chuẩn hoá số điện thoại, bỏ qua trùng số trong 10 phút, tối đa 5 lượt/IP/giờ.
+- Xem / xử lý: Supabase Dashboard → **Table Editor → trial_requests** (sửa cột `status`: NEW/CONTACTED/TRIAL/REJECTED, `admin_note`).
+- Khi BossKin lên AWS: chép dữ liệu sang bảng `trial_requests` (V12) và đặt `apiUrl`.
 
 ## Host trên Netlify
 `netlify.toml` ở gốc repo đã cấu hình sẵn (thư mục `landing/`, không build, chỉ deploy khi `landing/` đổi, header bảo mật, cache ảnh/video).
