@@ -61,6 +61,8 @@ app:
   bootstrap:
     sysadmin-email: ${BOOTSTRAP_SYSADMIN_EMAIL:}
     sysadmin-password: ${BOOTSTRAP_SYSADMIN_PASSWORD:}
+    add-sysadmin-email: ${BOOTSTRAP_ADD_SYSADMIN_EMAIL:}        # thêm 1 system admin lúc khởi động nếu email chưa có
+    add-sysadmin-password: ${BOOTSTRAP_ADD_SYSADMIN_PASSWORD:}
 
   jwt:
     # Bắt buộc đặt JWT_SECRET (>= 32 ký tự, ngẫu nhiên). Không có giá trị mặc định.

@@ -147,6 +147,7 @@ payroll.delete      — xóa
 ### 1. DB Migration
 - `V1__baseline.sql` là schema gộp từ V1–V117 cũ (10/2026, trước go-live). DB tạo trước baseline phải xoá và tạo lại.
 - Không seed tài khoản trong migration. System admin đầu tiên tạo qua `BOOTSTRAP_SYSADMIN_EMAIL` / `BOOTSTRAP_SYSADMIN_PASSWORD`.
+  Thêm system admin khi chưa vào được /admin: `BOOTSTRAP_ADD_SYSADMIN_EMAIL` / `_PASSWORD` (tạo lúc khởi động nếu email chưa có).
 - Unique trên bảng có xoá mềm dùng cột sinh `*_key` (NULL khi đã xoá), xem cuối `V1__baseline.sql`.
 - Mỗi thay đổi schema **bắt buộc** có file Flyway mới (`V{n+1}__...sql`)
 - Kiểm tra version hiện tại: `ls db/migration/ | sort -t'V' -k2 -n | tail -3`

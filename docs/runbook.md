@@ -23,6 +23,7 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 | `CORS_ALLOWED_ORIGINS` | ✔ (bản web) | `https://app.<tên-miền>,https://<tên-miền trang giới thiệu>` (nhiều giá trị cách dấu phẩy; trang giới thiệu gửi form dùng thử vào API) |
 | `TRIAL_MAX_PER_IP_HOUR` | Không | Số yêu cầu dùng thử tối đa mỗi IP mỗi giờ, mặc định 5 |
 | `BOOTSTRAP_SYSADMIN_EMAIL`, `BOOTSTRAP_SYSADMIN_PASSWORD` | Lần đầu | Chỉ dùng khi DB chưa có system admin. Xoá sau khi đăng nhập được |
+| `BOOTSTRAP_ADD_SYSADMIN_EMAIL`, `BOOTSTRAP_ADD_SYSADMIN_PASSWORD` | Không | Thêm một system admin lúc khởi động nếu email chưa có (không sửa tài khoản đang có). Dùng khi không vào được /admin; xoá sau khi đăng nhập được |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có | Nội dung JSON hoặc base64. Không đặt → tắt push |
 | `AWS_S3_BUCKET`, `AWS_REGION` | Nên có | Trên EB dùng IAM role của instance, không cần `AWS_ACCESS_KEY` |
 | `REQUIRE_SYSADMIN_2FA` | Không | Mặc định `true`: system admin phải cài 2FA ở lần đăng nhập đầu. Chỉ đặt `false` khi khẩn cấp (mục 11) |
@@ -143,7 +144,8 @@ rồi `flutter build apk --release --dart-define=API_HOST=...`.
 - **Thêm / khoá system admin**: `/admin` → tab "Quản trị viên". Mật khẩu sinh tự động, chỉ hiện một lần — gửi riêng cho người đó;
   họ phải cài 2FA ở lần đăng nhập đầu. Một admin mất điện thoại: admin khác gỡ 2FA cho họ ở tab này.
 - **System admin mất điện thoại và hết mã dự phòng, và không còn admin nào khác**: tạm đặt `REQUIRE_SYSADMIN_2FA=false` không giúp được vì tài khoản đã bật 2FA.
-  Gỡ trực tiếp trong DB (cần người có quyền DB, ghi lại lý do):
+  Cách nhanh: đặt `BOOTSTRAP_ADD_SYSADMIN_EMAIL/PASSWORD` cho một email mới, khởi động lại, đăng nhập rồi gỡ 2FA tài khoản cũ ở tab "Quản trị viên".
+  Hoặc gỡ trực tiếp trong DB (cần người có quyền DB, ghi lại lý do):
   `UPDATE system_admins SET totp_enabled=0, totp_secret=NULL, totp_recovery_codes=NULL WHERE email='<email>';`
   rồi đăng nhập lại và cài 2FA mới.
 - Đồng hồ máy chủ phải đúng (NTP): mã chấp nhận lệch ±30 giây.

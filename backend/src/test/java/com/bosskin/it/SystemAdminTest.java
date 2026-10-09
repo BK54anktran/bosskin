@@ -1,6 +1,9 @@
 package com.bosskin.it;
 
 import com.bosskin.audit.AuditLogRepository;
+import com.bosskin.config.SystemAdminBootstrap;
+import com.bosskin.repository.SystemAdminRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.bosskin.support.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SystemAdminTest extends IntegrationTest {
 
     @Autowired AuditLogRepository auditLogRepository;
+    @Autowired SystemAdminBootstrap bootstrap;
+    @Autowired SystemAdminRepository systemAdminRepository;
+
+    @Test
+    @DisplayName("BOOTSTRAP_ADD_SYSADMIN_*: lúc khởi động thêm admin nếu email chưa có, không sửa tài khoản đang có")
+    void bootstrapAddsExtraAdmin() {
+        String email = "boot-" + UUID.randomUUID().toString().substring(0, 8) + "@test.local";
+        ReflectionTestUtils.setField(bootstrap, "addEmail", email.toUpperCase());
+        ReflectionTestUtils.setField(bootstrap, "addPassword", "Boot-Admin-2026x");
+        try {
+            bootstrap.run(null);
+            assertThat(api.post(null, "/admin/auth/login", Map.of("email", email, "password", "Boot-Admin-2026x")).ok()).isTrue();
+            String hash = systemAdminRepository.findByEmail(email).orElseThrow().getPassword();
+            ReflectionTestUtils.setField(bootstrap, "addPassword", "Other-Password-99");
+            bootstrap.run(null);
+            assertThat(systemAdminRepository.findByEmail(email).orElseThrow().getPassword()).isEqualTo(hash);
+        } finally {
+            ReflectionTestUtils.setField(bootstrap, "addEmail", "");
+            ReflectionTestUtils.setField(bootstrap, "addPassword", "");
+        }
+    }
 
     private String sys() {
         return api.post(null, "/admin/auth/login", Map.of("email", "sysadmin@test.local", "password", "Test-SysAdmin-123"))
