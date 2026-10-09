@@ -8,12 +8,22 @@ Sửa khối `window.BOSSKIN` đầu `index.html`:
 
 | Khoá | Ý nghĩa |
 |---|---|
-| `appUrl` | Link nút "Đăng nhập" tới app web (mặc định `/login`) |
-| `contactEmail` | Email nhận yêu cầu dùng thử. Form mở ứng dụng email của khách với nội dung đã điền (trang không có backend) |
+| `appUrl` | Link nút "Đăng nhập" tới app web. Để trống thì ẩn nút (khi app chưa lên mạng) |
+| `apiUrl` | Backend BossKin nhận form dùng thử (vd `https://api.ten-mien.vn`, phải có trong `CORS_ALLOWED_ORIGINS`). Để trống thì form gửi vào **Netlify Forms** |
+| `contactEmail` | Email liên hệ hiện ở mục dùng thử (tuỳ chọn) |
 | `contactPhone` | Số điện thoại / Zalo hiện ở mục liên hệ (để trống thì ẩn) |
 
 Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 22 ngày đo được 47–50 giây (`docs/pilot-2026-10.md`),
 8 báo cáo Excel, BHXH 8% / BHYT 1,5% / BHTN 1% + thuế TNCN luỹ tiến. Đổi tính năng thì sửa trang theo (quy tắc 2).
+
+## Host trên Netlify
+`netlify.toml` ở gốc repo đã cấu hình sẵn (thư mục `landing/`, không build, chỉ deploy khi `landing/` đổi, header bảo mật, cache ảnh/video).
+1. app.netlify.com → **Add new site → Import an existing project → GitHub** → chọn repo `bosskin`, nhánh `main`. Để nguyên cấu hình (đọc từ `netlify.toml`) → **Deploy**.
+2. **Site configuration → Forms → Enable form detection**, rồi **Deploys → Trigger deploy** một lần để Netlify nhận form `dung-thu`.
+3. **Forms → dung-thu → Form notifications → Add notification → Email** để nhận email mỗi khi có yêu cầu (gói miễn phí 100 lượt/tháng).
+4. (Tuỳ chọn) **Domain management** → gắn tên miền riêng; Netlify tự cấp HTTPS.
+
+Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `index.html`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
 
 ## Video `assets/bosskin-gioi-thieu.mp4` (~90 giây, 1080p, giọng Hoài My, phụ đề in sẵn)
 Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi trường thử riêng, **không** chạy vào DB dev/prod):
