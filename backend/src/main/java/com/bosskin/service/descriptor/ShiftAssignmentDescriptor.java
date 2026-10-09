@@ -236,7 +236,7 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
             try {
                 Employee emp = empMap.get(row.empCode.trim());
                 if (emp == null) {
-                    results.add(SheetImportResult.RowResult.error(rowNum, "error.employee.not_found:" + row.empCode));
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.employee.not_found|" + row.empCode));
                     continue;
                 }
 
@@ -271,7 +271,7 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
                 } else {
                     LocalTime[] custom = shiftExcelService.parseCustomTimePublic(code);
                     if (custom == null) {
-                        results.add(SheetImportResult.RowResult.error(rowNum, "error.assignment.invalid_shift:" + code));
+                        results.add(SheetImportResult.RowResult.error(rowNum, "error.assignment.invalid_shift|" + code));
                         continue;
                     }
                     req = new ShiftDTO.AssignRequest(emp.getId(), null, date, nvl(row.note).isBlank() ? null : row.note.trim(),

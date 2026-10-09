@@ -295,7 +295,7 @@ String _translateKey(String key, AppLocalizations s) => switch (key) {
   'warning.employee.already_exists' => s.xlWarnEmployeeExistsSkipped,
   'error.employee.not_found'        => s.xlErrEmployeeNotFound,
   'error.employee.already_exists'   => s.xlErrEmployeeAlreadyExists,
-  _                                 => key,
+  _                                 => serverKeyMsg(key),
 };
 
 class _SummaryItem {

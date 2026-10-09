@@ -201,13 +201,13 @@ public class LeaveGrantDescriptor implements ExcelEntityDescriptor<LeaveGrantDes
 
                 Employee emp = empMap.get(data.getEmpCode().trim());
                 if (emp == null) {
-                    results.add(SheetImportResult.RowResult.error(rowNum, "error.employee.not_found:" + data.getEmpCode()));
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.employee.not_found|" + data.getEmpCode()));
                     continue;
                 }
 
                 LeaveType lt = ltMap.get(data.getLeaveTypeCode().trim().toUpperCase());
                 if (lt == null) {
-                    results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.leaveType_not_found:" + data.getLeaveTypeCode()));
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.leaveType_not_found|" + data.getLeaveTypeCode()));
                     continue;
                 }
 

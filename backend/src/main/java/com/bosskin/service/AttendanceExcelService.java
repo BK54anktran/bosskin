@@ -256,14 +256,14 @@ public class AttendanceExcelService {
     private Employee resolveEmployee(Long companyId, String code) {
         return employeeRepo.findByEmployeeCodeAndCompanyId(code.trim(), companyId)
             .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.NOT_FOUND, "error.employee.not_found:" + code));
+                org.springframework.http.HttpStatus.NOT_FOUND, "error.employee.not_found|" + code));
     }
 
     private LocalDate parseDateStr(String s) {
         try { return LocalDate.parse(s.trim(), DATE_FMT); }
         catch (java.time.format.DateTimeParseException e) {
             throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.invalid_date:" + s);
+                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.invalid_date|" + s);
         }
     }
 
@@ -271,7 +271,7 @@ public class AttendanceExcelService {
         try { return LocalTime.parse(s.trim(), TIME_FMT); }
         catch (java.time.format.DateTimeParseException e) {
             throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.invalid_time:" + s);
+                org.springframework.http.HttpStatus.BAD_REQUEST, "error.attendance.invalid_time|" + s);
         }
     }
 

@@ -536,7 +536,7 @@ class _WarningsBlock extends StatelessWidget {
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Icon(Icons.warning_amber_rounded, size: 13, color: Colors.orange),
             const SizedBox(width: 6),
-            Expanded(child: Text(w,
+            Expanded(child: Text(serverKeyMsg(w),
                 style: const TextStyle(fontSize: 12, color: Colors.orange))),
           ]),
         )).toList(),

@@ -183,6 +183,8 @@ payroll.delete      — xóa
 - Frontend dịch mã lỗi trong `frontend/lib/core/utils/error_utils.dart` (`_viMessages` / `_enMessages`);
   thêm mã lỗi mới ở backend → thêm bản dịch vi + en ở đó (quy tắc 2). Backend không dịch (đã bỏ MessageTranslator).
 - Mã lỗi có tham số: `"error.import.email_in_use|" + email` → bản dịch dùng `{0}`, `{1}`…
+  Không nối tham số bằng `:`. Lỗi từng dòng import: `RowResult.error/warn` tự bỏ tiền tố `400 BAD_REQUEST "…"` của
+  `e.getMessage()`; hộp xem trước import dịch qua `serverKeyMsg`.
 - Không viết chuỗi tiếng Việt cứng trong `.dart` (ngoài l10n/error_utils): CI `tools/ci/check_vi_literals.py`
   chặn chuỗi mới; baseline `tools/ci/vi_literals_baseline.json` (giảm thì chạy `--update`).
 
