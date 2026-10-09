@@ -53,4 +53,10 @@ Poster video: `ffmpeg -ss 9.6 -i assets/bosskin-gioi-thieu.mp4 -frames:v 1 asset
 Cùng bộ ảnh chụp ở trên. Lời đọc ở `video/script_reel.json`:
 `python3 video/tts.py video/script_reel.json <thư mục giọng>` rồi
 `python3 video/make_reel.py <thư mục ảnh> <thư mục giọng> landing/assets/bosskin-reel.mp4` (xem trước: thêm `--frames 5,20`).
+Đổi lời / dựng lại thì tạo lại phụ đề `assets/bosskin-reel.vi.vtt` (thời điểm = đầu cảnh + 0,35 s, dài bằng file giọng — cùng cách tính độ dài cảnh trong `make_reel.py`).
+
+## Màu chữ, khả năng tiếp cận, tốc độ
+- Chữ nhấn dùng token `--accent` (sáng `#1d4ed8`, tối `#8ab4ff`), không dùng `--blue` cho chữ — `--blue` chỉ làm nền nút. Chữ phụ `--muted` đạt ≥ 4,5:1 trên cả `--bg` và `--bg-soft` ở hai chế độ màu.
+- Nội dung chính nằm trong `<main>`; video có phụ đề `<track kind="captions">`.
+- Ảnh chụp màn hình có bản nhỏ `*-w800.webp` / `*-w360.webp` (srcset), ảnh dưới màn hình đầu `loading="lazy"`, poster video dạng webp, font Google tải không chặn hiển thị. Thay ảnh thì tạo lại bản nhỏ cùng tên.
 

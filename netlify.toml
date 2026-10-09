@@ -18,11 +18,17 @@
 [[headers]]
   for = "/assets/*"
   [headers.values]
-    Cache-Control = "public, max-age=604800"
+    Cache-Control = "public, max-age=2592000"
 
 # Thư mục script dựng video và README không cần công khai
 [[redirects]]
   from = "/video/*"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/supabase/*"
   to = "/404"
   status = 404
   force = true

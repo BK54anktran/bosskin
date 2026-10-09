@@ -11,7 +11,9 @@
 <link rel="icon" href="assets/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script>
   /* Cấu hình trang — sửa ở đây khi triển khai (xem landing/README.md) */
   window.BOSSKIN = {
@@ -30,7 +32,7 @@
 </script>
 <style>
   :root {
-    --ink: #0f172a; --ink-2: #334155; --muted: #64748b; --line: #e2e8f0;
+    --ink: #0f172a; --ink-2: #334155; --muted: #56657a; --line: #e2e8f0; --accent: #1d4ed8; --accent-bg: rgba(37,99,235,.1);
     --bg: #ffffff; --bg-soft: #f4f7fc; --card: #ffffff;
     --navy: #0b1630; --navy-2: #16306a; --blue: #2563eb; --blue-d: #1d4ed8; --sky: #5fa9d2;
     --green: #10b981; --red: #ef4444; --amber: #f59e0b;
@@ -38,7 +40,7 @@
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --ink: #e8eefb; --ink-2: #c5d0e6; --muted: #93a1bd; --line: #24324f; --bg: #0a1224; --bg-soft: #0f1a33;
+    :root { --ink: #e8eefb; --ink-2: #c5d0e6; --muted: #a3b0c8; --line: #24324f; --accent: #8ab4ff; --accent-bg: rgba(138,180,255,.14); --bg: #0a1224; --bg-soft: #0f1a33;
             --card: #121f3d; --shadow: 0 18px 50px -20px rgba(0, 0, 0, .6); color-scheme: dark; }
   }
   * { box-sizing: border-box; }
@@ -51,7 +53,7 @@
   .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
   h1, h2, h3 { line-height: 1.2; text-wrap: balance; margin: 0; }
   h2 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.01em; }
-  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
   .lead { color: var(--muted); font-size: 18px; max-width: 62ch; }
   .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 999px; font-weight: 700;
          text-decoration: none; border: 0; cursor: pointer; font: inherit; font-weight: 700; transition: transform .15s, background .15s; }
@@ -89,7 +91,7 @@
   /* ── proof strip ── */
   .proof { border-bottom: 1px solid var(--line); background: var(--bg-soft); }
   .proof .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding-block: 34px; }
-  .proof b { display: block; font-size: 26px; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .proof b { display: block; font-size: 26px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
   .proof span { color: var(--muted); font-size: 15px; }
   @media (max-width: 760px) { .proof .wrap { grid-template-columns: repeat(2, 1fr); } }
 
@@ -117,7 +119,7 @@
   .feature figure.phone-pair { display: flex; gap: 16px; justify-content: center; }
   .feature figure.phone-pair img { width: min(46%, 240px); border-radius: 24px; border: 6px solid #0c0e14; }
   .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-         color: var(--blue); background: rgba(37,99,235,.1); padding: 4px 10px; border-radius: 999px; }
+         color: var(--accent); background: var(--accent-bg); padding: 4px 10px; border-radius: 999px; }
   @media (max-width: 860px) { .feature { grid-template-columns: 1fr; padding: 22px; gap: 22px; } .feature:nth-child(even) .feature-text { order: 0; } }
 
   /* ── roles ── */
@@ -141,7 +143,7 @@
   .faq { display: grid; gap: 12px; max-width: 860px; }
   .faq details { border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; background: var(--card); }
   .faq summary { font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
-  .faq summary::after { content: '+'; color: var(--blue); font-size: 22px; line-height: 1; }
+  .faq summary::after { content: '+'; color: var(--accent); font-size: 22px; line-height: 1; }
   .faq details[open] summary::after { content: '–'; }
   .faq p { margin: 12px 0 0; color: var(--muted); }
 
@@ -171,7 +173,7 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#"><img src="assets/logo-192.png" alt="">BossKin</a>
+    <a class="brand" href="#"><img src="assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
     <nav class="links">
       <a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#hoi-dap">Hỏi đáp</a>
     </nav>
@@ -179,6 +181,7 @@
   </div>
 </header>
 
+<main>
 <section class="hero" style="padding:0">
   <div class="wrap">
     <div>
@@ -192,8 +195,8 @@
       <div class="facts"><span>Không cần máy chấm công</span><span>Chạy trên Android và trình duyệt web</span><span>Tiếng Việt và tiếng Anh</span></div>
     </div>
     <div class="shots">
-      <img class="desk" src="assets/man-tong-quan.webp" width="1600" height="900" alt="Màn hình tổng quan BossKin: số nhân viên có mặt, nghỉ phép, vắng mặt hôm nay và lương kỳ gần nhất">
-      <img class="phone" src="assets/dt-cham-cong.webp" width="600" height="1298" alt="Màn hình chấm công trên điện thoại với bản đồ vị trí văn phòng">
+      <img class="desk" src="assets/man-tong-quan.webp" srcset="assets/man-tong-quan-w800.webp 800w, assets/man-tong-quan.webp 1600w" sizes="(max-width: 700px) 92vw, 560px" width="1600" height="900" alt="Màn hình tổng quan BossKin: số nhân viên có mặt, nghỉ phép, vắng mặt hôm nay và lương kỳ gần nhất">
+      <img class="phone" src="assets/dt-cham-cong.webp" srcset="assets/dt-cham-cong-w360.webp 360w, assets/dt-cham-cong.webp 600w" sizes="(max-width: 700px) 45vw, 240px" width="600" height="1298" alt="Màn hình chấm công trên điện thoại với bản đồ vị trí văn phòng">
     </div>
   </div>
 </section>
@@ -215,11 +218,12 @@
       <p class="lead">Chấm công, xếp ca, nghỉ phép và tính lương — xem nhanh cách BossKin gom tất cả về một nơi.</p>
     </div>
     <div class="video-box">
-      <video controls preload="metadata" poster="assets/reel-poster.jpg" playsinline>
+      <video controls preload="metadata" poster="assets/reel-poster.webp" playsinline>
         <source src="assets/bosskin-reel.mp4" type="video/mp4">
+        <track kind="captions" src="assets/bosskin-reel.vi.vtt" srclang="vi" label="Tiếng Việt">
       </video>
     </div>
-    <p style="margin:16px 0 0;color:var(--muted);font-size:15px">Muốn xem kỹ từng màn hình? <a href="assets/bosskin-gioi-thieu.mp4" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">Xem bản đầy đủ 90 giây →</a></p>
+    <p style="margin:16px 0 0;color:var(--muted);font-size:15px">Muốn xem kỹ từng màn hình? <a href="assets/bosskin-gioi-thieu.mp4" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Xem bản đầy đủ 90 giây →</a></p>
   </div>
 </section>
 
@@ -241,7 +245,7 @@
             <li>Từ chối vị trí giả lập và tín hiệu GPS quá kém</li>
           </ul>
         </div>
-        <figure class="phone-pair"><img src="assets/dt-cham-cong.webp" width="600" height="1298" alt="Chấm công thành công trên điện thoại"></figure>
+        <figure class="phone-pair"><img loading="lazy" src="assets/dt-cham-cong.webp" srcset="assets/dt-cham-cong-w360.webp 360w, assets/dt-cham-cong.webp 600w" sizes="(max-width: 700px) 45vw, 240px" width="600" height="1298" alt="Chấm công thành công trên điện thoại"></figure>
       </article>
       <article class="feature">
         <div class="feature-text">
@@ -254,7 +258,7 @@
             <li>Nhân viên xin đổi hoặc nhường ca, quản lý duyệt</li>
           </ul>
         </div>
-        <figure><img src="assets/man-xep-ca.webp" width="1400" height="787" alt="Bảng phân ca theo tháng"></figure>
+        <figure><img loading="lazy" src="assets/man-xep-ca.webp" srcset="assets/man-xep-ca-w800.webp 800w, assets/man-xep-ca.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Bảng phân ca theo tháng"></figure>
       </article>
       <article class="feature">
         <div class="feature-text">
@@ -267,7 +271,7 @@
             <li>Tự cộng phép hằng tháng theo quy tắc của công ty</li>
           </ul>
         </div>
-        <figure><img src="assets/man-nghi-phep.webp" width="1400" height="787" alt="Danh sách đơn nghỉ phép với nút duyệt"></figure>
+        <figure><img loading="lazy" src="assets/man-nghi-phep.webp" srcset="assets/man-nghi-phep-w800.webp 800w, assets/man-nghi-phep.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Danh sách đơn nghỉ phép với nút duyệt"></figure>
       </article>
       <article class="feature">
         <div class="feature-text">
@@ -280,7 +284,7 @@
             <li>Đi muộn, về sớm, tăng ca ngày và đêm tính tự động</li>
           </ul>
         </div>
-        <figure><img src="assets/man-duyet-cong.webp" width="1400" height="787" alt="Hộp thoại duyệt công cả kỳ"></figure>
+        <figure><img loading="lazy" src="assets/man-duyet-cong.webp" srcset="assets/man-duyet-cong-w800.webp 800w, assets/man-duyet-cong.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Hộp thoại duyệt công cả kỳ"></figure>
       </article>
       <article class="feature">
         <div class="feature-text">
@@ -294,7 +298,7 @@
           </ul>
         </div>
         <figure class="phone-pair">
-          <img src="assets/dt-phieu-luong.webp" width="600" height="1298" alt="Phiếu lương của nhân viên trên điện thoại">
+          <img loading="lazy" src="assets/dt-phieu-luong.webp" srcset="assets/dt-phieu-luong-w360.webp 360w, assets/dt-phieu-luong.webp 600w" sizes="(max-width: 700px) 45vw, 240px" width="600" height="1298" alt="Phiếu lương của nhân viên trên điện thoại">
         </figure>
       </article>
       <article class="feature">
@@ -308,7 +312,7 @@
             <li>Nhật ký ghi lại mọi thao tác nhạy cảm; xác thực 2 lớp cho quản trị</li>
           </ul>
         </div>
-        <figure><img src="assets/man-nhat-ky.webp" width="1400" height="787" alt="Nhật ký thao tác"></figure>
+        <figure><img loading="lazy" src="assets/man-nhat-ky.webp" srcset="assets/man-nhat-ky-w800.webp 800w, assets/man-nhat-ky.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Nhật ký thao tác"></figure>
       </article>
     </div>
   </div>
@@ -396,6 +400,7 @@
     </form>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="wrap"><span>© <span id="yr"></span> BossKin</span><span>Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng</span></div>
