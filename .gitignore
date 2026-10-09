@@ -44,3 +44,6 @@ frontend/.env
 **/*service-account*.json
 /backend/deploy.zip
 /backend/BOOT-INF/
+
+# Ảnh/video đăng mạng xã hội (dựng lại bằng landing/video/), không commit
+marketing/

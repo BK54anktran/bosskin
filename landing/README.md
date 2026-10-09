@@ -53,6 +53,8 @@ Poster video: `ffmpeg -ss 9.6 -i assets/bosskin-gioi-thieu.mp4 -frames:v 1 asset
 Cùng bộ ảnh chụp ở trên. Lời đọc ở `video/script_reel.json`:
 `python3 video/tts.py video/script_reel.json <thư mục giọng>` rồi
 `python3 video/make_reel.py <thư mục ảnh> <thư mục giọng> landing/assets/bosskin-reel.mp4` (xem trước: thêm `--frames 5,20`).
+Bản dọc 9:16 cho Reels / TikTok / Shorts (cùng giọng, nhạc, cảnh; không đưa lên trang): `python3 video/make_reel_vertical.py <thư mục ảnh> <thư mục giọng> <file .mp4>`
+(chừa vùng an toàn trên ~220 px, dưới ~380 px cho chữ/nút của app). Bản đã dựng để đăng mạng xã hội lưu ngoài repo (`marketing/facebook/`).
 Đổi lời / dựng lại thì tạo lại phụ đề `assets/bosskin-reel.vi.vtt` (thời điểm = đầu cảnh + 0,35 s, dài bằng file giọng — cùng cách tính độ dài cảnh trong `make_reel.py`).
 
 ## Màu chữ, khả năng tiếp cận, tốc độ
