@@ -3,7 +3,7 @@ package com.bosskin.service;
 import com.bosskin.audit.AuditService;
 import com.bosskin.dto.TrialRequestDTO;
 import com.bosskin.entity.TrialRequest;
-import com.bosskin.repository.TrialRequestRepository;
+import com.bosskin.service.trial.TrialRequestStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-/** Yêu cầu dùng thử từ trang giới thiệu: nhận công khai (chống spam), system admin xử lý. */
+/** Yêu cầu dùng thử từ trang giới thiệu: nhận công khai (chống spam), system admin xử lý. Nơi lưu: {@link TrialRequestStore}. */
 @Service
 @RequiredArgsConstructor
 public class TrialRequestService {
@@ -29,7 +29,7 @@ public class TrialRequestService {
     private static final Pattern PHONE_CHARS = Pattern.compile("^[+0-9 .()-]{9,20}$");
     private static final long WINDOW_SECONDS = 3600;
 
-    private final TrialRequestRepository repository;
+    private final TrialRequestStore store;
     private final AuditService audit;
     private final Clock clock;
     /** IP → mốc gửi trong 1 giờ gần nhất (bộ nhớ của một instance, như LoginAttemptService). */
@@ -53,8 +53,8 @@ public class TrialRequestService {
         if (!Boolean.TRUE.equals(r.getConsent())) throw bad("error.trial.consent_required");
         rateLimit(ip);
         String normPhone = phone.replaceAll("[^+0-9]", "");
-        if (repository.existsByPhoneAndCreatedAtAfter(normPhone, LocalDateTime.now(clock).minusMinutes(10))) return false;
-        repository.save(TrialRequest.builder().fullName(name).companyName(company).phone(normPhone).email(email)
+        if (store.phoneSubmittedAfter(normPhone, LocalDateTime.now(clock).minusMinutes(10))) return false;
+        store.insert(TrialRequest.builder().fullName(name).companyName(company).phone(normPhone).email(email)
             .companySize(trim(r.getCompanySize(), 30)).need(trim(r.getNeed(), 1000)).source(trim(r.getSource(), 200))
             .ip(ip).build());
         return true;
@@ -73,14 +73,14 @@ public class TrialRequestService {
 
     @Transactional
     public TrialRequestDTO.Response update(Long id, TrialRequestDTO.UpdateRequest r, String adminEmail) {
-        TrialRequest t = repository.findById(id)
+        TrialRequest t = store.find(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.trial.not_found"));
         TrialRequest.Status before = t.getStatus();
         if (r.getStatus() != null) t.setStatus(r.getStatus());
         if (r.getAdminNote() != null) t.setAdminNote(trim(r.getAdminNote(), 1000));
         t.setHandledBy(adminEmail);
         t.setHandledAt(LocalDateTime.now(clock));
-        repository.save(t);
+        t = store.saveHandling(t);
         audit.log("TRIAL_REQUEST_UPDATE").entity("TRIAL_REQUEST", t.getId())
             .summary(t.getCompanyName() + " · " + before + " → " + t.getStatus())
             .detail(AuditService.map("status", t.getStatus(), "note", t.getAdminNote())).save();

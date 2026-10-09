@@ -3,7 +3,7 @@ package com.bosskin.controller;
 import com.bosskin.dto.TrialRequestDTO;
 import com.bosskin.entity.SystemAdmin;
 import com.bosskin.entity.TrialRequest;
-import com.bosskin.repository.TrialRequestRepository;
+import com.bosskin.service.trial.TrialRequestStore;
 import com.bosskin.service.TrialRequestService;
 import com.bosskin.util.ExcelI18n;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,7 +36,7 @@ import java.util.Map;
 public class TrialRequestController {
 
     private final TrialRequestService service;
-    private final TrialRequestRepository repository;
+    private final TrialRequestStore store;
     private final ExcelI18n excelI18n;
 
     @PostMapping("/api/v1/public/trial-requests")
@@ -52,15 +52,14 @@ public class TrialRequestController {
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        String like = q == null || q.isBlank() ? null : "%" + q.trim().toLowerCase(Locale.ROOT) + "%";
-        return ResponseEntity.ok(repository.search(status, like, PageRequest.of(page, Math.min(size, 100)))
+        return ResponseEntity.ok(store.search(status, q, PageRequest.of(page, Math.min(size, 100)))
             .map(TrialRequestDTO.Response::of));
     }
 
     @GetMapping("/admin/trial-requests/count-new")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
-    public ResponseEntity<Map<String, Long>> countNew() {
-        return ResponseEntity.ok(Map.of("count", repository.countByStatus(TrialRequest.Status.NEW)));
+    public ResponseEntity<Map<String, Object>> countNew() {
+        return ResponseEntity.ok(Map.of("count", store.countNew(), "source", store.name()));
     }
 
     @PatchMapping("/admin/trial-requests/{id}")
@@ -73,7 +72,7 @@ public class TrialRequestController {
     @GetMapping("/admin/trial-requests/export")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<byte[]> export(@RequestParam(required = false) TrialRequest.Status status, Locale locale) throws IOException {
-        List<TrialRequest> rows = repository.findAllForExport(status);
+        List<TrialRequest> rows = store.findAllForExport(status);
         String[] cols = {"createdAt", "fullName", "companyName", "phone", "email", "companySize", "need", "status", "adminNote", "handledBy"};
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {

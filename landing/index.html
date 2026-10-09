@@ -21,7 +21,7 @@
     //  1. apiUrl — backend BossKin (vd 'https://api.ten-mien.vn'), xem ở /admin → Yêu cầu dùng thử;
     //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase (khi backend chưa lên mạng);
     //  3. không có cả hai — Netlify Forms (khi host trên Netlify).
-    apiUrl: location.port === '8099' ? 'http://localhost:8080' : '',
+    apiUrl: '',                 // đang dùng Supabase làm nơi lưu chung (app BossKin đọc từ đó)
     supabaseUrl: 'https://apcppqwwnoyliwlhqtyx.supabase.co',
     supabaseKey: 'sb_publishable_lmZvVB_ao3EZrwiKl4174A_1dCrGFWV',   // khoá công khai: chỉ được THÊM dòng (RLS)
     contactEmail: '',          // email liên hệ hiện ở mục dùng thử (tuỳ chọn), vd 'lienhe@ten-mien.vn'

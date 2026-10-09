@@ -20,8 +20,9 @@ Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 
 ## Yêu cầu dùng thử trên Supabase (đang dùng, 10/2026)
 - Project Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `public.trial_requests` — cấu trúc ở `supabase/001_trial_requests.sql`.
 - Trang chỉ được thêm dòng (RLS + quyền theo cột); trigger chuẩn hoá số điện thoại, bỏ qua trùng số trong 10 phút, tối đa 5 lượt/IP/giờ.
-- Xem / xử lý: Supabase Dashboard → **Table Editor → trial_requests** (sửa cột `status`: NEW/CONTACTED/TRIAL/REJECTED, `admin_note`).
-- Khi BossKin lên AWS: chép dữ liệu sang bảng `trial_requests` (V12) và đặt `apiUrl`.
+- Xem / xử lý: app BossKin `/admin` → tab **Yêu cầu dùng thử** (backend đọc Supabase khi `backend/.env` có `SUPABASE_URL` + `SUPABASE_SECRET_KEY`),
+  hoặc Supabase Dashboard → **Table Editor → trial_requests**.
+- `apiUrl` để trống: mọi nơi (kể cả `localhost:8099`) đều ghi vào Supabase — một nguồn duy nhất.
 
 ## Host trên Netlify
 `netlify.toml` ở gốc repo đã cấu hình sẵn (thư mục `landing/`, không build, chỉ deploy khi `landing/` đổi, header bảo mật, cache ảnh/video).

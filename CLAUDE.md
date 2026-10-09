@@ -486,7 +486,9 @@ V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử
   trùng số điện thoại trong 10 phút bỏ qua, giới hạn `app.trial-request.max-per-ip-hour` (mặc định 5, bộ nhớ 1 instance),
   bắt buộc `consent`. System admin xử lý ở `/admin/trial-requests` (lọc, đổi trạng thái NEW/CONTACTED/TRIAL/REJECTED + ghi chú,
   `count-new`, xuất Excel); FE tab "Yêu cầu dùng thử" (`screens/admin/trial_requests_tab.dart`). Chưa gửi email báo (chưa có SMTP).
-- Chưa có backend công khai → form dùng thử ghi vào Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `trial_requests`
+- Nguồn yêu cầu dùng thử = Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `trial_requests`: trang ghi thẳng; backend đọc/ghi qua
+  `service/trial/TrialRequestStore` (`SupabaseTrialRequestStore` khi có `SUPABASE_URL` + `SUPABASE_SECRET_KEY`, ngược lại `JpaTrialRequestStore` — MySQL V12).
+  Bảng Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `trial_requests`
   (SQL: `landing/supabase/001_trial_requests.sql`; anon chỉ INSERT, trigger chống spam). Đổi bảng → sửa file SQL đó + migration Supabase.
 - Host: Netlify (`netlify.toml` ở gốc: base `landing`, không build). `apiUrl` trống → form gửi Netlify Forms (`dung-thu`, ô bẫy `website`);
   có `apiUrl` → API BossKin. `appUrl` trống → ẩn nút Đăng nhập.
