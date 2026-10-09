@@ -151,7 +151,11 @@
   .contact { background: linear-gradient(135deg, var(--navy), var(--navy-2)); color: #fff; }
   .contact .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
   .contact p { color: #c8d6f2; }
-  .contact form { background: #fff; color: #0f172a; border-radius: 20px; padding: 28px; display: grid; gap: 14px; box-shadow: 0 30px 60px -25px rgba(0,0,0,.6); }
+  .contact form { background: #fff; color: #0f172a; border-radius: 20px; padding: 28px; display: grid; gap: 14px; box-shadow: 0 30px 60px -25px rgba(0,0,0,.6); color-scheme: light; }
+  .contact input:-webkit-autofill, .contact input:-webkit-autofill:hover, .contact input:-webkit-autofill:focus {
+         -webkit-text-fill-color: #0f172a; caret-color: #0f172a; -webkit-box-shadow: 0 0 0 1000px #eaf1ff inset; box-shadow: 0 0 0 1000px #eaf1ff inset; }
+  .contact input::placeholder, .contact textarea::placeholder { color: #7a8699; }
+  .contact input:focus, .contact select:focus, .contact textarea:focus { outline: 2px solid #2563eb; outline-offset: 1px; border-color: #2563eb; }
   .contact label { font-size: 14px; font-weight: 600; display: grid; gap: 6px; }
   .contact input, .contact select, .contact textarea { font: inherit; font-size: 16px; padding: 12px 14px; border: 1px solid #cbd5e1;
          border-radius: 10px; background: #f8fafc; color: #0f172a; width: 100%; }
