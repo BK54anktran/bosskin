@@ -25,7 +25,7 @@ Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 
 
 Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `index.html`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
 
-## Video `assets/bosskin-gioi-thieu.mp4` (~90 giây, 1080p, giọng Hoài My, phụ đề in sẵn)
+## Video đầy đủ `assets/bosskin-gioi-thieu.mp4` (~90 giây, 1080p, giọng Hoài My, phụ đề in sẵn; trang dẫn link phụ)
 Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi trường thử riêng, **không** chạy vào DB dev/prod):
 
 1. Backend + bản web (`flutter build web`, phục vụ ở `localhost:3000`) trên DB thử trống hoặc DB thử riêng.
@@ -41,7 +41,7 @@ Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi tr�
 Đổi giao diện app thì chụp lại (bước 4) — toạ độ bấm trong `capture_*.py` và `make_video.py` là toạ độ CSS của bản web hiện tại.
 Poster video: `ffmpeg -ss 9.6 -i assets/bosskin-gioi-thieu.mp4 -frames:v 1 assets/video-poster.jpg`.
 
-## Video ngắn `assets/bosskin-reel.mp4` (~51 giây, 16:9, nền tối, nhạc + giọng đọc)
+## Video chính trên trang `assets/bosskin-reel.mp4` (~51 giây, 16:9, nền tối, nhạc + giọng đọc; poster `reel-poster.jpg`)
 Cùng bộ ảnh chụp ở trên. Lời đọc ở `video/script_reel.json`:
 `python3 video/tts.py video/script_reel.json <thư mục giọng>` rồi
 `python3 video/make_reel.py <thư mục ảnh> <thư mục giọng> landing/assets/bosskin-reel.mp4` (xem trước: thêm `--frames 5,20`).
