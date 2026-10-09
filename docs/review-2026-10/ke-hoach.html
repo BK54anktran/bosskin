@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 09/10/2026 — Bước 1, 2 và thử nghiệm nội bộ xong; AWS để sau</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 09/10/2026 — Bước 1, 2 và thử nghiệm nội bộ xong; AWS để sau, làm tiếp A–F</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -93,6 +93,44 @@
       <tr><td><b>3</b> · Mốc 5 – lên AWS</td><td>EB staging + prod, RDS có backup/PITR, HTTPS (ACM), secret trong SSM, CI deploy staging khi test xanh, prod duyệt tay.
         <br><span class="muted">Cần chủ dự án: cách truy cập AWS, tên miền, staging có DB riêng không.</span></td><td>Có</td><td><span class="st todo">Để sau (chưa có AWS)</span></td></tr>
       <tr><td><b>4</b> · Pilot</td><td>Nhập dữ liệu thật (NV, ca, phép), chạy song song 1 kỳ với cách chấm cũ, đối chiếu công và lương, sửa lỗi rồi chuyển hẳn.</td><td>Có</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Kế hoạch khi chưa có AWS <span class="tag">chốt 09/10/2026</span></h3>
+  <p class="muted">Làm theo thứ tự; mỗi bước xong là đẩy lên <code>main</code>, chạy đủ test, cập nhật tài liệu và bảng này. Khi có AWS thì dừng ở bước đang làm để chuyển sang Bước 3.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Bước</th><th>Nội dung</th><th>Xong khi</th><th>Cần chủ dự án</th><th>Trạng thái</th></tr></thead>
+    <tbody>
+      <tr><td><b>A</b> · Việc pilot còn lại</td><td>
+        <ul class="clean">
+          <li>Duyệt công cả phòng × cả tháng một lần (API duyệt hàng loạt ở backend, chạy theo lô, trả số thành công / lỗi từng dòng).</li>
+          <li>Đơn nghỉ theo giờ trừ phần trùng giờ nghỉ trưa của ca.</li>
+          <li>Đơn nghỉ 1 ngày vào ngày không có ca: không trừ phép khi NV đã có lịch ca quanh ngày đó.</li>
+          <li>Ô "Lương (MTD)" ở Tổng quan lấy kỳ gần nhất có bảng lương đầy đủ.</li>
+        </ul></td><td>Test hồi quy cho từng mục; duyệt 300 NV × 22 ngày dưới 1 phút trên dữ liệu thử</td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>B</b> · Tự build frontend</td><td>
+        <ul class="clean">
+          <li>GitHub Actions: <code>flutter analyze</code> + build web (release, <code>API_HOST</code> theo môi trường) + APK Android, lưu file build làm artifact.</li>
+          <li>Ký APK bằng keystore riêng (để trong GitHub Secrets), đánh số phiên bản tự động.</li>
+          <li>Runbook thêm mục phát hành web/app.</li>
+        </ul></td><td>Mỗi push có bản web + APK tải được từ Actions</td><td>Tạo keystore Android (tôi hướng dẫn) hoặc đồng ý dùng keystore tôi tạo</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>C</b> · 2FA cho quản trị</td><td>
+        <ul class="clean">
+          <li>Mã TOTP (Google Authenticator…) cho system admin, bật tuỳ chọn cho admin công ty; mã dự phòng dùng một lần.</li>
+          <li>Màn bật/tắt 2FA trong hồ sơ, bước nhập mã khi đăng nhập; ghi nhật ký thao tác.</li>
+        </ul></td><td>Test đăng nhập có/không 2FA, mã sai bị khoá như sai mật khẩu</td><td>Có bắt buộc 2FA cho admin công ty không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>D</b> · Thử trên điện thoại thật</td><td>
+        <ul class="clean">
+          <li>Kịch bản thử (checklist) cho chấm công GPS, gắn thiết bị, đổi máy, thông báo đẩy, bắt đổi mật khẩu, mất mạng giữa chừng.</li>
+          <li>Sửa lỗi tìm được.</li>
+        </ul></td><td>Đi hết checklist trên ít nhất 1 máy Android không lỗi chặn</td><td>Cài APK (từ bước B) lên 1 máy Android và bấm theo checklist; khoá Firebase mới</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>E</b> · Chuẩn bị sẵn cho AWS</td><td>
+        <ul class="clean">
+          <li>Viết sẵn hạ tầng dạng file (EB, RDS, S3, IAM role, SSM) để khi có tài khoản chỉ cần chạy.</li>
+          <li>Script đối chiếu công/lương cho pilot (so bảng chấm cũ với BossKin, xuất chênh lệch).</li>
+          <li>Mẫu Excel nhập dữ liệu thật (NV, ca, số dư phép đầu kỳ) và hướng dẫn nhập.</li>
+        </ul></td><td>Chạy thử hạ tầng bằng công cụ kiểm tra (không cần tài khoản); nhập mẫu vào môi trường thử thành công</td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>F</b> · Giao diện tối</td><td>Chế độ tối cho app Flutter, theo cài đặt hệ thống, có nút chuyển trong hồ sơ.</td><td>Các màn chính đọc rõ ở cả hai chế độ</td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
     </tbody>
   </table></div>
 
