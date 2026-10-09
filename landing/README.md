@@ -66,11 +66,10 @@ Bản dọc 9:16 cho Reels / TikTok / Shorts (cùng giọng, nhạc, cảnh; kh�
 ## Bài đăng hằng ngày (Facebook + TikTok qua Metricool)
 - `video/make_post.py <spec.json> <thư mục ra>` → ảnh `.jpg` + video ngắn `.mp4` 9:16 (mô tả spec ở đầu file;
   ảnh giao diện lấy từ `video/shots/*.webp` — d_* màn hình máy tính, p_* điện thoại; lồng tiếng tuỳ chọn bằng edge-tts `vi-VN-NamMinhNeural`).
-- Media đăng lên bucket công khai `social` của Supabase `bosskin` (upload bằng `SUPABASE_SECRET_KEY` trong `backend/.env`):
-  `https://apcppqwwnoyliwlhqtyx.supabase.co/storage/v1/object/public/social/<ngày>/<file>`. Bản gốc giữ ở `marketing/social/<ngày>/` (không commit).
+- Media đăng lên bucket công khai `social` của Supabase `bosskin` (`supabase/003_social.sql`): task trên cloud tải lên bằng khoá publishable vào
+  thư mục bí mật `auto-…/<ngày>/` (chỉ thêm mới, jpg/mp4). Nhật ký bài: bảng `public.social_posts`.
 - Một scheduled task của Claude chạy mỗi sáng: chọn chủ đề (tính năng BossKin hoặc tin/quy định nhân sự – lương Việt Nam có nguồn),
-  dựng bài, upload, rồi hẹn giờ đăng qua Metricool (brand BossKin: Trang Facebook + TikTok `bosskin_hrm`). Nhật ký chủ đề đã đăng:
-  `marketing/social/log.md` để không lặp.
+  dựng bài, upload, rồi hẹn giờ đăng qua Metricool (brand BossKin: Trang Facebook + TikTok `bosskin_hrm`). Không cần bật máy tính.
 - Chạy hoàn toàn trên cloud: `video/tts_edge.py "<lời>" vo.mp3` lồng tiếng chỉ bằng thư viện chuẩn Python (không cần pip edge-tts).
   Bộ dựng đóng gói sẵn ở `https://bosskin.netlify.app/social/kit.tar.gz` (giải nén ra đúng cấu trúc repo). Sửa script/ảnh thì đóng gói lại:
   `tar czf landing/social/kit.tar.gz landing/video/{make_post.py,make_reel_vertical.py,make_reel.py,script_reel.json,tts_edge.py,shots} frontend/assets/images/bosskin_icons/round_512x512.png`
