@@ -28,10 +28,11 @@
 <main>
   <section class="hero">
     <h1>3. Luồng nghiệp vụ hiện tại</h1>
-    <p>Mô tả các luồng đúng như code đang chạy. Ô <b style="color:var(--crit)">viền đỏ</b> trên sơ đồ là điểm đang có lỗi hoặc rủi ro (chi tiết ở trang <a href="danh-gia.html">Đánh giá</a>).</p>
+    <p>Mô tả các luồng đúng như code đang chạy. Ô <b style="color:var(--crit)">viền đỏ</b> trên sơ đồ là điểm còn rủi ro (chi tiết và trạng thái ở trang <a href="danh-gia.html">Đánh giá</a>).</p>
+    <p class="meta">Review gốc 08/10/2026 mô tả các luồng lúc đó (nhiều điểm lỗi). Trang này vẽ lại ngày 09/10/2026 theo code trên <code>main</code> sau Mốc 1–4, Bước 1, 2, A, C.</p>
   </section>
   <div class="card">
-    <b>Bức tranh chung:</b> Công ty → Phòng ban/Nhân viên → <b>Phân ca</b> → Nhân viên <b>check-in/out</b> → Hệ thống <b>tính công</b> (tính tức thời) → Nhân viên gửi <b>đơn</b> bổ sung công / nghỉ phép → Quản lý <b>duyệt bảng công</b> (chụp snapshot) → HR <b>tạo bảng lương</b> từ công đã duyệt → Duyệt → Thanh toán → Nhân viên xem phiếu.
+    <b>Bức tranh chung:</b> Công ty → Phòng ban/Nhân viên → <b>Phân ca</b> (đơn lẻ, hàng loạt, xoay ca, đổi ca) → Nhân viên <b>check-in/out</b> → Hệ thống <b>tính công</b> (tính tức thời) → Nhân viên gửi <b>đơn</b> bổ sung công / nghỉ phép → Quản lý <b>duyệt bảng công</b> (snapshot, có thể duyệt cả kỳ) → <b>khoá kỳ công</b> → HR <b>tạo bảng lương</b> từ công đã duyệt → Duyệt → Thanh toán → Nhân viên xem phiếu. Thao tác nhạy cảm ghi <b>nhật ký thao tác</b>.
   </div>
   <ul class="toc">
     <li><a href="#tong">0. Luồng tổng từ ca đến lương</a></li>
@@ -49,47 +50,49 @@
   <h2 id="tong">0. Luồng tổng từ ca đến lương</h2>
   <div class="diagram"><pre class="mermaid">
 flowchart LR
-  classDef bad stroke:#DC2626,stroke-width:2.5px
-  A["HR tạo ca<br/>work_shifts"] --> B["Phân ca<br/>shift_assignments"]
+  A["HR tạo ca<br/>work_shifts (cố định / linh hoạt)"] --> B["Phân ca<br/>shift_assignments (snapshot giờ ca)"]
+  RO["Mẫu xoay ca<br/>shift_rotations"] --> B
+  SW["Đổi / nhường ca<br/>shift_swap_requests"] --> B
   B --> C["NV check-in/out<br/>attendances"]
   C --> D["Tính công tức thời<br/>(không lưu)"]
   R["Đơn bổ sung công / OT<br/>attendance_requests"] --> D
   L["Đơn nghỉ phép đã duyệt<br/>leave_requests"] --> D
-  D --> E["Quản lý duyệt công<br/>snapshot giờ + cờ"]
-  E --> F["HR tạo bảng lương<br/>chỉ đọc công đã duyệt"]
+  D --> E["Quản lý duyệt công<br/>snapshot giờ + trạng thái"]
+  E --> K["Khoá kỳ công<br/>attendance_period_locks"]
+  K --> F["HR tạo bảng lương<br/>chỉ đọc công đã duyệt"]
   F --> G["Duyệt lương"] --> H["Thanh toán"] --> I["NV xem phiếu lương"]
   E -. "sửa đơn/override<br/>tự bỏ duyệt" .-> D
-  H -. "không có khoá kỳ:<br/>vẫn sửa được công/phép" .-> E
-  class E,H bad
+  K -. "kỳ đã khoá: chặn sửa<br/>công, đơn, phép" .-> E
   </pre></div>
 
   <h2 id="onboard">1. Onboarding công ty & nhân viên</h2>
   <div class="diagram"><pre class="mermaid">
 flowchart TD
   classDef bad stroke:#DC2626,stroke-width:2.5px
-  S["System admin đăng nhập<br/>/admin/login"] --> C["POST /admin/companies"]
+  S["System admin đăng nhập + 2FA<br/>/admin/login"] --> C["POST /admin/companies"]
   C --> C1["Tạo companies"]
-  C1 --> C2["Tạo role 'Admin' toàn quyền<br/>is_default = true"]
-  C2 --> C3["Tạo user admin công ty<br/>(không có hồ sơ NV)"]
-  C3 --> AD["Admin công ty đăng nhập"]
+  C1 --> C2["Tạo role 'Admin' toàn quyền<br/>+ role mặc định 'Nhân viên' (chỉ tự chấm công)"]
+  C2 --> C3["Tạo user admin công ty<br/>(không có hồ sơ NV, phải đổi mật khẩu lần đầu)"]
+  C3 --> AD["Admin công ty đăng nhập<br/>(2FA nếu bật / bị bắt buộc)"]
   AD --> P["Tạo phòng ban, chức vụ,<br/>ca, bậc lương, cài đặt"]
   P --> E["POST /employees"]
   E --> E1["Sinh mã EMP + (count+1)"]
-  E1 --> E2["Tạo user kèm mật khẩu"]
-  E2 --> E3{"Có role tên 'Employee'?"}
-  E3 -- "Có" --> OK["Gán Employee"]
-  E3 -- "Không" --> BAD["Gán role is_default đầu tiên<br/>= Admin toàn quyền"]
+  E1 --> E2["Tạo user, mật khẩu theo chính sách<br/>must_change_password = true"]
+  E2 --> OK["Gán role mặc định 'Nhân viên'"]
   AD --> SY["Đồng bộ tài khoản<br/>/users/sync-from-employees<br/>(mật khẩu chung, bật lại user đã khoá)"]
-  class C2,BAD,E1,SY bad
+  class E1,SY bad
   </pre></div>
+  <p class="cap">Ô đỏ: mã NV theo <code>count+1</code> có thể trùng sau khi xoá (D6); đồng bộ tài khoản bật lại user đang khoá.</p>
 
   <h2 id="ca">2. Phân ca</h2>
   <ol class="steps">
-    <li>HR tạo ca (<code>POST /shifts</code>): giờ bắt đầu/kết thúc, nghỉ giữa ca, nhóm ca, màu, phòng ban áp dụng.</li>
-    <li>Phân ca đơn lẻ (<code>POST /shifts/assignments</code>): kiểm NV thuộc công ty, tối đa 2 ca/ngày, không chồng giờ (kể cả với ca qua đêm hôm trước/sau), lưu snapshot giờ ca.</li>
-    <li>Phân hàng loạt (<code>/assignments/bulk</code>): mỗi NV × ngày (bỏ thứ loại trừ); nếu đã có ca thì <b>ghi đè ca đầu tiên</b> mà không kiểm chồng giờ.</li>
-    <li>Import Excel (<code>/import-assignments</code>): <b>xoá mềm toàn bộ ca</b> trong khoảng ngày rồi tạo mới → công đã chấm trỏ vào ca đã xoá, biến mất khỏi bảng công.</li>
-    <li>Xoá một ca (<code>DELETE /assignments/{id}</code>): xoá cứng công và đơn của ca đó.</li>
+    <li>HR tạo ca (<code>POST /shifts</code>): loại <code>FIXED</code> hoặc <code>FLEXIBLE</code> (số phút phải làm trong khung giờ), nghỉ giữa ca (ca chia đôi), nhóm ca, màu, phòng ban áp dụng.</li>
+    <li>Phân ca đơn lẻ (<code>POST /shifts/assignments</code>): kiểm NV thuộc công ty, tối đa 4 ca/ngày, không chồng giờ (kể cả ca qua đêm hôm trước/sau), kỳ chưa khoá; snapshot giờ ca, loại ca, số phút.</li>
+    <li>Phân hàng loạt (<code>/assignments/bulk</code>): dùng chung kiểm tra với phân ca đơn lẻ (<code>validatePlacement</code>).</li>
+    <li>Import Excel: xem trước (<code>/preview-import</code>) rồi đối chiếu từng ô — giữ ca không đổi, chỉ thêm/sửa/xoá ô khác; không xoá ca đã có công.</li>
+    <li>Xoá ca: chặn khi ca đã duyệt hoặc đã có công / đơn chấm công.</li>
+    <li>Mẫu xoay ca (<code>/shift-rotations/{id}/generate</code>): sinh phân ca cho nhiều NV, lệch ngày từng người, ngày đã có công giữ nguyên.</li>
+    <li>Đổi / nhường ca (<code>/shift-swaps</code>): NV gửi yêu cầu với đồng nghiệp, người có <code>SHIFT_SWAP_APPROVE</code> duyệt; kiểm chồng giờ và kỳ khoá.</li>
   </ol>
 
   <h2 id="checkin">3. Check-in / Check-out (nhân viên tự chấm)</h2>
@@ -101,48 +104,41 @@ sequenceDiagram
   participant API as AttendanceController
   participant DB as MySQL
   NV->>APP: Mở màn hình
-  par
-    APP->>API: GET /attendances/self/today
-    API->>DB: Ca hôm nay (hoặc ca đêm hôm qua), công, vị trí cho phép
-    API-->>APP: canCheckIn / canCheckOut + allowedLocations
-  and
-    APP->>APP: Lấy GPS 1 lần (không kiểm mock, không timeout)
-  end
-  APP->>APP: Bật nút nếu canCheckIn và trong vùng
+  APP->>API: GET /attendances/self/today
+  API->>DB: Ca hôm nay + ca đêm hôm qua, công, vị trí cho phép
+  API-->>APP: canCheckIn / canCheckOut + allowedLocations
   NV->>APP: Bấm Check-in
-  APP->>API: POST /self/check-in {lat, lng}
-  API->>API: Kiểm ATTENDANCE_SELF, bật tự chấm
-  API->>API: Ngày hiệu lực (ca đêm → hôm qua)
-  API->>API: Chọn slot trong cửa sổ [bắt đầu − 30', bắt đầu + 30']
+  APP->>APP: Lấy GPS mới lúc bấm (cache ≤ 60s làm dự phòng), cờ mock, độ chính xác
+  APP->>API: POST /self/check-in {lat, lng, accuracy, isMocked} + X-Device-ID
+  API->>API: Kiểm ATTENDANCE_SELF, kỳ chưa khoá, chặn GPS giả / kém chính xác
+  API->>API: Gắn thiết bị (nếu công ty bật): máy đầu tiên tự gắn, máy khác bị chặn
+  API->>API: Chọn slot theo thời gian tuyệt đối (ca đêm liên tiếp đúng ngày)
   API->>API: Geofence Haversine: NV → phòng ban (kế thừa cha) → công ty
-  API->>DB: UPSERT attendances (giờ server Asia/Ho_Chi_Minh, LATE nếu muộn > 15' cố định)
+  API->>DB: Khoá dòng, UPSERT attendances (giờ server, LATE theo dung sai phòng ban → công ty)
   API-->>APP: OK
   NV->>APP: Bấm Check-out
   APP->>API: POST /self/check-out
-  API->>API: Slot đã check-in, trong cửa sổ [kết thúc ± 30']
+  API->>API: Slot đã check-in, bất kỳ lúc nào sau check-in tới hết cửa sổ ra
   API->>DB: UPDATE check_out
-  Note over API: Ca đêm liên tiếp: 22:00 bị hiểu là ca hôm qua → 403<br/>Nút check-out ca đêm luôn tắt<br/>Về sớm / OT quá 30' không check-out được
   </pre></div>
-  <p class="cap">Hình 6. Điểm mạnh: giờ lấy ở server, geofence 3 cấp. Điểm yếu: GPS tin client, ca đêm, cửa sổ check-out cứng.</p>
+  <p class="cap">Hình 6. Giờ lấy ở server, geofence 3 cấp, chặn GPS giả, gắn thiết bị. Selfie / khuôn mặt để sau go-live.</p>
 
   <h2 id="tinhcong">4. Tính công (tính tức thời, chưa lưu cho tới khi duyệt)</h2>
   <div class="diagram"><pre class="mermaid">
 flowchart TD
-  classDef bad stroke:#DC2626,stroke-width:2.5px
-  IN["GET /attendances/timesheet · /day-view"] --> K["Kỳ công theo ngày chốt lương"]
+  IN["GET /attendances/timesheet · /day-view"] --> K["Kỳ công theo ngày chốt (PayrollPeriod)"]
   K --> L["Tải: công, đơn đã duyệt, phân ca, phép đã duyệt"]
   L --> S["Mỗi ngày × slot"]
-  S --> T["Giờ ca: lấy ca hiện tại (live)<br/>+ giờ tuỳ chỉnh"]
-  T --> RQ["Áp đơn đã duyệt:<br/>check-in = sớm nhất · check-out = muộn nhất"]
+  S --> T["Giờ ca: snapshot của phân ca<br/>(ca linh hoạt: số phút phải làm)"]
+  T --> RQ["Áp đơn sửa giờ đã duyệt:<br/>thay giờ thực (lùi được giờ)"]
   RQ --> RD["Làm tròn: vào làm tròn lên, ra làm tròn xuống"]
   RD --> CAL["AttendanceCalculator:<br/>giao giờ thực với khung ca − nghỉ giữa ca − phép theo giờ"]
-  CAL --> DN["Tách giờ ngày / đêm"]
-  DN --> OT["Cộng OT / giờ thêm đã áp dụng<br/>(OT ngoài ca = số phút NV tự khai)"]
-  OT --> FL["Cờ: LATE_IN · EARLY_OUT · ON_TIME · OVERTIME · LEAVE"]
+  CAL --> DN["Tách giờ ngày / đêm (ca qua đêm đúng phút)"]
+  DN --> OT["OT: trần theo giờ có mặt thực tế"]
+  OT --> FL["Trạng thái: LATE · EARLY_OUT · ON_TIME · OVERTIME · LEAVE<br/>(ca linh hoạt thiếu giờ = LATE)"]
   FL --> OUT["Hiển thị bảng công"]
-  class T,RQ,OT bad
   </pre></div>
-  <p class="cap">Hình 7. Ô đỏ: dùng ca live thay snapshot (sửa ca làm đổi công cũ), không lùi được giờ bằng đơn, OT ngoài ca không đối chiếu giờ thực, không có trần OT theo luật.</p>
+  <p class="cap">Hình 7. Chưa có hệ số OT theo luật (150/200/300%), trần OT tháng/năm, ngày lễ — xem "Thiếu sót" ở trang Đánh giá.</p>
 
   <h2 id="don">5. Đơn chấm công & duyệt</h2>
   <div class="grid g2">
@@ -152,13 +148,13 @@ sequenceDiagram
   actor QL as Người duyệt
   participant S as AttendanceRequestService
   NV->>S: POST /attendance-requests (CHECK_IN/OUT, OT, EXTRA)
-  S->>S: CHECK_IN+OUT tách 2 dòng PENDING
+  S->>S: Kỳ chưa khoá, CHECK_IN+OUT tách 2 dòng PENDING
   QL->>S: PUT /{id}/approve
-  S->>S: APPROVED, applied = true
-  S->>S: Tắt applied của đơn cũ cùng loại
+  S->>S: Chặn tự duyệt đơn của mình, kiểm phạm vi phòng ban
+  S->>S: APPROVED, applied = true, tắt applied của đơn cũ cùng loại
   S->>S: Tự duyệt đơn cặp còn chờ
-  S->>S: Bỏ duyệt mọi dòng công trong ngày
-  Note over QL,S: Không chặn tự duyệt đơn của mình<br/>Không chặn khi kỳ đã khoá
+  S->>S: Bỏ duyệt dòng công trong ngày (tính lại khi duyệt lại)
+  S->>S: Ghi nhật ký ATTENDANCE_REQUEST_APPROVE
     </pre></div>
     <div class="diagram"><pre class="mermaid">
 stateDiagram-v2
@@ -176,86 +172,87 @@ stateDiagram-v2
   <div class="grid g2">
     <div class="diagram"><pre class="mermaid">
 flowchart TD
-  classDef bad stroke:#DC2626,stroke-width:2.5px
-  A["POST /attendances/approve"] --> Q{"Quyền?"}
-  Q -- "chỉ cần ATTENDANCE_VIEW,<br/>không kiểm phạm vi" --> B["Chưa có dòng → tạo ABSENT"]
-  B --> C["Tính lại giờ"]
-  C --> D["Lưu snapshot giờ + cờ<br/>approved = true"]
+  A["POST /attendances/approve<br/>hoặc /approve-bulk (cả kỳ, ≤ 62 ngày)"] --> Q{"ATTENDANCE_APPROVE<br/>+ phạm vi phòng ban?"}
+  Q -- "không / công của chính mình" --> X["403"]
+  Q -- "có" --> LK{"Kỳ đã khoá?"}
+  LK -- "khoá" --> X2["error.period.locked"]
+  LK -- "mở" --> NS{"Ngày có ca hoặc có dữ liệu?"}
+  NS -- "không" --> SK["Bỏ qua (không tạo dòng vắng)"]
+  NS -- "có" --> C["Tính lại giờ + trạng thái<br/>(nghỉ cả ngày có phép = LEAVE)"]
+  C --> D["Lưu snapshot giờ + trạng thái<br/>approved = true"]
   D --> E["Ghi snapshot phép<br/>attendance_approve_leaves"]
-  D --> P["Payroll chỉ đọc dòng approved<br/>đếm ngày theo PRESENT/LATE"]
-  U["POST /unapprove"] --> N["status = null"]
-  N -.-> P
-  class Q,N bad
+  D --> P["Payroll chỉ đọc dòng approved"]
+  D --> AU["audit_logs: ATTENDANCE_APPROVE / BULK_APPROVE"]
     </pre></div>
     <div class="diagram"><pre class="mermaid">
 stateDiagram-v2
-  [*] --> ChuaDuyet : check-in (PRESENT/LATE)
-  [*] --> DaDuyet : duyệt khi chưa có dữ liệu (ABSENT)
-  ChuaDuyet --> DaDuyet : duyệt (snapshot)
-  DaDuyet --> ChuaDuyet : bỏ duyệt (status=null)
-  DaDuyet --> ChuaDuyet : override / import / đơn đổi
+  [*] --> ChuaDuyet : check-in
+  ChuaDuyet --> DaDuyet : duyệt (snapshot, tính lại trạng thái)
+  DaDuyet --> ChuaDuyet : bỏ duyệt / override / import / đơn đổi
+  DaDuyet --> DaKhoa : khoá kỳ
+  DaKhoa --> DaDuyet : mở lại kỳ (cần lý do, ghi nhật ký)
   ChuaDuyet --> DaXoa : xoá mềm
     </pre></div>
   </div>
-  <div class="note warn">Ngày nghỉ phép cả ngày được tạo dòng <b>ABSENT</b> và giữ nguyên khi duyệt → payroll coi là vắng, <code>LEAVE_DAYS</code> gần như luôn bằng 0. Bỏ duyệt rồi duyệt lại để <code>status = null</code> → ngày đó không được đếm công.</div>
+  <div class="note"><b>Duyệt cả kỳ</b> (<code>approve-bulk</code>, nút "Duyệt cả kỳ"): chạy theo lô 50 dòng/transaction; chỉ duyệt ngày đã qua (hôm nay / tương lai báo <code>notEnded</code>); bỏ dòng chấm thiếu giờ vào hoặc ra (<code>incomplete</code>) để quản lý duyệt từng dòng. Đo 300 NV × 22 ngày ≈ 50 giây.</div>
 
   <h2 id="phep">7. Nghỉ phép</h2>
   <div class="grid g2">
     <div class="diagram"><pre class="mermaid">
 flowchart TD
-  classDef bad stroke:#DC2626,stroke-width:2.5px
-  G1["HR cấp phép thủ công<br/>leave_grants MANUAL"] --> POOL[("Quỹ phép chung<br/>(không theo loại phép)")]
-  G2["HR bấm 'Chạy' quy tắc cộng phép<br/>(không có scheduler)"] --> POOL
-  NV["NV tạo đơn<br/>ngày / giờ / nhiều ngày"] --> CHK{"Đủ số dư?"}
+  G1["HR cấp phép thủ công<br/>leave_grants (theo loại hoặc quỹ chung)"] --> POOL[("Quỹ phép<br/>quỹ riêng của loại → quỹ chung")]
+  G2["Scheduler cộng phép<br/>00:15 hằng ngày, NV đang làm"] --> POOL
+  NV["NV tạo đơn<br/>ngày / giờ / nhiều ngày"] --> V{"Kiểm: kỳ mở, không chồng ngày,<br/>đúng chế độ ngày/giờ, chỉ ngày có ca"}
+  V --> RB{"Loại phép cần số dư?"}
+  RB -- "không (nghỉ không lương)" --> TRU2["Tạo đơn, không trừ quỹ"]
+  RB -- "có" --> CHK{"Đủ số dư?"}
   POOL --> CHK
-  CHK -- "Đủ" --> TRU["Trừ phép ngay, đơn PENDING"]
-  CHK -- "Không đủ" --> X["Từ chối tạo<br/>(kể cả nghỉ không lương)"]
-  TRU --> AP["Duyệt"]
-  TRU --> RJ["Từ chối → hoàn phép"]
-  AP --> CA["Huỷ bất kỳ lúc nào<br/>→ hoàn phép + bỏ duyệt công"]
-  class POOL,G2,X,CA bad
+  CHK -- "Đủ" --> TRU["Trừ quỹ, ghi sổ leave_ledger_entries"]
+  CHK -- "Không đủ" --> X["Từ chối tạo"]
+  TRU --> AP["Duyệt (không tự duyệt)"]
+  TRU --> RJ["Từ chối / huỷ → hoàn đúng quỹ đã trừ"]
+  AP --> CA["Huỷ đơn đã duyệt: người có quyền duyệt,<br/>kỳ chưa khoá → hoàn + bỏ duyệt công"]
     </pre></div>
     <div class="diagram"><pre class="mermaid">
 stateDiagram-v2
-  [*] --> PENDING : tạo (trừ số dư)
+  [*] --> PENDING : tạo (trừ số dư nếu cần)
   PENDING --> APPROVED : duyệt
   PENDING --> REJECTED : từ chối (hoàn)
-  PENDING --> CANCELLED : huỷ (hoàn)
-  APPROVED --> CANCELLED : huỷ (hoàn + bỏ duyệt công)
+  PENDING --> CANCELLED : chủ đơn huỷ (hoàn)
+  APPROVED --> CANCELLED : người duyệt huỷ (hoàn + bỏ duyệt công)
   REJECTED --> [*]
   CANCELLED --> [*]
     </pre></div>
   </div>
+  <p class="cap">Nghỉ theo giờ trừ phần trùng giờ nghỉ giữa ca. Có lịch ca ±7 ngày mà ngày xin không có ca → <code>error.leave.no_shift_days</code>. Sổ trừ/hoàn xem ở hộp "Lịch sử phép" → tab "Sổ trừ/hoàn".</p>
 
   <h2 id="luong">8. Bảng lương</h2>
   <div class="diagram"><pre class="mermaid">
 flowchart LR
-  classDef bad stroke:#DC2626,stroke-width:2.5px
   CF["Cấu hình: bậc lương (ngày/giờ),<br/>biến global, công thức gross/net"] --> GEN
-  UI["FE lặp từng NV<br/>POST /payrolls/generate"] --> GEN["generatePayroll"]
-  GEN --> V["Biến hệ thống: giờ/ngày công,<br/>BASE_RATE, CONTRACT_SALARY..."]
-  V --> CV["Biến global + riêng<br/>(đánh giá trước khi có GROSS)"]
-  CV --> GR["GROSS = biểu thức gross"]
-  GR --> INS["BH 8/1,5/1% + PIT 7 bậc<br/>tính trong Java (không vào NET)"]
-  GR --> NET["NET = biểu thức net"]
+  UI["FE gọi từng NV<br/>POST /payrolls/generate"] --> GEN["generatePayroll<br/>(kỳ theo ngày chốt)"]
+  GEN --> V["Biến hệ thống: giờ/ngày công, ngày phép có/không lương,<br/>STANDARD_WORK_DAYS, HOURS_PER_DAY, BASE_RATE..."]
+  V --> CV["Biến global + riêng<br/>theo thứ tự phụ thuộc, trước / sau GROSS"]
+  CV --> GR["GROSS = biểu thức gross<br/>(IF chỉ tính nhánh chọn, ROUND)"]
+  GR --> INS["BH / thuế là biến hệ thống<br/>dùng được trong NET"]
+  INS --> NET["NET = biểu thức net<br/>tổng khấu trừ = GROSS − NET"]
   NET --> DR["DRAFT"]
-  DR --> ED["Sửa nháp / Tính lại<br/>(xoá rồi tạo lại)"]
+  DR --> ED["Sửa nháp / Tính lại tại chỗ<br/>(một transaction, giữ phần chỉnh tay)"]
   ED --> DR
-  DR --> APV["APPROVED"] --> PAID["PAID"]
-  PAID --> EXP["Xuất phiếu Excel (1 sheet)"]
+  DR --> APV["APPROVED (lưu người duyệt)"] --> PAID["PAID (lưu người trả)"]
+  PAID --> EXP["Xuất phiếu Excel (theo phạm vi)"]
   PAID --> SELF["NV xem /payrolls/self"]
-  class CV,INS,ED bad
   </pre></div>
-  <p class="cap">Hình 8. <code>STANDARD_WORK_DAYS</code>, <code>HOURS_PER_DAY</code> được liệt kê là biến hệ thống nhưng không bao giờ được gán giá trị. Không có trạng thái mở lại/huỷ sau duyệt, không có khoá kỳ lương, không có file chi lương ngân hàng.</p>
+  <p class="cap">Hình 8. Không tự duyệt / sửa / trả lương của chính mình (<code>error.payroll.cannot_process_own</code>). Lỗi công thức chỉ rõ biến và nhân viên. Mọi thao tác lương ghi nhật ký. Chưa có: BH theo lương HĐ có trần/sàn, người phụ thuộc, file chi lương ngân hàng (sau go-live).</p>
 
   <h2 id="nhac">9. Nhắc nhở push (FCM)</h2>
   <ol class="steps">
     <li><code>ShiftReminderScheduler</code> mỗi 60 giây: user bật nhắc ca → ca bắt đầu trong N phút tới và chưa gửi → push → đánh dấu đã gửi.</li>
-    <li><code>CheckInOutReminderScheduler</code> mỗi 60 giây: ca có giờ bắt đầu <b>đúng bằng</b> now + N phút → push check-in; giờ kết thúc = now − N → push check-out.</li>
-    <li>Push có nút "Check-in" → app mở màn hình và tự gửi (hiện đang hỏng: sai token storage và sai đường dẫn API).</li>
-    <li>Rủi ro: dùng múi giờ JVM (EB mặc định UTC → lệch 7 giờ), so khớp đúng phút dễ bỏ lỡ, chạy nhiều instance gửi trùng, ca đêm không có nhắc check-out.</li>
+    <li><code>CheckInOutReminderScheduler</code> mỗi 60 giây: so khớp theo khoảng thời gian (không phụ thuộc đúng phút) → push check-in trước ca, check-out sau ca.</li>
+    <li>Push có nút "Check-in" → app gọi đúng API tự chấm (F1). FCM token gắn theo phiên: đăng xuất gỡ token, token chết tự gỡ (F10).</li>
+    <li>Múi giờ JVM cố định <code>Asia/Ho_Chi_Minh</code>. Còn rủi ro: chạy nhiều instance gửi trùng (chưa có khoá phân tán).</li>
   </ol>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 09/10/2026</footer>
 </body>
 </html>

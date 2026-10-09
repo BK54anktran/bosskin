@@ -25,6 +25,7 @@
   <section class="hero">
     <h1>4. Đánh giá: điểm mạnh, điểm yếu, thiếu sót</h1>
     <p>Mỗi điểm yếu có mã (S = bảo mật, A = chấm công, L = phép & lương, D = dữ liệu, F = frontend, O = vận hành), mức độ, vị trí trong code và hướng sửa. Đường dẫn backend tính từ <code>backend/src/main/java/com/bosskin/</code>, frontend từ <code>frontend/lib/</code>.</p>
+      <p class="meta">Review gốc ngày 08/10/2026. Cột <b>Trạng thái</b> cập nhật 09/10/2026 theo trang <a href="ke-hoach.html">Kế hoạch</a> và đối chiếu code trên <code>main</code>; vị trí dòng code là của bản review gốc.</p>
   </section>
   <ul class="toc">
     <li><a href="#manh">Điểm mạnh</a></li>
@@ -37,7 +38,7 @@
     <div class="card"><b>Chấm công</b><ul class="clean plus">
       <li>Giờ check-in/out lấy theo server, múi giờ <code>Asia/Ho_Chi_Minh</code> — chặn được việc chỉnh giờ máy.</li>
       <li>Geofence 3 cấp có kế thừa: nhân viên → cây phòng ban → công ty, có cờ bật/tắt.</li>
-      <li>Mô hình theo slot: 2 ca/ngày, ca tuỳ chỉnh giờ & nghỉ, ca qua đêm; chặn chồng ca cả với ca đêm hôm trước/sau.</li>
+      <li>Mô hình theo slot: tối đa 4 ca/ngày (bản review gốc: 2), ca tuỳ chỉnh giờ & nghỉ, ca qua đêm, ca linh hoạt, ca chia đôi; chặn chồng ca cả với ca đêm hôm trước/sau.</li>
       <li>Engine tính công thuần (<code>AttendanceCalculator</code>), tách giờ ngày/đêm, OT ngày/đêm, trừ nghỉ giữa ca và phép theo giờ.</li>
       <li>Dung sai và làm tròn cấu hình được, kế thừa phòng ban → công ty.</li>
       <li>Snapshot khi duyệt; tự bỏ duyệt khi dữ liệu nguồn đổi.</li>
@@ -63,7 +64,7 @@
       <li>Responsive có chủ đích: sidebar desktop, drawer + bottom nav mobile, lọc theo quyền.</li>
       <li>Đa số màn hình có đủ trạng thái loading/lỗi/rỗng; xoá có hộp thoại xác nhận.</li>
       <li>Push có nút thao tác nhanh; giữ phiên khi mất mạng; phân trang server cho danh sách lớn nhất.</li>
-      <li>Có cơ chế i18n đầy đủ (~1.050 key vi/en), đổi ngôn ngữ khi đang chạy.</li>
+      <li>Có cơ chế i18n đầy đủ (~1.300 key vi/en, 09/10/2026), đổi ngôn ngữ khi đang chạy.</li>
     </ul></div>
   </div>
 
@@ -84,9 +85,16 @@
     <button data-v="F">Frontend</button>
     <button data-v="O">Vận hành</button>
   </div>
+  <div class="filters" id="fSt">
+    <button data-v="all" class="on">Mọi trạng thái</button>
+    <button data-v="open">Còn mở</button>
+    <button data-v="part">Một phần</button>
+    <button data-v="later">Để sau</button>
+    <button data-v="done">Đã sửa</button>
+  </div>
   <p class="cap" id="count"></p>
   <div class="tbl-wrap"><table>
-    <thead><tr><th>Mã</th><th>Mức</th><th>Vấn đề</th><th>Vị trí</th><th>Hướng sửa</th></tr></thead>
+    <thead><tr><th>Mã</th><th>Mức</th><th>Trạng thái</th><th>Vấn đề</th><th>Vị trí</th><th>Hướng sửa</th></tr></thead>
     <tbody id="rows"></tbody>
   </table></div>
 
@@ -109,17 +117,18 @@
       <li>Không tự đóng ca thiếu check-out.</li>
     </ul></div>
     <div class="card"><b>Chốt công & chốt lương</b><ul class="clean">
-      <li>Không có khoá kỳ công / kỳ lương; không có quy trình NV xác nhận → quản lý → HR chốt.</li>
-      <li>Không có mở lại kỳ có kiểm soát; không lưu người duyệt/người trả lương.</li>
+      <li><b>Đã có (10/2026):</b> khoá / mở lại kỳ công có lý do và nhật ký; lưu người duyệt / người trả lương; duyệt công cả kỳ theo phòng.</li>
+      <li>Còn thiếu: quy trình NV xác nhận → quản lý → HR chốt; khoá kỳ lương tách khỏi kỳ công.</li>
     </ul></div>
     <div class="card"><b>Thiết bị & chống gian lận</b><ul class="clean">
       <li>Chưa nhận log từ máy chấm công vân tay/FaceID (ZKTeco, Hikvision...).</li>
-      <li>Không có QR động, Wi-Fi/BSSID, selfie + liveness, gắn thiết bị, phát hiện fake GPS.</li>
+      <li><b>Đã có (10/2026):</b> gắn 1 thiết bị / tài khoản, chặn GPS giả, kiểm độ chính xác GPS.</li>
+      <li>Còn thiếu: QR động, Wi-Fi/BSSID, selfie + liveness.</li>
       <li>Không có chấm công offline có token thời gian ký từ server.</li>
     </ul></div>
     <div class="card"><b>Ca phức tạp</b><ul class="clean">
-      <li>Không có ca linh hoạt (đủ 8 giờ trong khung 7–10h), ca xoay vòng 3 ca 4 kíp, mẫu lịch tuần lặp lại.</li>
-      <li>Không có đổi ca, đăng ký ca, đi công tác / làm việc ngoài.</li>
+      <li><b>Đã có (10/2026):</b> ca linh hoạt, ca chia đôi, mẫu xoay ca sinh phân ca, đổi / nhường ca có duyệt, tối đa 4 ca/ngày.</li>
+      <li>Còn thiếu: đăng ký ca, đi công tác / làm việc ngoài.</li>
     </ul></div>
     <div class="card"><b>Thuế TNCN</b><ul class="clean">
       <li>Giảm trừ bản thân cố định 11 triệu, không có người phụ thuộc.</li>
@@ -142,17 +151,16 @@
       <li>Thiếu hợp đồng lao động, người phụ thuộc, MST, sổ BHXH, lịch sử công tác, tài liệu, onboarding/offboarding.</li>
     </ul></div>
     <div class="card"><b>Bảo mật doanh nghiệp</b><ul class="clean">
-      <li>Không có audit log, 2FA, khoá tài khoản sau N lần sai, chính sách mật khẩu, quên mật khẩu.</li>
-      <li>Không có tách nhiệm vụ: người tạo lương tự duyệt, tự duyệt công/phép của mình.</li>
+      <li><b>Đã có (10/2026):</b> nhật ký thao tác, 2FA (TOTP), khoá tạm sau nhiều lần sai, chính sách mật khẩu, bắt đổi mật khẩu lần đầu; không tự duyệt công / phép / lương của mình.</li>
+      <li>Còn thiếu: quên mật khẩu tự phục vụ cho người dùng công ty.</li>
     </ul></div>
     <div class="card"><b>Vận hành</b><ul class="clean">
-      <li>Không có health check, metrics, cảnh báo lỗi, log có request-id.</li>
-      <li>Không thấy cấu hình backup/PITR cho DB (cần kiểm tra trên AWS).</li>
-      <li>Không có staging, không chạy test trong CI.</li>
+      <li><b>Đã có (10/2026):</b> <code>/actuator/health</code>, request-id trong log và body lỗi, test chạy trong CI, runbook.</li>
+      <li>Còn thiếu (Mốc 5): metrics, cảnh báo lỗi, backup/PITR, staging.</li>
     </ul></div>
   </div>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · trạng thái cập nhật 09/10/2026</footer>
 
 <script>
 const SEV = { crit: 'Nghiêm trọng', high: 'Cao', med: 'Trung bình', low: 'Thấp' };
@@ -245,13 +253,27 @@ const R = [
   ['O4','med','Không có Actuator/health, metrics, request-id; .ebextensions không nằm trong gói zip; Dockerfile chạy root, EXPOSE 8080 khác prod 5000.','deploy.yml; Dockerfile; .ebextensions','Actuator + CloudWatch, sửa gói deploy'],
   ['O5','low','MapTile proxy chặn luồng Tomcat tới 10–20s khi chờ; cache trên đĩa instance, mất khi thay instance; chính sách OSM hạn chế lưu lượng lớn.','service/MapTileService.java:176, 195','Nhà cung cấp tile/CDN khi tải lớn'],
 ];
+const STL = { done: 'Đã sửa', part: 'Một phần', later: 'Để sau', open: 'Còn mở' };
+const STC = { done: 'done', part: 'doing', later: 'todo', open: 'open' };
+const expand = (spec) => spec.flatMap(x => { const m = x.match(/^([A-Z])(\d+)-(\d+)$/); if (!m) return [x]; const out = []; for (let i = +m[2]; i <= +m[3]; i++) out.push(m[1] + i); return out; });
+const ST = {};
+expand(['S1-10','S12','S13','S14','A1-9','A11-19','L1-3','L5-16','L18','D1-4','D7','F1-10','F12','O1','O3']).forEach(k => ST[k] = 'done');
+expand(['O2','O4']).forEach(k => ST[k] = 'part');
+expand(['S11','A10','L4','L17','D5','F11']).forEach(k => ST[k] = 'later');
+/** Ghi chú trạng thái (09/10/2026). */
+const STN = {
+  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Sau go-live, đợt 2', L17: 'Sau go-live, đợt 3',
+  D5: 'Sau go-live, đợt 4', F11: 'Để sau go-live (tái cấu trúc dần)', F12: 'Cỡ chữ, cache xong; dark mode = bước F',
+  O2: 'Múi giờ JVM + so khớp theo khoảng xong; chưa có khoá phân tán', O4: 'Health, request-id, .ebextensions xong; metrics/cảnh báo ở Mốc 5'
+};
+const stOf = (id) => ST[id] || 'open';
 const rows = document.getElementById('rows');
-let fs = 'all', fm = 'all';
+let fs = 'all', fm = 'all', fst = 'all';
 function render(){
-  const list = R.filter(r => (fs === 'all' || r[1] === fs) && (fm === 'all' || r[0][0] === fm));
-  rows.innerHTML = list.map(r => `<tr><td class="nw"><b>${r[0]}</b></td><td><span class="sev ${r[1]}">${SEV[r[1]]}</span></td><td>${r[2]}</td><td><code>${r[3]}</code></td><td>${r[4]}</td></tr>`).join('');
+  const list = R.filter(r => (fs === 'all' || r[1] === fs) && (fm === 'all' || r[0][0] === fm) && (fst === 'all' || stOf(r[0]) === fst));
+  rows.innerHTML = list.map(r => `<tr><td class="nw"><b>${r[0]}</b></td><td><span class="sev ${r[1]}">${SEV[r[1]]}</span></td><td><span class="st ${STC[stOf(r[0])]}">${STL[stOf(r[0])]}</span>${STN[r[0]] ? `<div class="cap" style="margin:4px 0 0">${STN[r[0]]}</div>` : ''}</td><td>${r[2]}</td><td><code>${r[3]}</code></td><td>${r[4]}</td></tr>`).join('');
   const by = k => R.filter(r => r[1] === k).length;
-  document.getElementById('count').textContent = `Đang hiển thị ${list.length}/${R.length} mục · Nghiêm trọng ${by('crit')} · Cao ${by('high')} · Trung bình ${by('med')} · Thấp ${by('low')}`;
+  document.getElementById('count').textContent = `Đang hiển thị ${list.length}/${R.length} mục · Nghiêm trọng ${by('crit')} · Cao ${by('high')} · Trung bình ${by('med')} · Thấp ${by('low')} — Đã sửa ${R.filter(r => stOf(r[0]) === 'done').length}, còn mở ${R.filter(r => stOf(r[0]) === 'open').length}`;
 }
 function bind(id, set){
   document.querySelectorAll('#' + id + ' button').forEach(b => b.addEventListener('click', () => {
@@ -259,7 +281,7 @@ function bind(id, set){
     b.classList.add('on'); set(b.dataset.v); render();
   }));
 }
-bind('fSev', v => fs = v); bind('fMod', v => fm = v);
+bind('fSev', v => fs = v); bind('fMod', v => fm = v); bind('fSt', v => fst = v);
 const h = location.hash.replace('#', '');
 const map = { 'bao-mat': 'S', 'cham-cong': 'A', 'luong': 'L', 'du-lieu': 'D', 'frontend': 'F', 'van-hanh': 'O' };
 if (map[h]) { fm = map[h]; document.querySelectorAll('#fMod button').forEach(b => b.classList.toggle('on', b.dataset.v === fm)); document.getElementById('yeu').scrollIntoView(); }

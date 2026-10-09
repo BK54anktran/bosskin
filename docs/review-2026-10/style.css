@@ -101,3 +101,10 @@ ul.clean li{margin:4px 0}
 @media (max-width:700px){.toc{columns:1}.bar{width:90px}.hero h1{font-size:24px}}
 footer{max-width:1180px;margin:0 auto;padding:0 20px 40px;color:var(--ink-3);font-size:13px}
 @media print{.top{position:static}.filters{display:none}}
+
+/* Trạng thái xử lý (Đánh giá, Kế hoạch) */
+.st{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.st.done{background:var(--low-bg);color:var(--ok)}
+.st.doing{background:var(--med-bg);color:var(--med)}
+.st.todo{background:var(--brand-soft);color:var(--ink-3)}
+.st.open{background:var(--high-bg);color:var(--high)}

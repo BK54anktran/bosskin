@@ -28,6 +28,16 @@
     <p class="meta">Ngày review: 08/10/2026 · Phạm vi: <code>backend/src</code> (Spring Boot 3.3, Java 17, MySQL, 117 migration), <code>frontend/lib</code> (Flutter web + Android), pipeline deploy · Phương pháp: đọc mã nguồn (static review), không chạy test tải hay pentest.</p>
   </section>
 
+  <div class="note"><b>Hiện trạng 09/10/2026.</b> Đã sửa 65/81 điểm yếu của bản review (2 sửa một phần, 6 để sau, 8 còn mở — xem cột Trạng thái ở trang <a href="danh-gia.html">Đánh giá</a>). Mốc 0–4, Bước 1, 2, thử nghiệm nội bộ, A (duyệt cả kỳ), B (tự build frontend), C (2FA) đã xong; còn D (thử trên điện thoại), E (chuẩn bị AWS), F (giao diện tối) và Mốc 5. Các trang Kiến trúc, Dữ liệu, Luồng nghiệp vụ đã vẽ lại theo code hiện tại; phần chấm điểm và kết luận dưới đây là của bản review gốc.</div>
+  <div class="grid g4">
+    <div class="card kpi"><div class="n">31</div><div class="l">REST controller (~33,9k dòng Java) · 09/10</div></div>
+    <div class="card kpi"><div class="n">39</div><div class="l">bảng · V1 baseline + V2–V12 · 09/10</div></div>
+    <div class="card kpi"><div class="n">26</div><div class="l">màn hình Flutter (~45k dòng Dart) · 09/10</div></div>
+    <div class="card kpi"><div class="n">118</div><div class="l">test tự động, chạy trong CI · 09/10</div></div>
+  </div>
+
+  <h2>Số liệu lúc review (08/10/2026)</h2>
+
   <div class="grid g4">
     <div class="card kpi"><div class="n">25</div><div class="l">REST controller (~28,7k dòng Java)</div></div>
     <div class="card kpi"><div class="n">34</div><div class="l">bảng dữ liệu · 117 migration Flyway</div></div>
@@ -48,7 +58,7 @@
       </ul>
     </div>
     <div class="card">
-      <h3 style="margin-top:0">Cần xử lý trước go-live</h3>
+      <h3 style="margin-top:0">Cần xử lý trước go-live <span class="st done">đã xử lý hết 09/10</span></h3>
       <ul class="clean minus">
         <li><b>Bảo mật đăng nhập</b>: JWT secret có giá trị mặc định, migration seed tạo tài khoản có mật khẩu biết trước, tài khoản bị khoá vẫn refresh token được.</li>
         <li><b>Leo thang quyền</b>: nhân viên mới có thể nhận role Admin; người có quyền xem chấm công duyệt được bảng công; quản lý user tự nâng quyền mình.</li>
@@ -61,7 +71,7 @@
   </div>
 
   <h2>Chấm điểm theo hạng mục</h2>
-  <p class="lead">Thang 5 điểm, chấm theo mức sẵn sàng vận hành thực tế cho doanh nghiệp Việt Nam (không phải độ nhiều tính năng). Đây là nhận định của người review, dựa trên các phát hiện ở trang <a href="danh-gia.html">Đánh giá</a>.</p>
+  <p class="lead">Chấm ngày 08/10/2026, chưa chấm lại sau các mốc sửa. Thang 5 điểm, chấm theo mức sẵn sàng vận hành thực tế cho doanh nghiệp Việt Nam (không phải độ nhiều tính năng). Đây là nhận định của người review, dựa trên các phát hiện ở trang <a href="danh-gia.html">Đánh giá</a>.</p>
   <div class="card">
     <div class="score"><div class="name">Độ phủ tính năng<small>Chấm công, ca, phép, lương, Excel, báo cáo, dashboard</small></div><div class="bar"><i style="width:80%"></i></div><b>4,0</b></div>
     <div class="score"><div class="name">Nghiệp vụ chấm công<small>Ca đêm, khoá kỳ, ngày lễ, OT theo luật, chống gian lận</small></div><div class="bar"><i style="width:56%"></i></div><b>2,8</b></div>
@@ -91,14 +101,14 @@
   <h2>Mục lục tài liệu</h2>
   <div class="grid g3">
     <a class="card" href="kien-truc.html"><b>1. Kiến trúc</b><br><span class="lead">Thành phần, luồng request, xác thực & phân quyền, deploy, danh sách API.</span></a>
-    <a class="card" href="du-lieu.html"><b>2. Mô hình dữ liệu</b><br><span class="lead">Sơ đồ ER 34 bảng, nhóm bảng, ràng buộc & rủi ro dữ liệu.</span></a>
+    <a class="card" href="du-lieu.html"><b>2. Mô hình dữ liệu</b><br><span class="lead">Sơ đồ ER 39 bảng, nhóm bảng, ràng buộc & rủi ro dữ liệu (có trạng thái).</span></a>
     <a class="card" href="luong-nghiep-vu.html"><b>3. Luồng nghiệp vụ</b><br><span class="lead">Onboarding, phân ca, check-in, tính công, đơn, duyệt, phép, lương + máy trạng thái.</span></a>
-    <a class="card" href="danh-gia.html"><b>4. Đánh giá</b><br><span class="lead">Điểm mạnh, 81 điểm yếu có lọc mức độ, thiếu sót so với chuẩn VN.</span></a>
-    <a class="card" href="ke-hoach.html"><b>5. Kế hoạch</b><br><span class="lead">6 mốc tới go-live, Gantt, quyết định cần chốt, tiêu chí hoàn thành.</span></a>
+    <a class="card" href="danh-gia.html"><b>4. Đánh giá</b><br><span class="lead">Điểm mạnh, 81 điểm yếu có lọc mức độ và trạng thái, thiếu sót so với chuẩn VN.</span></a>
+    <a class="card" href="ke-hoach.html"><b>5. Kế hoạch</b><br><span class="lead">Tiến độ từng mốc, bước A–H khi chưa có AWS, Gantt, quyết định đã chốt.</span></a>
   </div>
 
   <div class="note warn"><b>Lưu ý độ tin cậy.</b> Các phát hiện đến từ việc đọc mã nguồn, có dẫn <code>file:dòng</code> ở trang Đánh giá. Hệ thống đang ở giai đoạn dev, chưa go-live; cấu hình môi trường prod (secret, S3, HTTPS) được đưa vào Mốc 5 của kế hoạch. Các mốc luật thuế TNCN 2026 được ghi theo hiểu biết hiện tại — cần đối chiếu văn bản chính thức trước khi triển khai.</div>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 09/10/2026</footer>
 </body>
 </html>

@@ -28,7 +28,8 @@
 <main>
   <section class="hero">
     <h1>1. Kiến trúc hệ thống</h1>
-    <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap.</p>
+    <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap. Trang giới thiệu tĩnh (Netlify) gửi yêu cầu dùng thử vào Supabase.</p>
+    <p class="meta">Review gốc 08/10/2026, cập nhật 09/10/2026 theo code trên <code>main</code> (migration V12, 31 controller).</p>
   </section>
   <ul class="toc">
     <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
@@ -47,22 +48,24 @@ flowchart LR
     W["Flutter Web<br/>(HR, quản lý)"]
     A["Flutter Android<br/>(nhân viên check-in)"]
     SA["System Admin<br/>/admin/*"]
+    LP["Trang giới thiệu<br/>(Netlify, landing/)"]
   end
   subgraph AWS["AWS Elastic Beanstalk"]
     LB["ALB / EB"]
     subgraph BE["Spring Boot 3.3 (monolith)"]
       SEC["Security chains<br/>/admin/** · /api/v1/**<br/>JwtAuthFilter"]
-      CTL["25 Controller"]
-      SVC["32 Service + 12 Excel descriptor"]
+      CTL["31 Controller"]
+      SVC["40 Service + 12 Excel descriptor<br/>AuditService · TwoFactorService"]
       ENG["AttendanceCalculator<br/>FormulaEngine"]
-      SCH["Scheduler nhắc ca<br/>(mỗi 60s)"]
+      SCH["Scheduler nhắc ca (60s)<br/>cộng phép (00:15 hằng ngày)"]
       TILE["MapTile proxy + cache đĩa"]
     end
   end
-  DB[("MySQL 8<br/>34 bảng · Flyway V1–V117")]
+  DB[("MySQL 8<br/>39 bảng · Flyway V1 baseline → V12")]
   S3[("AWS S3<br/>ảnh, tài liệu, file Excel")]
   FCM["Firebase FCM"]
   OSM["tile.openstreetmap.org"]
+  SB[("Supabase<br/>trial_requests · social_posts")]
 
   W --> LB
   A --> LB
@@ -72,17 +75,19 @@ flowchart LR
   SVC --> S3
   SCH --> FCM --> A
   CTL --> TILE --> OSM
+  LP --> SB
+  SVC -. "SUPABASE_URL có đặt" .-> SB
   </pre></div>
-  <p class="cap">Hình 1. Thành phần chính. Backend không tách worker riêng: scheduler chạy chung tiến trình với API.</p>
+  <p class="cap">Hình 1. Thành phần chính. Backend không tách worker riêng: scheduler chạy chung tiến trình với API. Yêu cầu dùng thử: trang ghi thẳng Supabase; backend đọc/ghi Supabase khi có <code>SUPABASE_URL</code> + <code>SUPABASE_SECRET_KEY</code>, ngược lại dùng bảng MySQL <code>trial_requests</code>.</p>
 
   <h2 id="request">Đường đi của một request</h2>
   <ol class="steps">
     <li>Client gửi request kèm <code>Authorization: Bearer &lt;JWT&gt;</code>, <code>Accept-Language</code>, <code>X-Device-ID</code>.</li>
-    <li>Spring Security chọn chain: <code>/admin/**</code> (yêu cầu <code>ROLE_SYSTEM_ADMIN</code>) hoặc <code>/api/v1/**</code> (chỉ yêu cầu đã đăng nhập).</li>
-    <li><code>JwtAuthFilter</code> đọc token, nạp user từ DB (trừ token impersonate), đặt vào SecurityContext. Lỗi token bị nuốt im lặng → request đi tiếp như ẩn danh.</li>
-    <li>Controller tự kiểm quyền bằng <code>requirePermission(...)</code> hoặc <code>user.can(...)</code> (lặp ở 15 controller, không có chốt chặn tập trung).</li>
+    <li><code>RequestIdFilter</code> gắn mã request (<code>X-Request-ID</code>, có trong log và body lỗi). Spring Security chọn chain: <code>/actuator/**</code> (chỉ <code>/actuator/health</code> công khai), <code>/admin/**</code> (yêu cầu <code>ROLE_SYSTEM_ADMIN</code>) hoặc <code>/api/v1/**</code> (đã đăng nhập; <code>/api/v1/public/**</code> công khai).</li>
+    <li><code>JwtAuthFilter</code> đọc token, chỉ nhận loại <code>COMPANY</code>/<code>SYSTEM</code> (không nhận refresh token), nạp user từ DB và kiểm <code>enabled</code>, chưa xoá; token impersonate kiểm system admin còn hoạt động. Tài khoản phải đổi mật khẩu chỉ gọi được <code>/auth/*</code> và đổi mật khẩu. Lỗi token vẫn bị bỏ qua không ghi log → request đi tiếp như ẩn danh.</li>
+    <li>Controller tự kiểm quyền bằng <code>requirePermission(...)</code> hoặc <code>user.can(...)</code> (lặp ở các controller, không có chốt chặn tập trung).</li>
     <li>Service/Repository lọc theo <code>companyId</code> lấy từ user và theo tập phòng ban được phép (<code>DeptScopeService</code>).</li>
-    <li>Lỗi nghiệp vụ ném <code>ResponseStatusException</code> → <code>ApiExceptionHandler</code> dịch key <code>error.*</code> theo ngôn ngữ.</li>
+    <li>Lỗi nghiệp vụ ném <code>ResponseStatusException</code> với <b>mã lỗi</b> (<code>error.x.y</code> hoặc <code>error.x.y|tham số</code>) → <code>ApiExceptionHandler</code> trả nguyên mã kèm <code>requestId</code>; backend không dịch, frontend dịch vi/en trong <code>error_utils.dart</code>. Thao tác nhạy cảm ghi <code>audit_logs</code>.</li>
   </ol>
 
   <h2 id="auth">Xác thực & phân quyền</h2>
@@ -98,33 +103,39 @@ sequenceDiagram
   participant DB as MySQL
   U->>FE: Email + mật khẩu
   FE->>AU: POST /api/v1/auth/login
-  AU->>DB: findByEmail, kiểm BCrypt, enabled, công ty active
+  AU->>DB: findByEmail, kiểm BCrypt, enabled, công ty active, đếm lần sai
+  alt Có 2FA (bắt buộc hoặc đã bật)
+    AU-->>FE: twoFactor = REQUIRED / SETUP_REQUIRED + challengeToken (5 phút)
+    FE->>AU: POST /api/v1/auth/2fa/verify (mã TOTP hoặc mã dự phòng)
+  end
   AU->>DB: Lưu user_sessions (jti, deviceId)
-  AU-->>FE: access (24h) + refresh (7 ngày) + permissions + departmentScope
+  AU-->>FE: access (30 phút) + refresh (7 ngày) + permissions + departmentScope
   FE->>C: GET /api/v1/... (Bearer access)
   C->>F: (qua filter)
   F->>DB: Nạp user theo email + companyId, tính lại quyền
-  Note over F: Không kiểm enabled, không kiểm loại token<br/>Token impersonate: không tra DB
+  Note over F: Kiểm loại token, enabled, chưa xoá<br/>must_change_password → chỉ cho đổi mật khẩu
   C->>C: requirePermission("X_VIEW")
   C->>DS: resolvedScopes(userId, perm)
-  DS-->>C: Tập phòng ban (rỗng = toàn công ty)
+  DS-->>C: Tập phòng ban (toàn công ty chỉ khi cấu hình tường minh)
   C->>DB: Truy vấn lọc companyId + phòng ban
   C-->>FE: Dữ liệu
-  FE->>AU: POST /auth/refresh (khi 401/403)
+  FE->>AU: POST /auth/refresh (chỉ khi 401, một lần cho mọi request đang chờ)
   AU->>DB: Kiểm jti chưa revoke → revoke cũ, tạo phiên mới
   </pre></div>
   <p class="cap">Hình 2. Luồng đăng nhập, gọi API và refresh. Rủi ro liên quan: mục S1–S6 ở trang <a href="danh-gia.html#bao-mat">Đánh giá</a>.</p>
 
   <div class="grid g3">
-    <div class="card"><b>3 loại token</b><ul class="clean">
-      <li><code>COMPANY</code>: user công ty, 24h, mang companyId + permissions.</li>
+    <div class="card"><b>Các loại token</b><ul class="clean">
+      <li><code>COMPANY</code>: user công ty, 30 phút (<code>JWT_EXPIRATION_MS</code>), mang companyId + permissions.</li>
       <li><code>REFRESH</code>: 7 ngày, lưu jti trong <code>user_sessions</code>, xoay vòng mỗi lần dùng.</li>
-      <li><code>SYSTEM</code>: system admin, 24h, không có refresh.</li>
-      <li>Impersonate: token COMPANY có cờ <code>impersonated</code>, toàn quyền, 24h.</li>
+      <li><code>SYSTEM</code>: system admin, 30 phút, không có refresh, luôn qua 2FA.</li>
+      <li>Impersonate: token COMPANY có cờ <code>impersonated</code>, toàn quyền, 1 giờ, ghi nhật ký <code>IMPERSONATE_START</code>.</li>
+      <li><code>2FA</code>: challenge 5 phút giữa bước mật khẩu và mã TOTP.</li>
     </ul></div>
     <div class="card"><b>Mô hình quyền</b><ul class="clean">
       <li>Quyền = role ∪ quyền trực tiếp (quyền trực tiếp ghi đè theo module).</li>
-      <li>~33 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*...).</li>
+      <li>44 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*, SHIFT_SWAP_APPROVE, AUDIT_VIEW...).</li>
+      <li>Không tự sửa quyền của mình, chỉ cấp được quyền mình đang có; không tự duyệt công / đơn / lương của mình.</li>
       <li><code>VIEW</code> là tiền đề của quyền khác trong module.</li>
       <li>Quyền được nạp lại từ DB mỗi request → đổi role có hiệu lực ngay.</li>
     </ul></div>
@@ -132,7 +143,7 @@ sequenceDiagram
       <li>Gắn theo từng quyền (role hoặc user).</li>
       <li>Mã đặc biệt: −1 chỉ mình tôi, −2 phòng tôi, −3 phòng tôi + cấp con.</li>
       <li>Mở rộng con cháu bằng BFS.</li>
-      <li><b>Tập rỗng = toàn công ty</b> (fail-open — xem R5).</li>
+      <li>"Toàn công ty" là lựa chọn tường minh trên màn vai trò; có cấu hình nhưng không ra phòng nào (vd. NV chưa gắn phòng) → thu về "chỉ mình tôi" (S6).</li>
     </ul></div>
   </div>
 
@@ -146,22 +157,30 @@ flowchart LR
   Z --> EB["Elastic Beanstalk<br/>Java SE, port 5000<br/>profile prod<br/>health /actuator/health"]
   EB --> RDS[("MySQL")]
   EB -.Flyway migrate khi khởi động.-> RDS
-  FEB["Flutter web build<br/>(thủ công)"] --> SRV["serve.py / host tĩnh"]
-  APK["APK Android<br/>(thủ công)"] --> USERS["Nhân viên"]
+  MAIN --> FB["frontend-build.yml<br/>analyze · kiểm chuỗi · web · APK ký"]
+  FB --> ART["Artifact Actions<br/>web + APK"]
+  ART --> SRV["Host tĩnh (web)"]
+  ART --> USERS["Nhân viên (APK)"]
+  LPG["landing/"] --> NET["Netlify"]
   </pre></div>
-  <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Chưa có staging (Mốc 5); frontend vẫn build tay. Thao tác vận hành: <code>docs/runbook.md</code>.</p>
+  <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Netlify. Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
-  <h2 id="api">Danh sách API (25 controller)</h2>
+  <h2 id="api">Danh sách API (31 controller)</h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Controller</th><th>Đường dẫn gốc</th><th>Chức năng</th></tr></thead>
     <tbody>
-      <tr><td>AuthController</td><td><code>/api/v1/auth/{login,refresh}</code>, <code>/admin/auth/login</code></td><td>Đăng nhập user công ty, refresh, đăng nhập system admin</td></tr>
+      <tr><td>AuthController</td><td><code>/api/v1/auth/{login,refresh,2fa/*}</code>, <code>/admin/auth/{login,2fa/*}</code></td><td>Đăng nhập user công ty / system admin, bước 2FA, refresh</td></tr>
       <tr><td>CompanyController</td><td><code>/admin/companies</code></td><td>Tạo/sửa/bật tắt công ty, impersonate</td></tr>
       <tr><td>AdminStatsController</td><td><code>/admin/stats</code></td><td>Thống kê toàn hệ thống (kể cả tổng lương từng công ty)</td></tr>
-      <tr><td>AttendanceController</td><td><code>/api/v1/attendances</code></td><td>Bảng công, xem theo ngày, duyệt/bỏ duyệt, sửa tay (override), check-in/out (admin & tự chấm), import/export</td></tr>
+      <tr><td>SystemAdminController</td><td><code>/admin/system-admins</code></td><td>Danh sách, tạo (mật khẩu sinh tự động), khoá/mở, đặt lại mật khẩu, gỡ 2FA system admin</td></tr>
+      <tr><td>TwoFactorController</td><td><code>/api/v1/profile/2fa/*</code>, <code>DELETE /api/v1/users/{id}/2fa</code>, <code>/admin/companies/{id}/require-admin-2fa</code></td><td>Bật/tắt 2FA, gỡ 2FA cho NV, bắt buộc 2FA admin theo công ty</td></tr>
+      <tr><td>TrialRequestController</td><td><code>POST /api/v1/public/trial-requests</code>, <code>/admin/trial-requests</code></td><td>Form dùng thử (công khai, chống spam); system admin lọc, đổi trạng thái, xuất Excel</td></tr>
+      <tr><td>AttendanceController</td><td><code>/api/v1/attendances</code></td><td>Bảng công, xem theo ngày, duyệt/bỏ duyệt, duyệt cả kỳ (<code>/approve-bulk</code>), sửa tay (override), check-in/out (admin & tự chấm, gắn thiết bị), import/export</td></tr>
       <tr><td>AttendanceRequestController</td><td><code>/api/v1/attendance-requests</code></td><td>Đơn bổ sung công / OT: tạo, duyệt, từ chối, huỷ, bật/tắt áp dụng</td></tr>
+      <tr><td>AttendancePeriodController</td><td><code>/api/v1/attendance-periods</code></td><td>Khoá / mở lại kỳ công (cần lý do, ghi nhật ký)</td></tr>
       <tr><td>LeaveController</td><td><code>/api/v1/leaves</code></td><td>Loại phép, đơn phép, cấp phép, quy tắc cộng phép, cài đặt</td></tr>
       <tr><td>WorkShiftController</td><td><code>/api/v1/shifts</code></td><td>Ca làm, phân ca đơn lẻ / hàng loạt, import/export</td></tr>
+      <tr><td>ShiftPlanController</td><td><code>/api/v1/shift-rotations</code>, <code>/api/v1/shift-swaps</code></td><td>Mẫu xoay ca + sinh phân ca; đổi / nhường ca, duyệt (<code>SHIFT_SWAP_APPROVE</code>)</td></tr>
       <tr><td>EmployeeController</td><td><code>/api/v1/employees</code></td><td>Nhân viên CRUD, import/export</td></tr>
       <tr><td>EmployeeLocationController</td><td><code>/api/v1/employees/{id}/locations</code></td><td>Vị trí check-in riêng từng nhân viên</td></tr>
       <tr><td>DepartmentController</td><td><code>/api/v1/departments</code></td><td>Cây phòng ban, import/export</td></tr>
@@ -172,7 +191,7 @@ flowchart LR
       <tr><td>FormulaVariableController</td><td><code>/api/v1/formula-variables</code></td><td>Biến công thức toàn công ty</td></tr>
       <tr><td>SalaryHistoryController</td><td><code>/api/v1/salary-histories</code></td><td>Lịch sử lương</td></tr>
       <tr><td>ReportController</td><td><code>/api/v1/reports</code></td><td>Báo cáo Excel: nhân sự, chấm công, OT, lương, phép</td></tr>
-      <tr><td>AuditLogController</td><td><code>/api/v1/audit-logs</code>, <code>/admin/audit-logs</code></td><td>Nhật ký thao tác (Bước 2): sửa/duyệt công, lương, phân quyền, impersonate</td></tr>
+      <tr><td>AuditLogController</td><td><code>/api/v1/audit-logs</code>, <code>/admin/audit-logs</code></td><td>Nhật ký thao tác: công, kỳ công, lương, phân quyền, tài khoản, 2FA, impersonate, system admin, yêu cầu dùng thử (gói <code>audit/</code>)</td></tr>
       <tr><td>DashboardController</td><td><code>/api/v1/dashboard</code></td><td>Tổng quan, KPI, phân tích, rủi ro</td></tr>
       <tr><td>UniversalExcelController</td><td><code>/api/v1/excel</code></td><td>Import/export đa module, lịch sử</td></tr>
       <tr><td>RoleController</td><td><code>/api/v1/roles</code></td><td>Vai trò, quyền, phạm vi theo vai trò</td></tr>
@@ -187,10 +206,14 @@ flowchart LR
   <h2 id="fe">Kiến trúc frontend</h2>
   <div class="diagram"><pre class="mermaid">
 flowchart TD
-  S["Khởi động app"] --> C1["ServerConfig.load<br/>(mặc định 192.168.0.12:8080)"]
+  S["Khởi động app"] --> C1["ServerConfig.load<br/>(API_HOST qua --dart-define;<br/>đổi server chỉ ở bản debug)"]
   C1 --> C2["Ngôn ngữ · DeviceId · FCM"]
   C2 --> C3{"Auth.restoreAndVerify<br/>GET /profile"}
   C3 -- "chưa đăng nhập" --> L["/login"]
+  L -- "cần mã 2FA" --> TF["Màn nhập mã 2FA<br/>(TwoFactorScreen)"]
+  L -- "phải đổi mật khẩu" --> CP["/change-password"]
+  TF --> SH
+  CP --> SH
   C3 -- "system admin" --> AD["/admin/dashboard"]
   AD -- "impersonate" --> SH
   C3 -- "user công ty" --> SH["ShellRoute · AppShell"]
@@ -201,7 +224,7 @@ flowchart TD
   SB --> M["Màn hình module<br/>(StatefulWidget + setState)"]
   BN --> M
   M --> R["Repository / ApiService (Dio)"]
-  R --> I["Interceptor: gắn token,<br/>401/403 → refresh rồi thử lại"]
+  R --> I["Interceptor: gắn token,<br/>401 → refresh một lần rồi thử lại;<br/>hết phiên → đăng xuất"]
   PUSH["Push FCM có nút Check-in"] --> CI["/check-in-out (tự gửi)"]
   </pre></div>
   <p class="cap">Hình 4. Khởi động và điều hướng phía Flutter. Riverpod có khai báo nhưng thực tế dùng singleton + <code>setState</code>.</p>
@@ -215,14 +238,14 @@ flowchart TD
       <li>Tách hai security chain cho system admin và user công ty.</li>
     </ul></div>
     <div class="card"><b>Cần chỉnh</b><ul class="clean minus">
-      <li><code>AttendanceController</code> 1.771 dòng chứa logic nghiệp vụ và <code>@Transactional</code>; 9 chỗ transaction ở controller.</li>
-      <li>Kiểm quyền thủ công lặp 15 lần → dễ quên (đã quên ở approve chấm công, dashboard, báo cáo).</li>
-      <li>Scheduler chạy trong API, dùng múi giờ JVM, không khoá phân tán → lệch giờ và gửi trùng khi scale.</li>
-      <li>Không có health check, metrics, audit log; lỗi token bị nuốt không log.</li>
-      <li>FE: 12 file trên 1.000 dòng, logic gọi API nằm trong widget, không có test.</li>
+      <li><code>AttendanceController</code> ~2.100 dòng (09/10/2026) chứa logic nghiệp vụ và <code>@Transactional</code> ở controller.</li>
+      <li>Kiểm quyền thủ công lặp ở từng controller → dễ quên (các chỗ quên ở review gốc đã vá; gom thành annotation để sau go-live).</li>
+      <li>Scheduler chạy trong API; múi giờ đã cố định <code>Asia/Ho_Chi_Minh</code> nhưng chưa có khoá phân tán → gửi trùng khi chạy nhiều instance.</li>
+      <li>Đã có health check, request-id, nhật ký thao tác; còn thiếu metrics, cảnh báo lỗi; lỗi token vẫn bị bỏ qua không ghi log.</li>
+      <li>FE: nhiều file trên 1.000 dòng, logic gọi API nằm trong widget, chưa có test (CI có <code>flutter analyze</code> và kiểm chuỗi tiếng Việt viết cứng).</li>
     </ul></div>
   </div>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 09/10/2026</footer>
 </body>
 </html>
