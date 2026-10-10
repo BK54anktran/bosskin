@@ -106,6 +106,7 @@ footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hov
 @media (max-width:520px){.foot-grid{gap:28px 20px;padding:44px 16px 28px}.foot-col:last-child{grid-column:1/-1}}
 @media print{footer.site{display:none}}
 .socials{display:flex;gap:10px;margin:0 0 18px}.socials a{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff!important}.socials a:hover{background:rgba(255,255,255,.18)}
+.zalo-txt{font-size:10.5px;font-weight:800;letter-spacing:-.01em}
 </style>
 </head>
 <body>
@@ -202,6 +203,7 @@ trước khi nhập.</p>
         <a class="js-soc" data-key="facebookUrl" href="#" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3H13.5V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"/></svg></a>
         <a class="js-soc" data-key="tiktokUrl" href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.4 2.1 1.7 3.5 3.9 3.8v3.1a7.2 7.2 0 0 1-3.9-1.2v6.2A5.7 5.7 0 1 1 10.9 9.2v3.2a2.5 2.5 0 1 0 2.5 2.5V3h3.2z"/></svg></a>
         <a class="js-soc" data-key="youtubeUrl" href="#" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg></a>
+        <a class="js-soc-zalo" href="#" target="_blank" rel="noopener" aria-label="Zalo" title="Zalo" hidden><span class="zalo-txt">Zalo</span></a>
       </div>
       <a class="foot-cta" href="../#lien-he">Đăng ký dùng thử</a>
     </div>
@@ -275,7 +277,8 @@ trước khi nhập.</p>
   setContact('.js-zalo', cfg.contactPhone && 'Zalo ' + cfg.contactPhone, 'https://zalo.me/' + phoneDigits);
   setContact('.js-mail', cfg.contactEmail, 'mailto:' + cfg.contactEmail);
   if (cfg.contactPhone || cfg.contactEmail) document.querySelector('.js-nocontact').hidden = true;
-  var anySoc = false;
+  var anySoc = !!phoneDigits;
+  document.querySelectorAll('.js-soc-zalo').forEach(function (a) { if (phoneDigits) { a.href = 'https://zalo.me/' + phoneDigits; a.hidden = false; } });
   document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
   document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
 })();

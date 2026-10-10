@@ -49,7 +49,8 @@
   setContact('.js-zalo', cfg.contactPhone && 'Zalo ' + cfg.contactPhone, 'https://zalo.me/' + phoneDigits);
   setContact('.js-mail', cfg.contactEmail, 'mailto:' + cfg.contactEmail);
   if (cfg.contactPhone || cfg.contactEmail) document.querySelector('.js-nocontact').hidden = true;
-  var anySoc = false;
+  var anySoc = !!phoneDigits;
+  document.querySelectorAll('.js-soc-zalo').forEach(function (a) { if (phoneDigits) { a.href = 'https://zalo.me/' + phoneDigits; a.hidden = false; } });
   document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
   document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
 })();
