@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV), N (tài liệu nhân sự), F (giao diện tối), E và O–Q (dọn mục còn mở, test frontend, diễn tập + UAT) xong; còn D (thử máy), AWS, UAT, pilot</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV), N (tài liệu nhân sự), F (giao diện tối), E, O–Q (dọn mục còn mở, test frontend, diễn tập + UAT) và R (tài liệu hệ thống + trang trợ giúp) xong; còn D (thử máy), AWS, UAT, pilot</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -215,7 +215,7 @@
       <li>Bước N: NV tự gửi tài liệu <b>bằng trạng thái "chờ duyệt" ngay trên tài liệu</b> (HR duyệt / từ chối ở màn Tài liệu nhân sự) thay vì đi qua yêu cầu chỉnh sửa hồ sơ (luồng đó sửa từng trường, không chứa file); cảnh báo hết hạn <b>dùng chung số ngày báo trước với hợp đồng</b>; bản trên điện thoại chỉ chọn được ảnh (chưa thêm gói chọn file). <span class="muted">Đã làm theo đề xuất (10/10).</span></li>
     </ul></div>
 
-  <h3 id="truoc-uat">Trước nghiệm thu (O–Q) <span class="tag">lập và xong 10/10/2026</span></h3>
+  <h3 id="truoc-uat">Trước nghiệm thu (O–R) <span class="tag">lập và xong 10/10/2026</span></h3>
   <p class="muted">Phần code của kế hoạch đã xong; trước UAT dọn nốt các mục còn mở ở trang Đánh giá, thêm test cho frontend và diễn tập vận hành.</p>
   <div class="tbl"><table>
     <thead><tr><th>Bước</th><th>Nội dung</th><th>Kết quả</th><th>Trạng thái</th></tr></thead>
@@ -243,6 +243,13 @@
         <td><code>tools/ops/backup_restore_drill.sh</code> (chỉ đọc DB nguồn, khôi phục vào DB mới <code>*_restore_test</code>, so số dòng từng bảng + lịch sử Flyway).
           Diễn tập trên MySQL 8 thử: 50 bảng + Flyway V1–V19 khớp, app khởi động trên bản khôi phục, đăng nhập và tạo NV bình thường (runbook mục 5).
           Kịch bản UAT <code>docs/uat-kich-ban.md</code>: 37 mục theo 6 nhóm (tài khoản, hồ sơ, ca &amp; công, phép, lương, báo cáo), mức Chặn / Thường, bảng ký nghiệm thu.</td>
+        <td><span class="st done">Xong 10/10</span></td></tr>
+      <tr><td><b>R</b> · Tài liệu hệ thống + trang trợ giúp</td><td>Chưa có hướng dẫn sử dụng cho người dùng; tài liệu kỹ thuật rải rác, dễ lệch code.</td>
+        <td>Trang trợ giúp tĩnh <code>help/</code>: 22 trang theo vai trò (nhân viên, quản lý, nhân sự, kế toán, quản trị, quản trị hệ thống, câu hỏi thường gặp),
+          88 ảnh chụp có đánh dấu từng bước, tìm kiếm không dấu, giao diện tối, xem tốt trên điện thoại; nguồn Markdown <code>help/src</code>, ảnh chụp lại tự động
+          (<code>help/tools/capture.py</code> trên dữ liệu "Nội thất An Phát").
+          Tài liệu hệ thống <code>docs/he-thong/</code>: kiến trúc, phân quyền, nghiệp vụ, bảo mật, triển khai; danh sách API (305 endpoint), CSDL (50 bảng),
+          danh mục quyền <b>tự sinh từ code + DB</b> (<code>tools/docs/gen_he_thong.py</code>, CI <code>--check</code>) — kiểm chéo mã quyền code ↔ DB: khớp.</td>
         <td><span class="st done">Xong 10/10</span></td></tr>
     </tbody>
   </table></div>

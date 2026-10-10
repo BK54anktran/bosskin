@@ -47,3 +47,7 @@ frontend/.env
 
 # Ảnh/video đăng mạng xã hội (dựng lại bằng landing/video/), không commit
 marketing/
+
+# Ảnh thô khi chụp trang trợ giúp
+/help/tools/.raw/
+**/__pycache__/

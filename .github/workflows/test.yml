@@ -7,6 +7,8 @@ on:
     paths:
       - 'backend/**'
       - 'tools/ci/check_error_keys.py'
+      - 'tools/docs/**'
+      - 'docs/he-thong/**'
       - '.github/workflows/**'
   pull_request:
     paths:
@@ -31,6 +33,10 @@ jobs:
 
       - name: Mã lỗi có bản dịch vi + en
         run: python3 tools/ci/check_error_keys.py
+
+      # api.md sinh từ controller; csdl.md phải ghi đúng migration mới nhất (sinh lại: tools/docs/gen_he_thong.py)
+      - name: Tài liệu hệ thống khớp code
+        run: python3 tools/docs/gen_he_thong.py --check
 
       # Integration test dùng Testcontainers (MySQL 8) — Docker có sẵn trên ubuntu-latest
       - name: Run tests

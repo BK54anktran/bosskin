@@ -1,0 +1,523 @@
+{
+ "account-menu": {
+  "caption": null,
+  "marks": [
+   "Thông tin cá nhân",
+   "Ngôn ngữ",
+   "Đăng xuất"
+  ]
+ },
+ "admin-dashboard": {
+  "caption": null,
+  "marks": []
+ },
+ "admin-login": {
+  "caption": null,
+  "marks": []
+ },
+ "admin-tab-1": {
+  "caption": null,
+  "marks": [
+   "Tổng quan"
+  ]
+ },
+ "admin-tab-2": {
+  "caption": null,
+  "marks": [
+   "Công ty"
+  ]
+ },
+ "admin-tab-3": {
+  "caption": null,
+  "marks": [
+   "2\nYêu cầu dùng thử"
+  ]
+ },
+ "admin-tab-4": {
+  "caption": null,
+  "marks": [
+   "Quản trị viên"
+  ]
+ },
+ "admin-tab-5": {
+  "caption": null,
+  "marks": [
+   "Thuế & BH"
+  ]
+ },
+ "admin-tab-6": {
+  "caption": null,
+  "marks": [
+   "Ngày lễ mẫu"
+  ]
+ },
+ "appendix-new": {
+  "caption": null,
+  "marks": []
+ },
+ "att-bulk-approve": {
+  "caption": null,
+  "marks": [
+   "Kỳ công\n10/2026 · 01/10/2026 – 31/10/2026",
+   "Phòng ban\nTất cả phòng ban trong phạm vi",
+   "Duyệt"
+  ]
+ },
+ "att-day": {
+  "caption": null,
+  "marks": [
+   "Theo ngày",
+   "Thứ Bảy, 10/10/2026",
+   "Phòng ban\nTất cả"
+  ]
+ },
+ "att-lock": {
+  "caption": null,
+  "marks": [
+   "Mở lại",
+   "Khoá"
+  ]
+ },
+ "att-month": {
+  "caption": null,
+  "marks": [
+   "Theo tháng"
+  ]
+ },
+ "att-request-new": {
+  "caption": null,
+  "marks": [
+   "Loại yêu cầu\nCheck-in / Check-out",
+   "Giờ check-in yêu cầu",
+   "Gửi yêu cầu chỉnh sửa"
+  ]
+ },
+ "att-requests-approve": {
+  "caption": null,
+  "marks": [
+   "Duyệt",
+   "Từ chối"
+  ]
+ },
+ "att-week": {
+  "caption": null,
+  "marks": []
+ },
+ "audit": {
+  "caption": null,
+  "marks": [
+   "Tất cả thao tác",
+   "Người thực hiện (email)"
+  ]
+ },
+ "calendar-new": {
+  "caption": null,
+  "marks": []
+ },
+ "checkin": {
+  "caption": null,
+  "marks": [
+   "Check-in"
+  ]
+ },
+ "contract-detail": {
+  "caption": null,
+  "marks": [
+   "Thêm phụ lục",
+   "Chấm dứt",
+   "Chỉnh sửa"
+  ]
+ },
+ "contract-new": {
+  "caption": null,
+  "marks": [
+   "Nhân viên *",
+   "Số hợp đồng *",
+   "Loại hợp đồng\nXác định thời hạn",
+   "Ngày hiệu lực *\n—",
+   "Lương cơ bản *",
+   "Thêm phụ cấp",
+   "Lưu"
+  ]
+ },
+ "contracts": {
+  "caption": null,
+  "marks": [
+   "5 hợp đồng sắp hết hạn hoặc đã quá hạn mà chưa có hợp đồng nối tiếp — bấm để xem",
+   "Thêm hợp đồng",
+   "Xuất Excel",
+   "Nhập Excel"
+  ]
+ },
+ "dashboard": {
+  "caption": null,
+  "marks": [
+   "Tổng quan",
+   "Chấm công",
+   "Phân tích",
+   "Lọc theo phòng ban\nTất cả"
+  ]
+ },
+ "dashboard-analytics": {
+  "caption": null,
+  "marks": []
+ },
+ "dashboard-attendance": {
+  "caption": null,
+  "marks": []
+ },
+ "department-new": {
+  "caption": null,
+  "marks": [
+   "Tên phòng ban *",
+   "Mã phòng ban *",
+   "Phòng ban cha\n— Không có (cấp cao nhất) —",
+   "Lấy vị trí hiện tại"
+  ]
+ },
+ "departments": {
+  "caption": null,
+  "marks": [
+   "Thêm phòng ban",
+   "Quản lý chức vụ",
+   "Thêm phòng con",
+   "Chỉnh sửa"
+  ]
+ },
+ "dependents": {
+  "caption": null,
+  "marks": [
+   "Thêm người phụ thuộc"
+  ]
+ },
+ "docs-expiring": {
+  "caption": null,
+  "marks": [
+   "Sắp hết hạn",
+   "Tải về"
+  ]
+ },
+ "docs-missing": {
+  "caption": null,
+  "marks": []
+ },
+ "docs-pending": {
+  "caption": null,
+  "marks": []
+ },
+ "docs-types": {
+  "caption": null,
+  "marks": []
+ },
+ "edit-requests": {
+  "caption": null,
+  "marks": [
+   "Duyệt",
+   "Từ chối"
+  ]
+ },
+ "employee-documents": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-edit": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-new": {
+  "caption": null,
+  "marks": [
+   "Họ và tên *",
+   "Email công việc *",
+   "Phòng ban *\nTất cả",
+   "Quản lý trực tiếp\nKhông có",
+   "Tạo"
+  ]
+ },
+ "employee-new-2": {
+  "caption": null,
+  "marks": []
+ },
+ "employees": {
+  "caption": null,
+  "marks": [
+   "Thêm nhân viên",
+   "Tìm theo tên, email, mã NV...",
+   "Nút thao tác"
+  ]
+ },
+ "excel": {
+  "caption": null,
+  "marks": [
+   "Chọn & Xuất",
+   "Nhập dữ liệu\nChọn file Excel (đã điền cột Lệnh) để xem trước và nhập.\nNhấn để ch"
+  ]
+ },
+ "first-login": {
+  "caption": null,
+  "marks": [
+   "Mật khẩu hiện tại",
+   "Mật khẩu mới"
+  ]
+ },
+ "home-admin": {
+  "caption": null,
+  "marks": [
+   "Menu"
+  ]
+ },
+ "home-employee": {
+  "caption": null,
+  "marks": [
+   "Menu"
+  ]
+ },
+ "job-history": {
+  "caption": null,
+  "marks": []
+ },
+ "leave-accrual": {
+  "caption": null,
+  "marks": []
+ },
+ "leave-approve": {
+  "caption": null,
+  "marks": [
+   "Duyệt",
+   "Từ chối"
+  ]
+ },
+ "leave-balance": {
+  "caption": null,
+  "marks": []
+ },
+ "leave-balances-hr": {
+  "caption": null,
+  "marks": []
+ },
+ "leave-grant": {
+  "caption": null,
+  "marks": [
+   "Nhân viên",
+   "Quỹ cho loại phép\nQuỹ chung (dùng cho mọi loại trừ quỹ)",
+   "Cấp phép thủ công"
+  ]
+ },
+ "leave-new": {
+  "caption": null,
+  "marks": [
+   "Loại nghỉ phép\nPhép năm (PN)",
+   "Từ ngày: 10/10/2026",
+   "Đến ngày: 10/10/2026",
+   "Lý do",
+   "Tạo"
+  ]
+ },
+ "leave-types": {
+  "caption": null,
+  "marks": []
+ },
+ "login": {
+  "caption": null,
+  "marks": [
+   "Email",
+   "Mật khẩu *",
+   "Đăng nhập"
+  ]
+ },
+ "menu-collapse": {
+  "caption": null,
+  "marks": [
+   "Nhóm thu gọn"
+  ]
+ },
+ "notifications": {
+  "caption": null,
+  "marks": []
+ },
+ "org-chart": {
+  "caption": null,
+  "marks": [
+   "Theo người",
+   "Theo phòng ban"
+  ]
+ },
+ "org-chart-dept": {
+  "caption": null,
+  "marks": []
+ },
+ "payroll-generate": {
+  "caption": null,
+  "marks": [
+   "Tháng\nTháng 10",
+   "Tìm nhân viên để thêm...",
+   "Tạo"
+  ]
+ },
+ "payroll-list": {
+  "caption": null,
+  "marks": [
+   "Tháng\nTháng 9",
+   "Xuất phiếu lương",
+   "Tạo phiếu lương"
+  ]
+ },
+ "payslip": {
+  "caption": null,
+  "marks": [
+   "Lương thực nhận"
+  ]
+ },
+ "positions": {
+  "caption": null,
+  "marks": []
+ },
+ "profile": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-bottom": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-dependents": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-edit-request": {
+  "caption": null,
+  "marks": [
+   "Số điện thoại",
+   "Gửi yêu cầu chỉnh sửa"
+  ]
+ },
+ "profile-more": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-security": {
+  "caption": null,
+  "marks": []
+ },
+ "reports": {
+  "caption": null,
+  "marks": [
+   "Xuất Excel"
+  ]
+ },
+ "role-new": {
+  "caption": null,
+  "marks": [
+   "Tên vai trò",
+   "Phòng ban\nTất cả",
+   "Xem danh sách nhân viên\nEMPLOYEE_VIEW\nHiển thị mục Nhân viên trên menu"
+  ]
+ },
+ "roles": {
+  "caption": null,
+  "marks": [
+   "Thêm vai trò",
+   "Chỉnh sửa"
+  ]
+ },
+ "salary-formulas": {
+  "caption": null,
+  "marks": []
+ },
+ "salary-grades": {
+  "caption": null,
+  "marks": []
+ },
+ "salary-variables": {
+  "caption": null,
+  "marks": []
+ },
+ "self-payroll": {
+  "caption": null,
+  "marks": [
+   "Tháng 9"
+  ]
+ },
+ "settings-calendar": {
+  "caption": null,
+  "marks": [
+   "Thêm lịch",
+   "Thêm ngày lễ"
+  ]
+ },
+ "settings-general": {
+  "caption": null,
+  "marks": []
+ },
+ "settings-general-2": {
+  "caption": null,
+  "marks": []
+ },
+ "settings-general-3": {
+  "caption": null,
+  "marks": []
+ },
+ "shift-assign": {
+  "caption": null,
+  "marks": [
+   "Phân công ca",
+   "10/2026",
+   "Điền nhanh ca"
+  ]
+ },
+ "shift-list": {
+  "caption": null,
+  "marks": [
+   "Tạo ca mới"
+  ]
+ },
+ "shift-new": {
+  "caption": null,
+  "marks": []
+ },
+ "shift-quickfill": {
+  "caption": null,
+  "marks": []
+ },
+ "shift-rotation": {
+  "caption": null,
+  "marks": [
+   "Thêm mẫu xoay"
+  ]
+ },
+ "swap-approve": {
+  "caption": null,
+  "marks": []
+ },
+ "swap-new": {
+  "caption": null,
+  "marks": [
+   "Ca của tôi",
+   "Gửi yêu cầu"
+  ]
+ },
+ "swaps": {
+  "caption": null,
+  "marks": [
+   "Xin đổi / nhường ca"
+  ]
+ },
+ "team-approvals": {
+  "caption": null,
+  "marks": [
+   "Duyệt",
+   "Từ chối"
+  ]
+ },
+ "user-roles": {
+  "caption": null,
+  "marks": []
+ },
+ "users": {
+  "caption": null,
+  "marks": [
+   "Xuất mật khẩu tạm",
+   "Đặt lại mật khẩu"
+  ]
+ }
+}

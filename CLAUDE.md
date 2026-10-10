@@ -10,9 +10,11 @@
    `credential.helper store --file=.git/.git-credentials` (file trong `.git`, không commit).
 2. **Tài liệu – design – code – database luôn đi cùng nhau.** Sửa một trong bốn mà ảnh hưởng
    đến cái khác thì **bắt buộc** sửa theo trong cùng đợt:
-   - code đổi API/nghiệp vụ → cập nhật `docs/` (kế hoạch, đánh giá, tài liệu hệ thống);
+   - code đổi API/nghiệp vụ → cập nhật `docs/` (kế hoạch, đánh giá, tài liệu hệ thống `docs/he-thong/`);
+   - đổi controller / quyền / schema → sinh lại `docs/he-thong/{api,csdl,quyen}.md` bằng `tools/docs/gen_he_thong.py`
+     (CI chạy `--check`);
    - đổi schema → migration Flyway mới + entity/DTO + tài liệu;
-   - đổi giao diện/luồng → cập nhật design và chuỗi l10n;
+   - đổi giao diện/luồng → cập nhật design, chuỗi l10n và trang trợ giúp `help/src/*.md` (chụp lại ảnh nếu màn đổi);
    - tiến độ kế hoạch → cập nhật `docs/review-2026-10/ke-hoach.html` (và bản artifact).
 3. **KHÔNG BAO GIỜ tự xoá / reset dữ liệu** (kể cả DB dev): không chạy `dev\reset-db.cmd`, không DROP/TRUNCATE,
    không Flyway clean nếu chủ dự án chưa đồng ý rõ ràng trong lần đó. Migration mới chỉ cần khởi động lại backend
@@ -78,7 +80,8 @@ frontend/lib/l10n/
 
 ## Auth & Roles
 - JWT Bearer token
-- Roles (thứ tự quyền): `ADMIN > HR_MANAGER > HR_STAFF > EMPLOYEE`
+- Không còn vai trò cố định: vai trò theo công ty = tập mã quyền + phạm vi phòng ban (tạo công ty sinh sẵn "Admin" và "Nhân viên").
+  Quyền trực tiếp của user ghi đè quyền vai trò theo module. Chi tiết: `docs/he-thong/phan-quyen.md`, danh mục `docs/he-thong/quyen.md`.
 - Controller dùng `@AuthenticationPrincipal User user` để lấy user hiện tại
 - 2FA (TOTP, V11): `core/Totp`, `service/TwoFactorService`. Login trả `twoFactor` = `REQUIRED` | `SETUP_REQUIRED` + `challengeToken`
   (JWT type `2FA`, 5 phút) thay cho access token → `/api/v1/auth/2fa/{verify,setup,enable}` (system admin: `/admin/auth/2fa/...`).
@@ -659,3 +662,14 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
 - Host: Netlify (`netlify.toml` ở gốc: base `landing`, không build). `apiUrl` trống → form gửi Netlify Forms (`dung-thu`, ô bẫy `website`);
   có `apiUrl` → API BossKin. `appUrl` trống → ẩn nút Đăng nhập.
 - Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).
+
+## Tài liệu hệ thống & trang trợ giúp (10/2026)
+- `docs/he-thong/`: tài liệu kỹ thuật (kiến trúc, phân quyền, nghiệp vụ, bảo mật, triển khai). `api.md`, `csdl.md`, `quyen.md` **tự sinh**
+  — không sửa tay: `MYSQL_CMD="docker exec -i <container> mysql -uroot -p<pw> bosskin" python3 tools/docs/gen_he_thong.py`
+  (DB thử đã migrate hết, không dùng DB dev). `--check` (không cần DB) báo `api.md` lệch controller / `csdl.md` cũ hơn migration mới nhất.
+  Mục "Kiểm tra đồng bộ" ở `quyen.md` phải ✔ (mã quyền trong code đều có trong bảng `permissions` và ngược lại).
+- `help/`: trang trợ giúp tĩnh cho người dùng (22 trang theo vai trò, ~90 ảnh). Nội dung `help/src/NN-<slug>.md` → `python3 help/tools/build_help.py`
+  → `help/*.html` (commit cả HTML). Ảnh chụp bằng `help/tools/capture.py` trên môi trường thử riêng có dữ liệu "Nội thất An Phát"
+  (`landing/video/seed_demo.py` + `help/tools/seed_help_extra.py`). Hướng dẫn: `help/README.md`.
+- Đổi màn hình / luồng → sửa trang trợ giúp tương ứng (biến lương, tên nút, bước) và chụp lại chương đó trong cùng đợt.
+
