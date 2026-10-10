@@ -290,6 +290,11 @@ Map<String, String> _buildColLabels(AppLocalizations s) => {
   'excel.col.employee.personalEmail': s.excelColEmployeePersonalEmail,
   'excel.col.employee.bankAccount':   s.excelColEmployeeBankAccount,
   'excel.col.employee.bankName':      s.excelColEmployeeBankName,
+  'excel.col.leaveGrant.grantDays':   s.excelColLeaveGrantDays,
+  'excel.col.leaveGrant.grantHours':  s.excelColLeaveGrantHours,
+  'excel.col.leaveGrant.validFrom':   s.leaveValidFrom,
+  'excel.col.leaveGrant.validTo':     s.leaveValidTo,
+  'excel.col.leaveGrant.note':        s.note,
 };
 
 String _translateKey(String key, AppLocalizations s) => switch (key) {

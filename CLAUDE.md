@@ -575,6 +575,18 @@ V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem 
 - `ThemeController` (core/theme) lưu chế độ (theo máy / sáng / tối), đặt `AppTheme.isDark`; `main.dart` dựng lại cả cây khi đổi
   (`KeyedSubtree(ValueKey(dark))`). Nút chọn ở Hồ sơ (`profile/appearance_card.dart`). Cổng /admin giữ nền tối riêng của nó.
 
+### Hạ tầng AWS & chuyển dữ liệu (Bước E)
+- `infra/aws/bosskin.yaml`: stack CloudFormation (EB Corretto 17, RDS MySQL 8, S3, IAM, Secrets Manager, cảnh báo SNS); hướng dẫn
+  `infra/aws/README.md`. Kiểm bằng `cfn-lint infra/aws/*.yaml` (CI `infra-lint.yml`). Đổi biến môi trường / tài nguyên → sửa stack + runbook.
+  S3: chỉ `company-*/avatars/*`, `company-*/images/*` đọc công khai; thư mục ảnh mới cần đọc công khai → thêm vào bucket policy.
+- Excel chung nhập theo `@Order` của descriptor (phòng ban 10 → chức vụ 20 → bậc lương 30 → ca 40 → loại phép 50 → biến 60 → công thức 70
+  → nhân viên 80 → số dư phép 90 → phân ca 100 → chấm công 110 → lương 120). Descriptor mới phải có `@Order` theo phụ thuộc.
+- Nhập phân ca: xoá + thêm trong cùng transaction mới (`ShiftExcelService.replaceOneInNewTx`), không xoá ở transaction ngoài.
+  Số dư phép: một quỹ = (NV, loại phép, ngày cấp), MERGE cập nhật quỹ đó, không tạo thêm.
+- Mẫu nhập dữ liệu thật `tools/onboarding/mau/` (tạo lại bằng `make_template.py` từ file xuất của công ty trống), hướng dẫn
+  `docs/chuyen-du-lieu.md`; đối chiếu pilot `tools/onboarding/doi_chieu.py`. Đổi cột nhập Excel → tạo lại mẫu (quy tắc 2).
+- Checklist thử điện thoại: `docs/thu-dien-thoai.md` (bước D) — tính năng mobile mới thì thêm kịch bản.
+
 ### Hover cursor
 - Widget có `onTap`/`onPressed` trên desktop → thêm `MouseRegion(cursor: SystemMouseCursors.click)` để hiện bàn tay khi hover.
 

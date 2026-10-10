@@ -11,6 +11,7 @@ import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Order(50) // bước E: thứ tự nhập theo phụ thuộc (phòng ban → … → nhân viên → số dư phép / phân ca)
 @RequiredArgsConstructor
 public class LeaveTypeDescriptor implements ExcelEntityDescriptor<LeaveTypeDescriptor.Row> {
 

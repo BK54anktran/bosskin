@@ -11,12 +11,14 @@ import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@Order(60) // bước E: thứ tự nhập theo phụ thuộc (phòng ban → … → nhân viên → số dư phép / phân ca)
 @RequiredArgsConstructor
 public class FormulaVariableDescriptor implements ExcelEntityDescriptor<FormulaVariableDescriptor.Row> {
 

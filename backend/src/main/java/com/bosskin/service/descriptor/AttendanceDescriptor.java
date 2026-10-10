@@ -12,6 +12,7 @@ import com.bosskin.util.FilterDefinition;
 import com.bosskin.util.SheetImportResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@Order(110) // bước E: thứ tự nhập theo phụ thuộc (phòng ban → … → nhân viên → số dư phép / phân ca)
 @RequiredArgsConstructor
 public class AttendanceDescriptor implements ExcelEntityDescriptor<AttendanceDTO.ImportRow> {
 

@@ -9922,6 +9922,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tối'**
   String get appearanceDark;
+
+  /// No description provided for @excelColLeaveGrantDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số ngày phép'**
+  String get excelColLeaveGrantDays;
+
+  /// No description provided for @excelColLeaveGrantHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số giờ phép'**
+  String get excelColLeaveGrantHours;
 }
 
 class _AppLocalizationsDelegate

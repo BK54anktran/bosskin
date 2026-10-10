@@ -5337,4 +5337,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get appearanceDark => 'Tối';
+
+  @override
+  String get excelColLeaveGrantDays => 'Số ngày phép';
+
+  @override
+  String get excelColLeaveGrantHours => 'Số giờ phép';
 }

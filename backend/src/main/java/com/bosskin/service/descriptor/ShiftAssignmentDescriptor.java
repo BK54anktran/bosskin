@@ -11,7 +11,6 @@ import com.bosskin.repository.ShiftAssignmentRepository;
 import com.bosskin.repository.WorkShiftRepository;
 import com.bosskin.service.DeptScopeService;
 import com.bosskin.service.ShiftExcelService;
-import com.bosskin.service.WorkShiftService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelEntityDescriptor;
 import com.bosskin.util.FilterDefinition;
@@ -19,6 +18,7 @@ import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@Order(100) // bước E: thứ tự nhập theo phụ thuộc (phòng ban → … → nhân viên → số dư phép / phân ca)
 @RequiredArgsConstructor
 public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAssignmentDescriptor.Row> {
 
@@ -39,7 +40,6 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
     private final DepartmentRepository      deptRepo;
     private final EmployeeRepository        employeeRepo;
     private final WorkShiftRepository       shiftRepo;
-    private final WorkShiftService          shiftService;
     private final ShiftExcelService         shiftExcelService;
     private final DeptScopeService          deptScopeService;
 
@@ -250,8 +250,7 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
 
                 if (cmd == ImportCommand.DELETE) {
                     if (!dryRun) {
-                        if (assignId != null) assignRepo.softDeleteById(assignId);
-                        else shiftService.deleteAssignment(emp.getId(), date, companyId);
+                        shiftExcelService.replaceOneInNewTx(companyId, assignId, emp.getId(), date, null);
                     }
                     results.add(SheetImportResult.RowResult.ok(rowNum));
                     continue;
@@ -280,9 +279,7 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
 
                 if (!dryRun) {
                     // Có ID → xóa đúng record đó rồi tạo lại (thay thế ca cụ thể, không ảnh hưởng ca khác cùng ngày)
-                    if (assignId != null) assignRepo.softDeleteById(assignId);
-                    else shiftService.deleteAssignment(emp.getId(), date, companyId);
-                    shiftExcelService.assignOneInNewTx(companyId, req);
+                    shiftExcelService.replaceOneInNewTx(companyId, assignId, emp.getId(), date, req);
                 }
                 results.add(SheetImportResult.RowResult.ok(rowNum));
             } catch (Exception e) {

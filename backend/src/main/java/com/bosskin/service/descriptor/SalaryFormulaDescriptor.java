@@ -11,6 +11,7 @@ import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
+@Order(70) // bước E: thứ tự nhập theo phụ thuộc (phòng ban → … → nhân viên → số dư phép / phân ca)
 @RequiredArgsConstructor
 public class SalaryFormulaDescriptor implements ExcelEntityDescriptor<SalaryFormulaDescriptor.Row> {
 

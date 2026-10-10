@@ -95,6 +95,10 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 
 ## 8. Lần đầu dựng môi trường mới
 
+Trên AWS: dựng bằng stack CloudFormation `infra/aws/bosskin.yaml` (EB + RDS + S3 + IAM + Secrets Manager + cảnh báo),
+hướng dẫn từng bước ở `infra/aws/README.md`; stack đặt sẵn các biến mục 2 và tạo DB trống, nên bỏ qua bước 1–2 dưới đây.
+Nhập dữ liệu công ty thật: `docs/chuyen-du-lieu.md`. Thử trên điện thoại trước khi phát app: `docs/thu-dien-thoai.md`.
+
 1. Tạo DB trống `bosskin` (utf8mb4) và user cho app.
 2. Đặt biến môi trường mục 2, kèm `BOOTSTRAP_SYSADMIN_*`.
 3. Chạy workflow deploy. Flyway tạo toàn bộ schema từ `V1`.

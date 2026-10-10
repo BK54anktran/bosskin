@@ -1832,4 +1832,6 @@
   ,"appearanceSystem": "Theo máy"
   ,"appearanceLight": "Sáng"
   ,"appearanceDark": "Tối"
+  ,"excelColLeaveGrantDays": "Số ngày phép"
+  ,"excelColLeaveGrantHours": "Số giờ phép"
 }

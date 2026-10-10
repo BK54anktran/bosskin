@@ -5347,4 +5347,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appearanceDark => 'Dark';
+
+  @override
+  String get excelColLeaveGrantDays => 'Grant days';
+
+  @override
+  String get excelColLeaveGrantHours => 'Grant hours';
 }

@@ -1,0 +1,463 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  BossKin (bước E) - hạ tầng chạy thật trên AWS: Elastic Beanstalk (Java 17, Corretto) + RDS MySQL 8
+  + S3 (ảnh / tài liệu nhân sự / lịch sử Excel) + IAM + Secrets Manager. Hướng dẫn: infra/aws/README.md.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label: { default: Ứng dụng }
+        Parameters: [AppName, EnvName, SolutionStackName, InstanceType, EnvironmentType, MinInstances, MaxInstances, CertificateArn, CorsAllowedOrigins]
+      - Label: { default: Mạng }
+        Parameters: [VpcId, AppSubnetIds, DbSubnetIds]
+      - Label: { default: Cơ sở dữ liệu }
+        Parameters: [DbInstanceClass, DbAllocatedStorage, DbMultiAz, DbBackupRetentionDays]
+      - Label: { default: Khởi tạo }
+        Parameters: [BootstrapSysadminEmail]
+
+Parameters:
+  AppName:
+    Type: String
+    Default: bosskin
+    AllowedPattern: '[a-z][a-z0-9-]{2,30}'
+    Description: Tên ứng dụng EB, tiền tố tên tài nguyên (chữ thường).
+  EnvName:
+    Type: String
+    Default: prod
+    AllowedPattern: '[a-z][a-z0-9-]{1,15}'
+    Description: Tên môi trường (prod, pilot...). Môi trường EB tên "<AppName>-<EnvName>".
+  SolutionStackName:
+    Type: String
+    Default: 64bit Amazon Linux 2023 v4.7.0 running Corretto 17
+    Description: >-
+      Nền tảng EB Java SE Corretto 17. Lấy tên mới nhất bằng
+      "aws elasticbeanstalk list-available-solution-stacks | grep 'Corretto 17'".
+  InstanceType:
+    Type: String
+    Default: t3.small
+    Description: Loại máy EC2 (app cần ~1 GB RAM; t3.small = 2 GB).
+  EnvironmentType:
+    Type: String
+    Default: LoadBalanced
+    AllowedValues: [LoadBalanced, SingleInstance]
+    Description: LoadBalanced (có ALB, bật HTTPS bằng ACM) hoặc SingleInstance (rẻ hơn, chỉ để thử).
+  MinInstances:
+    Type: Number
+    Default: 1
+    MinValue: 1
+  MaxInstances:
+    Type: Number
+    Default: 2
+    MinValue: 1
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: ARN chứng chỉ ACM (cùng region) cho HTTPS trên ALB. Trống = chỉ HTTP (không dùng cho dữ liệu thật).
+  CorsAllowedOrigins:
+    Type: String
+    Default: ''
+    Description: Origin bản web + trang giới thiệu, cách dấu phẩy, vd. https://app.bosskin.vn,https://bosskin.vn
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC đặt app và DB (có thể dùng VPC mặc định).
+  AppSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnet public (≥ 2 vùng AZ) cho máy EB và ALB.
+  DbSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnet cho RDS (≥ 2 AZ; nên là subnet private). DB không mở ra Internet.
+  DbInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+  DbAllocatedStorage:
+    Type: Number
+    Default: 20
+    MinValue: 20
+    Description: Dung lượng GB (gp3, tự tăng tối đa gấp 5).
+  DbMultiAz:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+  DbBackupRetentionDays:
+    Type: Number
+    Default: 7
+    MinValue: 1
+    MaxValue: 35
+  BootstrapSysadminEmail:
+    Type: String
+    Default: ''
+    Description: >-
+      Email system admin đầu tiên (chỉ dùng khi DB trống). Mật khẩu sinh trong Secrets Manager
+      "<AppName>-<EnvName>/bootstrap-sysadmin". Đăng nhập xong thì xoá giá trị này (update stack).
+
+Conditions:
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, '']]
+  IsLoadBalanced: !Equals [!Ref EnvironmentType, LoadBalanced]
+  UseHttps: !And [!Condition HasCertificate, !Condition IsLoadBalanced]
+  HasBootstrap: !Not [!Equals [!Ref BootstrapSysadminEmail, '']]
+  HasCors: !Not [!Equals [!Ref CorsAllowedOrigins, '']]
+
+Resources:
+  # ── Bí mật ──────────────────────────────────────────────────────────────────
+  JwtSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${AppName}-${EnvName}/jwt-secret'
+      Description: JWT_SECRET của BossKin (≥ 32 byte). Đổi giá trị = mọi phiên đăng nhập hết hạn.
+      GenerateSecretString:
+        PasswordLength: 64
+        ExcludePunctuation: true
+
+  DbSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${AppName}-${EnvName}/db'
+      Description: Tài khoản master RDS (username/password).
+      GenerateSecretString:
+        SecretStringTemplate: '{"username":"bosskin"}'
+        GenerateStringKey: password
+        PasswordLength: 32
+        ExcludeCharacters: "\"@/\\' &?%#;:`$"
+
+  BootstrapSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: HasBootstrap
+    Properties:
+      Name: !Sub '${AppName}-${EnvName}/bootstrap-sysadmin'
+      Description: Mật khẩu system admin đầu tiên (đổi ngay sau khi đăng nhập, rồi xoá BootstrapSysadminEmail).
+      GenerateSecretString:
+        PasswordLength: 24
+        ExcludePunctuation: true
+
+  # ── Mạng ────────────────────────────────────────────────────────────────────
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: BossKin app instances (EB adds ALB and HTTP rules)
+      VpcId: !Ref VpcId
+      Tags:
+        - { Key: Name, Value: !Sub '${AppName}-${EnvName}-app' }
+
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: BossKin RDS - MySQL only from app instances
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref AppSecurityGroup
+          Description: MySQL from BossKin app
+      Tags:
+        - { Key: Name, Value: !Sub '${AppName}-${EnvName}-db' }
+
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub 'BossKin ${EnvName} DB subnets'
+      SubnetIds: !Ref DbSubnetIds
+
+  # ── Cơ sở dữ liệu ───────────────────────────────────────────────────────────
+  DbParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Family: mysql8.0
+      Description: BossKin MySQL 8 - utf8mb4, bắt buộc TLS
+      Parameters:
+        character_set_server: utf8mb4
+        collation_server: utf8mb4_unicode_ci
+        require_secure_transport: '1'
+
+  Database:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub '${AppName}-${EnvName}'
+      Engine: mysql
+      EngineVersion: '8.0.46'   # bản 8.0 mới nhất lúc viết; AutoMinorVersionUpgrade tự nâng
+      DBInstanceClass: !Ref DbInstanceClass
+      AllocatedStorage: !Ref DbAllocatedStorage
+      MaxAllocatedStorage: 100
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: bosskin
+      MasterUsername: !Sub '{{resolve:secretsmanager:${DbSecret}:SecretString:username}}'
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${DbSecret}:SecretString:password}}'
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      DBParameterGroupName: !Ref DbParameterGroup
+      VPCSecurityGroups: [!Ref DbSecurityGroup]
+      PubliclyAccessible: false
+      MultiAZ: !Ref DbMultiAz
+      BackupRetentionPeriod: !Ref DbBackupRetentionDays
+      PreferredBackupWindow: '18:00-19:00'          # 01:00-02:00 giờ VN
+      PreferredMaintenanceWindow: 'sun:19:30-sun:20:30'
+      AutoMinorVersionUpgrade: true
+      DeletionProtection: true
+      CopyTagsToSnapshot: true
+      EnableCloudwatchLogsExports: [error, slowquery]
+
+  # ── S3 ──────────────────────────────────────────────────────────────────────
+  # Bucket riêng tư. Chỉ ảnh đại diện / ảnh (company-*/avatars, company-*/images) đọc công khai vì app lưu URL
+  # trực tiếp của ảnh. Tài liệu nhân sự (documents/) và lịch sử Excel (excel-history/) chỉ đọc qua backend /
+  # link ký tạm (presigned).
+  AppBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub '${AppName}-${EnvName}-${AWS::AccountId}-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-old-versions
+            Status: Enabled
+            NoncurrentVersionExpiration: { NoncurrentDays: 30 }
+          - Id: excel-history-1y
+            Status: Enabled
+            Prefix: excel-history/
+            ExpirationInDays: 365
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: [GET, HEAD]
+            AllowedOrigins: !If
+              - HasCors
+              - !Split [',', !Ref CorsAllowedOrigins]
+              - ['*']
+            AllowedHeaders: ['*']
+            MaxAge: 3600
+
+  AppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AppBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadImages
+            Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource:
+              - !Sub '${AppBucket.Arn}/company-*/avatars/*'
+              - !Sub '${AppBucket.Arn}/company-*/images/*'
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt AppBucket.Arn
+              - !Sub '${AppBucket.Arn}/*'
+            Condition:
+              Bool: { 'aws:SecureTransport': 'false' }
+
+  # ── IAM ─────────────────────────────────────────────────────────────────────
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ec2.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: bosskin-app-bucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource: !Sub '${AppBucket.Arn}/*'
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt AppBucket.Arn
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref InstanceRole]
+
+  ServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: elasticbeanstalk.amazonaws.com }
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals: { 'sts:ExternalId': elasticbeanstalk }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy
+
+  # ── Elastic Beanstalk ───────────────────────────────────────────────────────
+  Application:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: !Ref AppName
+      Description: BossKin - quản lý nhân sự, chấm công, tính lương
+
+  Environment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref Application
+      EnvironmentName: !Sub '${AppName}-${EnvName}'
+      SolutionStackName: !Ref SolutionStackName
+      Tier: { Name: WebServer, Type: Standard }
+      OptionSettings:
+        # Máy & mạng
+        - { Namespace: 'aws:autoscaling:launchconfiguration', OptionName: IamInstanceProfile, Value: !Ref InstanceProfile }
+        - { Namespace: 'aws:autoscaling:launchconfiguration', OptionName: SecurityGroups, Value: !Ref AppSecurityGroup }
+        - { Namespace: 'aws:autoscaling:launchconfiguration', OptionName: DisableIMDSv1, Value: 'true' }
+        - { Namespace: 'aws:ec2:instances', OptionName: InstanceTypes, Value: !Ref InstanceType }
+        - { Namespace: 'aws:ec2:vpc', OptionName: VPCId, Value: !Ref VpcId }
+        - { Namespace: 'aws:ec2:vpc', OptionName: Subnets, Value: !Join [',', !Ref AppSubnetIds] }
+        - { Namespace: 'aws:ec2:vpc', OptionName: AssociatePublicIpAddress, Value: 'true' }
+        - { Namespace: 'aws:elasticbeanstalk:environment', OptionName: EnvironmentType, Value: !Ref EnvironmentType }
+        - { Namespace: 'aws:elasticbeanstalk:environment', OptionName: ServiceRole, Value: !Ref ServiceRole }
+        - Namespace: 'aws:elasticbeanstalk:environment'
+          OptionName: LoadBalancerType
+          Value: !If [IsLoadBalanced, application, !Ref 'AWS::NoValue']
+        - { Namespace: 'aws:autoscaling:asg', OptionName: MinSize, Value: !Ref MinInstances }
+        - { Namespace: 'aws:autoscaling:asg', OptionName: MaxSize, Value: !Ref MaxInstances }
+        # Health, cập nhật, log
+        - { Namespace: 'aws:elasticbeanstalk:healthreporting:system', OptionName: SystemType, Value: enhanced }
+        - { Namespace: 'aws:elasticbeanstalk:managedactions', OptionName: ManagedActionsEnabled, Value: 'true' }
+        - { Namespace: 'aws:elasticbeanstalk:managedactions', OptionName: PreferredStartTime, Value: 'Sun:20:00' }
+        - { Namespace: 'aws:elasticbeanstalk:managedactions:platformupdate', OptionName: UpdateLevel, Value: minor }
+        - { Namespace: 'aws:elasticbeanstalk:command', OptionName: DeploymentPolicy, Value: Rolling }
+        - { Namespace: 'aws:elasticbeanstalk:cloudwatch:logs', OptionName: StreamLogs, Value: 'true' }
+        - { Namespace: 'aws:elasticbeanstalk:cloudwatch:logs', OptionName: RetentionInDays, Value: '30' }
+        - { Namespace: 'aws:elasticbeanstalk:cloudwatch:logs', OptionName: DeleteOnTerminate, Value: 'false' }
+        # Health check ALB (giống .ebextensions)
+        - Namespace: 'aws:elasticbeanstalk:environment:process:default'
+          OptionName: HealthCheckPath
+          Value: !If [IsLoadBalanced, /actuator/health, !Ref 'AWS::NoValue']
+        # HTTPS trên ALB khi có chứng chỉ
+        - Namespace: 'aws:elbv2:listener:443'
+          OptionName: Protocol
+          Value: !If [UseHttps, HTTPS, !Ref 'AWS::NoValue']
+        - Namespace: 'aws:elbv2:listener:443'
+          OptionName: SSLCertificateArns
+          Value: !If [UseHttps, !Ref CertificateArn, !Ref 'AWS::NoValue']
+        - Namespace: 'aws:elbv2:listener:443'
+          OptionName: SSLPolicy
+          Value: !If [UseHttps, ELBSecurityPolicy-TLS13-1-2-2021-06, !Ref 'AWS::NoValue']
+        # Biến môi trường của app (docs/runbook.md mục 2)
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: DB_URL
+          Value: !Sub 'jdbc:mysql://${Database.Endpoint.Address}:${Database.Endpoint.Port}/bosskin?sslMode=REQUIRED&serverTimezone=Asia/Ho_Chi_Minh'
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: DB_USERNAME
+          Value: !Sub '{{resolve:secretsmanager:${DbSecret}:SecretString:username}}'
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: DB_PASSWORD
+          Value: !Sub '{{resolve:secretsmanager:${DbSecret}:SecretString:password}}'
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: JWT_SECRET
+          Value: !Sub '{{resolve:secretsmanager:${JwtSecret}}}'
+        - { Namespace: 'aws:elasticbeanstalk:application:environment', OptionName: AWS_S3_BUCKET, Value: !Ref AppBucket }
+        - { Namespace: 'aws:elasticbeanstalk:application:environment', OptionName: AWS_REGION, Value: !Ref 'AWS::Region' }
+        - { Namespace: 'aws:elasticbeanstalk:application:environment', OptionName: DOCUMENTS_STORAGE, Value: s3 }
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: CORS_ALLOWED_ORIGINS
+          Value: !If [HasCors, !Ref CorsAllowedOrigins, !Ref 'AWS::NoValue']
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: BOOTSTRAP_SYSADMIN_EMAIL
+          Value: !If [HasBootstrap, !Ref BootstrapSysadminEmail, !Ref 'AWS::NoValue']
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: BOOTSTRAP_SYSADMIN_PASSWORD
+          Value: !If [HasBootstrap, !Sub '{{resolve:secretsmanager:${BootstrapSecret}}}', !Ref 'AWS::NoValue']
+
+  # ── Cảnh báo cơ bản (gửi về SNS; đăng ký email thủ công) ────────────────────
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AppName}-${EnvName}-alarms'
+
+  DbCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: RDS CPU > 80% trong 15 phút
+      Namespace: AWS/RDS
+      MetricName: CPUUtilization
+      Dimensions: [{ Name: DBInstanceIdentifier, Value: !Ref Database }]
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions: [!Ref AlarmTopic]
+
+  DbStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: RDS còn < 2 GB trống
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions: [{ Name: DBInstanceIdentifier, Value: !Ref Database }]
+      Statistic: Minimum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 2147483648
+      ComparisonOperator: LessThanThreshold
+      AlarmActions: [!Ref AlarmTopic]
+
+  EnvHealthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Môi trường EB không ổn (health ≥ Warning) trong 10 phút
+      Namespace: AWS/ElasticBeanstalk
+      MetricName: EnvironmentHealth
+      Dimensions: [{ Name: EnvironmentName, Value: !Ref Environment }]
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 15
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+Outputs:
+  AppUrl:
+    Description: Địa chỉ API (trỏ CNAME tên miền vào đây; bản web/app đặt API_BASE_URL = <địa chỉ>/api/v1)
+    Value: !Sub
+      - '${Scheme}://${Environment.EndpointURL}'
+      - Scheme: !If [UseHttps, https, http]
+  EbApplicationName:
+    Description: Secret EB_APPLICATION_NAME cho deploy.yml
+    Value: !Ref Application
+  EbEnvironmentName:
+    Description: Secret EB_ENVIRONMENT_NAME cho deploy.yml
+    Value: !Ref Environment
+  BucketName:
+    Value: !Ref AppBucket
+  DbEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+  DbSecretArn:
+    Value: !Ref DbSecret
+  JwtSecretArn:
+    Value: !Ref JwtSecret
+  AlarmTopicArn:
+    Description: Đăng ký email nhận cảnh báo vào topic này
+    Value: !Ref AlarmTopic

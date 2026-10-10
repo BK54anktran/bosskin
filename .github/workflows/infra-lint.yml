@@ -1,0 +1,23 @@
+name: Infra lint
+
+# Bước E: kiểm tra file hạ tầng CloudFormation (infra/aws) mỗi khi đổi.
+on:
+  push:
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-lint.yml'
+  pull_request:
+    paths:
+      - 'infra/**'
+
+jobs:
+  cfn-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install cfn-lint
+      - run: cfn-lint infra/aws/*.yaml

@@ -1068,6 +1068,20 @@ public class ShiftExcelService {
         shiftService.assign(companyId, req, null);
     }
 
+    /**
+     * Bước E: thay phân ca của một dòng import trong CÙNG một transaction mới. Trước đây xoá ở transaction ngoài
+     * (giữ khoá khoảng trên shift_assignments) rồi thêm ở REQUIRES_NEW → chờ khoá đến hết giờ (Lock wait timeout)
+     * khi nhân viên chưa có phân ca ngày đó. Xoá theo ID thì kiểm tra công ty / đã duyệt / đã có công.
+     * {@code req == null} → chỉ xoá (lệnh DELETE).
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void replaceOneInNewTx(Long companyId, Long assignmentId, Long employeeId, java.time.LocalDate date,
+                                  ShiftDTO.AssignRequest req) {
+        if (assignmentId != null) shiftService.deleteAssignmentById(assignmentId, companyId);
+        else shiftService.deleteAssignment(employeeId, date, companyId);
+        if (req != null) shiftService.assign(companyId, req, null);
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteOneInNewTx(Long employeeId, java.time.LocalDate date, Long companyId) {
         shiftService.deleteAssignment(employeeId, date, companyId);

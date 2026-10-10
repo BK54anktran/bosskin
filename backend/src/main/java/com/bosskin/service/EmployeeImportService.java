@@ -374,6 +374,12 @@ public class EmployeeImportService {
                 .ifPresent(d -> row.setDepartmentName(d.getName()));
         }
 
+        // Bước E: dòng sẽ tạo mới — báo trước các lỗi doCreate sẽ gặp (thiếu / trùng email, phòng ban chưa có)
+        if (!exists && (command == com.bosskin.util.ImportCommand.CREATE || command == com.bosskin.util.ImportCommand.MERGE)) {
+            String problem = createProblem(companyId, code, row);
+            if (problem != null) return com.bosskin.util.SheetImportResult.RowResult.error(0, problem);
+        }
+
         return switch (command) {
             case CREATE -> exists
                 ? com.bosskin.util.SheetImportResult.RowResult.warn(0, "warning.employee.already_exists")
@@ -388,6 +394,17 @@ public class EmployeeImportService {
                 ? com.bosskin.util.SheetImportResult.RowResult.error(0, "error.employee.not_found")
                 : com.bosskin.util.SheetImportResult.RowResult.of(0, "OK", "preview.delete:" + emp.getFullName());
         };
+    }
+
+    private String createProblem(Long companyId, String code, EmployeeDTO.ImportRow row) {
+        if (isBlank(row.getEmail())) return "error.import.email_missing|" + row.getFullName();
+        String email = row.getEmail().trim();
+        if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, companyId))
+            return "error.import.email_in_use|" + email;
+        if (!isBlank(row.getDepartmentCode())
+                && deptRepo.findByCodeAndCompanyId(row.getDepartmentCode().trim().toUpperCase(), companyId).isEmpty())
+            return "error.import.department_missing|" + row.getDepartmentCode() + "|" + code;
+        return null;
     }
 
     private String buildCreateSummary(EmployeeDTO.ImportRow row) {
@@ -565,8 +582,9 @@ public class EmployeeImportService {
             emp.setFullName(row.getFullName().trim());
         if (presentColumns.contains("employee.phone"))
             emp.setPhone(isBlank(row.getPhone()) ? null : row.getPhone().trim());
-        if (presentColumns.contains("employee.gender"))
-            emp.setGender(isBlank(row.getGender()) ? null : parseGender(row.getGender()));
+        // Cột gender NOT NULL: ô trống = giữ nguyên (trước đây set null → lỗi SQL khi nhập lại file thiếu giới tính)
+        if (presentColumns.contains("employee.gender") && !isBlank(row.getGender()))
+            emp.setGender(parseGender(row.getGender()));
         if (presentColumns.contains("employee.dateOfBirth"))
             emp.setDateOfBirth(parseDate(row.getDateOfBirth()));
         if (presentColumns.contains("employee.joinDate") && !isBlank(row.getJoinDate()))

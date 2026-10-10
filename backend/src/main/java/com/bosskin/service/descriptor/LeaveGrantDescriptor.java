@@ -16,6 +16,7 @@ import com.bosskin.util.ImportCommand;
 import com.bosskin.util.SheetImportResult;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +25,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Order(90) // bước E: thứ tự nhập theo phụ thuộc (phòng ban → … → nhân viên → số dư phép / phân ca)
 @RequiredArgsConstructor
 public class LeaveGrantDescriptor implements ExcelEntityDescriptor<LeaveGrantDescriptor.Row> {
 
@@ -156,6 +159,30 @@ public class LeaveGrantDescriptor implements ExcelEntityDescriptor<LeaveGrantDes
             .collect(Collectors.toList());
     }
 
+    private static boolean isUsed(LeaveGrant g) {
+        return (g.getUsedDays() != null && g.getUsedDays().signum() > 0)
+            || (g.getUsedHours() != null && g.getUsedHours().signum() > 0);
+    }
+
+    /** Số mới nhỏ hơn số đã dùng (null = không đổi phần đó → coi như 0). */
+    private static boolean below(BigDecimal amount, BigDecimal used) {
+        BigDecimal a = amount != null ? amount : BigDecimal.ZERO;
+        return used != null && a.compareTo(used) < 0;
+    }
+
+    private static String plain(BigDecimal v) {
+        return v == null ? "" : v.stripTrailingZeros().toPlainString();
+    }
+
+    private static String fmtDate(LocalDate d) {
+        return d == null ? "" : d.format(DATE_FMT);
+    }
+
+    private static boolean sameAmount(BigDecimal a, BigDecimal b) {
+        if (a == null || b == null) return a == null && b == null;
+        return a.compareTo(b) == 0;
+    }
+
     @Override
     public String getIdentifier(Row row) {
         return nvl(row.getEmpCode()) + "|" + nvl(row.getLeaveTypeCode()) + "|" + nvl(row.getGrantedAt());
@@ -224,20 +251,84 @@ public class LeaveGrantDescriptor implements ExcelEntityDescriptor<LeaveGrantDes
                 BigDecimal grantDays  = parseBD(data.getGrantDays());
                 BigDecimal grantHours = parseBD(data.getGrantHours());
 
+                // Bước E: một dòng = một quỹ phép, định danh bằng (NV, loại phép, ngày cấp) — giống cột định danh khi xuất.
+                // Trước đây MERGE luôn tạo quỹ mới nên nhập lại cùng file làm số dư phép tăng gấp đôi.
+                List<LeaveGrant> same = grantRepo.findForCompany(companyId, emp.getId(), lt.getId()).stream()
+                    .filter(g -> grantedAt.equals(g.getGrantedAt()))
+                    .toList();
+
                 if (rw.command() == ImportCommand.DELETE) {
-                    // DELETE: tìm grant khớp và soft-delete
-                    if (!dryRun) {
-                        grantRepo.findForCompany(companyId, emp.getId(), lt.getId()).stream()
-                            .filter(g -> grantedAt.equals(g.getGrantedAt()))
-                            .forEach(g -> grantRepo.deleteById(g.getId()));
+                    if (same.isEmpty()) {
+                        results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.not_found|" + data.getEmpCode()));
+                        continue;
+                    }
+                    if (same.stream().anyMatch(LeaveGrantDescriptor::isUsed)) {
+                        results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.in_use|" + data.getEmpCode()));
+                        continue;
+                    }
+                    if (!dryRun) same.forEach(g -> grantRepo.deleteById(g.getId()));
+                    results.add(SheetImportResult.RowResult.ok(rowNum));
+                    continue;
+                }
+
+                if (grantDays == null && grantHours == null) {
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.leave.amount_required"));
+                    continue;
+                }
+                if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.leave.validity_invalid"));
+                    continue;
+                }
+                String note = data.getNote() != null && !data.getNote().isBlank() ? data.getNote().trim() : null;
+
+                boolean update = rw.command() != ImportCommand.CREATE && !same.isEmpty();
+                if (rw.command() == ImportCommand.UPDATE && same.isEmpty()) {
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.not_found|" + data.getEmpCode()));
+                    continue;
+                }
+                if (update && same.size() > 1) {
+                    results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.ambiguous|" + data.getEmpCode()));
+                    continue;
+                }
+
+                if (update) {
+                    LeaveGrant g = same.get(0);
+                    if (below(grantDays, g.getUsedDays()) || below(grantHours, g.getUsedHours())) {
+                        results.add(SheetImportResult.RowResult.error(rowNum, "error.leaveGrant.below_used|" + data.getEmpCode()));
+                        continue;
+                    }
+                    // Tóm tắt dạng "khoá cột:cũ→mới,…" như các sheet khác (màn xem trước dịch khoá cột)
+                    List<String> diff = new ArrayList<>();
+                    if (!sameAmount(g.getGrantDays(), grantDays))
+                        diff.add("excel.col.leaveGrant.grantDays:" + plain(g.getGrantDays()) + "→" + plain(grantDays));
+                    if (!sameAmount(g.getGrantHours(), grantHours))
+                        diff.add("excel.col.leaveGrant.grantHours:" + plain(g.getGrantHours()) + "→" + plain(grantHours));
+                    if (!Objects.equals(g.getValidFrom(), validFrom))
+                        diff.add("excel.col.leaveGrant.validFrom:" + fmtDate(g.getValidFrom()) + "→" + fmtDate(validFrom));
+                    if (!Objects.equals(g.getValidTo(), validTo))
+                        diff.add("excel.col.leaveGrant.validTo:" + fmtDate(g.getValidTo()) + "→" + fmtDate(validTo));
+                    if (!Objects.equals(g.getNote(), note))
+                        diff.add("excel.col.leaveGrant.note:" + (g.getNote() == null ? "" : g.getNote()) + "→" + (note == null ? "" : note));
+                    boolean changed = !diff.isEmpty();
+                    if (dryRun) {
+                        results.add(SheetImportResult.RowResult.of(rowNum, "OK", changed ? String.join(",", diff) : null));
+                        continue;
+                    }
+                    if (changed) {
+                        g.setGrantDays(grantDays);
+                        g.setGrantHours(grantHours);
+                        g.setValidFrom(validFrom);
+                        g.setValidTo(validTo);
+                        g.setNote(note);
+                        grantRepo.save(g);
                     }
                     results.add(SheetImportResult.RowResult.ok(rowNum));
                     continue;
                 }
 
                 if (dryRun) {
-                    String summary = "CREATE: " + data.getEmpCode() + " | " + data.getLeaveTypeCode()
-                        + " | days=" + grantDays + " hours=" + grantHours;
+                    String summary = "preview.create:" + data.getEmpCode() + "|" + lt.getName()
+                        + "|" + (grantDays != null ? plain(grantDays) : plain(grantHours) + "h");
                     results.add(SheetImportResult.RowResult.of(rowNum, "OK", summary));
                     continue;
                 }
@@ -255,7 +346,7 @@ public class LeaveGrantDescriptor implements ExcelEntityDescriptor<LeaveGrantDes
                     .grantedAt(grantedAt)
                     .validFrom(validFrom)
                     .validTo(validTo)
-                    .note(data.getNote() != null && !data.getNote().isBlank() ? data.getNote().trim() : null)
+                    .note(note)
                     .build();
                 grantRepo.save(grant);
                 results.add(SheetImportResult.RowResult.ok(rowNum));

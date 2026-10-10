@@ -1829,4 +1829,6 @@
   ,"appearanceSystem": "System"
   ,"appearanceLight": "Light"
   ,"appearanceDark": "Dark"
+  ,"excelColLeaveGrantDays": "Grant days"
+  ,"excelColLeaveGrantHours": "Grant hours"
 }
