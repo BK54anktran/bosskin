@@ -98,7 +98,7 @@ def page(title, body, pages, current, desc, aside=''):
   <div class="actions"><a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
 </div></header>
 <div class="wrap">
-<nav class="side">{'' if current == 'index' else SEARCH_BOX}{nav(pages, current)}</nav>
+<nav class="side"><div class="side-site"><a href="../">Trang chủ</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a></div>{'' if current == 'index' else SEARCH_BOX}{nav(pages, current)}</nav>
 <main class="content">{body}</main>
 {aside}
 </div>

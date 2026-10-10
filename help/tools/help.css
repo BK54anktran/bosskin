@@ -74,5 +74,8 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;paddi
 @media print{.top,.side,.pager{display:none}.content{padding:0;max-width:none}figure{break-inside:avoid}}
 
 /* Trang chủ trợ giúp: không có menu trái, khối tìm kiếm ở giữa trang */
-.home .side,.home .menu-btn{display:none}.home .content{max-width:1180px;margin:0 auto}
+.side-site{display:none}
+@media (min-width:901px){.home .side{display:none}}
+.home .menu-btn{display:none}
+@media (max-width:900px){.home .menu-btn{display:block}.side-site{display:block;margin:0 0 6px;padding:0 0 10px;border-bottom:1px solid var(--line)}.side-site a{font-weight:600}}.home .content{max-width:1180px;margin:0 auto}
 .side .search #results{width:100%}

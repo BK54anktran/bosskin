@@ -70,7 +70,16 @@
   nav.links { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
   nav.links a { text-decoration: none; opacity: .82; } nav.links a:hover { opacity: 1; }
   header.top .btn { padding: 10px 18px; font-size: 15px; }
-  @media (max-width: 820px) { nav.links { display: none; } header.top .actions { margin-left: auto; } }
+  .nav-toggle { display: none; margin-left: 4px; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font-size: 20px; cursor: pointer; }
+  @media (max-width: 820px) {
+    header.top .wrap { position: relative; }
+    nav.links { display: none; } header.top .actions { margin-left: auto; }
+    .nav-toggle { display: inline-grid; place-items: center; }
+    header.top.open nav.links { display: flex; flex-direction: column; gap: 0; position: absolute; top: 68px; left: 0; right: 0; margin: 0;
+      padding: 6px 20px 14px; background: #0b1630; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); border-bottom: 1px solid rgba(255,255,255,.12); }
+    header.top.open nav.links a { padding: 13px 0; font-size: 17px; opacity: .92; border-bottom: 1px solid rgba(255,255,255,.08); }
+    header.top.open nav.links a:last-child { border-bottom: 0; }
+  }
 
   /* ── hero ── */
   .hero { background: radial-gradient(1000px 520px at 85% -10%, rgba(64,120,220,.55), transparent 60%),
@@ -183,6 +192,7 @@ footer a { color: inherit; text-decoration: underline; text-underline-offset: 3p
       <a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
     </nav>
     <div class="actions"><a class="btn btn-ghost js-app" href="/login">Đăng nhập</a></div>
+    <button class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
   </div>
 </header>
 
@@ -427,6 +437,10 @@ footer a { color: inherit; text-decoration: underline; text-underline-offset: 3p
   (function () {
     var cfg = window.BOSSKIN || {};
     document.getElementById('yr').textContent = new Date().getFullYear();
+    // Menu trên điện thoại: bấm ☰ mở / đóng, bấm một mục thì đóng lại
+    var top = document.querySelector('header.top'), tg = document.querySelector('.nav-toggle');
+    tg.addEventListener('click', function () { var o = top.classList.toggle('open'); tg.setAttribute('aria-expanded', o); tg.textContent = o ? '✕' : '☰'; });
+    document.querySelectorAll('nav.links a').forEach(function (a) { a.addEventListener('click', function () { top.classList.remove('open'); tg.setAttribute('aria-expanded', 'false'); tg.textContent = '☰'; }); });
     document.querySelectorAll('.js-app').forEach(function (a) { if (cfg.appUrl) a.href = cfg.appUrl; else a.hidden = true; });
     var direct = document.getElementById('direct');
     var lines = [];

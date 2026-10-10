@@ -84,7 +84,10 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;paddi
 @media print{.top,.side,.pager{display:none}.content{padding:0;max-width:none}figure{break-inside:avoid}}
 
 /* Trang chủ trợ giúp: không có menu trái, khối tìm kiếm ở giữa trang */
-.home .side,.home .menu-btn{display:none}.home .content{max-width:1180px;margin:0 auto}
+.side-site{display:none}
+@media (min-width:901px){.home .side{display:none}}
+.home .menu-btn{display:none}
+@media (max-width:900px){.home .menu-btn{display:block}.side-site{display:block;margin:0 0 6px;padding:0 0 10px;border-bottom:1px solid var(--line)}.side-site a{font-weight:600}}.home .content{max-width:1180px;margin:0 auto}
 .side .search #results{width:100%}
 </style>
 </head>
@@ -96,7 +99,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;paddi
   <div class="actions"><a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
 </div></header>
 <div class="wrap">
-<nav class="side"><div class="nav-group"><div class="nav-h">Bắt đầu</div>
+<nav class="side"><div class="side-site"><a href="../">Trang chủ</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a></div><div class="nav-group"><div class="nav-h">Bắt đầu</div>
 <a href="bat-dau.html">Bắt đầu sử dụng</a>
 </div>
 <div class="nav-group"><div class="nav-h">Nhân viên</div>
