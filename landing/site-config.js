@@ -12,7 +12,7 @@ window.BOSSKIN = {
   contactEmail: '',          // email liên hệ (mục dùng thử + chân trang), vd 'lienhe@ten-mien.vn'
   contactPhone: '0865 854 002',   // số điện thoại / Zalo (mục dùng thử + chân trang)
   // Mạng xã hội ở chân trang — để '' thì ẩn biểu tượng đó
-  facebookUrl: '',           // vd 'https://www.facebook.com/bosskin.vn'
-  tiktokUrl: '',             // vd 'https://www.tiktok.com/@bosskin.vn'
-  youtubeUrl: '',            // vd 'https://www.youtube.com/@bosskin'
+  facebookUrl: 'https://www.facebook.com/1353132977886335',   // trang Facebook BossKin (id trang)
+  tiktokUrl: 'https://www.tiktok.com/@bosskin_hrm',
+  youtubeUrl: 'https://www.youtube.com/channel/UClzGlcmyIlkL85HvTe-bQVg',
 };
