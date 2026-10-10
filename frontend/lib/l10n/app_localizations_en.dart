@@ -5360,4 +5360,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permDescReportView =>
       'View and export HR reports (each report also needs view access to its module)';
+
+  @override
+  String get navGroupSelf => 'My space';
+
+  @override
+  String get navGroupRequests => 'Requests & approvals';
+
+  @override
+  String get navGroupHr => 'People';
+
+  @override
+  String get navGroupTime => 'Shifts & attendance';
+
+  @override
+  String get navGroupPayReports => 'Payroll & reports';
+
+  @override
+  String get navGroupSystem => 'Settings & system';
+
+  @override
+  String get navImportExport => 'Import / Export';
 }

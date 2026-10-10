@@ -9946,6 +9946,48 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xem và xuất báo cáo nhân sự (mỗi báo cáo còn cần quyền xem module tương ứng)'**
   String get permDescReportView;
+
+  /// No description provided for @navGroupSelf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Của tôi'**
+  String get navGroupSelf;
+
+  /// No description provided for @navGroupRequests.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn từ & phê duyệt'**
+  String get navGroupRequests;
+
+  /// No description provided for @navGroupHr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân sự'**
+  String get navGroupHr;
+
+  /// No description provided for @navGroupTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca & chấm công'**
+  String get navGroupTime;
+
+  /// No description provided for @navGroupPayReports.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương & báo cáo'**
+  String get navGroupPayReports;
+
+  /// No description provided for @navGroupSystem.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt & hệ thống'**
+  String get navGroupSystem;
+
+  /// No description provided for @navImportExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Import / Export'**
+  String get navImportExport;
 }
 
 class _AppLocalizationsDelegate

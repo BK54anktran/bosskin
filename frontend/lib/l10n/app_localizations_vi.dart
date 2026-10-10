@@ -5350,4 +5350,25 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get permDescReportView =>
       'Xem và xuất báo cáo nhân sự (mỗi báo cáo còn cần quyền xem module tương ứng)';
+
+  @override
+  String get navGroupSelf => 'Của tôi';
+
+  @override
+  String get navGroupRequests => 'Đơn từ & phê duyệt';
+
+  @override
+  String get navGroupHr => 'Nhân sự';
+
+  @override
+  String get navGroupTime => 'Ca & chấm công';
+
+  @override
+  String get navGroupPayReports => 'Lương & báo cáo';
+
+  @override
+  String get navGroupSystem => 'Cài đặt & hệ thống';
+
+  @override
+  String get navImportExport => 'Import / Export';
 }

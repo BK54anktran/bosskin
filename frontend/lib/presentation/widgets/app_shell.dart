@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/navigation/nav_access.dart';
+import '../../core/navigation/nav_menu.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -104,7 +105,6 @@ class _AppShellState extends State<AppShell>
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final navItems = _navItems(s);
     final isWide = MediaQuery.of(context).size.width >= 900;
 
     final bottomItems = _bottomNavItems(s);
@@ -188,7 +188,7 @@ class _AppShellState extends State<AppShell>
                   axisAlignment: -1,
                   child: SizedBox(
                     width: 220,
-                    child: _SideNav(items: navItems, location: widget.location),
+                    child: _SideNav(location: widget.location),
                   ),
                 ),
                 SizeTransition(
@@ -202,49 +202,6 @@ class _AppShellState extends State<AppShell>
           : widget.child,
     );
   }
-
-  static List<_NavItem> _navItems(AppLocalizations s) => [
-        _NavItem(s.dashboard, Icons.dashboard_outlined, AppRoutes.dashboard,
-            requiredPermission: 'DASHBOARD_VIEW'),
-        _NavItem(s.employees, Icons.people_outline, AppRoutes.employees,
-            requiredPermission: 'EMPLOYEE_VIEW'),
-        _NavItem(s.orgChartTitle, Icons.lan_outlined, AppRoutes.orgChart,
-            requiredPermission: 'EMPLOYEE_VIEW'),
-        _NavItem(s.contractsTitle, Icons.description_outlined, AppRoutes.contracts,
-            requiredPermission: 'CONTRACT_VIEW'),
-        _NavItem(s.docScreenTitle, Icons.folder_shared_outlined, AppRoutes.documents,
-            requiredPermission: 'EMPLOYEE_DOCUMENT_VIEW'),
-        _NavItem(
-            s.departments, Icons.account_tree_outlined, AppRoutes.departments,
-            requiredPermission: 'DEPARTMENT_VIEW'),
-        _NavItem(s.shifts, Icons.calendar_month_outlined, AppRoutes.shifts,
-            requiredPermission: 'SHIFT_VIEW'),
-        _NavItem(s.roles, Icons.admin_panel_settings_outlined, AppRoutes.roles,
-            requiredPermission: 'ROLE_VIEW'),
-        _NavItem(s.attendance, Icons.access_time_outlined, AppRoutes.attendance,
-            requiredPermission: 'ATTENDANCE_VIEW'),
-        _NavItem(s.checkInOut, Icons.login_outlined, AppRoutes.checkInOut,
-            requiredPermission: 'ATTENDANCE_SELF'),
-        _NavItem(s.attendanceRequests, Icons.note_add_outlined,
-            AppRoutes.attendanceRequests,
-            requiredPermission: 'ATTENDANCE_SELF'),
-        _NavItem(s.swapMenu, Icons.swap_horiz, AppRoutes.shiftSwaps,
-            requiredPermission: 'ATTENDANCE_SELF'),
-        _NavItem(s.teamApprovalsTitle, Icons.how_to_reg_outlined, AppRoutes.teamApprovals),
-        _NavItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
-            requiredPermission: 'LEAVE_VIEW'),
-        _NavItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,
-            requiredPermission: 'PAYROLL_VIEW'),
-        _NavItem(s.selfPayroll, Icons.receipt_long_outlined, AppRoutes.selfPayroll,
-            requiredPermission: 'ATTENDANCE_SELF'),
-        const _NavItem('Import / Export', Icons.import_export_outlined,
-            AppRoutes.excelImportExport,
-            requiredPermission: 'EMPLOYEE_VIEW'),
-        _NavItem(s.reportScreenTitle, Icons.analytics_outlined, AppRoutes.reports,
-            requiredPermission: 'REPORT_VIEW'),
-        _NavItem(s.auditLogTitle, Icons.history_outlined, AppRoutes.auditLogs,
-            requiredPermission: 'AUDIT_VIEW'),
-      ];
 
   static List<_NavItem> _bottomNavItems(AppLocalizations s) => [
         _NavItem(s.dashboard, Icons.dashboard_outlined, AppRoutes.dashboard,
@@ -278,7 +235,7 @@ class _AppShellState extends State<AppShell>
       AppRoutes.payroll => s.payroll,
       AppRoutes.selfPayroll => s.selfPayroll,
       AppRoutes.profile => s.profile,
-      AppRoutes.excelImportExport => 'Import / Export',
+      AppRoutes.excelImportExport => s.navImportExport,
       AppRoutes.reports => s.reportScreenTitle,
       AppRoutes.auditLogs => s.auditLogTitle,
       AppRoutes.orgChart => s.orgChartTitle,
@@ -292,130 +249,26 @@ class _AppShellState extends State<AppShell>
 
 
 class _SideNav extends StatelessWidget {
-  final List<_NavItem> items;
   final String location;
 
-  const _SideNav({required this.items, required this.location});
+  const _SideNav({required this.location});
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService.instance.currentUser;
-    final isAdmin = user?.isAdmin ?? false;
-    final isImpersonating = AuthService.instance.isImpersonating;
-
-    final s = AppLocalizations.of(context);
-    final canSeeCompanySettings = user != null &&
-        (user.isSystemAdmin || user.can('COMPANY_SETTING_VIEW'));
-
     return Container(
       width: 220,
       color: AppTheme.background,
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 8),
-              children: [
-                ...items.where((item) => showInMenu(user, item.route)).map((item) {
-                  final allItems = items;
-                  bool isActive;
-                  if (location == item.route) {
-                    isActive = true;
-                  } else if (item.route == AppRoutes.dashboard) {
-                    isActive = false;
-                  } else {
-                    final exactMatch = allItems.any((other) =>
-                        other.route != item.route && location == other.route);
-                    isActive = !exactMatch && location.startsWith('${item.route}/');
-                  }
-                  return _sideNavTile(
-                    context,
-                    item.label,
-                    item.icon,
-                    item.route,
-                    isActive,
-                  );
-                }),
-                const Divider(height: 16, indent: 8, endIndent: 8),
-                if (!isImpersonating)
-                  _sideNavTile(
-                    context,
-                    s.profile,
-                    Icons.person_outline,
-                    AppRoutes.profile,
-                    location.startsWith(AppRoutes.profile) &&
-                        !location.startsWith(AppRoutes.editRequests),
-                  ),
-                if (isAdmin)
-                  _sideNavTile(
-                    context,
-                    s.editRequests,
-                    Icons.assignment_outlined,
-                    AppRoutes.editRequests,
-                    location.startsWith(AppRoutes.editRequests),
-                    activeColor: AppTheme.warning,
-                  ),
-              ],
-            ),
-          ),
-          if (canSeeCompanySettings) ...[
-            const Divider(height: 1, thickness: 1),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: _sideNavTile(
-                context,
-                s.companySettings,
-                Icons.tune_outlined,
-                AppRoutes.companySettings,
-                location.startsWith(AppRoutes.companySettings),
-              ),
-            ),
-          ],
-        ],
+      child: GroupedNavList(
+        location: location,
+        go: (route) {
+          while (shellNavigatorKey.currentState?.canPop() == true) {
+            shellNavigatorKey.currentState!.pop();
+          }
+          context.go(route);
+        },
       ),
     );
   }
-}
-
-Widget _sideNavTile(
-  BuildContext context,
-  String label,
-  IconData icon,
-  String route,
-  bool isActive, {
-  Color? activeColor,
-}) {
-  final color = activeColor ?? AppTheme.primary;
-  return Material(
-    color: isActive ? color.withValues(alpha: 0.1) : Colors.transparent,
-    borderRadius: BorderRadius.circular(8),
-    child: ListTile(
-      dense: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-      leading: Icon(
-        icon,
-        color: isActive ? color : AppTheme.textSecondary,
-        size: 20,
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-          color: isActive ? color : AppTheme.textPrimary,
-        ),
-      ),
-      onTap: () {
-        while (shellNavigatorKey.currentState?.canPop() == true) {
-          shellNavigatorKey.currentState!.pop();
-        }
-        context.go(route);
-      },
-    ),
-  );
 }
 
 class _NavItem {

@@ -1833,4 +1833,11 @@
   ,"excelColLeaveGrantHours": "Grant hours"
   ,"permUiReportView": "Show the Reports menu item"
   ,"permDescReportView": "View and export HR reports (each report also needs view access to its module)"
+  ,"navGroupSelf": "My space"
+  ,"navGroupRequests": "Requests & approvals"
+  ,"navGroupHr": "People"
+  ,"navGroupTime": "Shifts & attendance"
+  ,"navGroupPayReports": "Payroll & reports"
+  ,"navGroupSystem": "Settings & system"
+  ,"navImportExport": "Import / Export"
 }
