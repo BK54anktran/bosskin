@@ -16,11 +16,15 @@ String permissionModuleLabel(AppLocalizations s, String module) => switch (modul
       'EXCEL' => s.permModuleExcel,
       'CALENDAR' => s.permModuleCalendar,
       'CONTRACT' => s.permModuleContract,
+      'DASHBOARD' => s.dashboard,
+      'COMPANY_SETTING' => s.companySettings,
+      'REPORT' => s.reportScreenTitle,
       _ => module,
     };
 
 String? permissionUiHint(AppLocalizations s, String code) => switch (code) {
       'DASHBOARD_VIEW' => s.permUiDashboardView,
+      'REPORT_VIEW' => s.permUiReportView,
       'EMPLOYEE_VIEW' => s.permUiEmployeeView,
       'EMPLOYEE_CREATE' => s.permUiEmployeeCreate,
       'EMPLOYEE_UPDATE' => s.permUiEmployeeUpdate,
@@ -72,6 +76,7 @@ String? permissionUiHint(AppLocalizations s, String code) => switch (code) {
 
 String permissionDescription(AppLocalizations s, String code, String fallback) =>
   switch (code) {
+      'REPORT_VIEW' => s.permDescReportView,
       'EMPLOYEE_VIEW' => s.permDescEmployeeView,
       'EMPLOYEE_CREATE' => s.permDescEmployeeCreate,
       'EMPLOYEE_UPDATE' => s.permDescEmployeeUpdate,

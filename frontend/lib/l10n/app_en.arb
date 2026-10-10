@@ -1831,4 +1831,6 @@
   ,"appearanceDark": "Dark"
   ,"excelColLeaveGrantDays": "Grant days"
   ,"excelColLeaveGrantHours": "Grant hours"
+  ,"permUiReportView": "Show the Reports menu item"
+  ,"permDescReportView": "View and export HR reports (each report also needs view access to its module)"
 }

@@ -87,6 +87,44 @@ erDiagram
         date deduction_to
         enum registration_status
     }
+    LABOR_CONTRACTS {
+        bigint id PK
+        bigint employee_id FK
+        varchar contract_no
+        enum contract_type
+        enum status
+        date start_date
+        date end_date
+        decimal base_salary
+        decimal insurance_salary
+    }
+    CONTRACT_APPENDICES {
+        bigint id PK
+        bigint contract_id FK
+        date effective_from
+    }
+    CONTRACT_ALLOWANCES {
+        bigint id PK
+        bigint contract_id FK
+        bigint appendix_id FK
+        varchar code
+    }
+    DOCUMENT_TYPES {
+        bigint id PK
+        bigint company_id FK
+        varchar code
+        boolean required
+        boolean has_expiry
+    }
+    EMPLOYEE_DOCUMENTS {
+        bigint id PK
+        bigint employee_id FK
+        bigint document_type_id FK
+        bigint contract_id FK
+        varchar file_key
+        date expires_on
+        enum status
+    }
     USERS {
         bigint id PK
         bigint company_id FK
@@ -356,6 +394,14 @@ erDiagram
     EMPLOYEES ||--o{ EMPLOYEE_LOCATIONS : checkin_at
     EMPLOYEES ||--o{ SALARY_HISTORIES : salary
     EMPLOYEES ||--o{ EMPLOYEE_DEPENDENTS : dependents
+    EMPLOYEES ||--o{ LABOR_CONTRACTS : contracts
+    LABOR_CONTRACTS ||--o{ CONTRACT_APPENDICES : appendices
+    LABOR_CONTRACTS ||--o{ CONTRACT_ALLOWANCES : allowances
+    CONTRACT_APPENDICES |o--o{ CONTRACT_ALLOWANCES : changes
+    COMPANIES ||--o{ DOCUMENT_TYPES : defines
+    EMPLOYEES ||--o{ EMPLOYEE_DOCUMENTS : documents
+    DOCUMENT_TYPES ||--o{ EMPLOYEE_DOCUMENTS : typed
+    LABOR_CONTRACTS |o--o{ EMPLOYEE_DOCUMENTS : signed_copy
     WORK_SHIFTS ||--o{ DEPARTMENT_SHIFTS : available
     DEPARTMENTS ||--o{ DEPARTMENT_SHIFTS : available
     WORK_SHIFTS |o--o{ SHIFT_ASSIGNMENTS : template

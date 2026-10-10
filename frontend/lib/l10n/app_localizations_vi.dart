@@ -5343,4 +5343,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get excelColLeaveGrantHours => 'Số giờ phép';
+
+  @override
+  String get permUiReportView => 'Hiển thị mục Báo cáo trên menu';
+
+  @override
+  String get permDescReportView =>
+      'Xem và xuất báo cáo nhân sự (mỗi báo cáo còn cần quyền xem module tương ứng)';
 }

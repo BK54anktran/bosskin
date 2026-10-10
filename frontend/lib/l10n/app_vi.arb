@@ -1834,4 +1834,6 @@
   ,"appearanceDark": "Tối"
   ,"excelColLeaveGrantDays": "Số ngày phép"
   ,"excelColLeaveGrantHours": "Số giờ phép"
+  ,"permUiReportView": "Hiển thị mục Báo cáo trên menu"
+  ,"permDescReportView": "Xem và xuất báo cáo nhân sự (mỗi báo cáo còn cần quyền xem module tương ứng)"
 }

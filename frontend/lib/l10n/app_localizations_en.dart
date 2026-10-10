@@ -5353,4 +5353,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get excelColLeaveGrantHours => 'Grant hours';
+
+  @override
+  String get permUiReportView => 'Show the Reports menu item';
+
+  @override
+  String get permDescReportView =>
+      'View and export HR reports (each report also needs view access to its module)';
 }

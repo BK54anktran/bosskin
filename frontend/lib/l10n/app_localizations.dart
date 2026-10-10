@@ -9934,6 +9934,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Số giờ phép'**
   String get excelColLeaveGrantHours;
+
+  /// No description provided for @permUiReportView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiển thị mục Báo cáo trên menu'**
+  String get permUiReportView;
+
+  /// No description provided for @permDescReportView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem và xuất báo cáo nhân sự (mỗi báo cáo còn cần quyền xem module tương ứng)'**
+  String get permDescReportView;
 }
 
 class _AppLocalizationsDelegate
