@@ -80,6 +80,11 @@ class Payroll {
   final double? familyDeduction;
   /// Lương đóng BHXH/BHYT sau trần; null với phiếu tạo trước V13.
   final double? insuranceBase;
+  /// Bước M (V17): số người phụ thuộc được giảm trừ, phần BH công ty đóng; null với phiếu cũ.
+  final int? dependents;
+  final double? employerSocialIns;
+  final double? employerHealthIns;
+  final double? employerUnemploymentIns;
   final double otherDeductions;
   final Map<String, PayrollDeductionEntry> customDeductions;
   final Map<String, PayrollDeductionEntry> incomeEntries;
@@ -133,6 +138,10 @@ class Payroll {
     required this.personalIncomeTax,
     this.familyDeduction,
     this.insuranceBase,
+    this.dependents,
+    this.employerSocialIns,
+    this.employerHealthIns,
+    this.employerUnemploymentIns,
     required this.otherDeductions,
     this.customDeductions = const {},
     this.incomeEntries = const {},
@@ -177,6 +186,10 @@ class Payroll {
         personalIncomeTax: (j['personalIncomeTax'] as num?)?.toDouble() ?? 0,
         familyDeduction: (j['familyDeduction'] as num?)?.toDouble(),
         insuranceBase: (j['insuranceBase'] as num?)?.toDouble(),
+        dependents: (j['dependents'] as num?)?.toInt(),
+        employerSocialIns: (j['employerSocialIns'] as num?)?.toDouble(),
+        employerHealthIns: (j['employerHealthIns'] as num?)?.toDouble(),
+        employerUnemploymentIns: (j['employerUnemploymentIns'] as num?)?.toDouble(),
         otherDeductions: (j['otherDeductions'] as num?)?.toDouble() ?? 0,
         customDeductions: (j['customDeductions'] as Map<String, dynamic>? ?? {})
             .map((k, v) => MapEntry(k, PayrollDeductionEntry.fromJson(v as Map<String, dynamic>))),

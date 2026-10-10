@@ -1627,7 +1627,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
                   bold: true,
                   large: true,
                   color: p.netSalary < 0 ? AppTheme.error : AppTheme.secondary),
-              PayslipTaxInfo(payroll: p),
+              PayslipTaxInfo(payroll: p, showEmployerCost: true),
               const SizedBox(height: 8),
               if (p.note != null && p.note!.isNotEmpty)
                 Text('${s.note}: ${p.note}',

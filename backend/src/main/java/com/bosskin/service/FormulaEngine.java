@@ -37,7 +37,7 @@ public class FormulaEngine {
             "ALLOWANCE_MANUAL", "BONUS", "OTHER_DEDUCTIONS",
             // Thuế & bảo hiểm theo chính sách kỳ (bước I)
             "PERSONAL_DEDUCTION", "DEPENDENT_DEDUCTION", "DEPENDENTS", "FAMILY_DEDUCTION",
-            "INSURANCE_BASE", "INSURANCE_CAP", "UNEMPLOYMENT_BASE", "UNEMPLOYMENT_CAP",
+            "INSURANCE_BASE", "INSURANCE_CAP", "INSURANCE_FLOOR", "UNEMPLOYMENT_BASE", "UNEMPLOYMENT_CAP",
             // Hợp đồng & thâm niên (bước L: lương đóng BH, phụ cấp theo hợp đồng; ALLOWANCE_<mã> nhận động)
             "CONTRACT_SALARY", "INSURANCE_SALARY", "CONTRACT_ALLOWANCE", "TAXABLE_ALLOWANCE", "NON_TAXABLE_ALLOWANCE",
             "TENURE_YEARS", "TENURE_MONTHS", "TENURE_DAYS",
@@ -137,9 +137,10 @@ public class FormulaEngine {
         put("DEPENDENT_DEDUCTION", new SystemVar("Giảm trừ mỗi người phụ thuộc / tháng",  "Thuế & bảo hiểm"));
         put("DEPENDENTS",          new SystemVar("Số người phụ thuộc",                      "Thuế & bảo hiểm"));
         put("FAMILY_DEDUCTION",    new SystemVar("Tổng giảm trừ gia cảnh",                  "Thuế & bảo hiểm"));
-        put("INSURANCE_BASE",      new SystemVar("Lương đóng BHXH/BHYT (đã áp trần)",       "Thuế & bảo hiểm"));
+        put("INSURANCE_BASE",      new SystemVar("Lương đóng BHXH/BHYT (đã áp sàn, trần)",  "Thuế & bảo hiểm"));
         put("INSURANCE_CAP",       new SystemVar("Trần lương đóng BHXH/BHYT",               "Thuế & bảo hiểm"));
-        put("UNEMPLOYMENT_BASE",   new SystemVar("Lương đóng BHTN (đã áp trần)",            "Thuế & bảo hiểm"));
+        put("INSURANCE_FLOOR",     new SystemVar("Sàn lương đóng BH (lương tối thiểu vùng)", "Thuế & bảo hiểm"));
+        put("UNEMPLOYMENT_BASE",   new SystemVar("Lương đóng BHTN (đã áp sàn, trần)",       "Thuế & bảo hiểm"));
         put("UNEMPLOYMENT_CAP",    new SystemVar("Trần lương đóng BHTN theo vùng",          "Thuế & bảo hiểm"));
         // Thâm niên
         put("TENURE_YEARS",  new SystemVar("Số năm đã làm việc tại công ty",    "Thâm niên"));

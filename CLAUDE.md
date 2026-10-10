@@ -30,6 +30,7 @@
   ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân (bỏ qua ngày lễ), lịch "Xưởng: T7 làm sáng" (`FFFFFHO`)
   cho Xưởng sản xuất, quản lý trực tiếp (GĐ → NS/KTT/QĐ, KTT → KTV, QĐ → 3 công nhân) + mốc tương lai 01/12/2026
   (Nam lên quản đốc), 8 hợp đồng (Mai hết hạn 31/10 → cần gia hạn, HĐ mới nháp; phụ lục tăng lương Tài 16/09, Nam 01/12),
+  MST + sổ BHXH cho 8 NV, 4 người phụ thuộc (2 con GĐ, mẹ QĐ hết giảm trừ từ 09/2026, con Tài chờ MST), vai trò Nhân sự xem đủ dữ liệu nhạy cảm,
   4 loại phép, công đã duyệt
   01/09–07/10, đơn chờ duyệt (sửa giờ, nghỉ phép, đổi ca), bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
@@ -349,12 +350,14 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `LeaveRequest` | `leave_requests` | nghỉ phép |
 | `WorkShift` | `work_shifts` | ca làm việc |
 | `LaborContract` | `labor_contracts` | hợp đồng; phụ lục `contract_appendices`, phụ cấp `contract_allowances` (V16) |
+| `EmployeeDependent` | `employee_dependents` | người phụ thuộc, giảm trừ theo tháng (V17) |
 
 ## Migration version hiện tại
-Cao nhất: **V16** (`V16__labor_contracts.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V17** (`V17__employee_tax_insurance.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
-V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp
-→ Migration tiếp theo phải là **V17**
+V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
+V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm
+→ Migration tiếp theo phải là **V18**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -463,6 +466,26 @@ V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16
 - FE: màn `/contracts` (`screens/contracts/`), `DateField` (widgets), `ManagerDropdown(allowNone: false)` để chọn NV, `formatMoney`
   (text_utils), ô báo trước ở Cài đặt công ty. Mã lỗi lồng (`error.contract.import_row|HD|error.contract.overlap|HD0`) được
   `error_utils` dịch đệ quy. Test: `ContractTest`.
+- Chủ dự án chọn **giữ** `employees.contract_salary` và `salary_histories` (10/10) — không xoá.
+
+## Thuế & bảo hiểm của nhân viên (Bước M)
+- V17: `employees.tax_code`, `social_insurance_no`, `health_insurance_place`, `insurance_join_date`; `employee_dependents` (quan hệ
+  CHILD/SPOUSE/PARENT/OTHER, `deduction_from` / `deduction_to` lưu ngày 01, NULL = chưa kết thúc; `registration_status`
+  NOT_REGISTERED không tính, PENDING / REGISTERED được tính; xoá mềm); `companies.employer_*_rate` (0.175 / 0.03 / 0.01);
+  `payrolls.dependents`, `employer_social_ins`, `employer_health_ins`, `employer_unemployment_ins`.
+- Che dữ liệu (đóng một phần D5): `core/SensitiveData` — thiếu `EMPLOYEE_SENSITIVE_VIEW` (chỉ cấp sẵn cho Admin) thì CCCD, số tài khoản,
+  MST, sổ BHXH (cả MST / CCCD người phụ thuộc) trả `****1234` ở `EmployeeService.toResponse`, Excel NV (2 đường), báo cáo.
+  Gửi lại đúng bản che khi PUT / import → giữ giá trị cũ (`SensitiveData.incoming`). Job nền (không có người dùng) xem đủ.
+- API `/api/v1/dependents?employeeId=` (EMPLOYEE_VIEW + phạm vi), POST / PUT / DELETE (EMPLOYEE_UPDATE, nhật ký `DEPENDENT_*`),
+  `/self` (NV xem ở Hồ sơ, không che). Lỗi `error.dependent.invalid_period|not_found|employee_change`.
+- Lương: `DEPENDENTS` = `DependentService.countDeductible(employeeId, YearMonth(năm, tháng phiếu))`; lương đóng BH có sàn
+  `INSURANCE_FLOOR` = lương tối thiểu vùng khi `INSURANCE_SALARY` > 0; BH công ty đóng = `INSURANCE_BASE` × tỷ lệ (BHTN dùng
+  `UNEMPLOYMENT_BASE`), không vào NET. Cài đặt công ty `payroll.employer{Social,Health,Unemployment}Percent` (%, 0–50,
+  `error.company.employer_rate_invalid`).
+- Báo cáo: lương thêm cột "BH công ty đóng" + "Tổng chi phí"; `/reports/insured-employees` (NV đang làm có ngày tham gia BH hoặc số sổ),
+  `/reports/dependents` (EMPLOYEE_VIEW + phạm vi phòng ban).
+- FE: mục "Thuế & bảo hiểm" ở form NV, hộp `employee/dependents_dialog.dart` (nút ở danh sách NV), `profile/my_dependents_card.dart`,
+  `PayslipTaxInfo(showEmployerCost:)`, 3 ô tỷ lệ ở Cài đặt công ty, 2 báo cáo mới. Test: `DependentTest`.
 
 ## Màn hình Flutter
 | Screen | Path |

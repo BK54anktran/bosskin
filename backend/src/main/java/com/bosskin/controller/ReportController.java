@@ -112,6 +112,26 @@ public class ReportController {
                 year, month, deptId, locale);
     }
 
+    /** Bước M: nhân viên tham gia bảo hiểm (MST / CCCD / sổ BHXH che nếu thiếu EMPLOYEE_SENSITIVE_VIEW) */
+    @GetMapping("/insured-employees")
+    public ResponseEntity<byte[]> insuredEmployees(
+            @RequestParam(required = false) Long deptId,
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "EMPLOYEE_VIEW", deptId);
+        return reportService.reportInsuredEmployees(user.getCompanyId(), user.getId(), deptId, locale);
+    }
+
+    /** Bước M: người phụ thuộc giảm trừ gia cảnh */
+    @GetMapping("/dependents")
+    public ResponseEntity<byte[]> dependents(
+            @RequestParam(required = false) Long deptId,
+            @AuthenticationPrincipal User user,
+            Locale locale) {
+        checkModule(user, "EMPLOYEE_VIEW", deptId);
+        return reportService.reportDependents(user.getCompanyId(), user.getId(), deptId, locale);
+    }
+
     /** Monthly payroll cost summary */
     @GetMapping("/payroll-summary")
     public ResponseEntity<byte[]> payrollSummary(

@@ -110,6 +110,22 @@ public class Employee extends BaseEntity {
     @Column(name = "bank_name", length = 100)
     private String bankName;
 
+    /** Bước M — mã số thuế cá nhân. */
+    @Column(name = "tax_code", length = 20)
+    private String taxCode;
+
+    /** Bước M — số sổ BHXH. */
+    @Column(name = "social_insurance_no", length = 20)
+    private String socialInsuranceNo;
+
+    /** Bước M — nơi đăng ký khám chữa bệnh ban đầu. */
+    @Column(name = "health_insurance_place", length = 255)
+    private String healthInsurancePlace;
+
+    /** Bước M — ngày tham gia bảo hiểm tại công ty. */
+    @Column(name = "insurance_join_date")
+    private LocalDate insuranceJoinDate;
+
     @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;

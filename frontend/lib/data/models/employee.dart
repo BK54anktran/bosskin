@@ -26,6 +26,12 @@ class Employee {
   final String? bankAccount;
   final String? bankName;
   final double? contractSalary;
+  /// Bước M: thuế / bảo hiểm. MST, sổ BHXH, CCCD, tài khoản trả về dạng che (****1234) khi thiếu quyền
+  /// EMPLOYEE_SENSITIVE_VIEW; gửi lại nguyên bản che thì backend giữ giá trị cũ.
+  final String? taxCode;
+  final String? socialInsuranceNo;
+  final String? healthInsurancePlace;
+  final DateTime? insuranceJoinDate;
   /// Bước K: quản lý trực tiếp (bản hiện hành).
   final int? managerId;
   final String? managerName;
@@ -58,6 +64,10 @@ class Employee {
     this.bankAccount,
     this.bankName,
     this.contractSalary,
+    this.taxCode,
+    this.socialInsuranceNo,
+    this.healthInsurancePlace,
+    this.insuranceJoinDate,
     this.managerId,
     this.managerName,
     this.deviceBound = false,
@@ -89,6 +99,10 @@ class Employee {
         bankAccount: j['bankAccount'],
         bankName: j['bankName'],
         contractSalary: (j['contractSalary'] as num?)?.toDouble(),
+        taxCode: j['taxCode'] as String?,
+        socialInsuranceNo: j['socialInsuranceNo'] as String?,
+        healthInsurancePlace: j['healthInsurancePlace'] as String?,
+        insuranceJoinDate: j['insuranceJoinDate'] != null ? DateTime.tryParse(j['insuranceJoinDate']) : null,
         managerId: (j['managerId'] as num?)?.toInt(),
         managerName: j['managerName'] as String?,
         deviceBound: j['deviceBound'] == true,

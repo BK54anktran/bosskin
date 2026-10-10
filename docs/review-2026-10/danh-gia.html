@@ -149,8 +149,8 @@
       <li>Không có file chi lương ngân hàng, phiếu lương PDF/email.</li>
     </ul></div>
     <div class="card"><b>Hồ sơ nhân sự</b><ul class="clean">
-      <li><b>Đã có (10/10/2026):</b> lịch sử công tác + quản lý trực tiếp (V15), hợp đồng lao động + phụ lục + phụ cấp, cảnh báo hết hạn (V16).</li>
-      <li>Còn thiếu: người phụ thuộc, MST, sổ BHXH (bước M), tài liệu (bước N), onboarding/offboarding.</li>
+      <li><b>Đã có (10/10/2026):</b> lịch sử công tác + quản lý trực tiếp (V15), hợp đồng lao động + phụ lục + phụ cấp, cảnh báo hết hạn (V16), MST, sổ BHXH, người phụ thuộc, BH công ty đóng (V17).</li>
+      <li>Còn thiếu: tài liệu (bước N), onboarding/offboarding.</li>
     </ul></div>
     <div class="card"><b>Bảo mật doanh nghiệp</b><ul class="clean">
       <li><b>Đã có (10/2026):</b> nhật ký thao tác, 2FA (TOTP), khoá tạm sau nhiều lần sai, chính sách mật khẩu, bắt đổi mật khẩu lần đầu; không tự duyệt công / phép / lương của mình.</li>
@@ -259,14 +259,14 @@ const STL = { done: 'Đã sửa', part: 'Một phần', later: 'Để sau', open
 const STC = { done: 'done', part: 'doing', later: 'todo', open: 'open' };
 const expand = (spec) => spec.flatMap(x => { const m = x.match(/^([A-Z])(\d+)-(\d+)$/); if (!m) return [x]; const out = []; for (let i = +m[2]; i <= +m[3]; i++) out.push(m[1] + i); return out; });
 const ST = {};
-expand(['S1-10','S12','S13','S14','A1-9','A11-19','L1-3','L5-16','L18','D1-4','D7','F1-10','F12','O1','O3']).forEach(k => ST[k] = 'done');
-expand(['O2','O4','L4','L17']).forEach(k => ST[k] = 'part');
-expand(['S11','A10','D5','F11']).forEach(k => ST[k] = 'later');
+expand(['S1-10','S12','S13','S14','A1-9','A11-19','L1-16','L18','D1-4','D7','F1-10','F12','O1','O3']).forEach(k => ST[k] = 'done');
+expand(['O2','O4','L17','D5']).forEach(k => ST[k] = 'part');
+expand(['S11','A10','F11']).forEach(k => ST[k] = 'later');
 /** Ghi chú trạng thái (10/10/2026). */
 const STN = {
-  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Trần BH theo chính sách (V13); lương đóng BH theo HĐ + phụ cấp đóng BH (V16); còn thiếu sàn BH', L17: 'Bậc lương + phòng ban theo quá trình công tác ở cuối kỳ (V15); lương HĐ theo HĐ + phụ lục, chia theo công chuẩn khi đổi giữa kỳ (V16); bậc lương đổi giữa kỳ chưa chia tỷ lệ',
+  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Trần BH theo chính sách (V13); lương đóng BH theo HĐ + phụ cấp đóng BH (V16); sàn = lương tối thiểu vùng (V17)', L17: 'Bậc lương + phòng ban theo quá trình công tác ở cuối kỳ (V15); lương HĐ theo HĐ + phụ lục, chia theo công chuẩn khi đổi giữa kỳ (V16); bậc lương đổi giữa kỳ chưa chia tỷ lệ',
   L3: 'Công chuẩn theo lịch làm việc (tuỳ chọn, V14)', L11: 'Đơn nhiều ngày bỏ qua ngày lễ nghỉ (V14)',
-  D5: 'Sau go-live, đợt 4', F11: 'Để sau go-live (tái cấu trúc dần)', F12: 'Cỡ chữ, cache xong; dark mode = bước F',
+  D5: 'Che bớt CCCD / tài khoản / MST / sổ BHXH, quyền EMPLOYEE_SENSITIVE_VIEW (V17); chưa mã hoá cột, file Excel trên S3 chưa xoá theo hạn', F11: 'Để sau go-live (tái cấu trúc dần)', F12: 'Cỡ chữ, cache xong; dark mode = bước F',
   O2: 'Múi giờ JVM + so khớp theo khoảng xong; chưa có khoá phân tán', O4: 'Health, request-id, .ebextensions xong; metrics/cảnh báo ở Mốc 5'
 };
 const stOf = (id) => ST[id] || 'open';

@@ -65,6 +65,10 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
   /// Bước L: báo trước hợp đồng hết hạn (ngày)
   final _contractWarningCtrl = TextEditingController(text: '30');
   int _minWageRegion = 1;
+  /// Bước M: tỷ lệ BH công ty đóng (%)
+  final _employerSocialCtrl = TextEditingController(text: '17.5');
+  final _employerHealthCtrl = TextEditingController(text: '3');
+  final _employerUnemploymentCtrl = TextEditingController(text: '1');
   bool _standardDaysFromCalendar = false;
   /// Bước K: PERMISSION (mặc định) | MANAGER_THEN_HR
   String _approvalMode = 'PERMISSION';
@@ -97,6 +101,9 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
     _standardWorkDaysCtrl.dispose();
     _cutoffDayCtrl.dispose();
     _contractWarningCtrl.dispose();
+    _employerSocialCtrl.dispose();
+    _employerHealthCtrl.dispose();
+    _employerUnemploymentCtrl.dispose();
     _checkInBeforeCtrl.dispose();
     _checkInAfterCtrl.dispose();
     _checkOutBeforeCtrl.dispose();
@@ -105,6 +112,15 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
     _checkOutToleranceCtrl.dispose();
     super.dispose();
   }
+
+  static String _percentText(dynamic v, String fallback) {
+    final n = (v as num?)?.toDouble();
+    if (n == null) return fallback;
+    return n == n.roundToDouble() ? n.toInt().toString() : n.toString();
+  }
+
+  static double? _percentValue(TextEditingController c) =>
+      double.tryParse(c.text.trim().replaceAll(',', '.'));
 
   Future<void> _load() async {
     setState(() {
@@ -127,6 +143,9 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
         _cutoffDayCtrl.text = ((payroll?['payrollCutoffDay'] as num?)?.toInt() ?? 1).toString();
         _minWageRegion = (payroll?['minWageRegion'] as num?)?.toInt() ?? 1;
         _standardDaysFromCalendar = payroll?['standardDaysFromCalendar'] == true;
+        _employerSocialCtrl.text = _percentText(payroll?['employerSocialPercent'], '17.5');
+        _employerHealthCtrl.text = _percentText(payroll?['employerHealthPercent'], '3');
+        _employerUnemploymentCtrl.text = _percentText(payroll?['employerUnemploymentPercent'], '1');
         _approvalMode = ((data['approval'] as Map?)?['mode'] as String?) ?? 'PERMISSION';
         _contractWarningCtrl.text =
             (((data['contract'] as Map?)?['expiryWarningDays'] as num?)?.toInt() ?? 30).toString();
@@ -264,6 +283,9 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
           'payrollCutoffDay': int.tryParse(_cutoffDayCtrl.text.trim()) ?? 1,
           'minWageRegion': _minWageRegion,
           'standardDaysFromCalendar': _standardDaysFromCalendar,
+          'employerSocialPercent': _percentValue(_employerSocialCtrl),
+          'employerHealthPercent': _percentValue(_employerHealthCtrl),
+          'employerUnemploymentPercent': _percentValue(_employerUnemploymentCtrl),
         },
         'approval': {'mode': _approvalMode},
         'contract': {'expiryWarningDays': int.tryParse(_contractWarningCtrl.text.trim()) ?? 30},
@@ -456,6 +478,28 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                           ),
                           const SizedBox(height: 4),
                           Text(s.minWageRegionHelper,
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          const SizedBox(height: 16),
+                          Text(s.employerInsuranceTitle, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 8),
+                          Row(children: [
+                            for (final (ctrl, label) in [
+                              (_employerSocialCtrl, s.employerSocialPercent),
+                              (_employerHealthCtrl, s.employerHealthPercent),
+                              (_employerUnemploymentCtrl, s.employerUnemploymentPercent),
+                            ]) ...[
+                              Expanded(
+                                child: TextFormField(
+                                  controller: ctrl,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  decoration: InputDecoration(labelText: label, suffixText: '%'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                          ]),
+                          const SizedBox(height: 4),
+                          Text(s.employerInsuranceHelper,
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                         ],
                       ),

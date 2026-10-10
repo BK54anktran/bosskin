@@ -11,6 +11,7 @@ import '../../../data/repositories/upload_repository.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../data/services/profile_service.dart';
+import 'my_dependents_card.dart';
 import 'two_factor_card.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -577,6 +578,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onSave: _saveNotificationSettings,
               ),
               const SizedBox(height: 16),
+              const MyDependentsCard(),
               const TwoFactorCard(),
               const SizedBox(height: 16),
               _buildPasswordCard(s),

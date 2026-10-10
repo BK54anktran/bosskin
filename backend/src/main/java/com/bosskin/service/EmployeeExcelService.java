@@ -1,5 +1,6 @@
 package com.bosskin.service;
 
+import com.bosskin.core.SensitiveData;
 import com.bosskin.entity.Employee;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.util.ExcelColumn;
@@ -58,12 +59,16 @@ public class EmployeeExcelService {
     private static final List<ExcelColumn<Employee>> PERSONAL_COLUMNS = List.of(
         ExcelColumn.readOnlyI18n("excel.col.employee.code",            Employee::getEmployeeCode),
         ExcelColumn.readOnlyI18n("excel.col.employee.fullName",        Employee::getFullName),
-        ExcelColumn.readOnlyI18n("excel.col.employee.identityCard",    Employee::getIdentityCard),
+        ExcelColumn.readOnlyI18n("excel.col.employee.identityCard",    e -> SensitiveData.forViewer(e.getIdentityCard())),
         ExcelColumn.readOnlyI18n("excel.col.employee.address",         Employee::getAddress),
         ExcelColumn.readOnlyI18n("excel.col.employee.personalEmail",   Employee::getPersonalEmail),
-        ExcelColumn.readOnlyI18n("excel.col.employee.bankAccount",     Employee::getBankAccount),
+        ExcelColumn.readOnlyI18n("excel.col.employee.bankAccount",     e -> SensitiveData.forViewer(e.getBankAccount())),
         ExcelColumn.readOnlyI18n("excel.col.employee.bankName",        Employee::getBankName),
-        ExcelColumn.readOnlyI18n("excel.col.employee.contractSalary",  e -> e.getContractSalary() == null ? "" : e.getContractSalary().stripTrailingZeros().toPlainString())
+        ExcelColumn.readOnlyI18n("excel.col.employee.contractSalary",  e -> e.getContractSalary() == null ? "" : e.getContractSalary().stripTrailingZeros().toPlainString()),
+        ExcelColumn.readOnlyI18n("excel.col.employee.taxCode",           e -> SensitiveData.forViewer(e.getTaxCode())),
+        ExcelColumn.readOnlyI18n("excel.col.employee.socialInsuranceNo", e -> SensitiveData.forViewer(e.getSocialInsuranceNo())),
+        ExcelColumn.readOnlyI18n("excel.col.employee.healthInsurancePlace", Employee::getHealthInsurancePlace),
+        ExcelColumn.readOnlyI18n("excel.col.employee.insuranceJoinDate", e -> e.getInsuranceJoinDate() == null ? "" : e.getInsuranceJoinDate().format(DATE_FMT))
     );
 
     @Transactional(readOnly = true)

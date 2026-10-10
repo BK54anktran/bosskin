@@ -43,6 +43,8 @@ public class ReportService {
     private final LeaveRequestRepository   leaveRequestRepo;
     private final ExcelHistoryHelper       historyHelper;
     private final ExcelI18n               excelI18n;
+    private final com.bosskin.repository.EmployeeDependentRepository dependentRepo;
+    private final ContractService          contractService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -391,6 +393,8 @@ public class ReportService {
                 excelI18n.resolve("excel.col.payroll.gross",          locale),
                 excelI18n.resolve("excel.col.payroll.totalDeduction", locale),
                 excelI18n.resolve("excel.col.payroll.net",            locale),
+                excelI18n.resolve("excel.col.payroll.employerInsurance", locale),
+                excelI18n.resolve("excel.col.payroll.totalCost",      locale),
                 excelI18n.resolve("excel.col.payroll.status",         locale),
             };
             writeHeader(sheet, hdr, headers);
@@ -423,7 +427,10 @@ public class ReportService {
                 setCellBD(r, 13, p.getGrossSalary(), money, moneyInt);
                 setCellBD(r, 14, totalDeduction,       money, moneyInt);
                 setCellBD(r, 15, p.getNetSalary(),   money, moneyInt);
-                setCell(r, 16, p.getStatus() != null ? p.getStatus().name() : "", data);
+                // Bước M: chi phí công ty = GROSS + BH công ty đóng
+                setCellBD(r, 16, p.employerInsuranceTotal(), money, moneyInt);
+                setCellBD(r, 17, bdNvl(p.getGrossSalary()).add(p.employerInsuranceTotal()), money, moneyInt);
+                setCell(r, 18, p.getStatus() != null ? p.getStatus().name() : "", data);
             }
 
             // Totals row — chỉ sum cột tổng tiền (11-15), bỏ lương cơ bản và giờ công
@@ -444,6 +451,8 @@ public class ReportService {
                     payrolls.stream().map(Payroll::totalDeduction)
                         .reduce(BigDecimal.ZERO, BigDecimal::add), money, moneyInt);
                 setCellBD(totRow, 15, sum(payrolls, Payroll::getNetSalary), money, moneyInt);
+                setCellBD(totRow, 16, sum(payrolls, Payroll::employerInsuranceTotal), money, moneyInt);
+                setCellBD(totRow, 17, sum(payrolls, p -> bdNvl(p.getGrossSalary()).add(p.employerInsuranceTotal())), money, moneyInt);
             }
 
             autoSizeColumns(sheet, headers.length);
@@ -461,6 +470,8 @@ public class ReportService {
                 excelI18n.resolve("excel.col.report.headcount",    locale),
                 excelI18n.resolve("excel.col.payroll.gross",       locale),
                 excelI18n.resolve("excel.col.payroll.net",         locale),
+                excelI18n.resolve("excel.col.payroll.employerInsurance", locale),
+                excelI18n.resolve("excel.col.payroll.totalCost",   locale),
             });
             int sr = 1;
             for (Map.Entry<String, List<Payroll>> entry : byDept.entrySet()) {
@@ -469,8 +480,10 @@ public class ReportService {
                 setCell(r, 1, entry.getValue().size(), num);
                 setCellBD(r, 2, sum(entry.getValue(), Payroll::getGrossSalary), money, moneyInt);
                 setCellBD(r, 3, sum(entry.getValue(), Payroll::getNetSalary),   money, moneyInt);
+                setCellBD(r, 4, sum(entry.getValue(), Payroll::employerInsuranceTotal), money, moneyInt);
+                setCellBD(r, 5, sum(entry.getValue(), p -> bdNvl(p.getGrossSalary()).add(p.employerInsuranceTotal())), money, moneyInt);
             }
-            autoSizeColumns(sumSheet, 4);
+            autoSizeColumns(sumSheet, 6);
 
             byte[] bytes = toBytes(wb);
             historyHelper.save(companyId, userId, HistoryType.REPORT, "payroll_summary",
@@ -480,6 +493,106 @@ public class ReportService {
             throw new RuntimeException("error.excel.export_failed", e);
         }
     }
+
+    // ─── Bước M: NV tham gia bảo hiểm / người phụ thuộc ──────────────────────
+
+    /** Nhân viên đang làm có ngày tham gia BH hoặc số sổ BHXH; MST / CCCD / sổ BHXH che theo quyền. */
+    public ResponseEntity<byte[]> reportInsuredEmployees(Long companyId, Long userId, Long deptId, Locale locale) {
+        List<Employee> employees = employeeRepo.findAllByCompanyIdFetchDepartment(companyId).stream()
+            .filter(e -> deptId == null || (e.getDepartment() != null && e.getDepartment().getId().equals(deptId)))
+            .filter(e -> e.getStatus() != Employee.Status.INACTIVE)
+            .filter(e -> e.getInsuranceJoinDate() != null || (e.getSocialInsuranceNo() != null && !e.getSocialInsuranceNo().isBlank()))
+            .sorted(java.util.Comparator.comparing(Employee::getEmployeeCode))
+            .collect(Collectors.toList());
+        Map<Long, BigDecimal> insuranceSalary = contractService.currentInsuranceSalaries(companyId);
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetInsured", locale));
+            XSSFCellStyle hdr = headerStyle(wb);
+            XSSFCellStyle data = dataStyle(wb);
+            XSSFCellStyle num = numStyle(wb);
+            XSSFCellStyle money = moneyStyle(wb);
+            XSSFCellStyle moneyInt = moneyIntStyle(wb);
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale),
+                i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.identityCard", locale), i18n("excel.report.taxCode", locale),
+                i18n("excel.report.socialInsuranceNo", locale), i18n("excel.report.healthInsurancePlace", locale),
+                i18n("excel.report.insuranceJoinDate", locale), i18n("excel.report.insuranceSalary", locale)};
+            writeHeader(sheet, hdr, headers);
+            int row = 1;
+            for (Employee e : employees) {
+                Row r = sheet.createRow(row++);
+                setCell(r, 0, row - 1, num);
+                setCell(r, 1, e.getEmployeeCode(), data);
+                setCell(r, 2, e.getFullName(), data);
+                setCell(r, 3, e.getDepartment() != null ? e.getDepartment().getName() : "", data);
+                setCell(r, 4, nz(com.bosskin.core.SensitiveData.forViewer(e.getIdentityCard())), data);
+                setCell(r, 5, nz(com.bosskin.core.SensitiveData.forViewer(e.getTaxCode())), data);
+                setCell(r, 6, nz(com.bosskin.core.SensitiveData.forViewer(e.getSocialInsuranceNo())), data);
+                setCell(r, 7, nz(e.getHealthInsurancePlace()), data);
+                setCell(r, 8, e.getInsuranceJoinDate() != null ? e.getInsuranceJoinDate().format(DATE_FMT) : "", data);
+                BigDecimal salary = insuranceSalary.get(e.getId());
+                if (salary == null) salary = e.getContractSalary();
+                setCellBD(r, 9, salary, money, moneyInt);
+            }
+            autoSizeColumns(sheet, headers.length);
+            sheet.createFreezePane(3, 1);
+            byte[] bytes = toBytes(wb);
+            historyHelper.save(companyId, userId, HistoryType.REPORT, "insured_employees",
+                "insured-employees.xlsx", bytes, null, null, null);
+            return ExcelUtils.buildFileResponse("insured-employees", bytes);
+        } catch (IOException e) {
+            throw new RuntimeException("error.excel.export_failed", e);
+        }
+    }
+
+    /** Người phụ thuộc của nhân viên; MST / CCCD che theo quyền. */
+    public ResponseEntity<byte[]> reportDependents(Long companyId, Long userId, Long deptId, Locale locale) {
+        List<com.bosskin.entity.EmployeeDependent> rows = dependentRepo.findByCompany(companyId).stream()
+            .filter(d -> deptId == null || (d.getEmployee().getDepartment() != null
+                && d.getEmployee().getDepartment().getId().equals(deptId)))
+            .collect(Collectors.toList());
+        java.time.format.DateTimeFormatter monthFmt = java.time.format.DateTimeFormatter.ofPattern("MM/yyyy");
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet(i18n("excel.report.sheetDependents", locale));
+            XSSFCellStyle hdr = headerStyle(wb);
+            XSSFCellStyle data = dataStyle(wb);
+            XSSFCellStyle num = numStyle(wb);
+            String[] headers = {i18n("excel.report.no", locale), i18n("excel.report.employeeCode", locale),
+                i18n("excel.report.fullName", locale), i18n("excel.report.department", locale),
+                i18n("excel.report.dependentName", locale), i18n("excel.report.relationship", locale),
+                i18n("excel.report.dateOfBirth", locale), i18n("excel.report.dependentId", locale),
+                i18n("excel.report.deductionFrom", locale), i18n("excel.report.deductionTo", locale),
+                i18n("excel.report.registrationStatus", locale)};
+            writeHeader(sheet, hdr, headers);
+            int row = 1;
+            for (var d : rows) {
+                Employee e = d.getEmployee();
+                String id = d.getTaxCode() != null ? d.getTaxCode() : d.getIdentityNo();
+                Row r = sheet.createRow(row++);
+                setCell(r, 0, row - 1, num);
+                setCell(r, 1, e.getEmployeeCode(), data);
+                setCell(r, 2, e.getFullName(), data);
+                setCell(r, 3, e.getDepartment() != null ? e.getDepartment().getName() : "", data);
+                setCell(r, 4, d.getFullName(), data);
+                setCell(r, 5, i18n("excel.enum.relationship." + d.getRelationship().name(), locale), data);
+                setCell(r, 6, d.getDateOfBirth() != null ? d.getDateOfBirth().format(DATE_FMT) : "", data);
+                setCell(r, 7, nz(com.bosskin.core.SensitiveData.forViewer(id)), data);
+                setCell(r, 8, d.getDeductionFrom().format(monthFmt), data);
+                setCell(r, 9, d.getDeductionTo() != null ? d.getDeductionTo().format(monthFmt) : "", data);
+                setCell(r, 10, i18n("excel.enum.dependentStatus." + d.getRegistrationStatus().name(), locale), data);
+            }
+            autoSizeColumns(sheet, headers.length);
+            sheet.createFreezePane(3, 1);
+            byte[] bytes = toBytes(wb);
+            historyHelper.save(companyId, userId, HistoryType.REPORT, "dependents",
+                "dependents.xlsx", bytes, null, null, null);
+            return ExcelUtils.buildFileResponse("dependents", bytes);
+        } catch (IOException e) {
+            throw new RuntimeException("error.excel.export_failed", e);
+        }
+    }
+
+    private static String nz(String v) { return v == null ? "" : v; }
 
     // ─── 7. LEAVE BALANCE SUMMARY ────────────────────────────────────────────
 

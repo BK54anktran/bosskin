@@ -10,6 +10,7 @@ import '../../../data/repositories/employee_repository.dart';
 import '../../../data/repositories/salary_grade_repository.dart';
 import '../../../data/services/api_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../widgets/date_field.dart';
 import '../../widgets/manager_dropdown.dart';
 import '../../widgets/department_picker_field.dart';
 import 'employee_locations_screen.dart';
@@ -45,6 +46,11 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   late final TextEditingController _bankAccount;
   late final TextEditingController _bankName;
   late final TextEditingController _contractSalary;
+  // Bước M — thuế / bảo hiểm
+  late final TextEditingController _taxCode;
+  late final TextEditingController _socialInsuranceNo;
+  late final TextEditingController _healthInsurancePlace;
+  DateTime? _insuranceJoinDate;
 
   Gender _gender = Gender.male;
   DateTime? _dob;
@@ -61,6 +67,13 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
 
   bool get _isEdit => widget.employee != null;
 
+  /// Bước M: có trường đang hiển thị dạng che (thiếu quyền EMPLOYEE_SENSITIVE_VIEW).
+  bool get _hasMaskedValue {
+    final e = widget.employee;
+    if (e == null) return false;
+    return [e.identityCard, e.bankAccount, e.taxCode, e.socialInsuranceNo].any((v) => (v ?? '').contains('*'));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +87,10 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     _idCard = TextEditingController(text: e?.identityCard ?? '');
     _bankAccount = TextEditingController(text: e?.bankAccount ?? '');
     _bankName = TextEditingController(text: e?.bankName ?? '');
+    _taxCode = TextEditingController(text: e?.taxCode ?? '');
+    _socialInsuranceNo = TextEditingController(text: e?.socialInsuranceNo ?? '');
+    _healthInsurancePlace = TextEditingController(text: e?.healthInsurancePlace ?? '');
+    _insuranceJoinDate = e?.insuranceJoinDate;
     _contractSalary = TextEditingController(
       text: e?.contractSalary != null ? e!.contractSalary!.toStringAsFixed(0) : '',
     );
@@ -113,6 +130,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       _bankAccount,
       _bankName,
       _contractSalary,
+      _taxCode,
+      _socialInsuranceNo,
+      _healthInsurancePlace,
     ]) {
       c.dispose();
     }
@@ -184,6 +204,12 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       'bankAccount':
           _bankAccount.text.trim().isEmpty ? null : _bankAccount.text.trim(),
       'bankName': _bankName.text.trim().isEmpty ? null : _bankName.text.trim(),
+      // Bước M: chuỗi rỗng = xoá; bản che (****1234) gửi lại nguyên thì backend giữ giá trị cũ
+      'taxCode': _taxCode.text.trim(),
+      'socialInsuranceNo': _socialInsuranceNo.text.trim(),
+      'healthInsurancePlace': _healthInsurancePlace.text.trim(),
+      'insuranceJoinDate':
+          _insuranceJoinDate != null ? DateFormat('yyyy-MM-dd').format(_insuranceJoinDate!) : null,
       'contractSalary': _contractSalary.text.trim().isEmpty
           ? null
           : double.tryParse(_contractSalary.text.trim().replaceAll(',', '')),
@@ -388,6 +414,40 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   decoration: InputDecoration(labelText: s.identityCardLabel),
                 )),
                 _field(const SizedBox()),
+              ]),
+            ]),
+            const SizedBox(height: 28),
+            _section(s.taxInsuranceInfo, [
+              if (_hasMaskedValue)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(s.sensitiveMaskedHint,
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                ),
+              _row([
+                _field(TextFormField(
+                  controller: _taxCode,
+                  maxLength: 20,
+                  decoration: InputDecoration(labelText: s.empTaxCode, counterText: ''),
+                )),
+                _field(TextFormField(
+                  controller: _socialInsuranceNo,
+                  maxLength: 20,
+                  decoration: InputDecoration(labelText: s.empSocialInsuranceNo, counterText: ''),
+                )),
+              ]),
+              const SizedBox(height: 12),
+              _row([
+                _field(TextFormField(
+                  controller: _healthInsurancePlace,
+                  decoration: InputDecoration(labelText: s.empHealthInsurancePlace),
+                )),
+                _field(DateField(
+                  label: s.empInsuranceJoinDate,
+                  value: _insuranceJoinDate,
+                  clearable: false,
+                  onChanged: (d) => setState(() => _insuranceJoinDate = d),
+                )),
               ]),
             ]),
             const SizedBox(height: 28),

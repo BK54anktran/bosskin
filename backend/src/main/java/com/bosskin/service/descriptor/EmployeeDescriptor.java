@@ -64,7 +64,12 @@ public class EmployeeDescriptor implements ExcelEntityDescriptor<EmployeeDTO.Imp
             ExcelColumn.ofI18n("excel.col.employee.address",        G_PERSONAL, false, false, r -> r.getAddress(),        (r, v) -> r.setAddress(v)),
             ExcelColumn.ofI18n("excel.col.employee.personalEmail",  G_PERSONAL, false, false, r -> r.getPersonalEmail(),  (r, v) -> r.setPersonalEmail(v)),
             ExcelColumn.ofI18n("excel.col.employee.bankAccount",    G_PERSONAL, false, false, r -> r.getBankAccount(),    (r, v) -> r.setBankAccount(v)),
-            ExcelColumn.ofI18n("excel.col.employee.bankName",       G_PERSONAL, false, false, r -> r.getBankName(),       (r, v) -> r.setBankName(v))
+            ExcelColumn.ofI18n("excel.col.employee.bankName",       G_PERSONAL, false, false, r -> r.getBankName(),       (r, v) -> r.setBankName(v)),
+            // ── Thuế / bảo hiểm (bước M) ────────────────────────────────────────
+            ExcelColumn.ofI18n("excel.col.employee.taxCode",           G_PERSONAL, false, false, r -> r.getTaxCode(),           (r, v) -> r.setTaxCode(v)),
+            ExcelColumn.ofI18n("excel.col.employee.socialInsuranceNo", G_PERSONAL, false, false, r -> r.getSocialInsuranceNo(), (r, v) -> r.setSocialInsuranceNo(v)),
+            ExcelColumn.ofI18n("excel.col.employee.healthInsurancePlace", G_PERSONAL, false, false, r -> r.getHealthInsurancePlace(), (r, v) -> r.setHealthInsurancePlace(v)),
+            ExcelColumn.ofI18n("excel.col.employee.insuranceJoinDate", G_PERSONAL, false, false, r -> r.getInsuranceJoinDate(), (r, v) -> r.setInsuranceJoinDate(v))
         );
     }
 

@@ -71,6 +71,19 @@ public class ContractService {
         return toResponses(all, all);
     }
 
+    /** Bước M: lương đóng BH hiện hành theo nhân viên (hợp đồng đang hiệu lực hôm nay). */
+    @Transactional(readOnly = true)
+    public Map<Long, BigDecimal> currentInsuranceSalaries(Long companyId) {
+        List<LaborContract> all = repository.findByCompany(companyId);
+        Map<Long, BigDecimal> out = new java.util.HashMap<>();
+        for (ContractDTO.Response r : toResponses(all, all)) {
+            if ("ACTIVE".equals(r.getDisplayStatus()) && r.getCurrentInsuranceSalary() != null) {
+                out.put(r.getEmployeeId(), r.getCurrentInsuranceSalary());
+            }
+        }
+        return out;
+    }
+
     @Transactional(readOnly = true)
     public ContractDTO.Response get(Long companyId, Long userId, Long id) {
         LaborContract c = getOrThrow(companyId, id);

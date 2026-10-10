@@ -147,7 +147,7 @@ $roleNS = NewRole 'Nhân sự' @('EMPLOYEE_VIEW','EMPLOYEE_CREATE','EMPLOYEE_UPD
   'POSITION_MANAGE','ATTENDANCE_VIEW','SHIFT_VIEW','SHIFT_MANAGE','LEAVE_VIEW','LEAVE_TYPE_VIEW','LEAVE_TYPE_MANAGE',
   'LEAVE_GRANT_MANUAL','LEAVE_ACCRUAL_VIEW','LEAVE_ACCRUAL_MANAGE','LEAVE_REQUEST_CREATE_FOR_OTHERS',
   'EXCEL_EXPORT','EXCEL_IMPORT','DASHBOARD_VIEW','REPORT_VIEW','CALENDAR_VIEW','CALENDAR_MANAGE',
-  'CONTRACT_VIEW','CONTRACT_EDIT')
+  'CONTRACT_VIEW','CONTRACT_EDIT','EMPLOYEE_SENSITIVE_VIEW')
 $roleKT = NewRole 'Kế toán' @('PAYROLL_VIEW','PAYROLL_CREATE','PAYROLL_APPROVE','PAYROLL_PAY','EMPLOYEE_VIEW',
   'ATTENDANCE_VIEW','DASHBOARD_VIEW','EXCEL_EXPORT')
 
@@ -263,6 +263,27 @@ Call POST "/api/v1/contracts/$($hd['cn3'])/appendices" @{ appendixNo = 'PL-01'; 
 Call POST '/api/v1/contracts' @{ employeeId = $emp['ktv'].id; contractNo = 'TH-HD-009'; contractType = 'FIXED_TERM'
   status = 'DRAFT'; startDate = '2026-11-01'; endDate = '2028-10-31'; baseSalary = 14000000; allowances = @($lunch) } | Out-Null
 Write-Host '  8 hợp đồng hiệu lực (Mai hết hạn 31/10 → cần gia hạn, HĐ mới đang nháp), phụ lục tăng lương Tài 16/09, Nam 01/12'
+
+# ── Bước M: MST, sổ BHXH, người phụ thuộc ────────────────────────────────────
+Step 'Thuế, bảo hiểm, người phụ thuộc'
+$i = 0
+foreach ($k in 'gd','ns','ktt','ktv','qd','cn1','cn2','cn3') {
+  $i++
+  $e = Call GET "/api/v1/employees/$($emp[$k].id)"
+  # PUT không gửi chức vụ / bậc lương sẽ xoá → gửi lại giá trị hiện có
+  Call PUT "/api/v1/employees/$($e.id)" @{ positionId = $e.positionId; salaryGradeId = $e.salaryGradeId
+    taxCode = ('81000000{0:D2}' -f $i); socialInsuranceNo = ('79250000{0:D2}' -f $i)
+    healthInsurancePlace = 'BV Đa khoa Thủ Đức'; insuranceJoinDate = '2025-01-02' } | Out-Null
+}
+function Dep($key, $name, $rel, $dob, $from, $to, $status) {
+  Call POST '/api/v1/dependents' @{ employeeId = $emp[$key].id; fullName = $name; relationship = $rel; dateOfBirth = $dob
+    deductionFrom = $from; deductionTo = $to; registrationStatus = $status } | Out-Null
+}
+Dep 'gd'  'Lê Minh An'   'CHILD'  '2015-04-12' '2025-01-01' $null        'REGISTERED'
+Dep 'gd'  'Lê Minh Châu' 'CHILD'  '2019-09-03' '2025-01-01' $null        'REGISTERED'
+Dep 'qd'  'Nguyễn Thị Hoa' 'PARENT' '1955-02-20' '2025-01-01' '2026-08-01' 'REGISTERED'
+Dep 'cn1' 'Phạm Gia Bảo' 'CHILD'  '2026-02-14' '2026-03-01' $null        'PENDING'
+Write-Host '  MST + sổ BHXH cho 8 NV; 4 người phụ thuộc (2 con GĐ, mẹ QĐ hết giảm trừ từ 09/2026, con Tài chờ MST)'
 
 # ── 7. Phân ca: tháng 9 + tháng 10/2026 ─────────────────────────────────────
 Step 'Phân ca'

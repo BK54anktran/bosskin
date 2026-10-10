@@ -148,4 +148,17 @@ public class Company extends BaseEntity {
     @Column(name = "min_wage_region", nullable = false)
     @Builder.Default
     private int minWageRegion = 1;
+
+    /** Bước M — tỷ lệ bảo hiểm công ty đóng. */
+    @Column(name = "employer_social_rate", nullable = false, precision = 6, scale = 4)
+    @Builder.Default
+    private java.math.BigDecimal employerSocialRate = new java.math.BigDecimal("0.1750");
+
+    @Column(name = "employer_health_rate", nullable = false, precision = 6, scale = 4)
+    @Builder.Default
+    private java.math.BigDecimal employerHealthRate = new java.math.BigDecimal("0.0300");
+
+    @Column(name = "employer_unemployment_rate", nullable = false, precision = 6, scale = 4)
+    @Builder.Default
+    private java.math.BigDecimal employerUnemploymentRate = new java.math.BigDecimal("0.0100");
 }

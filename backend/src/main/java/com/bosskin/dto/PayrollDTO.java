@@ -33,6 +33,11 @@ public class PayrollDTO {
         private BigDecimal familyDeduction;
         /** Lương đóng BHXH/BHYT sau trần, V13. */
         private BigDecimal insuranceBase;
+        /** Bước M (V17): số người phụ thuộc được giảm trừ, phần BH công ty đóng. */
+        private Integer dependents;
+        private BigDecimal employerSocialIns;
+        private BigDecimal employerHealthIns;
+        private BigDecimal employerUnemploymentIns;
         /** Tổng khấu trừ thống nhất = GROSS − NET (Payroll.totalDeduction). */
         private BigDecimal totalDeduction;
         private BigDecimal otherDeductions;
@@ -87,6 +92,10 @@ public class PayrollDTO {
                     .personalIncomeTax(p.getPersonalIncomeTax())
                     .familyDeduction(p.getFamilyDeduction())
                     .insuranceBase(p.getInsuranceBase())
+                    .dependents(p.getDependents())
+                    .employerSocialIns(p.getEmployerSocialIns())
+                    .employerHealthIns(p.getEmployerHealthIns())
+                    .employerUnemploymentIns(p.getEmployerUnemploymentIns())
                     .totalDeduction(p.totalDeduction())
                     .otherDeductions(p.getOtherDeductions())
                     .customDeductions(p.getCustomDeductions() != null ? p.getCustomDeductions() : Map.of())

@@ -30,6 +30,13 @@ class ReportRepository {
   Future<({Uint8List bytes, String filename})> employeeHeadcount({int? deptId}) =>
       _get('/reports/employee-headcount', {'deptId': deptId});
 
+  /// Bước M: NV tham gia bảo hiểm / người phụ thuộc
+  Future<({Uint8List bytes, String filename})> insuredEmployees({int? deptId}) =>
+      _get('/reports/insured-employees', {'deptId': deptId});
+
+  Future<({Uint8List bytes, String filename})> dependents({int? deptId}) =>
+      _get('/reports/dependents', {'deptId': deptId});
+
   Future<({Uint8List bytes, String filename})> newHires({
     required String from,
     required String to,

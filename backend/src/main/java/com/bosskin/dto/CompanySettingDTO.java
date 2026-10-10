@@ -47,6 +47,10 @@ public class CompanySettingDTO {
         private int minWageRegion;
         /** Bước J: công chuẩn đếm theo lịch tuần + ngày lễ thay cho số cố định. */
         private boolean standardDaysFromCalendar;
+        /** Bước M: tỷ lệ BH công ty đóng, đơn vị % (17.5 = 17,5%). */
+        private BigDecimal employerSocialPercent;
+        private BigDecimal employerHealthPercent;
+        private BigDecimal employerUnemploymentPercent;
     }
 
     /** Bước K: ai duyệt đơn nghỉ / sửa công / đổi ca. */
@@ -108,6 +112,10 @@ public class CompanySettingDTO {
         private Integer minWageRegion;
         /** Không gửi = giữ nguyên. */
         private Boolean standardDaysFromCalendar;
+        /** Bước M: tỷ lệ BH công ty đóng (%, 0–50). Không gửi = giữ nguyên. */
+        private BigDecimal employerSocialPercent;
+        private BigDecimal employerHealthPercent;
+        private BigDecimal employerUnemploymentPercent;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

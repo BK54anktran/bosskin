@@ -9250,6 +9250,282 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhập hợp đồng từ Excel'**
   String get auditActContractImport;
+
+  /// No description provided for @permUiEmployeeSensitiveView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem đủ CCCD, số tài khoản, MST, số sổ BHXH (không có thì hiện dạng ****1234)'**
+  String get permUiEmployeeSensitiveView;
+
+  /// No description provided for @permDescEmployeeSensitiveView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem dữ liệu nhạy cảm của nhân viên'**
+  String get permDescEmployeeSensitiveView;
+
+  /// No description provided for @taxInsuranceInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế & bảo hiểm'**
+  String get taxInsuranceInfo;
+
+  /// No description provided for @empTaxCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã số thuế cá nhân'**
+  String get empTaxCode;
+
+  /// No description provided for @empSocialInsuranceNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số sổ BHXH'**
+  String get empSocialInsuranceNo;
+
+  /// No description provided for @empHealthInsurancePlace.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nơi đăng ký KCB ban đầu'**
+  String get empHealthInsurancePlace;
+
+  /// No description provided for @empInsuranceJoinDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày tham gia bảo hiểm'**
+  String get empInsuranceJoinDate;
+
+  /// No description provided for @sensitiveMaskedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Một số trường đang che vì bạn không có quyền xem dữ liệu nhạy cảm. Để nguyên thì giữ giá trị cũ, nhập số mới thì ghi đè.'**
+  String get sensitiveMaskedHint;
+
+  /// No description provided for @dependentsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người phụ thuộc'**
+  String get dependentsTitle;
+
+  /// No description provided for @dependentsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm trừ gia cảnh tính theo tháng của kỳ lương. Người \"Chưa đăng ký\" không được giảm trừ.'**
+  String get dependentsHint;
+
+  /// No description provided for @dependentAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm người phụ thuộc'**
+  String get dependentAdd;
+
+  /// No description provided for @dependentEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa người phụ thuộc'**
+  String get dependentEdit;
+
+  /// No description provided for @dependentEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có người phụ thuộc'**
+  String get dependentEmpty;
+
+  /// No description provided for @dependentName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ tên người phụ thuộc'**
+  String get dependentName;
+
+  /// No description provided for @dependentRelationship.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quan hệ'**
+  String get dependentRelationship;
+
+  /// No description provided for @dependentRelChild.
+  ///
+  /// In vi, this message translates to:
+  /// **'Con'**
+  String get dependentRelChild;
+
+  /// No description provided for @dependentRelSpouse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vợ / chồng'**
+  String get dependentRelSpouse;
+
+  /// No description provided for @dependentRelParent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cha / mẹ'**
+  String get dependentRelParent;
+
+  /// No description provided for @dependentRelOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khác'**
+  String get dependentRelOther;
+
+  /// No description provided for @dependentTaxCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'MST người phụ thuộc'**
+  String get dependentTaxCode;
+
+  /// No description provided for @dependentIdentityNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'CCCD / số định danh'**
+  String get dependentIdentityNo;
+
+  /// No description provided for @dependentFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm trừ từ tháng'**
+  String get dependentFrom;
+
+  /// No description provided for @dependentTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến tháng'**
+  String get dependentTo;
+
+  /// No description provided for @dependentNoEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa kết thúc'**
+  String get dependentNoEnd;
+
+  /// No description provided for @dependentPeriod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm trừ'**
+  String get dependentPeriod;
+
+  /// No description provided for @dependentMonthHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ngày bất kỳ trong tháng; hệ thống tính theo cả tháng. Để trống \"Đến tháng\" nếu chưa kết thúc.'**
+  String get dependentMonthHint;
+
+  /// No description provided for @dependentStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái đăng ký'**
+  String get dependentStatus;
+
+  /// No description provided for @dependentStatusNotRegistered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đăng ký'**
+  String get dependentStatusNotRegistered;
+
+  /// No description provided for @dependentStatusPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nộp, chờ MST'**
+  String get dependentStatusPending;
+
+  /// No description provided for @dependentStatusRegistered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đăng ký'**
+  String get dependentStatusRegistered;
+
+  /// No description provided for @dependentActiveNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang giảm trừ'**
+  String get dependentActiveNow;
+
+  /// No description provided for @payslipEmployerInsurance.
+  ///
+  /// In vi, this message translates to:
+  /// **'BH công ty đóng (BHXH / BHYT / BHTN)'**
+  String get payslipEmployerInsurance;
+
+  /// No description provided for @employerInsuranceTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tỷ lệ bảo hiểm công ty đóng'**
+  String get employerInsuranceTitle;
+
+  /// No description provided for @employerSocialPercent.
+  ///
+  /// In vi, this message translates to:
+  /// **'BHXH (gồm TNLĐ-BNN)'**
+  String get employerSocialPercent;
+
+  /// No description provided for @employerHealthPercent.
+  ///
+  /// In vi, this message translates to:
+  /// **'BHYT'**
+  String get employerHealthPercent;
+
+  /// No description provided for @employerUnemploymentPercent.
+  ///
+  /// In vi, this message translates to:
+  /// **'BHTN'**
+  String get employerUnemploymentPercent;
+
+  /// No description provided for @employerInsuranceHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mặc định 17,5% / 3% / 1%. Tính trên lương đóng BH của phiếu lương, ra cột chi phí công ty ở báo cáo lương; không trừ vào lương nhân viên.'**
+  String get employerInsuranceHelper;
+
+  /// No description provided for @reportInsured.
+  ///
+  /// In vi, this message translates to:
+  /// **'NV tham gia bảo hiểm'**
+  String get reportInsured;
+
+  /// No description provided for @reportInsuredDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'MST, số sổ BHXH, nơi KCB, ngày tham gia và lương đóng BH hiện hành'**
+  String get reportInsuredDesc;
+
+  /// No description provided for @reportDependents.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người phụ thuộc'**
+  String get reportDependents;
+
+  /// No description provided for @reportDependentsDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người phụ thuộc giảm trừ gia cảnh, tháng bắt đầu / kết thúc, trạng thái đăng ký'**
+  String get reportDependentsDesc;
+
+  /// No description provided for @auditActDependentCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm người phụ thuộc'**
+  String get auditActDependentCreate;
+
+  /// No description provided for @auditActDependentUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa người phụ thuộc'**
+  String get auditActDependentUpdate;
+
+  /// No description provided for @auditActDependentDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá người phụ thuộc'**
+  String get auditActDependentDelete;
+
+  /// No description provided for @payslipDependents.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} người phụ thuộc'**
+  String payslipDependents(int count);
+
+  /// No description provided for @dependentDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá người phụ thuộc {name}? Kỳ lương tính lại sau đó sẽ không còn giảm trừ cho người này.'**
+  String dependentDeleteConfirm(String name);
 }
 
 class _AppLocalizationsDelegate

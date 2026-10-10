@@ -6,12 +6,17 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/payroll.dart';
 
 /// Dòng tham khảo dưới phiếu lương: lương đóng BH (đã áp trần) và giảm trừ gia cảnh dùng khi tính thuế (bước I).
-/// Phiếu tạo trước V13 không có hai số này thì không hiện.
+/// Phiếu tạo trước V13 không có hai số này thì không hiện. Bước M: số người phụ thuộc; [showEmployerCost]
+/// (màn HR) hiện thêm phần BH công ty đóng.
 class PayslipTaxInfo extends StatelessWidget {
   final Payroll payroll;
-  const PayslipTaxInfo({super.key, required this.payroll});
+  final bool showEmployerCost;
+  const PayslipTaxInfo({super.key, required this.payroll, this.showEmployerCost = false});
 
-  static final _fmt = NumberFormat('#,###', 'vi_VN');
+  static final _fmt = NumberFormat('#,##0', 'vi_VN');
+
+  double get _employerTotal =>
+      (payroll.employerSocialIns ?? 0) + (payroll.employerHealthIns ?? 0) + (payroll.employerUnemploymentIns ?? 0);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +28,17 @@ class PayslipTaxInfo extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (base != null) Text('${s.payslipInsuranceBase}: ${_fmt.format(base)}', style: style),
-        if (fam != null) Text('${s.payslipFamilyDeduction}: ${_fmt.format(fam)}', style: style),
+        if (fam != null)
+          Text(
+              '${s.payslipFamilyDeduction}: ${_fmt.format(fam)}'
+              '${(payroll.dependents ?? 0) > 0 ? ' (${s.payslipDependents(payroll.dependents!)})' : ''}',
+              style: style),
+        if (showEmployerCost && payroll.employerSocialIns != null)
+          Text(
+              '${s.payslipEmployerInsurance}: ${_fmt.format(_employerTotal)} '
+              '(${_fmt.format(payroll.employerSocialIns ?? 0)} / ${_fmt.format(payroll.employerHealthIns ?? 0)}'
+              ' / ${_fmt.format(payroll.employerUnemploymentIns ?? 0)})',
+              style: style),
       ]),
     );
   }

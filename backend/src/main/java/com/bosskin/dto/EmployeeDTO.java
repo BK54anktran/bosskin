@@ -37,6 +37,11 @@ public class EmployeeDTO {
         private String bankAccount;
         private String bankName;
         private String contractSalary;
+        // Bước M — thuế / bảo hiểm
+        private String taxCode;
+        private String socialInsuranceNo;
+        private String healthInsurancePlace;
+        private String insuranceJoinDate;   // dd/MM/yyyy
     }
 
     @lombok.Data
@@ -84,6 +89,11 @@ public class EmployeeDTO {
         private String bankAccount;
         private String bankName;
         private java.math.BigDecimal contractSalary;
+        /** Bước M — thuế / bảo hiểm. */
+        private String taxCode;
+        private String socialInsuranceNo;
+        private String healthInsurancePlace;
+        private LocalDate insuranceJoinDate;
         private LocalDateTime createdAt;
     }
 
@@ -121,6 +131,13 @@ public class EmployeeDTO {
         private String identityCard;
         private String bankAccount;
         private String bankName;
+        /** Bước M — thuế / bảo hiểm. */
+        @Size(max = 20)
+        private String taxCode;
+        @Size(max = 20)
+        private String socialInsuranceNo;
+        private String healthInsurancePlace;
+        private LocalDate insuranceJoinDate;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -145,6 +162,13 @@ public class EmployeeDTO {
         private String bankAccount;
         private String bankName;
         private java.math.BigDecimal contractSalary;
+        /** Bước M — thuế / bảo hiểm (null = giữ nguyên). */
+        @Size(max = 20)
+        private String taxCode;
+        @Size(max = 20)
+        private String socialInsuranceNo;
+        private String healthInsurancePlace;
+        private LocalDate insuranceJoinDate;
 
         /** Bước K — quản lý trực tiếp; có gửi trường (kể cả null = bỏ quản lý) mới đổi. */
         private Long managerId;

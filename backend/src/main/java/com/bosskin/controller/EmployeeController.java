@@ -61,7 +61,11 @@ public class EmployeeController {
         ExcelColumn.ofI18n("excel.col.employee.personalEmail", r -> r.getPersonalEmail(),  (r, v) -> r.setPersonalEmail(v)),
         ExcelColumn.ofI18n("excel.col.employee.bankAccount",   r -> r.getBankAccount(),    (r, v) -> r.setBankAccount(v)),
         ExcelColumn.ofI18n("excel.col.employee.bankName",      r -> r.getBankName(),       (r, v) -> r.setBankName(v)),
-        ExcelColumn.ofI18n("excel.col.employee.contractSalary",r -> r.getContractSalary(), (r, v) -> r.setContractSalary(v))
+        ExcelColumn.ofI18n("excel.col.employee.contractSalary",r -> r.getContractSalary(), (r, v) -> r.setContractSalary(v)),
+        ExcelColumn.ofI18n("excel.col.employee.taxCode",           r -> r.getTaxCode(),           (r, v) -> r.setTaxCode(v)),
+        ExcelColumn.ofI18n("excel.col.employee.socialInsuranceNo", r -> r.getSocialInsuranceNo(), (r, v) -> r.setSocialInsuranceNo(v)),
+        ExcelColumn.ofI18n("excel.col.employee.healthInsurancePlace", r -> r.getHealthInsurancePlace(), (r, v) -> r.setHealthInsurancePlace(v)),
+        ExcelColumn.ofI18n("excel.col.employee.insuranceJoinDate", r -> r.getInsuranceJoinDate(), (r, v) -> r.setInsuranceJoinDate(v))
     );
 
     @GetMapping("/export")
@@ -112,6 +116,10 @@ public class EmployeeController {
             if (notBlank(r2.getBankAccount()))    r1.setBankAccount(r2.getBankAccount());
             if (notBlank(r2.getBankName()))       r1.setBankName(r2.getBankName());
             if (notBlank(r2.getContractSalary())) r1.setContractSalary(r2.getContractSalary());
+            if (notBlank(r2.getTaxCode()))           r1.setTaxCode(r2.getTaxCode());
+            if (notBlank(r2.getSocialInsuranceNo())) r1.setSocialInsuranceNo(r2.getSocialInsuranceNo());
+            if (notBlank(r2.getHealthInsurancePlace())) r1.setHealthInsurancePlace(r2.getHealthInsurancePlace());
+            if (notBlank(r2.getInsuranceJoinDate())) r1.setInsuranceJoinDate(r2.getInsuranceJoinDate());
         }
         return new java.util.ArrayList<>(byCode.values());
     }

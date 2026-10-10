@@ -141,6 +141,28 @@ public class Payroll extends BaseEntity {
     @Column(name = "insurance_base", precision = 15, scale = 2)
     private BigDecimal insuranceBase;
 
+    /** Số người phụ thuộc được giảm trừ trong tháng của kỳ, V17. */
+    @Column(name = "dependents")
+    private Integer dependents;
+
+    /** Phần bảo hiểm công ty đóng (không trừ vào lương), V17. */
+    @Column(name = "employer_social_ins", precision = 15, scale = 2)
+    private BigDecimal employerSocialIns;
+
+    @Column(name = "employer_health_ins", precision = 15, scale = 2)
+    private BigDecimal employerHealthIns;
+
+    @Column(name = "employer_unemployment_ins", precision = 15, scale = 2)
+    private BigDecimal employerUnemploymentIns;
+
+    /** Tổng bảo hiểm công ty đóng. */
+    public BigDecimal employerInsuranceTotal() {
+        BigDecimal t = BigDecimal.ZERO;
+        for (BigDecimal v : new BigDecimal[]{employerSocialIns, employerHealthIns, employerUnemploymentIns})
+            if (v != null) t = t.add(v);
+        return t;
+    }
+
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 

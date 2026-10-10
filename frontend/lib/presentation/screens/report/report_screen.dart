@@ -95,6 +95,10 @@ class _ReportScreenState extends State<ReportScreen> {
     switch (key) {
       case 'employee_headcount':
         _export(key, s, () => _repo.employeeHeadcount(deptId: v.deptId));
+      case 'insured_employees':
+        _export(key, s, () => _repo.insuredEmployees(deptId: v.deptId));
+      case 'dependents':
+        _export(key, s, () => _repo.dependents(deptId: v.deptId));
       case 'new_hires':
         _export(key, s, () => _repo.newHires(from: _fmt(v.dateFrom), to: _fmt(v.dateTo), deptId: v.deptId));
       case 'resigned':
@@ -155,6 +159,10 @@ class _ReportScreenState extends State<ReportScreen> {
                         Icons.person_add_outlined, [_FT.dateRange, _FT.department]),
                     item('resigned', s.reportResigned, s.reportResignedDesc,
                         Icons.person_remove_outlined, [_FT.dateRange, _FT.department]),
+                    item('insured_employees', s.reportInsured, s.reportInsuredDesc,
+                        Icons.health_and_safety_outlined, [_FT.department]),
+                    item('dependents', s.reportDependents, s.reportDependentsDesc,
+                        Icons.family_restroom_outlined, [_FT.department]),
                   ],
                 ),
                 const SizedBox(height: 16),

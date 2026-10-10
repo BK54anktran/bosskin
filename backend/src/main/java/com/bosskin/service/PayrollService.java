@@ -53,6 +53,7 @@ public class PayrollService {
     private final WorkCalendarService        workCalendarService;
     private final JobHistoryService          jobHistoryService;
     private final ContractService            contractService;
+    private final DependentService           dependentService;
 
     @Transactional
     public Payroll generatePayroll(Long employeeId, int year, int month) {
@@ -175,7 +176,9 @@ public class PayrollService {
         Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period, calendar,
             effectiveDeptId);
         putContractVars(vars, contractService.payTerms(employee, period, calendar, effectiveDeptId), baseSalary);
-        putTaxPolicyVars(vars, policy, employee);
+        // Bước M: số người phụ thuộc được giảm trừ trong tháng của kỳ
+        int dependents = dependentService.countDeductible(employeeId, java.time.YearMonth.of(year, month));
+        putTaxPolicyVars(vars, policy, employee, dependents);
 
         List<FormulaVariable> globalVarList = formulaVariableRepository
             .findByCompanyIdOrderByName(employee.getCompany().getId());
@@ -285,6 +288,10 @@ public class PayrollService {
             .standardWorkDays(vars.get("STANDARD_WORK_DAYS"))
             .familyDeduction(vars.get("FAMILY_DEDUCTION"))
             .insuranceBase(vars.get("INSURANCE_BASE"))
+            .dependents(dependents)
+            .employerSocialIns(employerShare(vars.get("INSURANCE_BASE"), employee.getCompany().getEmployerSocialRate()))
+            .employerHealthIns(employerShare(vars.get("INSURANCE_BASE"), employee.getCompany().getEmployerHealthRate()))
+            .employerUnemploymentIns(employerShare(vars.get("UNEMPLOYMENT_BASE"), employee.getCompany().getEmployerUnemploymentRate()))
             .periodFrom(period.from())
             .periodTo(period.to())
             .presentDays((int) presentDays)
@@ -359,6 +366,10 @@ public class PayrollService {
         dst.setStandardWorkDays(src.getStandardWorkDays());
         dst.setFamilyDeduction(src.getFamilyDeduction());
         dst.setInsuranceBase(src.getInsuranceBase());
+        dst.setDependents(src.getDependents());
+        dst.setEmployerSocialIns(src.getEmployerSocialIns());
+        dst.setEmployerHealthIns(src.getEmployerHealthIns());
+        dst.setEmployerUnemploymentIns(src.getEmployerUnemploymentIns());
         dst.setPeriodFrom(src.getPeriodFrom());
         dst.setPeriodTo(src.getPeriodTo());
         dst.setPresentDays(src.getPresentDays());
@@ -521,21 +532,32 @@ public class PayrollService {
      * BHXH/BHYT tối đa {@code insurance_cap_multiplier} × mức tham chiếu, BHTN tối đa
      * {@code unemployment_cap_multiplier} × lương tối thiểu vùng của công ty. Người phụ thuộc: bước M (hiện 0).
      */
-    private static void putTaxPolicyVars(Map<String, BigDecimal> vars, TaxPolicy policy, Employee employee) {
+    /** Bước M: phần BH công ty đóng = lương đóng BH (sau sàn / trần) × tỷ lệ công ty. */
+    private static BigDecimal employerShare(BigDecimal base, BigDecimal rate) {
+        if (base == null || rate == null) return BigDecimal.ZERO;
+        return base.multiply(rate).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static void putTaxPolicyVars(Map<String, BigDecimal> vars, TaxPolicy policy, Employee employee,
+                                         int dependentCount) {
         BigDecimal raw = vars.getOrDefault("INSURANCE_SALARY", BigDecimal.ZERO);
+        BigDecimal regionMinWage = policy.minWageOfRegion(employee.getCompany().getMinWageRegion());
         BigDecimal insuranceCap = policy.getReferenceWage()
             .multiply(BigDecimal.valueOf(policy.getInsuranceCapMultiplier()));
-        BigDecimal unemploymentCap = policy.minWageOfRegion(employee.getCompany().getMinWageRegion())
+        BigDecimal unemploymentCap = regionMinWage
             .multiply(BigDecimal.valueOf(policy.getUnemploymentCapMultiplier()));
-        BigDecimal dependents = BigDecimal.ZERO;
+        // Bước M: sàn = lương tối thiểu vùng; không có lương đóng BH (0) → không đóng
+        BigDecimal floor = raw.signum() > 0 ? regionMinWage : BigDecimal.ZERO;
+        BigDecimal dependents = BigDecimal.valueOf(dependentCount);
         vars.put("PERSONAL_DEDUCTION",  policy.getPersonalDeduction());
         vars.put("DEPENDENT_DEDUCTION", policy.getDependentDeduction());
         vars.put("DEPENDENTS",          dependents);
         vars.put("FAMILY_DEDUCTION",    policy.getPersonalDeduction().add(policy.getDependentDeduction().multiply(dependents)));
+        vars.put("INSURANCE_FLOOR",     regionMinWage);
         vars.put("INSURANCE_CAP",       insuranceCap);
-        vars.put("INSURANCE_BASE",      raw.min(insuranceCap));
+        vars.put("INSURANCE_BASE",      raw.min(insuranceCap).max(floor));
         vars.put("UNEMPLOYMENT_CAP",    unemploymentCap);
-        vars.put("UNEMPLOYMENT_BASE",   raw.min(unemploymentCap));
+        vars.put("UNEMPLOYMENT_BASE",   raw.min(unemploymentCap).max(floor));
     }
 
     private Map<String, BigDecimal> buildFormulaVariables(

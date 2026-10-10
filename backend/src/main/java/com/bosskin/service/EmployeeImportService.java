@@ -1,5 +1,6 @@
 package com.bosskin.service;
 
+import com.bosskin.core.SensitiveData;
 import com.bosskin.dto.DepartmentDTO;
 import com.bosskin.dto.EmployeeDTO;
 import com.bosskin.entity.*;
@@ -141,10 +142,14 @@ public class EmployeeImportService {
             r.setPositionName(safeName(e.getPosition()));
             r.setSalaryGradeCode(e.getSalaryGrade() != null ? e.getSalaryGrade().getCode() : "");
             r.setStatus(e.getStatus() != null ? e.getStatus().name() : "");
-            r.setIdentityCard(e.getIdentityCard());
+            r.setIdentityCard(SensitiveData.forViewer(e.getIdentityCard()));
             r.setAddress(e.getAddress());
             r.setPersonalEmail(e.getPersonalEmail());
-            r.setBankAccount(e.getBankAccount());
+            r.setBankAccount(SensitiveData.forViewer(e.getBankAccount()));
+            r.setTaxCode(SensitiveData.forViewer(e.getTaxCode()));
+            r.setSocialInsuranceNo(SensitiveData.forViewer(e.getSocialInsuranceNo()));
+            r.setHealthInsurancePlace(e.getHealthInsurancePlace());
+            r.setInsuranceJoinDate(e.getInsuranceJoinDate() != null ? e.getInsuranceJoinDate().format(DATE_EXPORT_FMT) : "");
             r.setBankName(e.getBankName());
             r.setContractSalary(e.getContractSalary() != null
                 ? e.getContractSalary().stripTrailingZeros().toPlainString() : "");
@@ -180,6 +185,7 @@ public class EmployeeImportService {
             }
 
             Employee emp = code == null ? null : existing.get(code);
+            if (emp != null) unmask(emp, row);
 
             if (emp == null) {
                 // CREATE
@@ -205,6 +211,9 @@ public class EmployeeImportService {
                 addChange(changes, "Địa chỉ",   emp.getAddress(),      row.getAddress());
                 addChange(changes, "Tài khoản NH",emp.getBankAccount(), row.getBankAccount());
                 addChange(changes, "Ngân hàng",  emp.getBankName(),     row.getBankName());
+                addChange(changes, "excel.col.employee.taxCode",           emp.getTaxCode(),           row.getTaxCode());
+                addChange(changes, "excel.col.employee.socialInsuranceNo", emp.getSocialInsuranceNo(), row.getSocialInsuranceNo());
+                addChange(changes, "excel.col.employee.healthInsurancePlace", emp.getHealthInsurancePlace(), row.getHealthInsurancePlace());
                 addChangeMoney(changes, "Lương HĐ",
                     emp.getContractSalary() == null ? null : emp.getContractSalary().stripTrailingZeros().toPlainString(),
                     row.getContractSalary());
@@ -254,6 +263,7 @@ public class EmployeeImportService {
 
             String code = row.getEmployeeCode() == null ? null : row.getEmployeeCode().trim();
             Employee emp = code == null ? null : existing.get(code);
+            if (emp != null) unmask(emp, row);
 
             if (emp == null) {
                 // ── CREATE — cần save ngay để lấy ID gắn vào User ───────────
@@ -287,6 +297,10 @@ public class EmployeeImportService {
                     .identityCard(row.getIdentityCard())
                     .bankAccount(row.getBankAccount())
                     .bankName(row.getBankName())
+                    .taxCode(trimOrNull(row.getTaxCode()))
+                    .socialInsuranceNo(trimOrNull(row.getSocialInsuranceNo()))
+                    .healthInsurancePlace(trimOrNull(row.getHealthInsurancePlace()))
+                    .insuranceJoinDate(parseDate(row.getInsuranceJoinDate()))
                     .contractSalary(parseMoney(row.getContractSalary()))
                     .status(Employee.Status.ACTIVE)
                     .build();
@@ -314,6 +328,10 @@ public class EmployeeImportService {
                 if (!isBlank(row.getIdentityCard())) emp.setIdentityCard(row.getIdentityCard().trim());
                 if (!isBlank(row.getBankAccount()))  emp.setBankAccount(row.getBankAccount().trim());
                 if (!isBlank(row.getBankName()))     emp.setBankName(row.getBankName().trim());
+                if (!isBlank(row.getTaxCode()))      emp.setTaxCode(row.getTaxCode().trim());
+                if (!isBlank(row.getSocialInsuranceNo())) emp.setSocialInsuranceNo(row.getSocialInsuranceNo().trim());
+                if (!isBlank(row.getHealthInsurancePlace())) emp.setHealthInsurancePlace(row.getHealthInsurancePlace().trim());
+                if (!isBlank(row.getInsuranceJoinDate())) emp.setInsuranceJoinDate(parseDate(row.getInsuranceJoinDate()));
                 // Bước L: lương HĐ của NV đã có hợp đồng do hợp đồng quản lý — bỏ qua cột này
                 if (!isBlank(row.getContractSalary()) && !laborContractRepo.managesSalary(emp.getId()))
                     emp.setContractSalary(parseMoney(row.getContractSalary()));
@@ -345,6 +363,7 @@ public class EmployeeImportService {
         String code = row.getEmployeeCode() == null ? null : row.getEmployeeCode().trim();
         Employee emp = code == null ? null
             : employeeRepo.findByEmployeeCodeAndCompanyId(code, companyId).orElse(null);
+        if (emp != null) unmask(emp, row);
         boolean exists = emp != null;
 
         // Enrich departmentName cho identifier display
@@ -418,6 +437,10 @@ public class EmployeeImportService {
         diffStr(changes, "excel.col.employee.personalEmail", emp.getPersonalEmail(), row.getPersonalEmail());
         diffStr(changes, "excel.col.employee.bankAccount",   emp.getBankAccount(),   row.getBankAccount());
         diffStr(changes, "excel.col.employee.bankName",      emp.getBankName(),      row.getBankName());
+        diffStr(changes, "excel.col.employee.taxCode",           emp.getTaxCode(),           row.getTaxCode());
+        diffStr(changes, "excel.col.employee.socialInsuranceNo", emp.getSocialInsuranceNo(), row.getSocialInsuranceNo());
+        diffStr(changes, "excel.col.employee.healthInsurancePlace", emp.getHealthInsurancePlace(), row.getHealthInsurancePlace());
+        diffDate(changes, "excel.col.employee.insuranceJoinDate", emp.getInsuranceJoinDate(), row.getInsuranceJoinDate());
         return changes.isEmpty() ? "preview.noChange" : String.join(",", changes);
     }
 
@@ -455,6 +478,7 @@ public class EmployeeImportService {
         String code = row.getEmployeeCode() == null ? null : row.getEmployeeCode().trim();
         Employee emp = code == null ? null
             : employeeRepo.findByEmployeeCodeAndCompanyId(code, companyId).orElse(null);
+        if (emp != null) unmask(emp, row);
 
         switch (command) {
             case CREATE -> {
@@ -509,6 +533,10 @@ public class EmployeeImportService {
             .identityCard(row.getIdentityCard())
             .bankAccount(row.getBankAccount())
             .bankName(row.getBankName())
+            .taxCode(trimOrNull(row.getTaxCode()))
+            .socialInsuranceNo(trimOrNull(row.getSocialInsuranceNo()))
+            .healthInsurancePlace(trimOrNull(row.getHealthInsurancePlace()))
+            .insuranceJoinDate(parseDate(row.getInsuranceJoinDate()))
             .contractSalary(parseMoney(row.getContractSalary()))
             .status(Employee.Status.ACTIVE)
             .build();
@@ -557,6 +585,14 @@ public class EmployeeImportService {
             emp.setBankAccount(isBlank(row.getBankAccount()) ? null : row.getBankAccount().trim());
         if (presentColumns.contains("employee.bankName"))
             emp.setBankName(isBlank(row.getBankName()) ? null : row.getBankName().trim());
+        if (presentColumns.contains("employee.taxCode"))
+            emp.setTaxCode(trimOrNull(row.getTaxCode()));
+        if (presentColumns.contains("employee.socialInsuranceNo"))
+            emp.setSocialInsuranceNo(trimOrNull(row.getSocialInsuranceNo()));
+        if (presentColumns.contains("employee.healthInsurancePlace"))
+            emp.setHealthInsurancePlace(trimOrNull(row.getHealthInsurancePlace()));
+        if (presentColumns.contains("employee.insuranceJoinDate"))
+            emp.setInsuranceJoinDate(parseDate(row.getInsuranceJoinDate()));
         if (presentColumns.contains("employee.contractSalary") && !laborContractRepo.managesSalary(emp.getId()))
             emp.setContractSalary(isBlank(row.getContractSalary()) ? null : parseMoney(row.getContractSalary()));
         if (presentColumns.contains("employee.departmentCode") && !isBlank(row.getDepartmentCode()))
@@ -660,6 +696,16 @@ public class EmployeeImportService {
     }
 
     private String str(Object v) { return v == null ? "" : v.toString(); }
+
+    private static String trimOrNull(String v) { return v == null || v.isBlank() ? null : v.trim(); }
+
+    /** Bước M: người không có quyền xem đủ xuất file đã che → ô còn nguyên bản che coi như không đổi. */
+    private static void unmask(Employee emp, EmployeeDTO.ImportRow row) {
+        row.setIdentityCard(SensitiveData.incoming(emp.getIdentityCard(), row.getIdentityCard()));
+        row.setBankAccount(SensitiveData.incoming(emp.getBankAccount(), row.getBankAccount()));
+        row.setTaxCode(SensitiveData.incoming(emp.getTaxCode(), row.getTaxCode()));
+        row.setSocialInsuranceNo(SensitiveData.incoming(emp.getSocialInsuranceNo(), row.getSocialInsuranceNo()));
+    }
     private boolean isBlank(String v) { return v == null || v.isBlank(); }
 
     /** Lấy code từ entity có lazy proxy — trả "" nếu đã bị soft-delete. */

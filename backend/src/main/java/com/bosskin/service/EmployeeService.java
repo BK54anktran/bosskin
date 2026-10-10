@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import com.bosskin.core.SensitiveData;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -165,6 +166,9 @@ public class EmployeeService {
             .department(dept).position(pos)
             .address(req.getAddress()).identityCard(req.getIdentityCard())
             .bankAccount(req.getBankAccount()).bankName(req.getBankName())
+            .taxCode(blankToNull(req.getTaxCode())).socialInsuranceNo(blankToNull(req.getSocialInsuranceNo()))
+            .healthInsurancePlace(blankToNull(req.getHealthInsurancePlace()))
+            .insuranceJoinDate(req.getInsuranceJoinDate())
             .build();
         employee = employeeRepository.save(employee);
         if (req.getManagerId() != null) {
@@ -204,10 +208,16 @@ public class EmployeeService {
         if (req.getLeaveDate()     != null) e.setLeaveDate(req.getLeaveDate());
         if (req.getStatus()        != null) e.setStatus(req.getStatus());
         if (req.getAddress()       != null) e.setAddress(req.getAddress());
-        if (req.getIdentityCard()  != null) e.setIdentityCard(req.getIdentityCard());
+        // Bước M: người không có quyền xem dữ liệu nhạy cảm gửi lại bản đã che → giữ giá trị cũ
+        if (req.getIdentityCard()  != null) e.setIdentityCard(SensitiveData.incoming(e.getIdentityCard(), req.getIdentityCard()));
         if (req.getPersonalEmail() != null) e.setPersonalEmail(req.getPersonalEmail());
-        if (req.getBankAccount()   != null) e.setBankAccount(req.getBankAccount());
+        if (req.getBankAccount()   != null) e.setBankAccount(SensitiveData.incoming(e.getBankAccount(), req.getBankAccount()));
         if (req.getBankName()      != null) e.setBankName(req.getBankName());
+        if (req.getTaxCode()       != null) e.setTaxCode(blankToNull(SensitiveData.incoming(e.getTaxCode(), req.getTaxCode())));
+        if (req.getSocialInsuranceNo() != null)
+            e.setSocialInsuranceNo(blankToNull(SensitiveData.incoming(e.getSocialInsuranceNo(), req.getSocialInsuranceNo())));
+        if (req.getHealthInsurancePlace() != null) e.setHealthInsurancePlace(blankToNull(req.getHealthInsurancePlace()));
+        if (req.getInsuranceJoinDate()    != null) e.setInsuranceJoinDate(req.getInsuranceJoinDate());
         if (req.getDepartmentId() != null) {
             e.setDepartment(departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found")));
@@ -423,9 +433,17 @@ public class EmployeeService {
             .salaryGradeName(e.getSalaryGrade() != null ? e.getSalaryGrade().getName() : null)
             .managerId(e.getManager() != null ? e.getManager().getId() : null)
             .managerName(e.getManager() != null ? e.getManager().getFullName() : null)
-            .address(e.getAddress()).identityCard(e.getIdentityCard())
-            .bankAccount(e.getBankAccount()).bankName(e.getBankName())
+            .address(e.getAddress())
+            .identityCard(SensitiveData.forViewer(e.getIdentityCard()))
+            .bankAccount(SensitiveData.forViewer(e.getBankAccount())).bankName(e.getBankName())
+            .taxCode(SensitiveData.forViewer(e.getTaxCode()))
+            .socialInsuranceNo(SensitiveData.forViewer(e.getSocialInsuranceNo()))
+            .healthInsurancePlace(e.getHealthInsurancePlace()).insuranceJoinDate(e.getInsuranceJoinDate())
             .contractSalary(e.getContractSalary()).createdAt(e.getCreatedAt())
             .build();
+    }
+
+    private static String blankToNull(String v) {
+        return v == null || v.isBlank() ? null : v.trim();
     }
 }

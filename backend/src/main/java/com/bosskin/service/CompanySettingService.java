@@ -65,6 +65,12 @@ public class CompanySettingService {
             if (req.getPayroll().getStandardDaysFromCalendar() != null) {
                 c.setStandardDaysFromCalendar(req.getPayroll().getStandardDaysFromCalendar());
             }
+            if (req.getPayroll().getEmployerSocialPercent() != null)
+                c.setEmployerSocialRate(employerRate(req.getPayroll().getEmployerSocialPercent()));
+            if (req.getPayroll().getEmployerHealthPercent() != null)
+                c.setEmployerHealthRate(employerRate(req.getPayroll().getEmployerHealthPercent()));
+            if (req.getPayroll().getEmployerUnemploymentPercent() != null)
+                c.setEmployerUnemploymentRate(employerRate(req.getPayroll().getEmployerUnemploymentPercent()));
         }
         if (req.getAttendance().getDeviceBindingEnabled() != null) {
             c.setDeviceBindingEnabled(req.getAttendance().getDeviceBindingEnabled());
@@ -174,6 +180,9 @@ public class CompanySettingService {
                 .payrollCutoffDay(c.getPayrollCutoffDay())
                 .minWageRegion(c.getMinWageRegion())
                 .standardDaysFromCalendar(c.isStandardDaysFromCalendar())
+                .employerSocialPercent(percent(c.getEmployerSocialRate()))
+                .employerHealthPercent(percent(c.getEmployerHealthRate()))
+                .employerUnemploymentPercent(percent(c.getEmployerUnemploymentRate()))
                 .build())
             .approval(CompanySettingDTO.ApprovalSetting.builder()
                 .mode((c.getApprovalMode() != null ? c.getApprovalMode() : com.bosskin.entity.Company.ApprovalMode.PERMISSION).name())
@@ -182,5 +191,17 @@ public class CompanySettingService {
                 .expiryWarningDays(c.getContractExpiryWarningDays())
                 .build())
             .build();
+    }
+
+    /** Bước M: % (0–50) → tỷ lệ lưu DB. */
+    private static java.math.BigDecimal employerRate(java.math.BigDecimal percent) {
+        if (percent.signum() < 0 || percent.compareTo(java.math.BigDecimal.valueOf(50)) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.employer_rate_invalid");
+        }
+        return percent.divide(java.math.BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+    }
+
+    private static java.math.BigDecimal percent(java.math.BigDecimal rate) {
+        return rate == null ? null : rate.multiply(java.math.BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
     }
 }

@@ -4969,4 +4969,154 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActContractImport => 'Nhập hợp đồng từ Excel';
+
+  @override
+  String get permUiEmployeeSensitiveView =>
+      'Xem đủ CCCD, số tài khoản, MST, số sổ BHXH (không có thì hiện dạng ****1234)';
+
+  @override
+  String get permDescEmployeeSensitiveView =>
+      'Xem dữ liệu nhạy cảm của nhân viên';
+
+  @override
+  String get taxInsuranceInfo => 'Thuế & bảo hiểm';
+
+  @override
+  String get empTaxCode => 'Mã số thuế cá nhân';
+
+  @override
+  String get empSocialInsuranceNo => 'Số sổ BHXH';
+
+  @override
+  String get empHealthInsurancePlace => 'Nơi đăng ký KCB ban đầu';
+
+  @override
+  String get empInsuranceJoinDate => 'Ngày tham gia bảo hiểm';
+
+  @override
+  String get sensitiveMaskedHint =>
+      'Một số trường đang che vì bạn không có quyền xem dữ liệu nhạy cảm. Để nguyên thì giữ giá trị cũ, nhập số mới thì ghi đè.';
+
+  @override
+  String get dependentsTitle => 'Người phụ thuộc';
+
+  @override
+  String get dependentsHint =>
+      'Giảm trừ gia cảnh tính theo tháng của kỳ lương. Người \"Chưa đăng ký\" không được giảm trừ.';
+
+  @override
+  String get dependentAdd => 'Thêm người phụ thuộc';
+
+  @override
+  String get dependentEdit => 'Sửa người phụ thuộc';
+
+  @override
+  String get dependentEmpty => 'Chưa có người phụ thuộc';
+
+  @override
+  String get dependentName => 'Họ tên người phụ thuộc';
+
+  @override
+  String get dependentRelationship => 'Quan hệ';
+
+  @override
+  String get dependentRelChild => 'Con';
+
+  @override
+  String get dependentRelSpouse => 'Vợ / chồng';
+
+  @override
+  String get dependentRelParent => 'Cha / mẹ';
+
+  @override
+  String get dependentRelOther => 'Khác';
+
+  @override
+  String get dependentTaxCode => 'MST người phụ thuộc';
+
+  @override
+  String get dependentIdentityNo => 'CCCD / số định danh';
+
+  @override
+  String get dependentFrom => 'Giảm trừ từ tháng';
+
+  @override
+  String get dependentTo => 'Đến tháng';
+
+  @override
+  String get dependentNoEnd => 'chưa kết thúc';
+
+  @override
+  String get dependentPeriod => 'Giảm trừ';
+
+  @override
+  String get dependentMonthHint =>
+      'Chọn ngày bất kỳ trong tháng; hệ thống tính theo cả tháng. Để trống \"Đến tháng\" nếu chưa kết thúc.';
+
+  @override
+  String get dependentStatus => 'Trạng thái đăng ký';
+
+  @override
+  String get dependentStatusNotRegistered => 'Chưa đăng ký';
+
+  @override
+  String get dependentStatusPending => 'Đã nộp, chờ MST';
+
+  @override
+  String get dependentStatusRegistered => 'Đã đăng ký';
+
+  @override
+  String get dependentActiveNow => 'Đang giảm trừ';
+
+  @override
+  String get payslipEmployerInsurance => 'BH công ty đóng (BHXH / BHYT / BHTN)';
+
+  @override
+  String get employerInsuranceTitle => 'Tỷ lệ bảo hiểm công ty đóng';
+
+  @override
+  String get employerSocialPercent => 'BHXH (gồm TNLĐ-BNN)';
+
+  @override
+  String get employerHealthPercent => 'BHYT';
+
+  @override
+  String get employerUnemploymentPercent => 'BHTN';
+
+  @override
+  String get employerInsuranceHelper =>
+      'Mặc định 17,5% / 3% / 1%. Tính trên lương đóng BH của phiếu lương, ra cột chi phí công ty ở báo cáo lương; không trừ vào lương nhân viên.';
+
+  @override
+  String get reportInsured => 'NV tham gia bảo hiểm';
+
+  @override
+  String get reportInsuredDesc =>
+      'MST, số sổ BHXH, nơi KCB, ngày tham gia và lương đóng BH hiện hành';
+
+  @override
+  String get reportDependents => 'Người phụ thuộc';
+
+  @override
+  String get reportDependentsDesc =>
+      'Người phụ thuộc giảm trừ gia cảnh, tháng bắt đầu / kết thúc, trạng thái đăng ký';
+
+  @override
+  String get auditActDependentCreate => 'Thêm người phụ thuộc';
+
+  @override
+  String get auditActDependentUpdate => 'Sửa người phụ thuộc';
+
+  @override
+  String get auditActDependentDelete => 'Xoá người phụ thuộc';
+
+  @override
+  String payslipDependents(int count) {
+    return '$count người phụ thuộc';
+  }
+
+  @override
+  String dependentDeleteConfirm(String name) {
+    return 'Xoá người phụ thuộc $name? Kỳ lương tính lại sau đó sẽ không còn giảm trừ cho người này.';
+  }
 }

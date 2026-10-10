@@ -4974,4 +4974,160 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActContractImport => 'Contracts imported from Excel';
+
+  @override
+  String get permUiEmployeeSensitiveView =>
+      'See full ID card, bank account, tax code and social insurance number (otherwise shown as ****1234)';
+
+  @override
+  String get permDescEmployeeSensitiveView => 'View employee sensitive data';
+
+  @override
+  String get taxInsuranceInfo => 'Tax & insurance';
+
+  @override
+  String get empTaxCode => 'Personal tax code';
+
+  @override
+  String get empSocialInsuranceNo => 'Social insurance number';
+
+  @override
+  String get empHealthInsurancePlace => 'Primary health care registration';
+
+  @override
+  String get empInsuranceJoinDate => 'Insurance join date';
+
+  @override
+  String get sensitiveMaskedHint =>
+      'Some fields are masked because you cannot view sensitive data. Leave them as is to keep the old value, or type a new one to replace it.';
+
+  @override
+  String get dependentsTitle => 'Dependents';
+
+  @override
+  String get dependentsHint =>
+      'Family deduction follows the payroll period month. \"Not registered\" dependents are not deducted.';
+
+  @override
+  String get dependentAdd => 'Add dependent';
+
+  @override
+  String get dependentEdit => 'Edit dependent';
+
+  @override
+  String get dependentEmpty => 'No dependents yet';
+
+  @override
+  String get dependentName => 'Dependent\'s full name';
+
+  @override
+  String get dependentRelationship => 'Relationship';
+
+  @override
+  String get dependentRelChild => 'Child';
+
+  @override
+  String get dependentRelSpouse => 'Spouse';
+
+  @override
+  String get dependentRelParent => 'Parent';
+
+  @override
+  String get dependentRelOther => 'Other';
+
+  @override
+  String get dependentTaxCode => 'Dependent tax code';
+
+  @override
+  String get dependentIdentityNo => 'ID card / personal ID';
+
+  @override
+  String get dependentFrom => 'Deduction from month';
+
+  @override
+  String get dependentTo => 'To month';
+
+  @override
+  String get dependentNoEnd => 'ongoing';
+
+  @override
+  String get dependentPeriod => 'Deduction';
+
+  @override
+  String get dependentMonthHint =>
+      'Pick any day in the month; the whole month counts. Leave \"To month\" empty if ongoing.';
+
+  @override
+  String get dependentStatus => 'Registration status';
+
+  @override
+  String get dependentStatusNotRegistered => 'Not registered';
+
+  @override
+  String get dependentStatusPending => 'Submitted, awaiting tax code';
+
+  @override
+  String get dependentStatusRegistered => 'Registered';
+
+  @override
+  String get dependentActiveNow => 'Deducting now';
+
+  @override
+  String get payslipEmployerInsurance =>
+      'Employer insurance (social / health / unemployment)';
+
+  @override
+  String get employerInsuranceTitle => 'Employer insurance rates';
+
+  @override
+  String get employerSocialPercent => 'Social (incl. accident)';
+
+  @override
+  String get employerHealthPercent => 'Health';
+
+  @override
+  String get employerUnemploymentPercent => 'Unemployment';
+
+  @override
+  String get employerInsuranceHelper =>
+      'Defaults 17.5% / 3% / 1%. Applied to the payslip insurance salary for the company cost columns of the payroll report; not deducted from employee pay.';
+
+  @override
+  String get reportInsured => 'Insured employees';
+
+  @override
+  String get reportInsuredDesc =>
+      'Tax code, social insurance number, health care registration, join date and current insurance salary';
+
+  @override
+  String get reportDependents => 'Dependents';
+
+  @override
+  String get reportDependentsDesc =>
+      'Dependents for family deduction, start / end month and registration status';
+
+  @override
+  String get auditActDependentCreate => 'Dependent added';
+
+  @override
+  String get auditActDependentUpdate => 'Dependent updated';
+
+  @override
+  String get auditActDependentDelete => 'Dependent deleted';
+
+  @override
+  String payslipDependents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dependents',
+      one: '1 dependent',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dependentDeleteConfirm(String name) {
+    return 'Delete dependent $name? Payrolls recalculated afterwards no longer deduct for this person.';
+  }
 }
