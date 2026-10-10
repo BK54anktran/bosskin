@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../data/services/team_approval_service.dart';
 import '../../../data/repositories/company_setting_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../widgets/app_dropdown.dart';
@@ -63,6 +64,8 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
   final _cutoffDayCtrl = TextEditingController(text: '1');
   int _minWageRegion = 1;
   bool _standardDaysFromCalendar = false;
+  /// Bước K: PERMISSION (mặc định) | MANAGER_THEN_HR
+  String _approvalMode = 'PERMISSION';
 
   bool _locationCheckEnabled = false;
   bool _deviceBindingEnabled = false;
@@ -121,6 +124,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
         _cutoffDayCtrl.text = ((payroll?['payrollCutoffDay'] as num?)?.toInt() ?? 1).toString();
         _minWageRegion = (payroll?['minWageRegion'] as num?)?.toInt() ?? 1;
         _standardDaysFromCalendar = payroll?['standardDaysFromCalendar'] == true;
+        _approvalMode = ((data['approval'] as Map?)?['mode'] as String?) ?? 'PERMISSION';
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
         _deviceBindingEnabled = attendance['deviceBindingEnabled'] == true;
         _checkInLat = (attendance['checkInLatitude'] as num?)?.toDouble();
@@ -256,11 +260,13 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
           'minWageRegion': _minWageRegion,
           'standardDaysFromCalendar': _standardDaysFromCalendar,
         },
+        'approval': {'mode': _approvalMode},
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.saveSuccess), backgroundColor: AppTheme.secondary),
       );
+      TeamApprovalService.instance.refresh();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -360,6 +366,30 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             decoration: InputDecoration(labelText: s.leaveHoursPerDay),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.approvalModeTitle, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 8),
+                          AppDropdown<String>(
+                            value: _approvalMode,
+                            label: s.approvalModeLabel,
+                            items: [
+                              DropdownMenuItem(value: 'PERMISSION', child: Text(s.approvalModePermission)),
+                              DropdownMenuItem(value: 'MANAGER_THEN_HR', child: Text(s.approvalModeManagerThenHr)),
+                            ],
+                            onChanged: (v) => setState(() => _approvalMode = v ?? 'PERMISSION'),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(s.approvalModeHelper,
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                         ],
                       ),
                     ),

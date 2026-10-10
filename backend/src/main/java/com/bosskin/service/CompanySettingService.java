@@ -110,6 +110,14 @@ public class CompanySettingService {
             c.setRoundingWorkMinutes(req.getAttendance().getRoundingWorkMinutes());
         }
 
+        if (req.getApproval() != null) {
+            try {
+                c.setApprovalMode(com.bosskin.entity.Company.ApprovalMode.valueOf(req.getApproval().getMode()));
+            } catch (IllegalArgumentException | NullPointerException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.approval_mode_invalid");
+            }
+        }
+
         companyRepository.save(c);
         return toResponse(c);
     }
@@ -158,6 +166,9 @@ public class CompanySettingService {
                 .payrollCutoffDay(c.getPayrollCutoffDay())
                 .minWageRegion(c.getMinWageRegion())
                 .standardDaysFromCalendar(c.isStandardDaysFromCalendar())
+                .build())
+            .approval(CompanySettingDTO.ApprovalSetting.builder()
+                .mode((c.getApprovalMode() != null ? c.getApprovalMode() : com.bosskin.entity.Company.ApprovalMode.PERMISSION).name())
                 .build())
             .build();
     }

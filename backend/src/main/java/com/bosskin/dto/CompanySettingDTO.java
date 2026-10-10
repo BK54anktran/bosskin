@@ -49,11 +49,19 @@ public class CompanySettingDTO {
         private boolean standardDaysFromCalendar;
     }
 
+    /** Bước K: ai duyệt đơn nghỉ / sửa công / đổi ca. */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class ApprovalSetting {
+        /** PERMISSION (mặc định: người có quyền duyệt + phạm vi) | MANAGER_THEN_HR. */
+        private String mode;
+    }
+
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Response {
         private AttendanceSetting attendance;
         private LeaveSetting leaves;
         private PayrollSetting payroll;
+        private ApprovalSetting approval;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -96,9 +104,16 @@ public class CompanySettingDTO {
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ApprovalUpsert {
+        @NotNull private String mode;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class Upsert {
         @Valid @NotNull private AttendanceUpsert attendance;
         @Valid @NotNull private LeaveUpsert leaves;
         @Valid private PayrollUpsert payroll;
+        /** Không gửi = giữ nguyên. */
+        @Valid private ApprovalUpsert approval;
     }
 }

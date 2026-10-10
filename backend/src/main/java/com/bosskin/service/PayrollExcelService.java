@@ -222,7 +222,8 @@ public class PayrollExcelService {
         row.setMonth(p.getMonth() != null ? String.valueOf(p.getMonth()) : "");
         row.setEmployeeCode(emp != null ? nvl(emp.getEmployeeCode()) : "");
         row.setEmployeeName(emp != null ? nvl(emp.getFullName()) : "");
-        row.setDepartmentName(emp != null && emp.getDepartment() != null ? nvl(emp.getDepartment().getName()) : "");
+        row.setDepartmentName(p.getDepartmentName() != null ? p.getDepartmentName()
+            : (emp != null && emp.getDepartment() != null ? nvl(emp.getDepartment().getName()) : ""));
         row.setPositionName(emp != null && emp.getPosition() != null ? nvl(emp.getPosition().getName()) : "");
         row.setSalaryGradeCode(p.getSalaryGradeCode() != null ? p.getSalaryGradeCode()
             : (emp != null && emp.getSalaryGrade() != null ? nvl(emp.getSalaryGrade().getCode()) : ""));
@@ -339,9 +340,12 @@ public class PayrollExcelService {
 
                 writeText(row, c++, safeEmployeeCode(p), textStyle);
                 writeText(row, c++, safeText(emp.getFullName()), textStyle);
-                writeText(row, c++, emp.getDepartment() != null ? safeText(emp.getDepartment().getName()) : "", textStyle);
-                // Bậc lương: code + tên
-                String gradeLabel = emp.getSalaryGrade() != null
+                writeText(row, c++, p.getDepartmentName() != null ? safeText(p.getDepartmentName())
+                    : emp.getDepartment() != null ? safeText(emp.getDepartment().getName()) : "", textStyle);
+                // Bậc lương: code + tên (ảnh chụp trên phiếu — bậc hiệu lực trong kỳ)
+                String gradeLabel = p.getSalaryGradeCode() != null
+                    ? safeText(p.getSalaryGradeCode()) + " - " + safeText(p.getSalaryGradeName())
+                    : emp.getSalaryGrade() != null
                     ? safeText(emp.getSalaryGrade().getCode()) + " - " + safeText(emp.getSalaryGrade().getName())
                     : "";
                 writeText(row, c++, gradeLabel, textStyle);

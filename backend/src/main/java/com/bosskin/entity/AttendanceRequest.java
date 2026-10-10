@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AttendanceRequest extends BaseEntity {
+public class AttendanceRequest extends BaseEntity implements ManagerApprovable {
 
     public enum Type { CHECK_IN, CHECK_OUT, OT, EXTRA }
 
@@ -81,4 +81,15 @@ public class AttendanceRequest extends BaseEntity {
 
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
+
+    // Bước K — quản lý trực tiếp duyệt trước (chế độ MANAGER_THEN_HR)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_approved_by")
+    private User managerApprovedBy;
+
+    @Column(name = "manager_approved_at")
+    private java.time.LocalDateTime managerApprovedAt;
+
+    @Column(name = "manager_note", length = 500)
+    private String managerNote;
 }

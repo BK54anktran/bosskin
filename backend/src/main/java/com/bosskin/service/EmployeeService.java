@@ -47,6 +47,7 @@ public class EmployeeService {
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final DeptScopeService deptScopeService;
+    private final JobHistoryService jobHistoryService;
 
     public PageResponse<EmployeeDTO.Response> findAll(
         Long companyId, Long userId, int page, int size, String search,
@@ -165,6 +166,11 @@ public class EmployeeService {
             .bankAccount(req.getBankAccount()).bankName(req.getBankName())
             .build();
         employee = employeeRepository.save(employee);
+        if (req.getManagerId() != null) {
+            employee.setManager(jobHistoryService.resolveManager(employee, req.getManagerId(), companyId));
+            employee = employeeRepository.save(employee);
+        }
+        jobHistoryService.recordHire(employee, userId);
 
         var role = resolveEmployeeRole(companyId);
 
@@ -188,6 +194,7 @@ public class EmployeeService {
     public EmployeeDTO.Response update(Long id, EmployeeDTO.UpdateRequest req, Long companyId, Long userId) {
         Employee e = getOrThrow(id, companyId);
         requireViewScope(userId, e.getDepartment().getId());
+        JobHistoryService.Snapshot before = JobHistoryService.Snapshot.of(e);
         if (req.getFullName()   != null) e.setFullName(req.getFullName());
         if (req.getPhone()      != null) e.setPhone(req.getPhone());
         if (req.getGender()     != null) e.setGender(req.getGender());
@@ -226,7 +233,13 @@ public class EmployeeService {
             e.setSalaryGrade(null);
         }
         if (req.getContractSalary() != null) e.setContractSalary(req.getContractSalary());
-        return toResponse(employeeRepository.save(e));
+        if (req.isManagerIdPresent()) {
+            e.setManager(req.getManagerId() == null ? null : jobHistoryService.resolveManager(e, req.getManagerId(), companyId));
+        }
+        e = employeeRepository.save(e);
+        // Bước K: đổi phòng / chức vụ / bậc / quản lý → ghi mốc lịch sử công tác hiệu lực hôm nay
+        jobHistoryService.recordIfChanged(e, before, userId);
+        return toResponse(e);
     }
 
     @Transactional
@@ -353,6 +366,8 @@ public class EmployeeService {
         }
         employeeRepository.save(e);
         employeeRepository.delete(e);
+        // Bước K: cấp dưới của người nghỉ không còn quản lý trực tiếp
+        employeeRepository.clearManager(e.getId());
 
         // D4: nhân viên đã xoá không được đăng nhập tiếp — khoá tài khoản và thu hồi phiên
         userRepository.findByEmployeeId(e.getId()).ifPresent(u -> {
@@ -398,6 +413,8 @@ public class EmployeeService {
             .salaryGradeId(e.getSalaryGrade() != null ? e.getSalaryGrade().getId() : null)
             .salaryGradeCode(e.getSalaryGrade() != null ? e.getSalaryGrade().getCode() : null)
             .salaryGradeName(e.getSalaryGrade() != null ? e.getSalaryGrade().getName() : null)
+            .managerId(e.getManager() != null ? e.getManager().getId() : null)
+            .managerName(e.getManager() != null ? e.getManager().getFullName() : null)
             .address(e.getAddress()).identityCard(e.getIdentityCard())
             .bankAccount(e.getBankAccount()).bankName(e.getBankName())
             .contractSalary(e.getContractSalary()).createdAt(e.getCreatedAt())

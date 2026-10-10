@@ -65,6 +65,9 @@ class ShiftSwap {
   final String? reason;
   final String? adminNote;
   final String? processedByName;
+  /// Bước K: bước quản lý trực tiếp.
+  final String? managerApprovedByName;
+  final String? awaitingManagerName;
 
   const ShiftSwap({
     required this.id,
@@ -81,6 +84,8 @@ class ShiftSwap {
     this.reason,
     this.adminNote,
     this.processedByName,
+    this.managerApprovedByName,
+    this.awaitingManagerName,
   });
 
   factory ShiftSwap.fromJson(Map<String, dynamic> m) => ShiftSwap(
@@ -98,6 +103,8 @@ class ShiftSwap {
         reason: m['reason'] as String?,
         adminNote: m['adminNote'] as String?,
         processedByName: m['processedByName'] as String?,
+        managerApprovedByName: m['managerApprovedByName'] as String?,
+        awaitingManagerName: m['awaitingManagerName'] as String?,
       );
 }
 

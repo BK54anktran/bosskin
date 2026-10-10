@@ -42,6 +42,32 @@ public class FcmService {
         }
     }
 
+    /** Thông báo chung (Bước K: đơn chờ quản lý trực tiếp duyệt). Không ghi FcmNotificationLog (bảng cho nhắc ca). */
+    public void sendSimple(String fcmToken, String title, String body, java.util.Map<String, String> data) {
+        if (FirebaseApp.getApps().isEmpty() || fcmToken == null || fcmToken.isBlank()) return;
+        try {
+            Message.Builder b = Message.builder()
+                .setToken(fcmToken)
+                .setAndroidConfig(AndroidConfig.builder()
+                    .setPriority(AndroidConfig.Priority.HIGH)
+                    .setNotification(AndroidNotification.builder().setTitle(title).setBody(body).build())
+                    .build())
+                .setApnsConfig(ApnsConfig.builder()
+                    .setAps(Aps.builder()
+                        .setAlert(ApsAlert.builder().setTitle(title).setBody(body).build())
+                        .setSound("default")
+                        .build())
+                    .build())
+                .putData("title", title)
+                .putData("body", body);
+            if (data != null) data.forEach(b::putData);
+            FirebaseMessaging.getInstance().send(b.build());
+        } catch (FirebaseMessagingException e) {
+            log.info("FCM gửi thông báo thất bại: {}", e.getMessage());
+            dropIfDead(fcmToken, e);
+        }
+    }
+
     public void sendCheckInOutNotif(String fcmToken, Long userId, String shiftName,
                                     LocalTime shiftTime, LocalDate workDate, boolean isCheckIn) {
         if (FirebaseApp.getApps().isEmpty()) return;

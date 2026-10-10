@@ -44,6 +44,11 @@ public class ShiftSwapDTO {
         private String processedByName;
         private LocalDateTime processedAt;
         private LocalDateTime createdAt;
+        /** Bước K: bước quản lý trực tiếp. */
+        private LocalDateTime managerApprovedAt;
+        private String managerApprovedByName;
+        private String managerNote;
+        private String awaitingManagerName;
     }
 
     /** Một phân ca hiển thị trong form đổi ca */

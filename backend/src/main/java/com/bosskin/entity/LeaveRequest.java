@@ -15,7 +15,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LeaveRequest extends BaseEntity {
+public class LeaveRequest extends BaseEntity implements ManagerApprovable {
 
     public enum Mode { DAY_RANGE, HOUR_RANGE }
     public enum Status { PENDING, APPROVED, REJECTED, CANCELLED }
@@ -85,4 +85,15 @@ public class LeaveRequest extends BaseEntity {
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private java.util.List<LeaveRequest> children = new java.util.ArrayList<>();
+
+    // Bước K — quản lý trực tiếp duyệt trước (chế độ MANAGER_THEN_HR)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_approved_by")
+    private User managerApprovedBy;
+
+    @Column(name = "manager_approved_at")
+    private java.time.LocalDateTime managerApprovedAt;
+
+    @Column(name = "manager_note", length = 500)
+    private String managerNote;
 }

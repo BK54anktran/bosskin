@@ -144,4 +144,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                                            @Param("from") LocalDate from,
                                            @Param("to") LocalDate to,
                                            @Param("deptId") Long deptId);
+
+    /** Bước K — gỡ quản lý trực tiếp của cấp dưới khi quản lý nghỉ / bị xoá. */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Employee e SET e.manager = null WHERE e.manager.id = :managerId")
+    int clearManager(@Param("managerId") Long managerId);
+
+    /** Bước K — cấp dưới trực tiếp đang làm. */
+    @Query("SELECT e FROM Employee e JOIN FETCH e.department WHERE e.manager.id = :managerId AND e.status <> com.bosskin.entity.Employee.Status.INACTIVE")
+    List<Employee> findDirectReports(@Param("managerId") Long managerId);
 }

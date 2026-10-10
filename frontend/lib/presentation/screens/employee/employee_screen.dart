@@ -20,6 +20,7 @@ import '../../../data/services/auth_service.dart';
 import '../../../data/repositories/salary_grade_repository.dart';
 import '../../../data/models/salary_grade.dart';
 import 'employee_form_screen.dart';
+import 'job_history_dialog.dart';
 
 class EmployeeScreen extends StatefulWidget {
   const EmployeeScreen({super.key});
@@ -263,6 +264,14 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     }
   }
 
+  Future<void> _openJobHistory(Employee emp) async {
+    final changed = await showDialog<bool>(
+      context: context,
+      builder: (_) => JobHistoryDialog(employee: emp, departments: _departments, grades: _cachedGrades),
+    );
+    if (changed == true) _load();
+  }
+
   void _openSalaryHistory(Employee emp) {
     showDialog(
       context: context,
@@ -431,6 +440,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 onEdit: () => _openForm(emp: _employees[i]),
                 onDelete: () => _delete(_employees[i]),
                 onSalaryHistory: () => _openSalaryHistory(_employees[i]),
+                onJobHistory: () => _openJobHistory(_employees[i]),
               ),
             ),
           ),
@@ -455,12 +465,14 @@ class _EmployeeCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onSalaryHistory;
+  final VoidCallback onJobHistory;
 
   const _EmployeeCard({
     required this.employee,
     required this.onEdit,
     required this.onDelete,
     required this.onSalaryHistory,
+    required this.onJobHistory,
   });
 
   @override
@@ -477,6 +489,13 @@ class _EmployeeCard extends StatelessWidget {
     final desktopActions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        Tooltip(
+          message: s.jobHistoryTitle,
+          child: IconButton(
+            icon: const Icon(Icons.timeline, size: 20),
+            onPressed: onJobHistory,
+          ),
+        ),
         if (canSalary)
           Tooltip(
             message: s.salaryHistory,
@@ -507,6 +526,14 @@ class _EmployeeCard extends StatelessWidget {
     final actionsMenu = PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 20),
       itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'job',
+          child: Row(children: [
+            const Icon(Icons.timeline, size: 18),
+            const SizedBox(width: 10),
+            Text(s.jobHistoryTitle),
+          ]),
+        ),
         if (canSalary)
           PopupMenuItem(
             value: 'salary',
@@ -536,6 +563,7 @@ class _EmployeeCard extends StatelessWidget {
           ),
       ],
       onSelected: (v) {
+        if (v == 'job') onJobHistory();
         if (v == 'salary') onSalaryHistory();
         if (v == 'edit') onEdit();
         if (v == 'delete') onDelete();
@@ -573,6 +601,7 @@ class _EmployeeCard extends StatelessWidget {
             _InfoChip(Icons.email_outlined, e.email),
             _InfoChip(Icons.account_tree_outlined, e.departmentName),
             _InfoChip(Icons.work_outline, e.positionName ?? '—'),
+            if (e.managerName != null) _InfoChip(Icons.supervisor_account_outlined, e.managerName!),
           ],
         ),
       ],

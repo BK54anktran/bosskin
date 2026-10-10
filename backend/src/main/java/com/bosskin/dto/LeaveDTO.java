@@ -120,6 +120,12 @@ public class LeaveDTO {
         private String processedByName;
         private LocalDateTime createdAt;
         private LocalDateTime processedAt;
+        /** Bước K: quản lý trực tiếp đã duyệt bước 1. */
+        private LocalDateTime managerApprovedAt;
+        private String managerApprovedByName;
+        private String managerNote;
+        /** Đơn đang chờ quản lý trực tiếp (tên quản lý); null = không chờ. */
+        private String awaitingManagerName;
         private Long parentId;
         private List<LeaveRequestResponse> children;
     }

@@ -10,6 +10,7 @@ import '../../../data/repositories/employee_repository.dart';
 import '../../../data/repositories/salary_grade_repository.dart';
 import '../../../data/services/api_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../widgets/manager_dropdown.dart';
 import '../../widgets/department_picker_field.dart';
 import 'employee_locations_screen.dart';
 
@@ -51,6 +52,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   int? _deptId;
   int? _positionId;
   int? _gradeId;
+  int? _managerId;
 
   List<Map<String, dynamic>> _positions = [];
   List<SalaryGrade> _grades = [];
@@ -85,6 +87,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       _deptId = e.departmentId;
       _positionId = e.positionId;
       _gradeId = e.salaryGradeId;
+      _managerId = e.managerId;
       _loadPositions(e.departmentId);
     }
     if (widget.initialGrades.isEmpty) _loadGrades();
@@ -175,6 +178,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       'departmentId': _deptId,
       'positionId': _positionId,
       'salaryGradeId': _gradeId,
+      'managerId': _managerId,
       'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
       'identityCard': _idCard.text.trim().isEmpty ? null : _idCard.text.trim(),
       'bankAccount':
@@ -335,6 +339,13 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                             ? null
                             : (v) => setState(() => _positionId = v),
                       )),
+              ]),
+              _row([
+                _field(ManagerDropdown(
+                  value: _managerId,
+                  excludeEmployeeId: widget.employee?.id,
+                  onChanged: (v) => setState(() => _managerId = v),
+                )),
               ]),
             ]),
             const SizedBox(height: 28),

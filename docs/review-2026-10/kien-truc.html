@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>1. Kiến trúc hệ thống</h1>
     <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap. Trang giới thiệu tĩnh (Netlify) gửi yêu cầu dùng thử vào Supabase.</p>
-    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V14, 34 controller).</p>
+    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V15, 36 controller).</p>
   </section>
   <ul class="toc">
     <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
@@ -61,7 +61,7 @@ flowchart LR
       TILE["MapTile proxy + cache đĩa"]
     end
   end
-  DB[("MySQL 8<br/>42 bảng · Flyway V1 baseline → V14")]
+  DB[("MySQL 8<br/>43 bảng · Flyway V1 baseline → V15")]
   S3[("AWS S3<br/>ảnh, tài liệu, file Excel")]
   FCM["Firebase FCM"]
   OSM["tile.openstreetmap.org"]
@@ -165,7 +165,7 @@ flowchart LR
   </pre></div>
   <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Netlify. Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
-  <h2 id="api">Danh sách API (34 controller)</h2>
+  <h2 id="api">Danh sách API (36 controller)</h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Controller</th><th>Đường dẫn gốc</th><th>Chức năng</th></tr></thead>
     <tbody>
@@ -184,6 +184,8 @@ flowchart LR
       <tr><td>WorkShiftController</td><td><code>/api/v1/shifts</code></td><td>Ca làm, phân ca đơn lẻ / hàng loạt, import/export</td></tr>
       <tr><td>ShiftPlanController</td><td><code>/api/v1/shift-rotations</code>, <code>/api/v1/shift-swaps</code></td><td>Mẫu xoay ca + sinh phân ca; đổi / nhường ca, duyệt (<code>SHIFT_SWAP_APPROVE</code>)</td></tr>
       <tr><td>EmployeeController</td><td><code>/api/v1/employees</code></td><td>Nhân viên CRUD, import/export</td></tr>
+      <tr><td>JobHistoryController</td><td><code>/api/v1/employees/{id}/job-histories</code>, <code>/api/v1/org-chart</code></td><td>Quá trình công tác (mốc phòng ban / chức vụ / bậc / quản lý theo ngày hiệu lực; chỉ xoá mốc chưa tới ngày), sơ đồ tổ chức</td></tr>
+      <tr><td>TeamApprovalController</td><td><code>/api/v1/team-approvals</code></td><td>Quản lý trực tiếp duyệt / từ chối bước 1 đơn nghỉ, đơn sửa công, đổi ca của cấp dưới (khi công ty bật <code>MANAGER_THEN_HR</code>)</td></tr>
       <tr><td>EmployeeLocationController</td><td><code>/api/v1/employees/{id}/locations</code></td><td>Vị trí check-in riêng từng nhân viên</td></tr>
       <tr><td>DepartmentController</td><td><code>/api/v1/departments</code></td><td>Cây phòng ban, import/export</td></tr>
       <tr><td>PositionController</td><td><code>/api/v1/positions</code></td><td>Chức vụ</td></tr>
@@ -200,7 +202,7 @@ flowchart LR
       <tr><td>UserController</td><td><code>/api/v1/users</code></td><td>Tài khoản, gán vai trò/quyền/phạm vi, khoá mở</td></tr>
       <tr><td>ProfileController</td><td><code>/api/v1/profile</code></td><td>Hồ sơ, đổi mật khẩu, yêu cầu sửa hồ sơ, cài đặt thông báo</td></tr>
       <tr><td>WorkCalendarController</td><td><code>/api/v1/holidays</code>, <code>/api/v1/work-calendars</code></td><td>Ngày lễ của công ty theo năm (thêm/sửa/xoá — lần đầu chép mẫu hệ thống, xuất / nhập Excel qua xem trước); lịch tuần mặc định + theo phòng ban; <code>/view</code> trả lịch đã giải (ngày lễ, ngày nghỉ) cho lưới ca và bảng công (<code>CALENDAR_VIEW</code>/<code>CALENDAR_MANAGE</code>)</td></tr>
-      <tr><td>CompanySettingController</td><td><code>/api/v1/company-settings</code></td><td>Cấu hình công ty (chấm công, phép, lương, GPS)</td></tr>
+      <tr><td>CompanySettingController</td><td><code>/api/v1/company-settings</code></td><td>Cấu hình công ty (chấm công, phép, lương, GPS, chế độ duyệt đơn)</td></tr>
       <tr><td>UploadController</td><td><code>/api/v1/upload</code></td><td>Upload ảnh/tài liệu lên S3</td></tr>
       <tr><td>MapTileController</td><td><code>/api/v1/map-tiles/{z}/{x}/{y}.png</code></td><td>Proxy + cache ô bản đồ OSM (vùng Việt Nam)</td></tr>
     </tbody>

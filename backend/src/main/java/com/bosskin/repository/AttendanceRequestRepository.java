@@ -217,4 +217,14 @@ public interface AttendanceRequestRepository extends JpaRepository<AttendanceReq
     long countByEmployee_Company_IdAndStatus(Long companyId, AttendanceRequest.Status status);
 
     List<AttendanceRequest> findByShiftAssignment_Id(Long shiftAssignmentId);
+
+    /** Bước K: đơn sửa công đang chờ của các nhân viên dưới quyền. */
+    @Query("""
+        SELECT r FROM AttendanceRequest r
+        JOIN FETCH r.employee e
+        WHERE e.id IN :employeeIds
+          AND r.status = com.bosskin.entity.AttendanceRequest.Status.PENDING
+        ORDER BY r.createdAt
+        """)
+    List<AttendanceRequest> findPendingForEmployees(@Param("employeeIds") java.util.Collection<Long> employeeIds);
 }

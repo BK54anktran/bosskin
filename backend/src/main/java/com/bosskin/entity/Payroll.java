@@ -86,6 +86,13 @@ public class Payroll extends BaseEntity {
     @Column(name = "salary_grade_id")
     private Long salaryGradeId;
 
+    /** Bước K — phòng ban hiệu lực ở ngày cuối kỳ (snapshot). */
+    @Column(name = "department_id")
+    private Long departmentId;
+
+    @Column(name = "department_name")
+    private String departmentName;
+
     @Column(name = "salary_grade_code", length = 50)
     private String salaryGradeCode;
 

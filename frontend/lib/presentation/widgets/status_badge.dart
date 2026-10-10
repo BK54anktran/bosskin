@@ -26,6 +26,18 @@ class StatusBadge extends StatelessWidget {
     return StatusBadge(label: label, color: color);
   }
 
+  /// Bước K: nhãn bước quản lý trực tiếp trên đơn chờ duyệt — "Chờ QL: tên" hoặc "QL đã duyệt: tên".
+  /// Không có bước quản lý → null.
+  static Widget? managerStep(AppLocalizations s, {String? awaitingManagerName, String? managerApprovedByName}) {
+    if (awaitingManagerName != null && awaitingManagerName.isNotEmpty) {
+      return StatusBadge(label: s.approvalAwaitingManager(awaitingManagerName), color: AppTheme.warning);
+    }
+    if (managerApprovedByName != null && managerApprovedByName.isNotEmpty) {
+      return StatusBadge(label: s.approvalManagerApproved(managerApprovedByName), color: AppTheme.secondary);
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

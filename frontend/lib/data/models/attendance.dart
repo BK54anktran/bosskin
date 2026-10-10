@@ -526,6 +526,10 @@ class AttendanceChangeRequest {
   final String? createdAt;
   final String? processedAt;
   final String? updatedAt;
+  /// Bước K: quản lý trực tiếp đã duyệt bước 1 / đang chờ quản lý nào.
+  final String? managerApprovedByName;
+  final String? managerNote;
+  final String? awaitingManagerName;
 
   const AttendanceChangeRequest({
     required this.id,
@@ -553,6 +557,9 @@ class AttendanceChangeRequest {
     this.createdAt,
     this.processedAt,
     this.updatedAt,
+    this.managerApprovedByName,
+    this.managerNote,
+    this.awaitingManagerName,
   });
 
   AttendanceChangeRequest copyWith({
@@ -611,6 +618,9 @@ class AttendanceChangeRequest {
       createdAt: createdAt ?? this.createdAt,
       processedAt: processedAt ?? this.processedAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      managerApprovedByName: this.managerApprovedByName,
+      managerNote: this.managerNote,
+      awaitingManagerName: this.awaitingManagerName,
     );
   }
 
@@ -642,6 +652,9 @@ class AttendanceChangeRequest {
         createdAt: j['createdAt'] as String?,
         processedAt: j['processedAt'] as String?,
         updatedAt: j['updatedAt'] as String?,
+        managerApprovedByName: j['managerApprovedByName'] as String?,
+        managerNote: j['managerNote'] as String?,
+        awaitingManagerName: j['awaitingManagerName'] as String?,
       );
 }
 

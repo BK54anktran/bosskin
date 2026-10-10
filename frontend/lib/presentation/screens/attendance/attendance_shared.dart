@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../data/models/attendance.dart';
+import '../../widgets/status_badge.dart';
 import '../../../data/models/department_model.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -736,7 +737,7 @@ String _attScopeLabel(AppLocalizations s, String? scope) {
   };
 }
 
-String _attRequestTypeLabel(AppLocalizations s, String? type) {
+String attRequestTypeLabel(AppLocalizations s, String? type) {
   return switch (type) {
     'CHECK_IN' => s.checkInRequest,
     'CHECK_OUT' => s.checkOutRequest,
@@ -784,7 +785,7 @@ class _AttRequestInfoCard extends StatelessWidget {
     final title = switch (req.requestType) {
       'OT' => '${s.overtime} ${_attPeriodLabel(s, req.requestedOvertimePeriod)}',
       'EXTRA' => '${s.extraHours} ${_attPeriodLabel(s, req.requestedOvertimePeriod)}',
-      _ => _attRequestTypeLabel(s, req.requestType),
+      _ => attRequestTypeLabel(s, req.requestType),
     };
     final mainValue = req.requestType == 'OT'
         ? (req.requestedOvertimeMinutes != null
@@ -817,6 +818,10 @@ class _AttRequestInfoCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text('${req.employeeName} • ${req.departmentName}',
                         style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
+                    if (StatusBadge.managerStep(s,
+                            awaitingManagerName: req.awaitingManagerName,
+                            managerApprovedByName: req.managerApprovedByName) case final badge?)
+                      Padding(padding: const EdgeInsets.only(top: 4), child: badge),
                   ],
                 ),
               ),
@@ -850,7 +855,7 @@ class _AttRequestInfoCard extends StatelessWidget {
                 ? '${s.overtime} (${_attPeriodLabel(s, req.requestedOvertimePeriod)} • ${_attScopeLabel(s, req.requestedOvertimeScope)})'
                 : req.requestType == 'EXTRA'
                     ? '${s.extraHours} (${_attPeriodLabel(s, req.requestedOvertimePeriod)})'
-                    : _attRequestTypeLabel(s, req.requestType),
+                    : attRequestTypeLabel(s, req.requestType),
             mainValue,
             valueColor: AppTheme.primary,
             strikeThrough: !req.applied,

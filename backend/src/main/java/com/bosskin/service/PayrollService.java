@@ -9,6 +9,7 @@ import com.bosskin.entity.Payroll;
 import com.bosskin.entity.TaxPolicy;
 import com.bosskin.entity.SalaryFormula;
 import com.bosskin.entity.SalaryHistory;
+import com.bosskin.entity.SalaryGrade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bosskin.repository.AttendanceRepository;
 import com.bosskin.repository.EmployeeRepository;
@@ -50,6 +51,7 @@ public class PayrollService {
     private final ObjectMapper               objectMapper;
     private final TaxPolicyService           taxPolicyService;
     private final WorkCalendarService        workCalendarService;
+    private final JobHistoryService          jobHistoryService;
 
     @Transactional
     public Payroll generatePayroll(Long employeeId, int year, int month) {
@@ -97,10 +99,13 @@ public class PayrollService {
     private Payroll computePayroll(Employee employee, PayrollPeriod period, TaxPolicy policy, int year, int month,
                                    Long formulaId, SalaryFormula inlineFormula, ManualAdjustments manual) {
         Long employeeId = employee.getId();
+        // Bước K: phòng ban / bậc lương theo mốc công tác hiệu lực ở ngày cuối kỳ (NV chuyển giữa kỳ vẫn đúng)
+        JobHistoryService.Effective effective = jobHistoryService.effectiveOn(employee, period.to());
+        SalaryGrade grade = effective.salaryGrade();
 
         BigDecimal baseSalary;
-        if (employee.getSalaryGrade() != null) {
-            baseSalary = employee.getSalaryGrade().getBaseRate();
+        if (grade != null) {
+            baseSalary = grade.getBaseRate();
         } else {
             SalaryHistory salaryHistory = salaryHistoryRepository
                 .findTopByEmployeeIdAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(employeeId, period.from())
@@ -136,14 +141,14 @@ public class PayrollService {
             Optional<SalaryFormula> formulaOpt;
             if (formulaId != null) {
                 formulaOpt = salaryFormulaRepository.findById(formulaId);
-            } else if (employee.getSalaryGrade() != null) {
+            } else if (grade != null) {
                 formulaOpt = salaryFormulaRepository
                     .findTopBySalaryGradeIdAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(
-                        employee.getSalaryGrade().getId(), period.from());
+                        grade.getId(), period.from());
                 if (formulaOpt.isEmpty()) {
                     formulaOpt = salaryFormulaRepository
                         .findTopBySalaryGradeIdOrderByEffectiveDateDesc(
-                            employee.getSalaryGrade().getId());
+                            grade.getId());
                 }
             } else {
                 formulaOpt = Optional.empty();
@@ -165,7 +170,8 @@ public class PayrollService {
 
         // Bước J: công chuẩn / ngày lễ theo lịch tuần của phòng + danh sách ngày lễ
         WorkCalendarService.CalendarView calendar = workCalendarService.view(employee.getCompany().getId(), period.from(), period.to());
-        Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period, calendar);
+        Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period, calendar,
+            effective.department() != null ? effective.department().getId() : null);
         putTaxPolicyVars(vars, policy, employee, baseSalary);
 
         List<FormulaVariable> globalVarList = formulaVariableRepository
@@ -267,10 +273,12 @@ public class PayrollService {
             .incomeEntries(incomeEntries)
             .allowanceEntries(allowanceEntries)
             .netSalary(netSalary)
-            .payType(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getPayType().name() : null)
-            .salaryGradeId(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getId() : null)
-            .salaryGradeCode(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getCode() : null)
-            .salaryGradeName(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getName() : null)
+            .payType(grade != null ? grade.getPayType().name() : null)
+            .salaryGradeId(grade != null ? grade.getId() : null)
+            .salaryGradeCode(grade != null ? grade.getCode() : null)
+            .salaryGradeName(grade != null ? grade.getName() : null)
+            .departmentId(effective.department() != null ? effective.department().getId() : null)
+            .departmentName(effective.department() != null ? effective.department().getName() : null)
             .standardWorkDays(vars.get("STANDARD_WORK_DAYS"))
             .familyDeduction(vars.get("FAMILY_DEDUCTION"))
             .insuranceBase(vars.get("INSURANCE_BASE"))
@@ -343,6 +351,8 @@ public class PayrollService {
         dst.setSalaryGradeId(src.getSalaryGradeId());
         dst.setSalaryGradeCode(src.getSalaryGradeCode());
         dst.setSalaryGradeName(src.getSalaryGradeName());
+        dst.setDepartmentId(src.getDepartmentId());
+        dst.setDepartmentName(src.getDepartmentName());
         dst.setStandardWorkDays(src.getStandardWorkDays());
         dst.setFamilyDeduction(src.getFamilyDeduction());
         dst.setInsuranceBase(src.getInsuranceBase());
@@ -505,7 +515,7 @@ public class PayrollService {
 
     private Map<String, BigDecimal> buildFormulaVariables(
             List<Attendance> attendances, BigDecimal baseRate,
-            Employee employee, PayrollPeriod period, WorkCalendarService.CalendarView calendar) {
+            Employee employee, PayrollPeriod period, WorkCalendarService.CalendarView calendar, Long deptId) {
 
         // ── Ngày công ─────────────────────────────────────────────────────────
         long presentDays = attendances.stream()
@@ -587,7 +597,6 @@ public class PayrollService {
 
         // L3: biến cài đặt trước đây được công bố nhưng không bao giờ gán giá trị
         Company company = employee.getCompany();
-        Long deptId = employee.getDepartment() != null ? employee.getDepartment().getId() : null;
         WorkCalendarService.PeriodDays periodDays = calendar.periodDays(deptId, period.from(), period.to());
         vars.put("STANDARD_WORK_DAYS", company.isStandardDaysFromCalendar()
             ? periodDays.standardDays() : BigDecimal.valueOf(company.getStandardWorkDays()));

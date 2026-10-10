@@ -39,6 +39,7 @@ public class ShiftSwapService {
     private final PeriodLockService periodLockService;
     private final com.bosskin.repository.AttendanceRepository attendanceRepository;
     private final Clock clock;
+    private final ManagerApprovalService managerApproval;
 
     @Transactional(readOnly = true)
     public List<ShiftSwapDTO.Response> list(User user, String statusStr) {
@@ -81,7 +82,10 @@ public class ShiftSwapService {
             .targetEmployee(target).targetAssignment(theirs)
             .reason(req.getReason() != null && !req.getReason().isBlank() ? req.getReason().trim() : null)
             .build();
-        return toResponse(swapRepo.save(r));
+        ShiftSwapRequest saved = swapRepo.save(r);
+        managerApproval.notifyManager(me, "SWAP", "Yêu cầu đổi ca chờ bạn duyệt",
+            me.getFullName() + " xin đổi ca ngày " + mine.getWorkDate());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -92,6 +96,7 @@ public class ShiftSwapService {
         if (myEmpId != null && (r.getRequester().getId().equals(myEmpId) || r.getTargetEmployee().getId().equals(myEmpId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.swap.self_approve");
         }
+        managerApproval.beforeFinalApprove(user, r.getRequester(), r);
         Long companyId = user.getCompany().getId();
         ShiftAssignment mine = activeAssignment(r.getRequesterAssignment().getId());
         ShiftAssignment theirs = r.getTargetAssignment() != null ? activeAssignment(r.getTargetAssignment().getId()) : null;
@@ -122,11 +127,40 @@ public class ShiftSwapService {
     public ShiftSwapDTO.Response reject(User user, Long id, String note) {
         if (!canApprove(user)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         ShiftSwapRequest r = pending(user, id);
+        return doReject(r, user, note);
+    }
+
+    private ShiftSwapDTO.Response doReject(ShiftSwapRequest r, User user, String note) {
         r.setStatus(ShiftSwapRequest.Status.REJECTED);
         r.setProcessedBy(user);
         r.setProcessedAt(LocalDateTime.now(clock));
         r.setAdminNote(note);
         return toResponse(swapRepo.save(r));
+    }
+
+    /** Bước K: quản lý trực tiếp của người xin đổi duyệt bước 1. */
+    @Transactional
+    public ShiftSwapDTO.Response managerApprove(User manager, Long id, String note) {
+        ShiftSwapRequest r = byId(manager, id);
+        managerApproval.requireManagerCanProcess(manager, r.getRequester(), r,
+            r.getStatus() == ShiftSwapRequest.Status.PENDING);
+        managerApproval.mark(r, manager, note);
+        return toResponse(swapRepo.save(r));
+    }
+
+    @Transactional
+    public ShiftSwapDTO.Response managerReject(User manager, Long id, String note) {
+        ShiftSwapRequest r = byId(manager, id);
+        managerApproval.requireManagerCanProcess(manager, r.getRequester(), r,
+            r.getStatus() == ShiftSwapRequest.Status.PENDING);
+        r.setManagerNote(note != null && !note.isBlank() ? note.trim() : null);
+        return doReject(r, manager, note);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShiftSwapDTO.Response> pendingForEmployees(java.util.Collection<Long> employeeIds) {
+        if (employeeIds.isEmpty()) return List.of();
+        return swapRepo.findPendingForEmployees(employeeIds).stream().map(this::toResponse).toList();
     }
 
     @Transactional
@@ -183,10 +217,14 @@ public class ShiftSwapService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "error.user.employee_not_linked"));
     }
 
-    private ShiftSwapRequest pending(User user, Long id) {
-        ShiftSwapRequest r = swapRepo.findById(id)
+    private ShiftSwapRequest byId(User user, Long id) {
+        return swapRepo.findById(id)
             .filter(x -> x.getCompanyId().equals(user.getCompany().getId()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.swap.not_found"));
+    }
+
+    private ShiftSwapRequest pending(User user, Long id) {
+        ShiftSwapRequest r = byId(user, id);
         if (r.getStatus() != ShiftSwapRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.swap.not_pending");
         }
@@ -261,6 +299,15 @@ public class ShiftSwapService {
                     .orElse(r.getProcessedBy().getEmail())
                 : null)
             .processedAt(r.getProcessedAt()).createdAt(r.getCreatedAt())
+            .managerApprovedAt(r.getManagerApprovedAt())
+            .managerApprovedByName(r.getManagerApprovedBy() != null
+                ? employeeRepo.findByUserIdFetch(r.getManagerApprovedBy().getId()).map(Employee::getFullName)
+                    .orElse(r.getManagerApprovedBy().getEmail())
+                : null)
+            .managerNote(r.getManagerNote())
+            .awaitingManagerName(managerApproval.awaitingManager(r.getRequester(), r,
+                    r.getStatus() == ShiftSwapRequest.Status.PENDING)
+                ? managerApproval.managerOf(r.getRequester()).getFullName() : null)
             .build();
     }
 }

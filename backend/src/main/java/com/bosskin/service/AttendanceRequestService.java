@@ -34,6 +34,7 @@ public class AttendanceRequestService {
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final DeptScopeService deptScopeService;
     private final com.bosskin.audit.AuditService audit;
+    private final ManagerApprovalService managerApproval;
 
     public List<AttendanceRequestDTO.Response> getRequests(User user, String statusStr, String typeStr, Long departmentId) {
         AttendanceRequest.Status status = parseStatus(statusStr);
@@ -148,7 +149,10 @@ public class AttendanceRequestService {
         if (created.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.check_in_or_out_required");
         }
-        return requestRepository.saveAll(created).stream().map(this::toResponse).collect(Collectors.toList());
+        List<AttendanceRequest> saved = requestRepository.saveAll(created);
+        managerApproval.notifyManager(emp, "ATTENDANCE", "Đơn sửa công chờ bạn duyệt",
+            emp.getFullName() + " gửi đơn sửa công ngày " + req.getRequestDate());
+        return saved.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -194,6 +198,7 @@ public class AttendanceRequestService {
         requireAttendanceViewScope(admin, request.getEmployee());
         requireNotOwnRequest(admin, request);
         requirePending(request);
+        managerApproval.beforeFinalApprove(admin, request.getEmployee(), request);
         request.setStatus(AttendanceRequest.Status.APPROVED);
         request.setApplied(true);
         request.setAdminNote(body != null ? body.getAdminNote() : null);
@@ -215,16 +220,60 @@ public class AttendanceRequestService {
         requireAttendanceViewScope(admin, request.getEmployee());
         requireNotOwnRequest(admin, request);
         requirePending(request);
+        doReject(request, admin, body != null ? body.getAdminNote() : null);
+        return toResponse(getRequestOrThrow(requestId, admin.getCompany().getId()));
+    }
+
+    private void doReject(AttendanceRequest request, User admin, String note) {
         request.setStatus(AttendanceRequest.Status.REJECTED);
         request.setApplied(false);
-        request.setAdminNote(body != null ? body.getAdminNote() : null);
+        request.setAdminNote(note);
         request.setProcessedBy(admin);
         request.setProcessedAt(java.time.LocalDateTime.now());
         requestRepository.save(request);
-        rejectPairedRequest(request, admin, body != null ? body.getAdminNote() : null);
+        rejectPairedRequest(request, admin, note);
         clearAttendanceSnapIfApproved(request.getEmployee().getId(), request.getRequestDate());
         auditRequest("ATTENDANCE_REQUEST_REJECT", request);
-        return toResponse(getRequestOrThrow(requestId, admin.getCompany().getId()));
+    }
+
+    /** Bước K: quản lý trực tiếp duyệt bước 1 (kèm đơn vào/ra đi cặp). */
+    @Transactional
+    public AttendanceRequestDTO.Response managerApprove(Long requestId, User manager, String note) {
+        AttendanceRequest request = getRequestOrThrow(requestId, manager.getCompany().getId());
+        managerApproval.requireManagerCanProcess(manager, request.getEmployee(), request,
+            request.getStatus() == AttendanceRequest.Status.PENDING);
+        managerApproval.mark(request, manager, note);
+        requestRepository.save(request);
+        AttendanceRequest.Type pairedType = pairedType(request.getRequestType());
+        if (pairedType != null) {
+            Long shiftId = request.getShiftAssignment() != null ? request.getShiftAssignment().getId() : null;
+            for (AttendanceRequest peer : requestRepository.findPendingPaired(
+                    request.getEmployee().getId(), request.getRequestDate(), pairedType, request.getId(), shiftId)) {
+                if (peer.getManagerApprovedAt() == null) {
+                    managerApproval.mark(peer, manager, note);
+                    requestRepository.save(peer);
+                }
+            }
+        }
+        return toResponse(getRequestOrThrow(requestId, manager.getCompany().getId()));
+    }
+
+    /** Bước K: quản lý trực tiếp từ chối → đơn bị từ chối như HR từ chối. */
+    @Transactional
+    public AttendanceRequestDTO.Response managerReject(Long requestId, User manager, String note) {
+        AttendanceRequest request = getRequestOrThrow(requestId, manager.getCompany().getId());
+        managerApproval.requireManagerCanProcess(manager, request.getEmployee(), request,
+            request.getStatus() == AttendanceRequest.Status.PENDING);
+        periodLockService.requireOpen(manager.getCompany().getId(), request.getRequestDate());
+        request.setManagerNote(note != null && !note.isBlank() ? note.trim() : null);
+        doReject(request, manager, note);
+        return toResponse(getRequestOrThrow(requestId, manager.getCompany().getId()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AttendanceRequestDTO.Response> pendingForEmployees(java.util.Collection<Long> employeeIds) {
+        if (employeeIds.isEmpty()) return List.of();
+        return requestRepository.findPendingForEmployees(employeeIds).stream().map(this::toResponse).toList();
     }
 
     /** Bước 2 — nhật ký duyệt/từ chối đơn sửa giờ (đơn duyệt thay giờ chấm công thực). */
@@ -534,6 +583,11 @@ public class AttendanceRequestService {
             .processedByName(resolveProcessedByName(r.getProcessedBy()))
             .createdAt(r.getCreatedAt())
             .processedAt(r.getProcessedAt())
+            .managerApprovedAt(r.getManagerApprovedAt())
+            .managerApprovedByName(resolveProcessedByName(r.getManagerApprovedBy()))
+            .managerNote(r.getManagerNote())
+            .awaitingManagerName(managerApproval.awaitingManager(emp, r, r.getStatus() == AttendanceRequest.Status.PENDING)
+                ? managerApproval.managerOf(emp).getFullName() : null)
             .build();
     }
 

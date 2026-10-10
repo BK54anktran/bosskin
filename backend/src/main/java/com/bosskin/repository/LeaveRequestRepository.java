@@ -152,4 +152,15 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
         @Param("deptId") Long deptId,
         @Param("status") LeaveRequest.Status status
     );
+
+    /** Bước K: đơn đang chờ của các nhân viên dưới quyền (chỉ đơn gốc). */
+    @Query("""
+        SELECT r FROM LeaveRequest r
+        JOIN FETCH r.employee e
+        JOIN FETCH r.leaveType t
+        WHERE e.id IN :employeeIds AND r.parent IS NULL
+          AND r.status = com.bosskin.entity.LeaveRequest.Status.PENDING
+        ORDER BY r.createdAt
+        """)
+    List<LeaveRequest> findPendingForEmployees(@Param("employeeIds") java.util.Collection<Long> employeeIds);
 }

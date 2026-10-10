@@ -1577,4 +1577,57 @@
   ,"@workCalendarDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
   ,"workCalendarWeekDays": "{days} công / tuần"
   ,"@workCalendarWeekDays": { "placeholders": { "days": { "type": "String" } } }
+  ,"orgChartTitle": "Sơ đồ tổ chức"
+  ,"orgChartByPerson": "Theo người"
+  ,"orgChartByDepartment": "Theo phòng ban"
+  ,"orgChartSearch": "Tìm theo tên hoặc mã NV"
+  ,"orgChartPeopleCount": "{count} người"
+  ,"@orgChartPeopleCount": {"placeholders": {"count": {"type": "int"}}}
+  ,"orgChartManagerOf": "Quản lý: {name}"
+  ,"@orgChartManagerOf": {"placeholders": {"name": {"type": "String"}}}
+  ,"orgChartReports": "{count} cấp dưới"
+  ,"@orgChartReports": {"placeholders": {"count": {"type": "int"}}}
+  ,"orgChartDepartmentHead": "Trưởng phòng"
+  ,"teamApprovalsTitle": "Duyệt cho nhóm"
+  ,"teamApprovalsHint": "Đơn của nhân viên bạn quản lý trực tiếp. Bạn duyệt trước, sau đó HR duyệt cuối; từ chối thì đơn kết thúc luôn."
+  ,"teamApprovalsApproveTitle": "Duyệt đơn (bước quản lý)"
+  ,"teamApprovalsRejectTitle": "Từ chối đơn"
+  ,"teamApprovalsApproved": "Đã duyệt, đơn chuyển cho HR"
+  ,"teamApprovalsRejected": "Đã từ chối đơn"
+  ,"teamApprovalsDisabled": "Công ty đang duyệt theo quyền, không có bước quản lý trực tiếp."
+  ,"teamApprovalsNoReports": "Bạn chưa là quản lý trực tiếp của ai."
+  ,"teamApprovalsEmpty": "Không có đơn nào chờ bạn ({count} người dưới quyền)."
+  ,"@teamApprovalsEmpty": {"placeholders": {"count": {"type": "int"}}}
+  ,"teamApprovalsMinutes": "{minutes} phút"
+  ,"@teamApprovalsMinutes": {"placeholders": {"minutes": {"type": "int"}}}
+  ,"approvalAwaitingManager": "Chờ quản lý: {name}"
+  ,"@approvalAwaitingManager": {"placeholders": {"name": {"type": "String"}}}
+  ,"approvalManagerApproved": "Quản lý đã duyệt: {name}"
+  ,"@approvalManagerApproved": {"placeholders": {"name": {"type": "String"}}}
+  ,"approvalModeTitle": "Người duyệt đơn"
+  ,"approvalModeLabel": "Đơn nghỉ, đơn sửa công, đổi ca do ai duyệt"
+  ,"approvalModePermission": "Người có quyền duyệt (theo phạm vi phòng ban)"
+  ,"approvalModeManagerThenHr": "Quản lý trực tiếp duyệt trước, rồi HR"
+  ,"approvalModeHelper": "Khi bật, nhân viên có quản lý trực tiếp thì quản lý duyệt trước ở màn \"Duyệt cho nhóm\"; HR chỉ duyệt cuối được sau đó. Nhân viên chưa có quản lý vẫn duyệt như cũ."
+  ,"directManager": "Quản lý trực tiếp"
+  ,"directManagerNone": "Không có"
+  ,"jobChangeHire": "Tuyển mới"
+  ,"jobChangeTransfer": "Chuyển phòng ban"
+  ,"jobChangePromotion": "Đổi chức vụ"
+  ,"jobChangeSalary": "Đổi bậc lương"
+  ,"jobChangeManager": "Đổi quản lý"
+  ,"jobChangeOther": "Khác"
+  ,"jobHistoryTitle": "Quá trình công tác"
+  ,"jobHistoryAdd": "Thêm mốc"
+  ,"jobHistoryHint": "Mỗi mốc là phòng ban, chức vụ, bậc lương và quản lý áp dụng từ ngày hiệu lực. Mốc ngày tương lai tự áp dụng khi tới ngày; bảng lương dùng mốc hiệu lực ở cuối kỳ."
+  ,"jobHistoryDeleteConfirm": "Xoá mốc chưa tới ngày này?"
+  ,"jobHistoryCurrent": "Hiện tại"
+  ,"jobHistoryUpcoming": "Sắp áp dụng"
+  ,"jobHistoryBy": "Người ghi: {name}"
+  ,"@jobHistoryBy": {"placeholders": {"name": {"type": "String"}}}
+  ,"jobHistoryChangeType": "Loại thay đổi"
+  ,"auditActJobHistoryCreate": "Ghi quá trình công tác"
+  ,"auditActJobHistoryDelete": "Xoá mốc công tác"
+  ,"auditActManagerApprove": "Quản lý trực tiếp duyệt"
+  ,"auditActManagerReject": "Quản lý trực tiếp từ chối"
 }

@@ -35,6 +35,8 @@ import 'presentation/screens/excel/excel_import_export_screen.dart';
 import 'presentation/screens/report/report_screen.dart';
 import 'presentation/screens/audit/audit_log_screen.dart';
 import 'presentation/screens/shift/shift_swap_screen.dart';
+import 'presentation/screens/employee/org_chart_screen.dart';
+import 'presentation/screens/team_approvals/team_approvals_screen.dart';
 import 'presentation/widgets/app_shell.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -159,6 +161,14 @@ final _router = GoRouter(
           path: AppRoutes.employees,
           pageBuilder: (_, __) =>
               const NoTransitionPage(child: EmployeeScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.orgChart,
+          pageBuilder: (_, __) => const NoTransitionPage(child: OrgChartScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.teamApprovals,
+          pageBuilder: (_, __) => const NoTransitionPage(child: TeamApprovalsScreen()),
         ),
         GoRoute(
           path: AppRoutes.departments,

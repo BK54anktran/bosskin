@@ -8536,6 +8536,276 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{days} công / tuần'**
   String workCalendarWeekDays(String days);
+
+  /// No description provided for @orgChartTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sơ đồ tổ chức'**
+  String get orgChartTitle;
+
+  /// No description provided for @orgChartByPerson.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo người'**
+  String get orgChartByPerson;
+
+  /// No description provided for @orgChartByDepartment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo phòng ban'**
+  String get orgChartByDepartment;
+
+  /// No description provided for @orgChartSearch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm theo tên hoặc mã NV'**
+  String get orgChartSearch;
+
+  /// No description provided for @orgChartPeopleCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} người'**
+  String orgChartPeopleCount(int count);
+
+  /// No description provided for @orgChartManagerOf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý: {name}'**
+  String orgChartManagerOf(String name);
+
+  /// No description provided for @orgChartReports.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} cấp dưới'**
+  String orgChartReports(int count);
+
+  /// No description provided for @orgChartDepartmentHead.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trưởng phòng'**
+  String get orgChartDepartmentHead;
+
+  /// No description provided for @teamApprovalsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt cho nhóm'**
+  String get teamApprovalsTitle;
+
+  /// No description provided for @teamApprovalsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn của nhân viên bạn quản lý trực tiếp. Bạn duyệt trước, sau đó HR duyệt cuối; từ chối thì đơn kết thúc luôn.'**
+  String get teamApprovalsHint;
+
+  /// No description provided for @teamApprovalsApproveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt đơn (bước quản lý)'**
+  String get teamApprovalsApproveTitle;
+
+  /// No description provided for @teamApprovalsRejectTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối đơn'**
+  String get teamApprovalsRejectTitle;
+
+  /// No description provided for @teamApprovalsApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt, đơn chuyển cho HR'**
+  String get teamApprovalsApproved;
+
+  /// No description provided for @teamApprovalsRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã từ chối đơn'**
+  String get teamApprovalsRejected;
+
+  /// No description provided for @teamApprovalsDisabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty đang duyệt theo quyền, không có bước quản lý trực tiếp.'**
+  String get teamApprovalsDisabled;
+
+  /// No description provided for @teamApprovalsNoReports.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa là quản lý trực tiếp của ai.'**
+  String get teamApprovalsNoReports;
+
+  /// No description provided for @teamApprovalsEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn nào chờ bạn ({count} người dưới quyền).'**
+  String teamApprovalsEmpty(int count);
+
+  /// No description provided for @teamApprovalsMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút'**
+  String teamApprovalsMinutes(int minutes);
+
+  /// No description provided for @approvalAwaitingManager.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ quản lý: {name}'**
+  String approvalAwaitingManager(String name);
+
+  /// No description provided for @approvalManagerApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý đã duyệt: {name}'**
+  String approvalManagerApproved(String name);
+
+  /// No description provided for @approvalModeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người duyệt đơn'**
+  String get approvalModeTitle;
+
+  /// No description provided for @approvalModeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn nghỉ, đơn sửa công, đổi ca do ai duyệt'**
+  String get approvalModeLabel;
+
+  /// No description provided for @approvalModePermission.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người có quyền duyệt (theo phạm vi phòng ban)'**
+  String get approvalModePermission;
+
+  /// No description provided for @approvalModeManagerThenHr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý trực tiếp duyệt trước, rồi HR'**
+  String get approvalModeManagerThenHr;
+
+  /// No description provided for @approvalModeHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khi bật, nhân viên có quản lý trực tiếp thì quản lý duyệt trước ở màn \"Duyệt cho nhóm\"; HR chỉ duyệt cuối được sau đó. Nhân viên chưa có quản lý vẫn duyệt như cũ.'**
+  String get approvalModeHelper;
+
+  /// No description provided for @directManager.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý trực tiếp'**
+  String get directManager;
+
+  /// No description provided for @directManagerNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có'**
+  String get directManagerNone;
+
+  /// No description provided for @jobChangeHire.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuyển mới'**
+  String get jobChangeHire;
+
+  /// No description provided for @jobChangeTransfer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển phòng ban'**
+  String get jobChangeTransfer;
+
+  /// No description provided for @jobChangePromotion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi chức vụ'**
+  String get jobChangePromotion;
+
+  /// No description provided for @jobChangeSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi bậc lương'**
+  String get jobChangeSalary;
+
+  /// No description provided for @jobChangeManager.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi quản lý'**
+  String get jobChangeManager;
+
+  /// No description provided for @jobChangeOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khác'**
+  String get jobChangeOther;
+
+  /// No description provided for @jobHistoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá trình công tác'**
+  String get jobHistoryTitle;
+
+  /// No description provided for @jobHistoryAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm mốc'**
+  String get jobHistoryAdd;
+
+  /// No description provided for @jobHistoryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi mốc là phòng ban, chức vụ, bậc lương và quản lý áp dụng từ ngày hiệu lực. Mốc ngày tương lai tự áp dụng khi tới ngày; bảng lương dùng mốc hiệu lực ở cuối kỳ.'**
+  String get jobHistoryHint;
+
+  /// No description provided for @jobHistoryDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá mốc chưa tới ngày này?'**
+  String get jobHistoryDeleteConfirm;
+
+  /// No description provided for @jobHistoryCurrent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện tại'**
+  String get jobHistoryCurrent;
+
+  /// No description provided for @jobHistoryUpcoming.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp áp dụng'**
+  String get jobHistoryUpcoming;
+
+  /// No description provided for @jobHistoryBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người ghi: {name}'**
+  String jobHistoryBy(String name);
+
+  /// No description provided for @jobHistoryChangeType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại thay đổi'**
+  String get jobHistoryChangeType;
+
+  /// No description provided for @auditActJobHistoryCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi quá trình công tác'**
+  String get auditActJobHistoryCreate;
+
+  /// No description provided for @auditActJobHistoryDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá mốc công tác'**
+  String get auditActJobHistoryDelete;
+
+  /// No description provided for @auditActManagerApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý trực tiếp duyệt'**
+  String get auditActManagerApprove;
+
+  /// No description provided for @auditActManagerReject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý trực tiếp từ chối'**
+  String get auditActManagerReject;
 }
 
 class _AppLocalizationsDelegate

@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>3. Luồng nghiệp vụ hiện tại</h1>
     <p>Mô tả các luồng đúng như code đang chạy. Ô <b style="color:var(--crit)">viền đỏ</b> trên sơ đồ là điểm còn rủi ro (chi tiết và trạng thái ở trang <a href="danh-gia.html">Đánh giá</a>).</p>
-    <p class="meta">Review gốc 08/10/2026 mô tả các luồng lúc đó (nhiều điểm lỗi). Trang này vẽ lại ngày 09/10/2026 theo code trên <code>main</code> sau Mốc 1–4, Bước 1, 2, A, C; cập nhật 10/10/2026 thêm ngày lễ &amp; lịch làm việc (bước J, V14).</p>
+    <p class="meta">Review gốc 08/10/2026 mô tả các luồng lúc đó (nhiều điểm lỗi). Trang này vẽ lại ngày 09/10/2026 theo code trên <code>main</code> sau Mốc 1–4, Bước 1, 2, A, C; cập nhật 10/10/2026 thêm ngày lễ &amp; lịch làm việc (bước J, V14), quản lý trực tiếp &amp; quá trình công tác (bước K, V15).</p>
   </section>
   <div class="card">
     <b>Bức tranh chung:</b> Công ty → Phòng ban/Nhân viên → <b>Phân ca</b> (đơn lẻ, hàng loạt, xoay ca, đổi ca) → Nhân viên <b>check-in/out</b> → Hệ thống <b>tính công</b> (tính tức thời) → Nhân viên gửi <b>đơn</b> bổ sung công / nghỉ phép → Quản lý <b>duyệt bảng công</b> (snapshot, có thể duyệt cả kỳ) → <b>khoá kỳ công</b> → HR <b>tạo bảng lương</b> từ công đã duyệt → Duyệt → Thanh toán → Nhân viên xem phiếu. Thao tác nhạy cảm ghi <b>nhật ký thao tác</b>.
@@ -42,6 +42,7 @@
     <li><a href="#checkin">3. Check-in / Check-out</a></li>
     <li><a href="#tinhcong">4. Tính công</a></li>
     <li><a href="#don">5. Đơn chấm công & duyệt</a></li>
+    <li><a href="#quanly">5b. Quản lý trực tiếp &amp; quá trình công tác</a></li>
     <li><a href="#duyetcong">6. Duyệt / khoá bảng công</a></li>
     <li><a href="#phep">7. Nghỉ phép</a></li>
     <li><a href="#luong">8. Bảng lương</a></li>
@@ -179,6 +180,33 @@ stateDiagram-v2
     </pre></div>
   </div>
 
+  <h2 id="quanly">5b. Quản lý trực tiếp &amp; quá trình công tác</h2>
+  <div class="grid g2">
+    <div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  actor NV as Nhân viên
+  actor QL as Quản lý trực tiếp
+  actor HR as Người có quyền duyệt
+  participant S as Đơn nghỉ / sửa công / đổi ca
+  NV->>S: Gửi đơn (PENDING)
+  S-->>QL: Báo đẩy "đơn chờ bạn duyệt" (khi bật MANAGER_THEN_HR)
+  HR->>S: Duyệt cuối khi quản lý chưa duyệt
+  S-->>HR: 409 error.approval.manager_pending
+  QL->>S: POST /team-approvals/{LEAVE|ATTENDANCE|SWAP}/{id}/approve
+  S->>S: Ghi manager_approved_by/_at, nhật ký MANAGER_APPROVE
+  HR->>S: Duyệt cuối như cũ (quyền + phạm vi)
+  S->>S: APPROVED
+  Note over QL,S: Quản lý từ chối → REJECTED (đơn nghỉ hoàn phép)
+    </pre></div>
+    <ol class="steps">
+      <li>Cài đặt công ty → "Người duyệt đơn": <code>PERMISSION</code> (mặc định, như cũ) hoặc <code>MANAGER_THEN_HR</code>. Chỉ áp dụng cho nhân viên có quản lý trực tiếp còn làm; NV chưa có quản lý duyệt như cũ.</li>
+      <li>Người duyệt cuối chính là quản lý trực tiếp → một lần duyệt ghi cả hai bước.</li>
+      <li>Quản lý duyệt ở màn "Duyệt cho nhóm" (menu chỉ hiện khi có cấp dưới và chế độ bật); quyền đến từ quan hệ <code>employees.manager_id</code>, không cần quyền duyệt. Danh sách đơn của HR có nhãn "Chờ quản lý: tên".</li>
+      <li>Quá trình công tác (<code>/api/v1/employees/{id}/job-histories</code>): mỗi mốc là phòng ban / chức vụ / bậc lương / quản lý từ ngày hiệu lực. Sửa hồ sơ hoặc import đổi một trong bốn trường → tự ghi mốc hôm nay. Mốc tương lai không đổi dữ liệu hôm nay, tự áp dụng lúc 00:05 ngày hiệu lực. Chỉ xoá được mốc chưa tới ngày (nhật ký <code>JOB_HISTORY_*</code>).</li>
+      <li>Quản lý trực tiếp: cùng công ty, không tự quản lý mình, không tạo vòng (<code>error.employee.manager_cycle</code>). Nghỉ việc (xoá) thì cấp dưới mất quản lý. Sơ đồ tổ chức <code>/api/v1/org-chart</code> theo người hoặc theo phòng ban, lọc theo phạm vi xem nhân viên.</li>
+    </ol>
+  </div>
+
   <h2 id="duyetcong">6. Duyệt / khoá bảng công</h2>
   <div class="grid g2">
     <div class="diagram"><pre class="mermaid">
@@ -242,7 +270,8 @@ stateDiagram-v2
 flowchart LR
   CF["Cấu hình: bậc lương (ngày/giờ),<br/>biến global, công thức gross/net"] --> GEN
   UI["FE gọi từng NV<br/>POST /payrolls/generate"] --> GEN["generatePayroll<br/>(kỳ theo ngày chốt)"]
-  GEN --> V["Biến hệ thống: giờ/ngày công, ngày phép có/không lương,<br/>STANDARD_WORK_DAYS (số cố định hoặc theo lịch),<br/>HOLIDAY_DAYS, HOLIDAY_OT_HOURS, HOURS_PER_DAY, BASE_RATE..."]
+  GEN --> EF["Phòng ban + bậc lương hiệu lực<br/>ở ngày cuối kỳ (quá trình công tác),<br/>lưu phòng ban lên phiếu"]
+  EF --> V["Biến hệ thống: giờ/ngày công, ngày phép có/không lương,<br/>STANDARD_WORK_DAYS (số cố định hoặc theo lịch),<br/>HOLIDAY_DAYS, HOLIDAY_OT_HOURS, HOURS_PER_DAY, BASE_RATE..."]
   V --> CV["Biến global + riêng<br/>theo thứ tự phụ thuộc, trước / sau GROSS"]
   CV --> GR["GROSS = biểu thức gross<br/>(IF chỉ tính nhánh chọn, ROUND)"]
   GR --> INS["BH / thuế là biến hệ thống<br/>theo chính sách thuế của kỳ (trần BH, giảm trừ, biểu thuế)<br/>dùng được trong NET"]

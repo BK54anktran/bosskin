@@ -36,6 +36,7 @@ public class LeaveService {
     private final AttendanceRepository attendanceRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final WorkCalendarService workCalendarService;
+    private final ManagerApprovalService managerApproval;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -193,7 +194,9 @@ public class LeaveService {
         boolean isMultiDay = !req.getFromDate().equals(req.getToDate());
 
         if (isMultiDay) {
-            return createGroupRequest(user, emp, type, req, hpdReq, isHourType);
+            var group = createGroupRequest(user, emp, type, req, hpdReq, isHourType);
+            notifyManager(emp, req);
+            return group;
         }
 
         BigDecimal requestedAmount = calculateRequestedAmount(req, type);
@@ -241,7 +244,15 @@ public class LeaveService {
         if (type.isRequiresBalance()) {
             deductWithLedger(request, emp, isHourType, requestedAmount, hpdReq);
         }
+        notifyManager(emp, req);
         return saveAndReload(request, user.getCompanyId());
+    }
+
+    /** Bước K: báo quản lý trực tiếp khi công ty bật chế độ quản lý duyệt trước. */
+    private void notifyManager(Employee emp, LeaveDTO.CreateLeaveRequest req) {
+        managerApproval.notifyManager(emp, "LEAVE", "Đơn nghỉ chờ bạn duyệt",
+            emp.getFullName() + " xin nghỉ " + req.getFromDate()
+                + (req.getToDate().equals(req.getFromDate()) ? "" : " – " + req.getToDate()));
     }
 
     @Transactional
@@ -257,6 +268,7 @@ public class LeaveService {
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_pending");
         }
+        managerApproval.beforeFinalApprove(admin, request.getEmployee(), request);
         // Nếu là đơn cha (group), approve tất cả đơn con PENDING
         if (!request.getChildren().isEmpty()) {
             for (LeaveRequest child : request.getChildren()) {
@@ -289,6 +301,11 @@ public class LeaveService {
         if (request.getStatus() != LeaveRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.request.not_pending");
         }
+        return doReject(request, admin, body != null ? body.getAdminNote() : null, companyId);
+    }
+
+    /** Từ chối + hoàn phép (dùng chung cho HR và quản lý trực tiếp). */
+    private LeaveDTO.LeaveRequestResponse doReject(LeaveRequest request, User admin, String note, Long companyId) {
         BigDecimal hpd = loadHoursPerDay(companyId);
         // Nếu là đơn cha, reject + hoàn phép từng đơn con PENDING
         if (!request.getChildren().isEmpty()) {
@@ -296,7 +313,7 @@ public class LeaveService {
                 if (child.getStatus() == LeaveRequest.Status.PENDING) {
                     refundBalance(child, hpd);
                     child.setStatus(LeaveRequest.Status.REJECTED);
-                    child.setAdminNote(body != null ? body.getAdminNote() : null);
+                    child.setAdminNote(note);
                     child.setProcessedBy(admin);
                     child.setProcessedAt(java.time.LocalDateTime.now());
                     leaveRequestRepository.save(child);
@@ -306,10 +323,39 @@ public class LeaveService {
             refundBalance(request, hpd);
         }
         request.setStatus(LeaveRequest.Status.REJECTED);
-        request.setAdminNote(body != null ? body.getAdminNote() : null);
+        request.setAdminNote(note);
         request.setProcessedBy(admin);
         request.setProcessedAt(java.time.LocalDateTime.now());
         return saveAndReload(request, companyId);
+    }
+
+    /** Bước K: quản lý trực tiếp duyệt bước 1 (HR duyệt cuối sau). */
+    @Transactional
+    public LeaveDTO.LeaveRequestResponse managerApprove(Long id, User manager, String note) {
+        LeaveRequest request = getRequestOrThrow(id, manager.getCompanyId());
+        managerApproval.requireManagerCanProcess(manager, request.getEmployee(), request,
+            request.getStatus() == LeaveRequest.Status.PENDING && request.getParent() == null);
+        managerApproval.mark(request, manager, note);
+        return saveAndReload(request, manager.getCompanyId());
+    }
+
+    /** Bước K: quản lý trực tiếp từ chối → đơn bị từ chối, hoàn phép như HR từ chối. */
+    @Transactional
+    public LeaveDTO.LeaveRequestResponse managerReject(Long id, User manager, String note) {
+        Long companyId = manager.getCompanyId();
+        LeaveRequest request = getRequestOrThrow(id, companyId);
+        managerApproval.requireManagerCanProcess(manager, request.getEmployee(), request,
+            request.getStatus() == LeaveRequest.Status.PENDING && request.getParent() == null);
+        periodLockService.requireOpen(companyId, request.getFromDate(), request.getToDate());
+        request.setManagerNote(note != null && !note.isBlank() ? note.trim() : null);
+        return doReject(request, manager, note, companyId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LeaveDTO.LeaveRequestResponse> pendingForEmployees(java.util.Collection<Long> employeeIds) {
+        if (employeeIds.isEmpty()) return List.of();
+        return leaveRequestRepository.findPendingForEmployees(employeeIds).stream()
+            .map(this::toLeaveRequestResponse).toList();
     }
 
     @Transactional
@@ -972,6 +1018,12 @@ public class LeaveService {
                 ? r.getProcessedBy().getEmployee().getFullName() : null)
             .createdAt(r.getCreatedAt())
             .processedAt(r.getProcessedAt())
+            .managerApprovedAt(r.getManagerApprovedAt())
+            .managerApprovedByName(r.getManagerApprovedBy() != null && r.getManagerApprovedBy().getEmployee() != null
+                ? r.getManagerApprovedBy().getEmployee().getFullName() : null)
+            .managerNote(r.getManagerNote())
+            .awaitingManagerName(managerApproval.awaitingManager(e, r, r.getStatus() == LeaveRequest.Status.PENDING)
+                ? managerApproval.managerOf(e).getFullName() : null)
             .parentId(r.getParent() != null ? r.getParent().getId() : null)
             .children(r.getChildren() == null || r.getChildren().isEmpty() ? List.of()
                 : r.getChildren().stream().map(this::toLeaveRequestChildResponse).toList())

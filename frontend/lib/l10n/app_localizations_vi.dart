@@ -4564,4 +4564,161 @@ class AppLocalizationsVi extends AppLocalizations {
   String workCalendarWeekDays(String days) {
     return '$days công / tuần';
   }
+
+  @override
+  String get orgChartTitle => 'Sơ đồ tổ chức';
+
+  @override
+  String get orgChartByPerson => 'Theo người';
+
+  @override
+  String get orgChartByDepartment => 'Theo phòng ban';
+
+  @override
+  String get orgChartSearch => 'Tìm theo tên hoặc mã NV';
+
+  @override
+  String orgChartPeopleCount(int count) {
+    return '$count người';
+  }
+
+  @override
+  String orgChartManagerOf(String name) {
+    return 'Quản lý: $name';
+  }
+
+  @override
+  String orgChartReports(int count) {
+    return '$count cấp dưới';
+  }
+
+  @override
+  String get orgChartDepartmentHead => 'Trưởng phòng';
+
+  @override
+  String get teamApprovalsTitle => 'Duyệt cho nhóm';
+
+  @override
+  String get teamApprovalsHint =>
+      'Đơn của nhân viên bạn quản lý trực tiếp. Bạn duyệt trước, sau đó HR duyệt cuối; từ chối thì đơn kết thúc luôn.';
+
+  @override
+  String get teamApprovalsApproveTitle => 'Duyệt đơn (bước quản lý)';
+
+  @override
+  String get teamApprovalsRejectTitle => 'Từ chối đơn';
+
+  @override
+  String get teamApprovalsApproved => 'Đã duyệt, đơn chuyển cho HR';
+
+  @override
+  String get teamApprovalsRejected => 'Đã từ chối đơn';
+
+  @override
+  String get teamApprovalsDisabled =>
+      'Công ty đang duyệt theo quyền, không có bước quản lý trực tiếp.';
+
+  @override
+  String get teamApprovalsNoReports => 'Bạn chưa là quản lý trực tiếp của ai.';
+
+  @override
+  String teamApprovalsEmpty(int count) {
+    return 'Không có đơn nào chờ bạn ($count người dưới quyền).';
+  }
+
+  @override
+  String teamApprovalsMinutes(int minutes) {
+    return '$minutes phút';
+  }
+
+  @override
+  String approvalAwaitingManager(String name) {
+    return 'Chờ quản lý: $name';
+  }
+
+  @override
+  String approvalManagerApproved(String name) {
+    return 'Quản lý đã duyệt: $name';
+  }
+
+  @override
+  String get approvalModeTitle => 'Người duyệt đơn';
+
+  @override
+  String get approvalModeLabel => 'Đơn nghỉ, đơn sửa công, đổi ca do ai duyệt';
+
+  @override
+  String get approvalModePermission =>
+      'Người có quyền duyệt (theo phạm vi phòng ban)';
+
+  @override
+  String get approvalModeManagerThenHr =>
+      'Quản lý trực tiếp duyệt trước, rồi HR';
+
+  @override
+  String get approvalModeHelper =>
+      'Khi bật, nhân viên có quản lý trực tiếp thì quản lý duyệt trước ở màn \"Duyệt cho nhóm\"; HR chỉ duyệt cuối được sau đó. Nhân viên chưa có quản lý vẫn duyệt như cũ.';
+
+  @override
+  String get directManager => 'Quản lý trực tiếp';
+
+  @override
+  String get directManagerNone => 'Không có';
+
+  @override
+  String get jobChangeHire => 'Tuyển mới';
+
+  @override
+  String get jobChangeTransfer => 'Chuyển phòng ban';
+
+  @override
+  String get jobChangePromotion => 'Đổi chức vụ';
+
+  @override
+  String get jobChangeSalary => 'Đổi bậc lương';
+
+  @override
+  String get jobChangeManager => 'Đổi quản lý';
+
+  @override
+  String get jobChangeOther => 'Khác';
+
+  @override
+  String get jobHistoryTitle => 'Quá trình công tác';
+
+  @override
+  String get jobHistoryAdd => 'Thêm mốc';
+
+  @override
+  String get jobHistoryHint =>
+      'Mỗi mốc là phòng ban, chức vụ, bậc lương và quản lý áp dụng từ ngày hiệu lực. Mốc ngày tương lai tự áp dụng khi tới ngày; bảng lương dùng mốc hiệu lực ở cuối kỳ.';
+
+  @override
+  String get jobHistoryDeleteConfirm => 'Xoá mốc chưa tới ngày này?';
+
+  @override
+  String get jobHistoryCurrent => 'Hiện tại';
+
+  @override
+  String get jobHistoryUpcoming => 'Sắp áp dụng';
+
+  @override
+  String jobHistoryBy(String name) {
+    return 'Người ghi: $name';
+  }
+
+  @override
+  String get jobHistoryChangeType => 'Loại thay đổi';
+
+  @override
+  String get auditActJobHistoryCreate => 'Ghi quá trình công tác';
+
+  @override
+  String get auditActJobHistoryDelete => 'Xoá mốc công tác';
+
+  @override
+  String get auditActManagerApprove => 'Quản lý trực tiếp duyệt';
+
+  @override
+  String get auditActManagerReject => 'Quản lý trực tiếp từ chối';
 }

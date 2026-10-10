@@ -31,6 +31,7 @@ public class EmployeeImportService {
     private final RoleRepository        roleRepo;
     private final PasswordEncoder       passwordEncoder;
     private final DeptScopeService      deptScopeService;
+    private final JobHistoryService     jobHistoryService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String DEFAULT_PASSWORD = "Bosskin@123";
@@ -239,6 +240,7 @@ public class EmployeeImportService {
 
         List<Employee> toUpdate = new ArrayList<>();
         List<com.bosskin.entity.User> toCreateUsers = new ArrayList<>();
+        Map<Employee, JobHistoryService.Snapshot> beforeMap = new LinkedHashMap<>();
 
         for (EmployeeDTO.ImportRow row : rows) {
             if (isBlank(row.getFullName()) && isBlank(row.getEmployeeCode())) continue;
@@ -288,6 +290,7 @@ public class EmployeeImportService {
                     .status(Employee.Status.ACTIVE)
                     .build();
                 Employee savedEmp = employeeRepo.save(newEmp);
+                jobHistoryService.recordHire(savedEmp, userId);
 
                 String pwd = importPassword(row);
                 var user = com.bosskin.entity.User.builder()
@@ -298,6 +301,7 @@ public class EmployeeImportService {
 
             } else {
                 // ── UPDATE — collect, batch save sau ────────────────────────
+                beforeMap.put(emp, JobHistoryService.Snapshot.of(emp));
                 if (!isBlank(row.getFullName()))     emp.setFullName(row.getFullName().trim());
                 if (!isBlank(row.getPhone()))        emp.setPhone(row.getPhone().trim());
                 if (!isBlank(row.getGender()))       emp.setGender(parseGender(row.getGender()));
@@ -323,6 +327,7 @@ public class EmployeeImportService {
 
         employeeRepo.saveAll(toUpdate);
         userRepo.saveAll(toCreateUsers);
+        beforeMap.forEach((e, before) -> jobHistoryService.recordIfChanged(e, before, userId));
     }
 
     // ─── PER-ROW IMPORT / PREVIEW ────────────────────────────────────────────
@@ -451,16 +456,16 @@ public class EmployeeImportService {
         switch (command) {
             case CREATE -> {
                 if (emp != null) return false; // đã tồn tại → skip
-                doCreate(row, code, company, deptMap, posMap, gradeMap);
+                doCreate(row, code, company, deptMap, posMap, gradeMap, userId);
             }
             case UPDATE -> {
                 if (emp == null)
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found");
-                doUpdate(emp, row, presentColumns, deptMap, posMap, gradeMap);
+                doUpdate(emp, row, presentColumns, deptMap, posMap, gradeMap, userId);
             }
             case MERGE -> {
-                if (emp == null) doCreate(row, code, company, deptMap, posMap, gradeMap);
-                else             doUpdate(emp, row, presentColumns, deptMap, posMap, gradeMap);
+                if (emp == null) doCreate(row, code, company, deptMap, posMap, gradeMap, userId);
+                else             doUpdate(emp, row, presentColumns, deptMap, posMap, gradeMap, userId);
             }
             case DELETE -> {
                 if (emp == null)
@@ -474,7 +479,7 @@ public class EmployeeImportService {
     private void doCreate(EmployeeDTO.ImportRow row, String code, Company company,
                           Map<String, Department> deptMap,
                           Map<String, Position> posMap,
-                          Map<String, SalaryGrade> gradeMap) {
+                          Map<String, SalaryGrade> gradeMap, Long userId) {
         if (isBlank(row.getEmail()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "error.import.email_missing|" + row.getFullName());
@@ -505,6 +510,7 @@ public class EmployeeImportService {
             .status(Employee.Status.ACTIVE)
             .build();
         emp = employeeRepo.save(emp);
+        jobHistoryService.recordHire(emp, userId);
 
         Optional<Role> defaultRole = roleRepo.findFirstByCompanyIdAndIsDefaultTrue(company.getId());
         String pwd = importPassword(row);
@@ -519,7 +525,8 @@ public class EmployeeImportService {
                           Set<String> presentColumns,
                           Map<String, Department> deptMap,
                           Map<String, Position> posMap,
-                          Map<String, SalaryGrade> gradeMap) {
+                          Map<String, SalaryGrade> gradeMap, Long userId) {
+        JobHistoryService.Snapshot before = JobHistoryService.Snapshot.of(emp);
         // Chỉ update field nào có cột trong file (present).
         // Nếu present + trống → set null (user chủ ý xóa).
         // Nếu không present → giữ nguyên.
@@ -556,6 +563,7 @@ public class EmployeeImportService {
         if (presentColumns.contains("employee.salaryGradeCode") && !isBlank(row.getSalaryGradeCode()))
             emp.setSalaryGrade(resolveGrade(gradeMap, row.getSalaryGradeCode()));
         employeeRepo.save(emp);
+        jobHistoryService.recordIfChanged(emp, before, userId);
     }
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────

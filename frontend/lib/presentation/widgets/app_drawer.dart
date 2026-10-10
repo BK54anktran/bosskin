@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/navigation/navigator_keys.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/team_approval_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -20,11 +21,13 @@ class _AppDrawerState extends State<AppDrawer> {
   void initState() {
     super.initState();
     AuthService.instance.addListener(_onAuthChanged);
+    TeamApprovalService.instance.addListener(_onAuthChanged);
   }
 
   @override
   void dispose() {
     AuthService.instance.removeListener(_onAuthChanged);
+    TeamApprovalService.instance.removeListener(_onAuthChanged);
     super.dispose();
   }
 
@@ -219,6 +222,8 @@ class _AppDrawerState extends State<AppDrawer> {
             requiredPermission: 'DASHBOARD_VIEW'),
         _DrawerItem(s.employees, Icons.people_outline, AppRoutes.employees,
             requiredPermission: 'EMPLOYEE_VIEW'),
+        _DrawerItem(s.orgChartTitle, Icons.lan_outlined, AppRoutes.orgChart,
+            requiredPermission: 'EMPLOYEE_VIEW'),
         _DrawerItem(
             s.departments, Icons.account_tree_outlined, AppRoutes.departments,
             requiredPermission: 'DEPARTMENT_VIEW'),
@@ -240,6 +245,7 @@ class _AppDrawerState extends State<AppDrawer> {
         ),
         _DrawerItem(s.swapMenu, Icons.swap_horiz, AppRoutes.shiftSwaps,
             requiredPermission: 'ATTENDANCE_SELF'),
+        _DrawerItem(s.teamApprovalsTitle, Icons.how_to_reg_outlined, AppRoutes.teamApprovals),
         _DrawerItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
         _DrawerItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,

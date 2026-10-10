@@ -76,6 +76,9 @@ public class EmployeeDTO {
         private Long salaryGradeId;
         private String salaryGradeCode;
         private String salaryGradeName;
+        /** Bước K — quản lý trực tiếp. */
+        private Long managerId;
+        private String managerName;
         private String address;
         private String identityCard;
         private String bankAccount;
@@ -111,6 +114,9 @@ public class EmployeeDTO {
 
         private Long positionId;
 
+        /** Bước K — quản lý trực tiếp (tuỳ chọn). */
+        private Long managerId;
+
         private String address;
         private String identityCard;
         private String bankAccount;
@@ -139,5 +145,15 @@ public class EmployeeDTO {
         private String bankAccount;
         private String bankName;
         private java.math.BigDecimal contractSalary;
+
+        /** Bước K — quản lý trực tiếp; có gửi trường (kể cả null = bỏ quản lý) mới đổi. */
+        private Long managerId;
+        @com.fasterxml.jackson.annotation.JsonIgnore
+        private boolean managerIdPresent;
+
+        public void setManagerId(Long managerId) {
+            this.managerId = managerId;
+            this.managerIdPresent = true;
+        }
     }
 }

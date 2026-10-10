@@ -7,6 +7,7 @@ import '../../core/localization/language_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/notification_service.dart';
+import '../../data/services/team_approval_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'app_drawer.dart';
 import '../../core/navigation/navigator_keys.dart';
@@ -41,6 +42,8 @@ class _AppShellState extends State<AppShell>
     );
     AuthService.instance.addListener(_onAuthChanged);
     LanguageService.instance.addListener(_onLocaleChanged);
+    TeamApprovalService.instance.addListener(_onLocaleChanged);
+    TeamApprovalService.instance.refresh();
   }
 
   @override
@@ -48,12 +51,14 @@ class _AppShellState extends State<AppShell>
     WidgetsBinding.instance.removeObserver(this);
     AuthService.instance.removeListener(_onAuthChanged);
     LanguageService.instance.removeListener(_onLocaleChanged);
+    TeamApprovalService.instance.removeListener(_onLocaleChanged);
     _sidebarCtrl.dispose();
     super.dispose();
   }
 
   void _onAuthChanged() {
     if (mounted) setState(() {});
+    TeamApprovalService.instance.refresh();
   }
 
   void _onLocaleChanged() {
@@ -64,6 +69,7 @@ class _AppShellState extends State<AppShell>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       setState(() {});
+      TeamApprovalService.instance.refresh();
     }
   }
 
@@ -202,6 +208,8 @@ class _AppShellState extends State<AppShell>
             requiredPermission: 'DASHBOARD_VIEW'),
         _NavItem(s.employees, Icons.people_outline, AppRoutes.employees,
             requiredPermission: 'EMPLOYEE_VIEW'),
+        _NavItem(s.orgChartTitle, Icons.lan_outlined, AppRoutes.orgChart,
+            requiredPermission: 'EMPLOYEE_VIEW'),
         _NavItem(
             s.departments, Icons.account_tree_outlined, AppRoutes.departments,
             requiredPermission: 'DEPARTMENT_VIEW'),
@@ -218,6 +226,7 @@ class _AppShellState extends State<AppShell>
             requiredPermission: 'ATTENDANCE_SELF'),
         _NavItem(s.swapMenu, Icons.swap_horiz, AppRoutes.shiftSwaps,
             requiredPermission: 'ATTENDANCE_SELF'),
+        _NavItem(s.teamApprovalsTitle, Icons.how_to_reg_outlined, AppRoutes.teamApprovals),
         _NavItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
         _NavItem(s.payroll, Icons.payments_outlined, AppRoutes.payroll,
@@ -268,6 +277,8 @@ class _AppShellState extends State<AppShell>
       AppRoutes.excelImportExport => 'Import / Export',
       AppRoutes.reports => s.reportScreenTitle,
       AppRoutes.auditLogs => s.auditLogTitle,
+      AppRoutes.orgChart => s.orgChartTitle,
+      AppRoutes.teamApprovals => s.teamApprovalsTitle,
       _ => s.appName,
     };
   }

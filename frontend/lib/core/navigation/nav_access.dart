@@ -1,4 +1,5 @@
 import '../../data/services/auth_service.dart';
+import '../../data/services/team_approval_service.dart';
 import '../constants/app_constants.dart';
 
 /// F8 — Một nơi duy nhất quyết định ai được vào màn nào.
@@ -10,6 +11,7 @@ import '../constants/app_constants.dart';
 const Map<String, List<String>> routeAnyOf = {
   AppRoutes.dashboard: ['DASHBOARD_VIEW'],
   AppRoutes.employees: ['EMPLOYEE_VIEW'],
+  AppRoutes.orgChart: ['EMPLOYEE_VIEW'],
   AppRoutes.departments: ['DEPARTMENT_VIEW'],
   AppRoutes.shifts: ['SHIFT_VIEW', 'SHIFT_MANAGE'],
   AppRoutes.shiftSwaps: ['ATTENDANCE_SELF', 'SHIFT_SWAP_APPROVE'],
@@ -51,5 +53,9 @@ bool canAccessRoute(AuthUser? user, String route) {
 /// Hiển thị trên menu: như [canAccessRoute], thêm ẩn màn cá nhân khi impersonate.
 bool showInMenu(AuthUser? user, String route) {
   if (AuthService.instance.isImpersonating && selfOnlyRoutes.contains(route)) return false;
+  // Bước K: quyền đến từ quan hệ quản lý trực tiếp (backend kiểm), menu chỉ hiện khi có cấp dưới + chế độ bật
+  if (route == AppRoutes.teamApprovals) {
+    return user != null && !user.isSystemAdmin && TeamApprovalService.instance.visible;
+  }
   return canAccessRoute(user, route);
 }

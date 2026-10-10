@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "shift_swap_requests")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class ShiftSwapRequest extends BaseEntity {
+public class ShiftSwapRequest extends BaseEntity implements ManagerApprovable {
 
     public enum Status { PENDING, APPROVED, REJECTED, CANCELLED }
 
@@ -56,4 +56,15 @@ public class ShiftSwapRequest extends BaseEntity {
 
     @Column(name = "admin_note", length = 500)
     private String adminNote;
+
+    // Bước K — quản lý trực tiếp duyệt trước (chế độ MANAGER_THEN_HR)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_approved_by")
+    private User managerApprovedBy;
+
+    @Column(name = "manager_approved_at")
+    private java.time.LocalDateTime managerApprovedAt;
+
+    @Column(name = "manager_note", length = 500)
+    private String managerNote;
 }

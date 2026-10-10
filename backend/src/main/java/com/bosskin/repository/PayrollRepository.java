@@ -31,7 +31,7 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         LEFT JOIN FETCH e.salaryGrade sg
         WHERE p.year = :year AND p.month = :month
           AND e.company.id = :companyId
-          AND (:departmentId IS NULL OR e.department.id = :departmentId)
+          AND (:departmentId IS NULL OR COALESCE(p.departmentId, e.department.id) = :departmentId)
           AND (:status IS NULL OR p.status = :status)
         """)
     Page<Payroll> findByMonthWithFilters(
@@ -209,7 +209,7 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
         FROM Payroll p
         JOIN p.employee e
         WHERE e.company.id = :companyId AND p.year = :year
-          AND e.department.id = :departmentId
+          AND COALESCE(p.departmentId, e.department.id) = :departmentId
         GROUP BY p.month
         ORDER BY p.month
         """)
@@ -231,7 +231,7 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
                SUM(p.presentDays)
         FROM Payroll p JOIN p.employee e
         WHERE e.company.id = :companyId AND p.year = :year
-          AND (:deptId IS NULL OR e.department.id = :deptId)
+          AND (:deptId IS NULL OR COALESCE(p.departmentId, e.department.id) = :deptId)
         GROUP BY p.month ORDER BY p.month
         """)
     List<Object[]> findYearlySummary(

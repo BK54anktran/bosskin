@@ -213,6 +213,23 @@ foreach ($p in $people) {
   Call PUT "/api/v1/users/$($u.id)/roles" @{ roleIds = $ids } | Out-Null
 }
 
+# ── 6b. Quản lý trực tiếp + quá trình công tác (Bước K) ─────────────────────
+Step 'Quản lý trực tiếp'
+$reports = @{ gd = @('ns','ktt','qd'); ktt = @('ktv'); qd = @('cn1','cn2','cn3') }
+$person = @{}; foreach ($p in $people) { $person[$p[0]] = $p }
+foreach ($m in $reports.Keys) {
+  foreach ($k in $reports[$m]) {
+    # PUT không gửi positionId / salaryGradeId thì hai trường đó bị xoá → gửi lại cùng quản lý
+    Call PUT "/api/v1/employees/$($emp[$k].id)" @{ managerId = $emp[$m].id; positionId = $pos[$person[$k][5]]
+      salaryGradeId = $person[$k][6] } | Out-Null
+  }
+}
+# mốc tương lai: Nam lên quản đốc từ 01/12/2026 (tự áp dụng khi tới ngày)
+Call POST "/api/v1/employees/$($emp['cn3'].id)/job-histories" @{ effectiveFrom = '2026-12-01'; changeType = 'PROMOTION'
+  departmentId = $dept['SX']; positionId = $pos['QD']; salaryGradeId = $gradeSX; managerId = $emp['gd'].id
+  note = 'Lên quản đốc ca đêm' } | Out-Null
+Write-Host '  GD quản lý NS, KTT, QĐ; KTT quản lý KTV; QĐ quản lý 3 công nhân; công ty duyệt theo quyền (mặc định)'
+
 # ── 7. Phân ca: tháng 9 + tháng 10/2026 ─────────────────────────────────────
 Step 'Phân ca'
 $office = 'gd','ns','ktt','ktv'

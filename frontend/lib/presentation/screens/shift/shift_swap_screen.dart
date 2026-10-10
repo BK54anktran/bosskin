@@ -165,6 +165,10 @@ class _ShiftSwapScreenState extends State<ShiftSwapScreen> {
                                 ),
                                 StatusBadge.requestStatus(r.status, s),
                               ]),
+                              if (StatusBadge.managerStep(s,
+                                      awaitingManagerName: r.awaitingManagerName,
+                                      managerApprovedByName: r.managerApprovedByName) case final badge?)
+                                Padding(padding: const EdgeInsets.only(top: 6), child: badge),
                               const SizedBox(height: 8),
                               Text('${r.requesterName}: ${r.requesterDate} · ${r.requesterShift}'),
                               if (r.kind == 'SWAP')

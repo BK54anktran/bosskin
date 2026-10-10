@@ -60,6 +60,11 @@ public class AttendanceRequestDTO {
         private LocalDateTime createdAt;
         private LocalDateTime processedAt;
         private LocalDateTime updatedAt;
+        /** Bước K: bước quản lý trực tiếp. */
+        private LocalDateTime managerApprovedAt;
+        private String managerApprovedByName;
+        private String managerNote;
+        private String awaitingManagerName;
 
         public static Response from(com.bosskin.entity.AttendanceRequest r) {
             var employee = r.getEmployee();

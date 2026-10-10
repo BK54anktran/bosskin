@@ -573,6 +573,11 @@ class _LeavesScreenState extends State<LeavesScreen>
                                   color: AppTheme.textSecondary,
                                 ),
                               ),
+                              if (StatusBadge.managerStep(s,
+                                      awaitingManagerName: r['awaitingManagerName'] as String?,
+                                      managerApprovedByName: r['managerApprovedByName'] as String?)
+                                  case final badge?)
+                                Padding(padding: const EdgeInsets.only(top: 4), child: badge),
                             ],
                           ),
                         ),

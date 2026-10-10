@@ -28,7 +28,8 @@
   `dev\reset-db.cmd` (xoá sạch DB dev, migrate lại, tạo system admin từ `BOOTSTRAP_SYSADMIN_*` trong `backend/.env`),
   `dev\seed-th.cmd` (công ty mẫu "TH company": 4 phòng ban, 8 NV có tài khoản, 4 vai trò, 7 ca gồm ca đêm, ca gãy và
   ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân (bỏ qua ngày lễ), lịch "Xưởng: T7 làm sáng" (`FFFFFHO`)
-  cho Xưởng sản xuất, 4 loại phép, công đã duyệt
+  cho Xưởng sản xuất, quản lý trực tiếp (GĐ → NS/KTT/QĐ, KTT → KTV, QĐ → 3 công nhân) + mốc tương lai 01/12/2026
+  (Nam lên quản đốc), 4 loại phép, công đã duyệt
   01/09–07/10, đơn chờ duyệt (sửa giờ, nghỉ phép, đổi ca), bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
 - Cách chạy: chủ dự án bật `dev\runner.cmd` một lần (để cửa sổ mở). Claude ghi tên lệnh vào
@@ -348,9 +349,10 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V14** (`V14__holidays_work_calendars.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
-V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc
-→ Migration tiếp theo phải là **V15**
+Cao nhất: **V15** (`V15__job_history_manager.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
+V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt
+→ Migration tiếp theo phải là **V16**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -414,6 +416,28 @@ V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13
 - Đơn nghỉ 1 ngày vào ngày lễ nghỉ → `error.leave.holiday`; đơn nhiều ngày bỏ qua ngày lễ nghỉ. Sinh xoay ca có `skipHolidays`.
 - FE: Cài đặt công ty có tab "Chung" + "Lịch làm việc" (cần CALENDAR_VIEW); lưới ca và bảng công tô màu ngày lễ / ngày nghỉ (`holidayName`).
   Test: `WorkCalendarTest`.
+
+## Quá trình công tác & quản lý trực tiếp (Bước K)
+- V15: `employee_job_histories` (mỗi dòng = ảnh chụp phòng ban / chức vụ / bậc lương / quản lý từ `effective_from`; `change_type`
+  HIRE | TRANSFER | PROMOTION | SALARY_CHANGE | MANAGER_CHANGE | OTHER; `applied`), `employees.manager_id`, `companies.approval_mode`
+  (PERMISSION mặc định | MANAGER_THEN_HR), `manager_approved_by/_at/_note` trên `leave_requests`, `attendance_requests`, `shift_swap_requests`
+  (interface `ManagerApprovable`), `payrolls.department_id/_name`.
+- `JobHistoryService`: dòng hiện hành = mới nhất ≤ hôm nay, `sync()` chép vào `employees`; `@Scheduled` 00:05 VN `applyDue()` áp mốc tới ngày.
+  Tạo NV ghi HIRE; sửa form / import đổi 1 trong 4 trường → `recordIfChanged` ghi mốc hôm nay. Chỉ xoá mốc chưa tới ngày
+  (`error.job_history.past_readonly`). Quản lý: cùng công ty, không tự quản lý, không vòng (`error.employee.manager_*`). Nhật ký `JOB_HISTORY_*`.
+- `EmployeeDTO.UpdateRequest.managerId` có cờ "đã gửi": không gửi = giữ, gửi null = bỏ quản lý. Lưu ý PUT nhân viên không gửi
+  `positionId` / `salaryGradeId` thì hai trường đó bị xoá (hành vi cũ).
+- Lương: `effectiveOn(emp, period.to())` → phòng ban + bậc (mốc chưa có bậc → bậc hiện tại); phiếu lưu phòng ban; Excel / báo cáo / lọc phòng ban
+  dùng `COALESCE(p.departmentId, e.department.id)`.
+- Chế độ duyệt (`ManagerApprovalService`): bật MANAGER_THEN_HR + NV có quản lý còn làm → HR duyệt cuối bị 409 `error.approval.manager_pending`
+  tới khi quản lý duyệt (người duyệt chính là quản lý → ghi luôn 2 bước). Quản lý dùng `/api/v1/team-approvals` (GET, `/count`,
+  `POST /{LEAVE|ATTENDANCE|SWAP}/{id}/approve|reject`), quyền theo quan hệ quản lý; từ chối đơn nghỉ hoàn phép. Báo đẩy FCM cho quản lý khi có đơn
+  (`FcmService.sendSimple`). Nhật ký `MANAGER_APPROVE` / `MANAGER_REJECT`.
+- API `/api/v1/employees/{id}/job-histories` (GET EMPLOYEE_VIEW, POST + EMPLOYEE_UPDATE), `DELETE /api/v1/employees/job-histories/{id}`,
+  `/api/v1/org-chart` (EMPLOYEE_VIEW, lọc phạm vi).
+- FE: hộp "Quá trình công tác" (`employee/job_history_dialog.dart`, nút ở danh sách NV), `ManagerDropdown` trong form NV, màn `/org-chart`
+  (`employee/org_chart_screen.dart`), màn `/team-approvals` (menu chỉ hiện khi `TeamApprovalService.visible`), `StatusBadge.managerStep`
+  ở danh sách đơn nghỉ / sửa công / đổi ca, chọn chế độ ở Cài đặt công ty. Test: `JobHistoryTest`.
 
 ## Màn hình Flutter
 | Screen | Path |

@@ -407,7 +407,8 @@ public class ReportService {
                 Row r = sheet.createRow(row++);
                 setCell(r, 0,  e.getEmployeeCode(), data);
                 setCell(r, 1,  e.getFullName(), data);
-                setCell(r, 2,  e.getDepartment() != null ? e.getDepartment().getName() : "", data);
+                setCell(r, 2,  p.getDepartmentName() != null ? p.getDepartmentName()
+                    : e.getDepartment() != null ? e.getDepartment().getName() : "", data);
                 setCell(r, 3,  p.getSalaryGradeName() != null ? p.getSalaryGradeName()
                                : (e.getSalaryGrade() != null ? e.getSalaryGrade().getName() : ""), data);
                 setCell(r, 4,  p.getPayType() != null ? p.getPayType() : "", data);
@@ -452,7 +453,8 @@ public class ReportService {
             XSSFSheet sumSheet = wb.createSheet(i18n("excel.report.byDept", locale));
             Map<String, List<Payroll>> byDept = payrolls.stream()
                 .collect(Collectors.groupingBy(
-                    p -> p.getEmployee().getDepartment() != null
+                    p -> p.getDepartmentName() != null ? p.getDepartmentName()
+                        : p.getEmployee().getDepartment() != null
                         ? p.getEmployee().getDepartment().getName() : "N/A"));
             writeHeader(sumSheet, hdr, new String[]{
                 excelI18n.resolve("excel.col.payroll.department",  locale),

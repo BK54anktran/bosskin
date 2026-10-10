@@ -127,6 +127,14 @@ public class Company extends BaseEntity {
     @Builder.Default
     private boolean standardDaysFromCalendar = false;
 
+    /** Bước K: chế độ duyệt đơn nghỉ / sửa giờ / đổi ca. */
+    public enum ApprovalMode { PERMISSION, MANAGER_THEN_HR }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_mode", nullable = false, length = 20)
+    @Builder.Default
+    private ApprovalMode approvalMode = ApprovalMode.PERMISSION;
+
     @Column(name = "payroll_cutoff_day", nullable = false)
     @Builder.Default
     private int payrollCutoffDay = 1;

@@ -26,6 +26,9 @@ class Employee {
   final String? bankAccount;
   final String? bankName;
   final double? contractSalary;
+  /// Bước K: quản lý trực tiếp (bản hiện hành).
+  final int? managerId;
+  final String? managerName;
   /// Đã gắn thiết bị chấm công (công ty bật gắn thiết bị)
   final bool deviceBound;
   final DateTime? boundDeviceAt;
@@ -55,6 +58,8 @@ class Employee {
     this.bankAccount,
     this.bankName,
     this.contractSalary,
+    this.managerId,
+    this.managerName,
     this.deviceBound = false,
     this.boundDeviceAt,
   });
@@ -84,6 +89,8 @@ class Employee {
         bankAccount: j['bankAccount'],
         bankName: j['bankName'],
         contractSalary: (j['contractSalary'] as num?)?.toDouble(),
+        managerId: (j['managerId'] as num?)?.toInt(),
+        managerName: j['managerName'] as String?,
         deviceBound: j['deviceBound'] == true,
         boundDeviceAt: j['boundDeviceAt'] != null ? DateTime.tryParse(j['boundDeviceAt']) : null,
       );

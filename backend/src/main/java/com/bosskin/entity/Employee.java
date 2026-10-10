@@ -86,6 +86,11 @@ public class Employee extends BaseEntity {
     @JoinColumn(name = "salary_grade_id")
     private SalaryGrade salaryGrade;
 
+    /** Bước K — quản lý trực tiếp (bản hiện hành, đồng bộ từ lịch sử công tác). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private Employee manager;
+
     @Column(name = "address", columnDefinition = "TEXT")
     private String address;
 

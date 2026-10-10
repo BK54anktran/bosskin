@@ -34,6 +34,7 @@ class AttendanceRequestServiceTest {
     @Mock private EmployeeRepository employeeRepository;
     @Mock private ShiftAssignmentRepository shiftAssignmentRepository;
     @Mock private PeriodLockService periodLockService;
+    @Mock private ManagerApprovalService managerApproval;
 
     @InjectMocks private AttendanceRequestService service;
 

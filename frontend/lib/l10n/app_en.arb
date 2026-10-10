@@ -1574,4 +1574,57 @@
   ,"@workCalendarDeleteConfirm": { "placeholders": { "name": { "type": "String" } } }
   ,"workCalendarWeekDays": "{days} days / week"
   ,"@workCalendarWeekDays": { "placeholders": { "days": { "type": "String" } } }
+  ,"orgChartTitle": "Org chart"
+  ,"orgChartByPerson": "By person"
+  ,"orgChartByDepartment": "By department"
+  ,"orgChartSearch": "Search by name or code"
+  ,"orgChartPeopleCount": "{count} people"
+  ,"@orgChartPeopleCount": {"placeholders": {"count": {"type": "int"}}}
+  ,"orgChartManagerOf": "Manager: {name}"
+  ,"@orgChartManagerOf": {"placeholders": {"name": {"type": "String"}}}
+  ,"orgChartReports": "{count} direct reports"
+  ,"@orgChartReports": {"placeholders": {"count": {"type": "int"}}}
+  ,"orgChartDepartmentHead": "Head"
+  ,"teamApprovalsTitle": "Team approvals"
+  ,"teamApprovalsHint": "Requests from your direct reports. You approve first, then HR gives the final approval; rejecting ends the request."
+  ,"teamApprovalsApproveTitle": "Approve (manager step)"
+  ,"teamApprovalsRejectTitle": "Reject request"
+  ,"teamApprovalsApproved": "Approved, sent on to HR"
+  ,"teamApprovalsRejected": "Request rejected"
+  ,"teamApprovalsDisabled": "Your company approves by permission; there is no direct-manager step."
+  ,"teamApprovalsNoReports": "You are nobody's direct manager yet."
+  ,"teamApprovalsEmpty": "Nothing waiting for you ({count} direct reports)."
+  ,"@teamApprovalsEmpty": {"placeholders": {"count": {"type": "int"}}}
+  ,"teamApprovalsMinutes": "{minutes} min"
+  ,"@teamApprovalsMinutes": {"placeholders": {"minutes": {"type": "int"}}}
+  ,"approvalAwaitingManager": "Awaiting manager: {name}"
+  ,"@approvalAwaitingManager": {"placeholders": {"name": {"type": "String"}}}
+  ,"approvalManagerApproved": "Manager approved: {name}"
+  ,"@approvalManagerApproved": {"placeholders": {"name": {"type": "String"}}}
+  ,"approvalModeTitle": "Request approval"
+  ,"approvalModeLabel": "Who approves leave, attendance and shift-swap requests"
+  ,"approvalModePermission": "Anyone with the approve permission (by department scope)"
+  ,"approvalModeManagerThenHr": "Direct manager first, then HR"
+  ,"approvalModeHelper": "When on, employees who have a direct manager get the manager's approval first (\"Team approvals\" screen); HR can only give the final approval after that. Employees without a manager are approved as before."
+  ,"directManager": "Direct manager"
+  ,"directManagerNone": "None"
+  ,"jobChangeHire": "Hired"
+  ,"jobChangeTransfer": "Transfer"
+  ,"jobChangePromotion": "Position change"
+  ,"jobChangeSalary": "Salary grade change"
+  ,"jobChangeManager": "Manager change"
+  ,"jobChangeOther": "Other"
+  ,"jobHistoryTitle": "Job history"
+  ,"jobHistoryAdd": "Add change"
+  ,"jobHistoryHint": "Each entry is the department, position, salary grade and manager from its effective date. Future entries apply automatically on their date; payroll uses the entry effective at the end of the period."
+  ,"jobHistoryDeleteConfirm": "Delete this upcoming change?"
+  ,"jobHistoryCurrent": "Current"
+  ,"jobHistoryUpcoming": "Upcoming"
+  ,"jobHistoryBy": "Recorded by {name}"
+  ,"@jobHistoryBy": {"placeholders": {"name": {"type": "String"}}}
+  ,"jobHistoryChangeType": "Change type"
+  ,"auditActJobHistoryCreate": "Job history added"
+  ,"auditActJobHistoryDelete": "Job history deleted"
+  ,"auditActManagerApprove": "Direct manager approved"
+  ,"auditActManagerReject": "Direct manager rejected"
 }

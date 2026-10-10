@@ -4567,4 +4567,161 @@ class AppLocalizationsEn extends AppLocalizations {
   String workCalendarWeekDays(String days) {
     return '$days days / week';
   }
+
+  @override
+  String get orgChartTitle => 'Org chart';
+
+  @override
+  String get orgChartByPerson => 'By person';
+
+  @override
+  String get orgChartByDepartment => 'By department';
+
+  @override
+  String get orgChartSearch => 'Search by name or code';
+
+  @override
+  String orgChartPeopleCount(int count) {
+    return '$count people';
+  }
+
+  @override
+  String orgChartManagerOf(String name) {
+    return 'Manager: $name';
+  }
+
+  @override
+  String orgChartReports(int count) {
+    return '$count direct reports';
+  }
+
+  @override
+  String get orgChartDepartmentHead => 'Head';
+
+  @override
+  String get teamApprovalsTitle => 'Team approvals';
+
+  @override
+  String get teamApprovalsHint =>
+      'Requests from your direct reports. You approve first, then HR gives the final approval; rejecting ends the request.';
+
+  @override
+  String get teamApprovalsApproveTitle => 'Approve (manager step)';
+
+  @override
+  String get teamApprovalsRejectTitle => 'Reject request';
+
+  @override
+  String get teamApprovalsApproved => 'Approved, sent on to HR';
+
+  @override
+  String get teamApprovalsRejected => 'Request rejected';
+
+  @override
+  String get teamApprovalsDisabled =>
+      'Your company approves by permission; there is no direct-manager step.';
+
+  @override
+  String get teamApprovalsNoReports => 'You are nobody\'s direct manager yet.';
+
+  @override
+  String teamApprovalsEmpty(int count) {
+    return 'Nothing waiting for you ($count direct reports).';
+  }
+
+  @override
+  String teamApprovalsMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String approvalAwaitingManager(String name) {
+    return 'Awaiting manager: $name';
+  }
+
+  @override
+  String approvalManagerApproved(String name) {
+    return 'Manager approved: $name';
+  }
+
+  @override
+  String get approvalModeTitle => 'Request approval';
+
+  @override
+  String get approvalModeLabel =>
+      'Who approves leave, attendance and shift-swap requests';
+
+  @override
+  String get approvalModePermission =>
+      'Anyone with the approve permission (by department scope)';
+
+  @override
+  String get approvalModeManagerThenHr => 'Direct manager first, then HR';
+
+  @override
+  String get approvalModeHelper =>
+      'When on, employees who have a direct manager get the manager\'s approval first (\"Team approvals\" screen); HR can only give the final approval after that. Employees without a manager are approved as before.';
+
+  @override
+  String get directManager => 'Direct manager';
+
+  @override
+  String get directManagerNone => 'None';
+
+  @override
+  String get jobChangeHire => 'Hired';
+
+  @override
+  String get jobChangeTransfer => 'Transfer';
+
+  @override
+  String get jobChangePromotion => 'Position change';
+
+  @override
+  String get jobChangeSalary => 'Salary grade change';
+
+  @override
+  String get jobChangeManager => 'Manager change';
+
+  @override
+  String get jobChangeOther => 'Other';
+
+  @override
+  String get jobHistoryTitle => 'Job history';
+
+  @override
+  String get jobHistoryAdd => 'Add change';
+
+  @override
+  String get jobHistoryHint =>
+      'Each entry is the department, position, salary grade and manager from its effective date. Future entries apply automatically on their date; payroll uses the entry effective at the end of the period.';
+
+  @override
+  String get jobHistoryDeleteConfirm => 'Delete this upcoming change?';
+
+  @override
+  String get jobHistoryCurrent => 'Current';
+
+  @override
+  String get jobHistoryUpcoming => 'Upcoming';
+
+  @override
+  String jobHistoryBy(String name) {
+    return 'Recorded by $name';
+  }
+
+  @override
+  String get jobHistoryChangeType => 'Change type';
+
+  @override
+  String get auditActJobHistoryCreate => 'Job history added';
+
+  @override
+  String get auditActJobHistoryDelete => 'Job history deleted';
+
+  @override
+  String get auditActManagerApprove => 'Direct manager approved';
+
+  @override
+  String get auditActManagerReject => 'Direct manager rejected';
 }
