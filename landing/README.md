@@ -4,7 +4,7 @@ Trang tĩnh (`index.html` + `assets/`), không cần build. Máy dev Windows: `d
 → http://localhost:8099. Máy khác: `python3 -m http.server -d landing 8099`.
 
 ## Cấu hình trước khi đăng
-Sửa khối `window.BOSSKIN` đầu `index.html`:
+Sửa `window.BOSSKIN` trong `site-config.js` (dùng chung cho trang giới thiệu và trang trợ giúp `/help/`):
 
 | Khoá | Ý nghĩa |
 |---|---|
@@ -12,7 +12,8 @@ Sửa khối `window.BOSSKIN` đầu `index.html`:
 | `apiUrl` | Backend BossKin nhận form dùng thử (vd `https://api.ten-mien.vn`, phải có trong `CORS_ALLOWED_ORIGINS`). Ưu tiên cao nhất |
 | `supabaseUrl`, `supabaseKey` | Khi chưa có `apiUrl`: form ghi vào bảng `trial_requests` trên Supabase (khoá publishable, RLS chỉ cho THÊM). Không có cả hai → **Netlify Forms** |
 | `contactEmail` | Email liên hệ hiện ở mục dùng thử (tuỳ chọn) |
-| `contactPhone` | Số điện thoại / Zalo hiện ở mục liên hệ (để trống thì ẩn) |
+| `contactPhone` | Số điện thoại / Zalo hiện ở mục dùng thử và chân trang (để trống thì ẩn) |
+| `facebookUrl`, `tiktokUrl`, `youtubeUrl` | Link trang mạng xã hội, hiện thành biểu tượng ở chân trang (để trống thì ẩn) |
 
 Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 22 ngày đo được 47–50 giây (`docs/pilot-2026-10.md`),
 8 báo cáo Excel, BHXH 8% / BHYT 1,5% / BHTN 1% + thuế TNCN luỹ tiến. Đổi tính năng thì sửa trang theo (quy tắc 2).
@@ -31,7 +32,7 @@ Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 
 3. **Forms → dung-thu → Form notifications → Add notification → Email** để nhận email mỗi khi có yêu cầu (gói miễn phí 100 lượt/tháng).
 4. (Tuỳ chọn) **Domain management** → gắn tên miền riêng; Netlify tự cấp HTTPS.
 
-Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `index.html`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
+Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
 
 ## Video đầy đủ `assets/bosskin-gioi-thieu.mp4` (~90 giây, 1080p, giọng Hoài My, phụ đề in sẵn; trang dẫn link phụ)
 Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi trường thử riêng, **không** chạy vào DB dev/prod):

@@ -14,22 +14,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-<script>
-  /* Cấu hình trang — sửa ở đây khi triển khai (xem landing/README.md) */
-  window.BOSSKIN = {
-    // Trang đăng nhập app web. '' = ẩn nút "Đăng nhập" (khi app chưa lên mạng). 8099 = chạy thử trên máy dev.
-    appUrl: location.port === '8099' ? 'http://localhost:3000/login' : '',
-    // Nơi nhận form dùng thử, theo thứ tự ưu tiên:
-    //  1. apiUrl — backend BossKin (vd 'https://api.ten-mien.vn'), xem ở /admin → Yêu cầu dùng thử;
-    //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase (khi backend chưa lên mạng);
-    //  3. không có cả hai — Netlify Forms (khi host trên Netlify).
-    apiUrl: '',                 // đang dùng Supabase làm nơi lưu chung (app BossKin đọc từ đó)
-    supabaseUrl: 'https://apcppqwwnoyliwlhqtyx.supabase.co',
-    supabaseKey: 'sb_publishable_lmZvVB_ao3EZrwiKl4174A_1dCrGFWV',   // khoá công khai: chỉ được THÊM dòng (RLS)
-    contactEmail: '',          // email liên hệ hiện ở mục dùng thử (tuỳ chọn), vd 'lienhe@ten-mien.vn'
-    contactPhone: '',          // số điện thoại / Zalo, vd '0901 234 567'
-  };
-</script>
+<script src="site-config.js"></script>
 <style>
   :root {
     --ink: #0f172a; --ink-2: #334155; --muted: #56657a; --line: #e2e8f0; --accent: #1d4ed8; --accent-bg: rgba(37,99,235,.1);
@@ -192,6 +177,9 @@
   .foot-bottom { border-top: 1px solid rgba(255,255,255,.1); }
   .foot-bottom .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding-block: 18px; font-size: 14px; color: rgba(255,255,255,.55); }
   footer.site .btn { padding: 10px 18px; font-size: 15px; }
+  .socials { display: flex; gap: 10px; margin: 0 0 18px; }
+  .socials a { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); color: #fff !important; }
+  .socials a:hover { background: rgba(255,255,255,.18); }
   @media (max-width: 900px) { .foot-grid { grid-template-columns: 1fr 1fr; gap: 32px; } .foot-brand { grid-column: 1 / -1; } }
   @media (max-width: 520px) { .foot-grid { gap: 28px 20px; padding-block: 44px 28px; } .foot-col:last-child { grid-column: 1 / -1; } }
 </style>
@@ -447,6 +435,11 @@
     <div class="foot-brand">
       <a class="brand" href="#"><img src="assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
       <p>Phần mềm chấm công, xếp ca, nghỉ phép và tính lương cho doanh nghiệp Việt Nam. Dùng trên điện thoại Android và trình duyệt web, tiếng Việt và tiếng Anh.</p>
+      <div class="socials">
+        <a class="js-soc" data-key="facebookUrl" href="#" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3H13.5V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"/></svg></a>
+        <a class="js-soc" data-key="tiktokUrl" href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.4 2.1 1.7 3.5 3.9 3.8v3.1a7.2 7.2 0 0 1-3.9-1.2v6.2A5.7 5.7 0 1 1 10.9 9.2v3.2a2.5 2.5 0 1 0 2.5 2.5V3h3.2z"/></svg></a>
+        <a class="js-soc" data-key="youtubeUrl" href="#" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg></a>
+      </div>
       <a class="btn btn-primary" href="#lien-he">Đăng ký dùng thử</a>
     </div>
     <div class="foot-col">
@@ -473,6 +466,7 @@
       <h4>Liên hệ</h4>
       <ul class="foot-contact">
         <li class="js-phone" hidden><span class="ic">☎</span><a></a></li>
+        <li class="js-zalo" hidden><span class="ic">💬</span><a target="_blank" rel="noopener"></a></li>
         <li class="js-mail" hidden><span class="ic">✉</span><a></a></li>
         <li class="js-nocontact"><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
         <li class="js-app-row"><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li>
@@ -499,11 +493,16 @@
     if (cfg.contactPhone) lines.push('Điện thoại / Zalo: <b>' + cfg.contactPhone + '</b>');
     if (cfg.contactEmail) lines.push('Email: <b>' + cfg.contactEmail + '</b>');
     if (lines.length) { direct.innerHTML = lines.join('<br>'); direct.hidden = false; }
-    // Chân trang: điện thoại / email theo cấu hình; không có thì gợi ý để lại thông tin
+    // Chân trang: điện thoại / Zalo / email / mạng xã hội theo site-config.js; trống thì ẩn
     function setContact(sel, text, href) { var li = document.querySelector(sel); if (!li || !text) return; var a = li.querySelector('a'); a.textContent = text; a.href = href; li.hidden = false; }
-    setContact('.js-phone', cfg.contactPhone, 'tel:' + String(cfg.contactPhone || '').replace(/[^0-9+]/g, ''));
+    var phoneDigits = String(cfg.contactPhone || '').replace(/[^0-9+]/g, '');
+    setContact('.js-phone', cfg.contactPhone, 'tel:' + phoneDigits);
+    setContact('.js-zalo', cfg.contactPhone && 'Zalo ' + cfg.contactPhone, 'https://zalo.me/' + phoneDigits);
     setContact('.js-mail', cfg.contactEmail, 'mailto:' + cfg.contactEmail);
     if (cfg.contactPhone || cfg.contactEmail) document.querySelector('.js-nocontact').hidden = true;
+    var anySoc = false;
+    document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
+    document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
 
     var ERR = {
       'error.trial.name_required': 'Vui lòng nhập họ tên.',

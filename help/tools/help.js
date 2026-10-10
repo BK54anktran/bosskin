@@ -36,5 +36,20 @@
   Object.keys(map).forEach(function(id){var h=document.getElementById(id);if(h)io.observe(h);});
 })();
 
-// Nút Đăng nhập như trang giới thiệu
-(function(){var u=window.HELP_APP_URL;document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});document.querySelectorAll('.js-app-row').forEach(function(r){r.hidden=!u;});document.querySelectorAll('.js-yr').forEach(function(s){s.textContent=new Date().getFullYear();});})();
+// Cấu hình chung với trang giới thiệu (../site-config.js): nút Đăng nhập, liên hệ, mạng xã hội
+(function(){
+  var cfg=window.BOSSKIN||{}, u=cfg.appUrl;
+  document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});
+  document.querySelectorAll('.js-app-row').forEach(function(r){r.hidden=!u;});
+  document.querySelectorAll('.js-yr').forEach(function(s){s.textContent=new Date().getFullYear();});
+  // Chân trang: điện thoại / Zalo / email / mạng xã hội theo site-config.js; trống thì ẩn
+  function setContact(sel, text, href) { var li = document.querySelector(sel); if (!li || !text) return; var a = li.querySelector('a'); a.textContent = text; a.href = href; li.hidden = false; }
+  var phoneDigits = String(cfg.contactPhone || '').replace(/[^0-9+]/g, '');
+  setContact('.js-phone', cfg.contactPhone, 'tel:' + phoneDigits);
+  setContact('.js-zalo', cfg.contactPhone && 'Zalo ' + cfg.contactPhone, 'https://zalo.me/' + phoneDigits);
+  setContact('.js-mail', cfg.contactEmail, 'mailto:' + cfg.contactEmail);
+  if (cfg.contactPhone || cfg.contactEmail) document.querySelector('.js-nocontact').hidden = true;
+  var anySoc = false;
+  document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
+  document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
+})();

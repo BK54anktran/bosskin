@@ -648,7 +648,8 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
 
 ## Trang giới thiệu & video (10/2026)
 - Chạy thử trên máy dev: `dev\start.cmd landing` → http://localhost:8099 (`dev/landing-server.ps1`, HttpListener có Range cho video).
-- `landing/`: trang tĩnh `index.html` (cấu hình `window.BOSSKIN`: appUrl, contactEmail, contactPhone) + `assets/` (ảnh webp, video).
+- `landing/`: trang tĩnh `index.html` + `assets/` (ảnh webp, video). Cấu hình `landing/site-config.js` (`window.BOSSKIN`: appUrl, contactEmail,
+  contactPhone, facebookUrl / tiktokUrl / youtubeUrl, nơi nhận form) dùng chung cho trang trợ giúp (`/help/` đọc `../site-config.js`).
 - Video `landing/assets/bosskin-gioi-thieu.mp4` dựng lại bằng `landing/video/` (seed công ty hư cấu "Nội thất An Phát" trên DB thử,
   chụp màn hình bằng Playwright, giọng edge-tts `vi-VN-HoaiMyNeural`, dựng bằng `make_video.py`). Hướng dẫn: `landing/README.md`.
 - Form dùng thử → `POST /api/v1/public/trial-requests` (công khai, `/api/v1/public/**` permitAll): ô bẫy bot `website`,

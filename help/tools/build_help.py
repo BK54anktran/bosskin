@@ -104,9 +104,8 @@ def page(title, body, pages, current, desc, aside=''):
 </div>
 {FOOTER}
 <div id="lightbox" hidden><img alt=""></div>
-<script>/* Giống window.BOSSKIN.appUrl ở landing/index.html: '' = ẩn nút Đăng nhập */
-window.HELP_APP_URL = location.port === '8099' ? 'http://localhost:3000/login' : '';
-window.HELP_INDEX = {json.dumps(SEARCH, ensure_ascii=False)};</script>
+<script src="../site-config.js"></script>
+<script>window.HELP_INDEX = {json.dumps(SEARCH, ensure_ascii=False)};</script>
 <script>{JS}</script>
 </body>
 </html>
@@ -118,6 +117,11 @@ FOOTER = """<footer class="site">
     <div class="foot-brand">
       <a class="brand" href="../"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
       <p>Phần mềm chấm công, xếp ca, nghỉ phép và tính lương cho doanh nghiệp Việt Nam. Dùng trên điện thoại Android và trình duyệt web, tiếng Việt và tiếng Anh.</p>
+      <div class="socials">
+        <a class="js-soc" data-key="facebookUrl" href="#" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3H13.5V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"/></svg></a>
+        <a class="js-soc" data-key="tiktokUrl" href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.4 2.1 1.7 3.5 3.9 3.8v3.1a7.2 7.2 0 0 1-3.9-1.2v6.2A5.7 5.7 0 1 1 10.9 9.2v3.2a2.5 2.5 0 1 0 2.5 2.5V3h3.2z"/></svg></a>
+        <a class="js-soc" data-key="youtubeUrl" href="#" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg></a>
+      </div>
       <a class="foot-cta" href="../#lien-he">Đăng ký dùng thử</a>
     </div>
     <div class="foot-col"><h4>Sản phẩm</h4><ul>
@@ -128,7 +132,10 @@ FOOTER = """<footer class="site">
       <li><a href="duyet-cho-nhom.html">Cho quản lý</a></li><li><a href="nhan-vien.html">Cho nhân sự</a></li>
       <li><a href="bang-luong.html">Cho kế toán</a></li><li><a href="cau-hoi.html">Câu hỏi thường gặp</a></li></ul></div>
     <div class="foot-col"><h4>Liên hệ</h4><ul class="foot-contact">
-      <li><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="../#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
+      <li class="js-phone" hidden><span class="ic">☎</span><a></a></li>
+      <li class="js-zalo" hidden><span class="ic">💬</span><a target="_blank" rel="noopener"></a></li>
+      <li class="js-mail" hidden><span class="ic">✉</span><a></a></li>
+      <li class="js-nocontact"><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="../#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
       <li class="js-app-row" hidden><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li></ul></div>
   </div>
   <div class="foot-bottom"><div class="foot-bottom-in"><span>© <span class="js-yr"></span> BossKin. Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng.</span><a href="#">Lên đầu trang ↑</a></div></div>
