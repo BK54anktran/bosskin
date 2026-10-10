@@ -186,7 +186,7 @@ class _OrgChartScreenState extends State<OrgChartScreen> {
                     child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   ),
                   Text(s.orgChartPeopleCount(people.length),
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 ]),
                 const Divider(),
                 ...people.map((n) => _PersonTile(node: n, manager: byId[n.managerId], showManager: true)),
@@ -237,7 +237,7 @@ class _PersonTile extends StatelessWidget {
       ),
       title: Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
         Text(node.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
-        Text(node.employeeCode, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+        Text(node.employeeCode, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         if (node.departmentHead) StatusBadge(label: s.orgChartDepartmentHead, color: AppTheme.primary, fontSize: 10),
       ]),
       subtitle: Text(subtitle),

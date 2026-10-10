@@ -302,7 +302,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
               ),
           ]),
           const SizedBox(height: 4),
-          Text(s.workCalendarWeekHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(s.workCalendarWeekHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           const SizedBox(height: 8),
           for (final c in _calendars)
             ListTile(
@@ -319,10 +319,10 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                       : (c.departmentIds.isEmpty
                           ? s.workCalendarNoDepartments
                           : c.departmentIds.map((id) => deptName[id] ?? '#$id').join(', ')),
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                 ),
                 Text(s.workCalendarWeekDays(_fmtDays(c.weekPattern)),
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               ]),
               trailing: !_canManage
                   ? null
@@ -392,7 +392,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
           ]),
           const SizedBox(height: 4),
           Text(_customized ? s.holidayCustomizedHint : s.holidayTemplateHint,
-              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           const SizedBox(height: 8),
           if (_loadingHolidays)
             const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()))
@@ -428,9 +428,9 @@ class WeekPatternChips extends StatelessWidget {
 
   Widget _chip(AppLocalizations s, String label, String code, int i) {
     final (bg, fg, tip) = switch (code) {
-      'H' => (const Color(0xFFFEF3C7), const Color(0xFF92400E), s.workDayHalf),
-      'O' => (const Color(0xFFF1F5F9), AppTheme.textSecondary, s.workDayOff),
-      _ => (const Color(0xFFDCFCE7), const Color(0xFF166534), s.workDayFull),
+      'H' => (AppTheme.tint(AppTheme.warning), const Color(0xFF92400E), s.workDayHalf),
+      'O' => (AppTheme.surfaceAlt, AppTheme.textSecondary, s.workDayOff),
+      _ => (AppTheme.tint(AppTheme.secondary), const Color(0xFF166534), s.workDayFull),
     };
     final box = Tooltip(
       message: tip,
@@ -531,13 +531,13 @@ class _CalendarDialogState extends State<_CalendarDialog> {
               ),
               const SizedBox(height: 4),
             ],
-            Text(s.workCalendarPatternHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.workCalendarPatternHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 8),
             WeekPatternChips(pattern: _pattern, onTap: _cycle),
             if (!widget.isDefault) ...[
               const SizedBox(height: 16),
               Text(s.workCalendarDepartments, style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text(s.workCalendarDepartmentsHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              Text(s.workCalendarDepartmentsHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               for (final d in widget.departments)
                 CheckboxListTile(
                   dense: true,

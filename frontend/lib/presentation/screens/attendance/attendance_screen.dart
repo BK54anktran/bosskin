@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'attendance_shared.dart';
 import 'tabs/attendance_timesheet_tab.dart';
@@ -60,7 +61,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          color: Colors.white,
+          color: AppTheme.background,
           child: Padding(
             padding: const EdgeInsets.only(top: 8, right: 12),
             child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [

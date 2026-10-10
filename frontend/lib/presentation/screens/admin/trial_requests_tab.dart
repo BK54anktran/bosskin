@@ -170,7 +170,7 @@ class _TrialCard extends StatelessWidget {
     final note = row['adminNote'] as String?;
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: Color(0xFFE2E8F0))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: AppTheme.border)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
@@ -180,7 +180,7 @@ class _TrialCard extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(row['companyName'] as String? ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textPrimary)),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textPrimary)),
               ),
               StatusBadge(label: trialStatusLabel(st, s), color: trialStatusColor(st)),
             ]),
@@ -194,12 +194,12 @@ class _TrialCard extends StatelessWidget {
             ]),
             if (need != null) ...[
               const SizedBox(height: 8),
-              Text(need, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary)),
+              Text(need, style: TextStyle(fontSize: 13, color: AppTheme.textPrimary)),
             ],
             if (note != null) ...[
               const SizedBox(height: 6),
               Text(s.trialNoteLine(note, row['handledBy'] as String? ?? ''),
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
             ],
           ]),
         ),
@@ -216,9 +216,9 @@ class _Info extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(fontSize: 13, color: AppTheme.textSecondary);
+    final style = TextStyle(fontSize: 13, color: AppTheme.textSecondary);
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
+      Icon(icon, size: 14, color: AppTheme.textMuted),
       const SizedBox(width: 4),
       selectable ? SelectableText(text, style: style) : Text(text, style: style),
     ]);

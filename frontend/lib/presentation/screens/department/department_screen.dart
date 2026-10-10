@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../data/models/department_model.dart';
@@ -166,10 +167,10 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.account_tree_outlined, size: 64, color: Colors.grey[400]),
+          Icon(Icons.account_tree_outlined, size: 64, color: AppTheme.textMuted),
           const SizedBox(height: 16),
           Text(s.noDepartmentsYet,
-              style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: () => _showForm(),
@@ -240,7 +241,7 @@ class _DepartmentTileState extends State<_DepartmentTile> {
                                 ),
                               )
                             : Icon(Icons.circle,
-                                size: 6, color: Colors.grey[400]),
+                                size: 6, color: AppTheme.textMuted),
                       ),
                       const SizedBox(width: 6),
                       Icon(
@@ -271,7 +272,7 @@ class _DepartmentTileState extends State<_DepartmentTile> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 5, vertical: 1),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
+                                    color: AppTheme.surfaceAlt,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(node.code,
@@ -286,7 +287,7 @@ class _DepartmentTileState extends State<_DepartmentTile> {
                                 children: [
                                   if (node.managerName != null) ...[
                                     Icon(Icons.person_outline,
-                                        size: 12, color: Colors.grey[500]),
+                                        size: 12, color: AppTheme.textMuted),
                                     const SizedBox(width: 2),
                                     Flexible(
                                       child: Text(
@@ -294,18 +295,18 @@ class _DepartmentTileState extends State<_DepartmentTile> {
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                             fontSize: 11,
-                                            color: Colors.grey[600]),
+                                            color: AppTheme.textSecondary),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                   ],
                                   Icon(Icons.people_outline,
-                                      size: 12, color: Colors.grey[500]),
+                                      size: 12, color: AppTheme.textMuted),
                                   const SizedBox(width: 2),
                                   Text(
                                     s.employeeCountLabel(node.employeeCount),
                                     style: TextStyle(
-                                        fontSize: 11, color: Colors.grey[600]),
+                                        fontSize: 11, color: AppTheme.textSecondary),
                                   ),
                                 ],
                               ),
@@ -765,10 +766,10 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.work_off_outlined,
-                            size: 48, color: Colors.grey[400]),
+                            size: 48, color: AppTheme.textMuted),
                         const SizedBox(height: 8),
                         Text(s.noPositionsYet,
-                            style: TextStyle(color: Colors.grey[600])),
+                            style: TextStyle(color: AppTheme.textSecondary)),
                         const SizedBox(height: 12),
                         FilledButton.icon(
                           onPressed: () => _showForm(),

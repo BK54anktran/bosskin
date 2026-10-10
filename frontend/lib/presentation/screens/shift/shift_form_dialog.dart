@@ -301,7 +301,7 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
                   if (_flexible) ...[
                     const SizedBox(height: 8),
                     Text(s.shiftFlexibleHint,
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _requiredHours,
@@ -359,7 +359,7 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
 
                   Text(
                     s.displayColor,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -411,7 +411,7 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
                             shape: BoxShape.circle,
                             border: Border.all(color: AppTheme.border, width: 1.5),
                           ),
-                          child: const Icon(Icons.add, size: 16, color: AppTheme.textSecondary),
+                          child: Icon(Icons.add, size: 16, color: AppTheme.textSecondary),
                         ),
                       ),
                     ],

@@ -1827,4 +1827,9 @@
   ,"auditActDocumentApprove": "Duyệt tài liệu"
   ,"auditActDocumentReject": "Từ chối tài liệu"
   ,"auditActDocumentView": "Xem / tải tài liệu"
+  ,"appearanceTitle": "Giao diện"
+  ,"appearanceHint": "Chọn giao diện sáng, tối hoặc theo cài đặt của máy. Lưu trên máy này."
+  ,"appearanceSystem": "Theo máy"
+  ,"appearanceLight": "Sáng"
+  ,"appearanceDark": "Tối"
 }

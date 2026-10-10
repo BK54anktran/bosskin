@@ -12,8 +12,8 @@ import 'status_badge.dart';
 const holidayTypes = ['HOLIDAY', 'COMPENSATORY', 'SWAP_WORKDAY'];
 
 /// Màu nền ô ngày lễ / ngày nghỉ theo lịch trên lưới phân ca và bảng công.
-const holidayCellColor = Color(0xFFFFF4E0);
-const holidayTextColor = Color(0xFFB45309);
+Color get holidayCellColor => AppTheme.tint(AppTheme.warning);
+Color get holidayTextColor => AppTheme.isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
 
 String holidayTypeLabel(AppLocalizations s, String type) => switch (type) {
       'COMPENSATORY' => s.holidayTypeCompensatory,
@@ -72,7 +72,7 @@ class HolidayListTile extends StatelessWidget {
         child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(DateFormat('dd/MM/yyyy').format(h.date), style: const TextStyle(fontWeight: FontWeight.w600)),
           Text(DateFormat.EEEE(locale).format(h.date),
-              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ]),
       ),
       title: Text(h.name),
@@ -191,7 +191,7 @@ class _HolidayFormDialogState extends State<HolidayFormDialog> {
             onChanged: (v) => setState(() => _type = v ?? 'HOLIDAY'),
           ),
           const SizedBox(height: 4),
-          Text(_typeHint(s), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(_typeHint(s), style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           if (_type != 'SWAP_WORKDAY')
             SwitchListTile(
               contentPadding: EdgeInsets.zero,

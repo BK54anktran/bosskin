@@ -107,7 +107,7 @@ class _ShiftRotationTabState extends State<ShiftRotationTab> {
         Row(children: [
           Expanded(
             child: Text(s.rotationIntro,
-                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           ),
           if (widget.canManage)
             FilledButton.icon(
@@ -131,7 +131,7 @@ class _ShiftRotationTabState extends State<ShiftRotationTab> {
                     child: Text(r.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                   Text(s.rotationCycleDays('${r.days.length}'),
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                   if (widget.canManage) ...[
                     IconButton(
                       tooltip: s.edit,
@@ -256,7 +256,7 @@ class _RotationFormDialogState extends State<_RotationFormDialog> {
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           TextField(controller: _nameCtrl, decoration: InputDecoration(labelText: s.rotationName)),
           const SizedBox(height: 8),
-          Text(s.rotationDaysHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(s.rotationDaysHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           const SizedBox(height: 8),
           Flexible(
             child: ListView.builder(
@@ -458,7 +458,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
           ),
           Row(children: [
             Text(s.rotationSelectedCount('${_selected.length}'),
-                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const Spacer(),
             TextButton(
               onPressed: () => setState(() {
@@ -487,7 +487,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                       ),
                   ]),
           ),
-          Text(s.rotationOrderHint, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(s.rotationOrderHint, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ]),
       ),
       actions: [

@@ -112,7 +112,7 @@ class _TwoFactorCardState extends State<TwoFactorCard> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(s.twoFactorTitle,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
             ),
             Text(enabled ? s.twoFactorOn : s.twoFactorOff,
                 style: TextStyle(
@@ -122,10 +122,10 @@ class _TwoFactorCardState extends State<TwoFactorCard> {
           ]),
           const SizedBox(height: 6),
           Text(enabled ? s.twoFactorCodesLeft(left.toString()) : s.twoFactorProfileDesc,
-              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           if (required) ...[
             const SizedBox(height: 4),
-            Text(s.twoFactorRequiredByCompany, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.twoFactorRequiredByCompany, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           ],
           const SizedBox(height: 12),
           Align(
@@ -192,7 +192,7 @@ class _EnableDialogState extends State<_EnableDialog> {
             const SizedBox(height: 12),
             Center(
               child: Container(
-                color: Colors.white,
+                color: AppTheme.background,
                 padding: const EdgeInsets.all(8),
                 child: QrImageView(data: widget.setup['otpauthUri'] as String, size: 180),
               ),

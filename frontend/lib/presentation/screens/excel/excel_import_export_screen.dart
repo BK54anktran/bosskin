@@ -262,7 +262,7 @@ class _ExportCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.border),
+        side: BorderSide(color: AppTheme.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -293,7 +293,7 @@ class _ExportCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             s.excelExportSubtitle,
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -327,7 +327,7 @@ class _ExportCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
+              color: AppTheme.tint(AppTheme.primary),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFBFDBFE)),
             ),
@@ -381,7 +381,7 @@ class _ImportCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.border),
+        side: BorderSide(color: AppTheme.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -396,7 +396,7 @@ class _ImportCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             s.excelImportSubtitle,
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
           if (pickedFile == null)
@@ -442,7 +442,7 @@ class _DropZone extends StatelessWidget {
           height: 100,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFF),
+            color: AppTheme.surfaceAlt,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppTheme.primary.withValues(alpha: 0.3),
@@ -497,7 +497,7 @@ class _SelectedFile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
+        color: AppTheme.tint(AppTheme.secondary),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFBBF7D0)),
       ),
@@ -512,7 +512,7 @@ class _SelectedFile extends StatelessWidget {
                     fontWeight: FontWeight.w600, fontSize: 13),
                 overflow: TextOverflow.ellipsis),
             Text(_size,
-                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
           ]),
         ),
         const SizedBox(width: 12),
@@ -579,7 +579,7 @@ class _ImportSteps extends StatelessWidget {
             const SizedBox(height: 4),
             Text(label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
           ]),
         );
       }),
@@ -727,14 +727,14 @@ class _HistoryCardState extends State<_HistoryCard> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.border),
+        side: BorderSide(color: AppTheme.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Header
           Row(children: [
-            const Icon(Icons.history_outlined, color: AppTheme.textSecondary),
+            Icon(Icons.history_outlined, color: AppTheme.textSecondary),
             const SizedBox(width: 10),
             Text(s.excelHistoryTitle,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -753,7 +753,7 @@ class _HistoryCardState extends State<_HistoryCard> {
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
+                style: TextStyle(fontSize: 12, color: AppTheme.textPrimary),
                 items: [
                   DropdownMenuItem(value: null,     child: Text(s.excelHistoryModuleAll,       style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'EXPORT', child: Text(s.excelHistoryTypeExport,       style: const TextStyle(fontSize: 12))),
@@ -774,7 +774,7 @@ class _HistoryCardState extends State<_HistoryCard> {
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary),
+                style: TextStyle(fontSize: 12, color: AppTheme.textPrimary),
                 items: [
                   DropdownMenuItem(value: null,              child: Text(s.excelHistoryModuleAll,        style: const TextStyle(fontSize: 12))),
                   DropdownMenuItem(value: 'employee',        child: Text(s.excelModuleEmployee,          style: const TextStyle(fontSize: 12))),
@@ -812,7 +812,7 @@ class _HistoryCardState extends State<_HistoryCard> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(s.excelHistoryEmpty,
-                  style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
             )
           else
             ..._items.map((e) => _HistoryTile(entry: e, onDownload: widget.onDownload, s: s)),
@@ -993,7 +993,7 @@ class _HistoryTileState extends State<_HistoryTile> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(_moduleLabel(s),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 10, color: AppTheme.textSecondary)),
               ),
               const SizedBox(width: 6),
@@ -1007,19 +1007,19 @@ class _HistoryTileState extends State<_HistoryTile> {
             if (parts.isNotEmpty) ...[
               const SizedBox(height: 2),
               Text(parts.join(' · '),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11, color: AppTheme.textSecondary)),
             ],
             const SizedBox(height: 2),
             Row(children: [
               Text(_formatDate(entry.createdAt),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 10, color: AppTheme.textSecondary)),
               if (entry.performedBy != null) ...[
-                const Text(' · ',
+                Text(' · ',
                     style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
                 Text(entry.performedBy!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 10,
                         color: AppTheme.textSecondary,
                         fontWeight: FontWeight.w500)),

@@ -171,7 +171,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog>
                   runSpacing: 2,
                   children: _types.map((t) => Text(
                     '${s.xlColumnsOfType('${_selectedColumns[t]!.length}', _typeLabel(s, t))}  ·',
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                   )).toList(),
                 ),
               ),
@@ -252,7 +252,7 @@ class _ModuleOptionsTab extends StatelessWidget {
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(width: 8),
               Text('(${selectedColumns.length}/${meta.columns.length})',
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
               const Spacer(),
               TextButton(onPressed: onSelectDefault, child: Text(s.defaultLabel, style: const TextStyle(fontSize: 11))),
               TextButton(onPressed: onSelectAll, child: Text(s.all, style: const TextStyle(fontSize: 11))),
@@ -267,7 +267,7 @@ class _ModuleOptionsTab extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
             child: Text(s.xlRequiredForReimport,
-                style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
           ),
         ]),
       ),
@@ -278,7 +278,7 @@ class _ModuleOptionsTab extends StatelessWidget {
         child: meta.filters.isEmpty
             ? Center(
                 child: Text(s.xlNoFilters,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)))
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)))
             : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -341,7 +341,7 @@ class _ColumnList extends StatelessWidget {
         widgets.add(Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 2),
           child: Text(_groupLabel(s, group),
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textSecondary)),
@@ -369,7 +369,7 @@ class _ColumnList extends StatelessWidget {
               if (!col.importable)
                 Tooltip(
                   message: s.xlExportOnlyTooltip,
-                  child: const Icon(Icons.visibility_outlined, size: 12, color: AppTheme.textSecondary),
+                  child: Icon(Icons.visibility_outlined, size: 12, color: AppTheme.textSecondary),
                 ),
             ]),
           ),
@@ -514,7 +514,7 @@ class _FilterField extends StatelessWidget {
           ),
           items: [
             DropdownMenuItem(value: null, child: Text('— ${s.all} —',
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
             ...filter.options.map((o) => DropdownMenuItem(
               value: o.value,
               child: Text(_optLabel(s, o), style: const TextStyle(fontSize: 12)),
@@ -684,7 +684,7 @@ class _MultiPickFieldState extends State<_MultiPickField> {
           decoration: BoxDecoration(
             border: Border.all(color: AppTheme.border),
             borderRadius: BorderRadius.circular(6),
-            color: Colors.white,
+            color: AppTheme.background,
             boxShadow: [BoxShadow(
               color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 6, offset: const Offset(0, 2))],

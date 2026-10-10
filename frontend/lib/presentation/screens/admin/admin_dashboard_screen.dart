@@ -162,13 +162,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         color: isSelected
                             ? const Color(0xFF6366F1)
                             : mo == tempMonth
-                                ? const Color(0xFFEEF2FF)
+                                ? AppTheme.tint(AppTheme.primary)
                                 : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF6366F1)
-                              : const Color(0xFFE2E8F0),
+                              : AppTheme.border,
                         ),
                       ),
                       alignment: Alignment.center,
@@ -177,7 +177,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: isFuture
-                                ? const Color(0xFFCBD5E1)
+                                ? AppTheme.border
                                 : isSelected
                                     ? Colors.white
                                     : const Color(0xFF374151),
@@ -263,7 +263,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     _SectionLabel(s.adminAccountSection),
                     const SizedBox(height: 4),
                     Text(s.accountUsedToLoginSystem,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                     const SizedBox(height: 10),
                     _DialogField(ctrl: adminEmailCtrl, label: s.adminEmailLabel,
                         keyboardType: TextInputType.emailAddress,
@@ -535,9 +535,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.background,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppTheme.border),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0,2))],
         ),
         child: Row(children: [
@@ -550,9 +550,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
+              Text(label, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
               const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+              Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
             ],
           )),
         ]),
@@ -573,33 +573,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppTheme.background, borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(s.adminStatsCompanyGrowth,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
           const SizedBox(height: 20),
           SizedBox(
             height: 200,
             child: growthData.isEmpty
-                ? Center(child: Text(s.adminStatsNoPayroll, style: const TextStyle(color: Color(0xFF94A3B8))))
+                ? Center(child: Text(s.adminStatsNoPayroll, style: TextStyle(color: AppTheme.textMuted)))
                 : BarChart(BarChartData(
                     barGroups: bars,
                     gridData: FlGridData(show: true, drawVerticalLine: false,
-                        getDrawingHorizontalLine: (_) => const FlLine(color: Color(0xFFE2E8F0), strokeWidth: 1)),
+                        getDrawingHorizontalLine: (_) => FlLine(color: AppTheme.border, strokeWidth: 1)),
                     borderData: FlBorderData(show: false),
                     titlesData: FlTitlesData(
                       leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28,
-                          getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))))),
+                          getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: TextStyle(fontSize: 10, color: AppTheme.textMuted)))),
                       bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 24,
                           getTitlesWidget: (v, _) {
                             final idx = v.toInt();
                             if (idx < 0 || idx >= growthData.length) return const SizedBox();
                             final d = growthData[idx] as Map<String, dynamic>;
-                            return Text(s.dashMonthShort('${d['month']}'), style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)));
+                            return Text(s.dashMonthShort('${d['month']}'), style: TextStyle(fontSize: 10, color: AppTheme.textMuted));
                           })),
                       rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -627,19 +627,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppTheme.background, borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(s.adminStatsTotalCompanies,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
           const SizedBox(height: 20),
           SizedBox(
             height: 200,
             child: total == 0
-                ? Center(child: Text(s.noCompaniesYet, style: const TextStyle(color: Color(0xFF94A3B8))))
+                ? Center(child: Text(s.noCompaniesYet, style: TextStyle(color: AppTheme.textMuted)))
                 : Row(children: [
                     Expanded(
                       child: PieChart(PieChartData(
@@ -679,8 +679,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   Widget _buildPayrollTable(List payrollStats, NumberFormat fmtCur, AppLocalizations s) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppTheme.background, borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,7 +689,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             padding: const EdgeInsets.fromLTRB(20, 16, 16, 0),
             child: Row(children: [
               Text(s.adminStatsPayrollByCompany,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
               const Spacer(),
               MouseRegion(
                 cursor: SystemMouseCursors.click,
@@ -699,7 +699,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: AppTheme.border),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -721,7 +721,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             Padding(
               padding: const EdgeInsets.all(24),
               child: Center(child: Text(s.adminStatsNoPayroll,
-                  style: const TextStyle(color: Color(0xFF94A3B8)))),
+                  style: TextStyle(color: AppTheme.textMuted))),
             )
           else ...[
             const Divider(height: 16),
@@ -730,15 +730,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(children: [
                 Expanded(flex: 3, child: Text(s.companyName,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)))),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary))),
                 Expanded(flex: 2, child: Text(s.adminStatsTotalEmployees,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                     textAlign: TextAlign.right)),
                 Expanded(flex: 2, child: Text(s.adminStatsPayrolls(0).replaceAll('0 ', ''),
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                     textAlign: TextAlign.right)),
                 Expanded(flex: 3, child: Text(s.adminStatsPayrollThisMonth(_selectedMonth, _selectedYear),
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                     textAlign: TextAlign.right)),
               ]),
             ),
@@ -752,7 +752,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   child: Row(children: [
                     Expanded(flex: 3, child: Row(children: [
                       Container(width: 32, height: 32,
-                        decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(8)),
+                        decoration: BoxDecoration(color: AppTheme.tint(AppTheme.primary), borderRadius: BorderRadius.circular(8)),
                         child: const Icon(Icons.business, size: 16, color: Color(0xFF6366F1)),
                       ),
                       const SizedBox(width: 10),
@@ -788,16 +788,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       // Header
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+        decoration: BoxDecoration(
+          color: AppTheme.background,
+          border: Border(bottom: BorderSide(color: AppTheme.border)),
         ),
         child: Row(children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(s.companyManagementTitle,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
             Text(s.companyManagementSubtitle,
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
           ]),
           const Spacer(),
           ElevatedButton.icon(
@@ -836,9 +836,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       return Center(child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.business_outlined, size: 64, color: Color(0xFF94A3B8)),
+          Icon(Icons.business_outlined, size: 64, color: AppTheme.textMuted),
           const SizedBox(height: 16),
-          Text(s.noCompaniesYet, style: const TextStyle(fontSize: 16, color: Color(0xFF64748B))),
+          Text(s.noCompaniesYet, style: TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
         ],
       ));
     }
@@ -903,7 +903,7 @@ class _CompanyCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: isActive ? const Color(0xFFE2E8F0) : const Color(0xFFFECACA)),
+        side: BorderSide(color: isActive ? AppTheme.border : const Color(0xFFFECACA)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -912,7 +912,7 @@ class _CompanyCard extends StatelessWidget {
             Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
-                color: isActive ? AppTheme.primary.withValues(alpha: 0.1) : const Color(0xFFFEF2F2),
+                color: isActive ? AppTheme.primary.withValues(alpha: 0.1) : AppTheme.tint(AppTheme.error),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(Icons.business, color: isActive ? AppTheme.primary : AppTheme.error, size: 22),
@@ -920,10 +920,10 @@ class _CompanyCard extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(company['name'] as String? ?? '',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF0F172A)),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.textPrimary),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               Text(company['code'] as String? ?? '',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             ])),
             _StatusBadge(isActive: isActive),
             const SizedBox(width: 4),
@@ -937,7 +937,7 @@ class _CompanyCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                     onTap: isActive ? () => onImpersonate(company['id'] as int) : null,
                     child: Icon(Icons.login, size: 16,
-                        color: isActive ? AppTheme.primary : const Color(0xFFCBD5E1)),
+                        color: isActive ? AppTheme.primary : AppTheme.border),
                   ),
                 ),
               ),
@@ -946,16 +946,16 @@ class _CompanyCard extends StatelessWidget {
           const Spacer(),
           // employee count + domain
           Row(children: [
-            const Icon(Icons.people_outline, size: 13, color: Color(0xFF94A3B8)),
+            Icon(Icons.people_outline, size: 13, color: AppTheme.textMuted),
             const SizedBox(width: 4),
             Text(s.adminStatsEmployees(empCount),
-                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             if (company['domain'] != null) ...[
               const SizedBox(width: 12),
-              const Icon(Icons.language, size: 13, color: Color(0xFF94A3B8)),
+              Icon(Icons.language, size: 13, color: AppTheme.textMuted),
               const SizedBox(width: 4),
               Expanded(child: Text(company['domain'] as String,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                   maxLines: 1, overflow: TextOverflow.ellipsis)),
             ] else const Spacer(),
           ]),
@@ -982,7 +982,7 @@ class _CompanyCard extends StatelessWidget {
               child: IconButton(
                 onPressed: () => onToggleRequire2fa(company['id'] as int, require2fa),
                 icon: Icon(require2fa ? Icons.verified_user : Icons.shield_outlined,
-                    size: 18, color: require2fa ? AppTheme.secondary : const Color(0xFF94A3B8)),
+                    size: 18, color: require2fa ? AppTheme.secondary : AppTheme.textMuted),
               ),
             ),
           ]),
@@ -1002,7 +1002,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+        color: isActive ? AppTheme.tint(AppTheme.secondary) : AppTheme.tint(AppTheme.error),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -1021,7 +1021,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF0F172A))),
+      Text(text, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textPrimary)),
       const SizedBox(width: 8),
       const Expanded(child: Divider()),
     ]);

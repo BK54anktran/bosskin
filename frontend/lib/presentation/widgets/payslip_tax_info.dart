@@ -23,7 +23,7 @@ class PayslipTaxInfo extends StatelessWidget {
     final s = AppLocalizations.of(context);
     final base = payroll.insuranceBase, fam = payroll.familyDeduction;
     if (base == null && fam == null) return const SizedBox.shrink();
-    const style = TextStyle(fontSize: 12, color: AppTheme.textSecondary);
+    final style = TextStyle(fontSize: 12, color: AppTheme.textSecondary);
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

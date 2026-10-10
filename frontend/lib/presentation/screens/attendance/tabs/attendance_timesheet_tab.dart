@@ -711,7 +711,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         ),
         // Filters
         Container(
-          color: Colors.white,
+          color: AppTheme.background,
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: Wrap(spacing: 12, runSpacing: 10, children: [
             SizedBox(
@@ -759,7 +759,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         const Divider(height: 1),
         // Toolbar
         Container(
-          color: Colors.white,
+          color: AppTheme.background,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Row(children: [
             const Spacer(),
@@ -893,7 +893,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     }
     if (_selected == null) {
       return Center(child: Text(s.selectEmployeeToViewTimesheet,
-          style: const TextStyle(color: AppTheme.textSecondary)));
+          style: TextStyle(color: AppTheme.textSecondary)));
     }
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -974,12 +974,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
     final color = selected ? AppTheme.primary.withValues(alpha: 0.10)
         : row.holidayName != null ? holidayCellColor
-        : row.weekend ? const Color(0xFFFFF3E0)
-        : isToday ? const Color(0xFFE3F2FD) : Colors.white;
+        : row.weekend ? AppTheme.tint(AppTheme.warning)
+        : isToday ? AppTheme.tint(AppTheme.primary) : AppTheme.background;
     final dayColor = row.holidayName != null ? holidayTextColor : row.weekend ? AppTheme.warning : null;
     final cell = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: color, border: const Border(
+      decoration: BoxDecoration(color: color, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLine, width: 0.8),
       )),
@@ -1001,12 +1001,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         first.date.month == DateTime.now().month && first.date.day == DateTime.now().day;
     final color = selected ? AppTheme.primary.withValues(alpha: 0.10)
         : row.holidayName != null ? holidayCellColor
-        : row.weekend ? const Color(0xFFFFF3E0)
-        : isToday ? const Color(0xFFE3F2FD) : Colors.white;
+        : row.weekend ? AppTheme.tint(AppTheme.warning)
+        : isToday ? AppTheme.tint(AppTheme.primary) : AppTheme.background;
     final dayColor = row.holidayName != null ? holidayTextColor : row.weekend ? AppTheme.warning : null;
     final cell = Container(
       width: width, height: height, alignment: Alignment.center,
-      decoration: BoxDecoration(color: color, border: const Border(
+      decoration: BoxDecoration(color: color, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLine, width: 0.8),
       )),
@@ -1034,7 +1034,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final showActual = displayVal.isNotEmpty && displayVal != overrideVal;
     return Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1051,7 +1051,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                 ],
               ]),
               if (showActual)
-                Text('($displayVal)', style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                Text('($displayVal)', style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
             ])
           : Row(mainAxisSize: MainAxisSize.min, children: [
               Text(displayVal, style: TextStyle(fontSize: 12,
@@ -1071,8 +1071,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
     final bg = selected ? AppTheme.primary.withValues(alpha: 0.08)
         : row.holidayName != null ? holidayCellColor
-        : row.weekend ? const Color(0xFFFFF3E0)
-        : isToday ? const Color(0xFFE3F2FD) : Colors.white;
+        : row.weekend ? AppTheme.tint(AppTheme.warning)
+        : isToday ? AppTheme.tint(AppTheme.primary) : AppTheme.background;
 
     final checkInRequests  = attMatchingRequests(row, row.requests, requestType: 'CHECK_IN');
     final checkOutRequests = attMatchingRequests(row, row.requests, requestType: 'CHECK_OUT');
@@ -1156,12 +1156,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   Widget _leaveCell(TimesheetRow row, double width, Color bg) {
     final isLeave = row.leaveCode != null;
     final leaveNotApplied = isLeave && row.leaveApplied == false;
-    final effectiveBg = (row.leaveMode == 'DAY_RANGE') && isLeave ? const Color(0xFFE8F5E9) : bg;
+    final effectiveBg = (row.leaveMode == 'DAY_RANGE') && isLeave ? AppTheme.tint(AppTheme.secondary) : bg;
     final s = AppLocalizations.of(context);
     final child = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(color: effectiveBg, border: const Border(
+      decoration: BoxDecoration(color: effectiveBg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1208,7 +1208,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     return Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1226,7 +1226,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
               if (row.shiftStart != null || row.shiftEnd != null) ...[
                 const SizedBox(height: 2),
                 Text(_formatShiftRange(row.shiftStart, row.shiftEnd),
-                    style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
                     overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
               ],
             ]),
@@ -1239,7 +1239,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       width: width, height: attRowHeight, alignment: Alignment.center,
       decoration: BoxDecoration(
           color: highlight ? AppTheme.warning.withValues(alpha: 0.08) : bg,
-          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
+          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
               right: BorderSide(color: attGridLineLight, width: 0.8))),
       child: Text(text, style: TextStyle(fontSize: 12,
           fontWeight: val > 0 ? FontWeight.w600 : FontWeight.normal,
@@ -1260,7 +1260,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     };
     final child = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1279,7 +1279,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     if (flags.isEmpty) {
       return Container(width: width, height: attRowHeight,
           decoration: BoxDecoration(color: bg,
-              border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))));
+              border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))));
     }
     final chips = flags.map((f) {
       final (label, color) = switch (f) {
@@ -1300,7 +1300,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       width: width, height: attRowHeight, alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(color: bg,
-          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
+          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
       child: SingleChildScrollView(scrollDirection: Axis.horizontal,
           child: Row(mainAxisSize: MainAxisSize.min, children: chips)),
     );
@@ -1312,7 +1312,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       width: width, height: attRowHeight, alignment: Alignment.centerLeft,
       padding: const EdgeInsets.only(left: 8),
       decoration: BoxDecoration(color: bg,
-          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
+          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9))),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         if (row.approved) ...[
           Tooltip(
@@ -1531,16 +1531,16 @@ class _AttDateRow extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFD0D5DD)),
+        border: Border.all(color: AppTheme.border),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(children: [
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
           const SizedBox(height: 2),
           Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         ])),
-        const Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.textSecondary),
+        Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.textSecondary),
       ]),
     ),
   );

@@ -451,7 +451,7 @@ class _ShiftListTabState extends State<_ShiftListTab> {
     if (widget.shifts.isEmpty) {
       return Center(
         child: Text(s.noShiftsYet,
-            style: const TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: AppTheme.textSecondary)),
       );
     }
     // Group shifts: named groups first (sorted), then ungrouped
@@ -487,7 +487,7 @@ class _ShiftListTabState extends State<_ShiftListTab> {
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
                   child: Text(item.label,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textSecondary,
@@ -583,12 +583,12 @@ class _ShiftCard extends StatelessWidget {
                   ? s.shiftFlexibleWindow(shift.timeLabel)
                   : shift.timeLabel,
               style:
-                  const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  TextStyle(fontSize: 12, color: AppTheme.textSecondary),
             ),
             if (shift.workMinutes != null)
               Text(
                 '${s.workingHours}: ${shift.workHoursLabel(s)}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 11, color: AppTheme.textSecondary),
               ),
             if (shift.departments.isNotEmpty)
@@ -607,7 +607,7 @@ class _ShiftCard extends StatelessWidget {
           if (canManage) ...[
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.edit_outlined,
+              icon: Icon(Icons.edit_outlined,
                   size: 18, color: AppTheme.textSecondary),
               onPressed: onEdit,
               tooltip: s.edit,

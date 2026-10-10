@@ -107,7 +107,7 @@ class _ForceChangePasswordScreenState extends State<ForceChangePasswordScreen> {
                       const SizedBox(height: 8),
                       Text(s.forceChangePasswordDesc,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppTheme.textSecondary, fontSize: 13)),
                       const SizedBox(height: 4),
                       Text(email,

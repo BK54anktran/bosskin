@@ -224,7 +224,7 @@ class _CustomVarDialogState extends State<CustomVarDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(s.varChipInsertHint,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
                   ...buildSystemVarChips(s, _systemVars, _insertVar, compact: true),
                   ...buildGroupedGlobalChips(s, _visibleGlobals, _insertVar),

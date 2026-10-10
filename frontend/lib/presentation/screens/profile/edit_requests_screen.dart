@@ -332,12 +332,12 @@ class _RequestCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(r.employeeName,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                               color: AppTheme.textPrimary)),
                       Text('${r.employeeCode} · ${r.departmentName}',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppTheme.textSecondary)),
                     ],
                   ),
@@ -380,7 +380,7 @@ class _RequestCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '${s.sentAtLabel} ${_fmt(r.createdAt!)}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 11, color: AppTheme.textSecondary),
               ),
             ],
@@ -471,7 +471,7 @@ class _ChangesTable extends StatelessWidget {
 
     if (rows.isEmpty) {
       return Text(AppLocalizations.of(context).noChangesContent,
-          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary));
+          style: TextStyle(fontSize: 12, color: AppTheme.textSecondary));
     }
 
     return Column(
@@ -483,15 +483,15 @@ class _ChangesTable extends StatelessWidget {
                     SizedBox(
                       width: 100,
                       child: Text(row.field,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppTheme.textSecondary)),
                     ),
                     Expanded(
                       child: Text(row.current,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppTheme.textPrimary)),
                     ),
-                    const Icon(Icons.arrow_forward,
+                    Icon(Icons.arrow_forward,
                         size: 14, color: AppTheme.textSecondary),
                     const SizedBox(width: 6),
                     Expanded(

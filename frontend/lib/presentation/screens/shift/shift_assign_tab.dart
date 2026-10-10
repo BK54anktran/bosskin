@@ -20,8 +20,8 @@ const double _nameW = 200.0;
 const double _dayW = 200.0;
 const double _rowH = 56.0;
 const double _headH = 44.0;
-const Color _border = Color(0xFFD0D5DD);
-const Color _headBg = Color(0xFFF2F4F7);
+Color get _border => AppTheme.border;
+Color get _headBg => AppTheme.surfaceAlt;
 
 enum _ViewRangeMode { payroll, week, custom }
 
@@ -734,17 +734,17 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
       // ── Frozen name column ─────────────────────────────────────────
       Container(
         width: nameW,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(right: BorderSide(color: _border, width: 2)),
         ),
         child: Column(children: [
           _cell(nameW, _headH, _headBg,
               border:
-                  const Border(bottom: BorderSide(color: _border, width: 2)),
+                  Border(bottom: BorderSide(color: _border, width: 2)),
               alignment: Alignment.centerLeft,
               padding: const EdgeInsets.only(left: 8),
               child: Text(s.employeeShort,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textSecondary))),
@@ -758,8 +758,8 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
               itemBuilder: (_, i) => _cell(
                 nameW,
                 _rowH,
-                i.isOdd ? const Color(0xFFF8F9FA) : Colors.white,
-                border: const Border(bottom: BorderSide(color: _border)),
+                i.isOdd ? AppTheme.surfaceAlt : AppTheme.background,
+                border: Border(bottom: BorderSide(color: _border)),
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.only(left: 8, right: 4),
                 child: Column(
@@ -772,8 +772,8 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                         overflow: TextOverflow.ellipsis),
                     Text(
                       '${emps[i].employeeCode} • ${emps[i].departmentName}',
-                      style: const TextStyle(
-                          fontSize: 10, color: Color(0xFF64748B)),
+                      style: TextStyle(
+                          fontSize: 10, color: AppTheme.textSecondary),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -804,7 +804,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                     dayW,
                     _headH,
                     holiday != null && holiday.isDayOff ? holidayCellColor : _headBg,
-                    border: const Border(
+                    border: Border(
                         right: BorderSide(color: _border),
                         bottom: BorderSide(color: _border, width: 2)),
                     child: Column(
@@ -852,14 +852,14 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                     itemBuilder: (_, i) {
                       final emp = emps[i];
                       final rowBg =
-                          i.isOdd ? const Color(0xFFF8F9FA) : Colors.white;
+                          i.isOdd ? AppTheme.surfaceAlt : AppTheme.background;
                       return Row(
                         children: periodDays.map((date) {
                           final holiday = _calendar.holiday(date);
                           final bg = holiday != null && holiday.isDayOff
                               ? holidayCellColor
                               : _calendar.isOff(emp.departmentId, date)
-                                  ? const Color(0xFFFFF0F0)
+                                  ? AppTheme.tint(AppTheme.error)
                                   : rowBg;
 
                           final dateStr = _fmt(date);
@@ -908,7 +908,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                               height: _rowH,
                               decoration: BoxDecoration(
                                 color: bg,
-                                border: const Border(
+                                border: Border(
                                   right: BorderSide(color: _border),
                                   bottom: BorderSide(color: _border),
                                 ),
@@ -1126,9 +1126,9 @@ class _QuickFillPanel extends StatelessWidget {
     final s = AppLocalizations.of(context);
     return Container(
       width: 200,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(left: BorderSide(color: _border, width: 1.5)),
-        color: Color(0xFFFAFBFC),
+        color: AppTheme.surfaceAlt,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1136,17 +1136,17 @@ class _QuickFillPanel extends StatelessWidget {
           // Header
           Container(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: _headBg,
               border: Border(bottom: BorderSide(color: _border)),
             ),
             child: Row(children: [
-              const Icon(Icons.dashboard_customize_outlined,
+              Icon(Icons.dashboard_customize_outlined,
                   size: 14, color: AppTheme.textSecondary),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(s.quickFillPanel,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary)),
@@ -1158,20 +1158,20 @@ class _QuickFillPanel extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
             child: Text(
               s.quickFillHint,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 10,
                   color: AppTheme.textSecondary,
                   height: 1.4),
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: _border),
+          Divider(height: 1, thickness: 1, color: _border),
           // Shift list
           Expanded(
             child: shifts.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(12),
                     child: Text(s.quickFillNoShifts,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 11, color: AppTheme.textSecondary)),
                   )
                 : Builder(builder: (_) {
@@ -1208,7 +1208,7 @@ class _QuickFillPanel extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
                             child: Text(item.label,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
                                     color: AppTheme.textSecondary,
@@ -1271,7 +1271,7 @@ class _QuickFillPanel extends StatelessWidget {
                                                 : AppTheme.textPrimary),
                                         overflow: TextOverflow.ellipsis),
                                     Text(shift.timeLabel,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 9,
                                             color: AppTheme.textSecondary),
                                         overflow: TextOverflow.ellipsis),
@@ -1303,7 +1303,7 @@ class _QuickFillPanel extends StatelessWidget {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   foregroundColor: AppTheme.textSecondary,
-                  side: const BorderSide(color: _border),
+                  side: BorderSide(color: _border),
                 ),
               ),
             ),
@@ -1403,7 +1403,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
                         padding: EdgeInsets.zero,
                         backgroundColor: selected
                             ? AppTheme.primary.withValues(alpha: 0.18)
-                            : Colors.white,
+                            : AppTheme.background,
                         side: BorderSide(
                           color: selected ? AppTheme.primary : AppTheme.border,
                         ),
@@ -1570,14 +1570,14 @@ class _DateRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 2),
                   Text(value,
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
-            const Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.textSecondary),
+            Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.textSecondary),
           ]),
         ),
       );
@@ -1743,7 +1743,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
             // Title bar
             Container(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: _headBg,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
                 border: Border(bottom: BorderSide(color: _border)),
@@ -1755,7 +1755,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                         style: const TextStyle(
                             fontWeight: FontWeight.w700, fontSize: 14)),
                     Text('$dowStr, $dateStr',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 11, color: AppTheme.textSecondary)),
                   ]),
             ),
@@ -1770,7 +1770,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                     // ── Vertical list: existing assignments (shown when 2 assigns, not in picker) ──
                     if (widget.currentAssigns.length == 2 && !inPicker) ...[
                       Text(s.assignedShifts,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textSecondary)),
@@ -1842,7 +1842,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                       Padding(
                         padding: const EdgeInsets.only(top: 2, bottom: 2),
                         child: Text(s.maxShiftsPerDay,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 11, color: AppTheme.textSecondary)),
                       ),
                     ],
@@ -1935,7 +1935,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                     // ── No assignments yet → show picker directly ────
                     if (widget.currentAssigns.isEmpty && !inPicker) ...[
                       Text(s.chooseShift,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textSecondary)),
@@ -1946,7 +1946,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                     if (inPicker || widget.currentAssigns.isEmpty) ...[
                       if (inPicker) ...[
                         Text(isAdd ? s.addSecondShift : s.editShiftAssignment,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textSecondary)),
@@ -1961,7 +1961,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8F4FD),
+                            color: AppTheme.tint(AppTheme.primary),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: const Color(0xFF90CAF9)),
                           ),
@@ -2056,7 +2056,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
 
                       // Predefined shifts
                       Text(s.shiftTemplatesLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textSecondary)),
@@ -2066,7 +2066,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Text(s.noShiftsAvailable,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12, color: AppTheme.textSecondary)),
                         )
                       else
@@ -2107,7 +2107,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500)),
                                     Text(s.timeLabel,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 11,
                                             color: AppTheme.textSecondary)),
                                   ],
@@ -2125,7 +2125,7 @@ class _AssignPickerDialogState extends State<_AssignPickerDialog> {
             // Footer
             Container(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: _border)),
               ),
               child: Row(children: [

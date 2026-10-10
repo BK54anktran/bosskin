@@ -241,7 +241,7 @@ class _DocumentUploadDialogState extends State<DocumentUploadDialog> {
                 ),
               ]),
               const SizedBox(height: 4),
-              Text(s.docFileHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              Text(s.docFileHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               const SizedBox(height: 12),
             ],
             TextField(
@@ -290,7 +290,7 @@ class _DocumentUploadDialogState extends State<DocumentUploadDialog> {
               decoration: InputDecoration(labelText: s.note, isDense: true),
             ),
             if (widget.employeeId == null && !_isEdit)
-              Text(s.docSelfHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              Text(s.docSelfHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           ]),
         ),
       ),

@@ -55,9 +55,9 @@ class AttendanceGrid extends StatelessWidget {
 
   Color _rowBg(int i) {
     if (isSelected(i)) return AppTheme.primary.withValues(alpha: 0.08);
-    if (isWeekend(i)) return const Color(0xFFFFF3E0);
-    if (isToday(i)) return const Color(0xFFE3F2FD);
-    return Colors.white;
+    if (isWeekend(i)) return AppTheme.tint(AppTheme.warning);
+    if (isToday(i)) return AppTheme.tint(AppTheme.primary);
+    return AppTheme.background;
   }
 
   @override
@@ -163,16 +163,16 @@ class _HeadCell extends StatelessWidget {
       height: attHeadHeight,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: AppTheme.surfaceAlt,
         border: Border(
-          bottom: const BorderSide(color: attGridLine, width: 1.1),
-          right: const BorderSide(color: attGridLine, width: 0.8),
-          left: isFirst ? const BorderSide(color: attGridLine, width: 0.8) : BorderSide.none,
+          bottom: BorderSide(color: attGridLine, width: 1.1),
+          right: BorderSide(color: attGridLine, width: 0.8),
+          left: isFirst ? BorderSide(color: attGridLine, width: 0.8) : BorderSide.none,
         ),
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
         textAlign: TextAlign.center,
         maxLines: 2,
         softWrap: true,
@@ -197,8 +197,8 @@ class _CheckboxHeader extends StatelessWidget {
         width: width,
         height: attHeadHeight,
         alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: Color(0xFFF5F5F5),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceAlt,
           border: Border(
             bottom: BorderSide(color: attGridLine, width: 1.1),
             right: BorderSide(color: attGridLine, width: 0.8),
@@ -241,7 +241,7 @@ class _DefaultCheckboxCell extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: bg,
-          border: const Border(
+          border: Border(
             bottom: BorderSide(color: attGridLineLight, width: 0.9),
             right: BorderSide(color: attGridLine, width: 0.8),
           ),

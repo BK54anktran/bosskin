@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 40),
                     Text(
                       s.signIn,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
                     Text(
                       s.welcomeBack,
-                      style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                      style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
                     ),
                     const SizedBox(height: 32),
                     TextFormField(
@@ -250,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(width: 12),
         Text(
           s.appName,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -259,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const Spacer(),
         if (ServerConfig.canOverride)
           IconButton(
-            icon: const Icon(Icons.settings_ethernet, size: 20,
+            icon: Icon(Icons.settings_ethernet, size: 20,
                 color: AppTheme.textSecondary),
             tooltip: s.serverSettings,
             onPressed: _showServerDialog,
@@ -281,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(s.enterServerAddress,
-                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 10),
             TextField(
               controller: ctrl,

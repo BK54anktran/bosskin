@@ -13,6 +13,7 @@ import '../../../data/services/notification_service.dart';
 import '../../../data/services/profile_service.dart';
 import 'my_dependents_card.dart';
 import 'my_documents_card.dart';
+import 'appearance_card.dart';
 import 'two_factor_card.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -411,6 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 16),
+              const AppearanceCard(),
               const TwoFactorCard(),
               const SizedBox(height: 16),
               _buildPasswordCard(s),
@@ -437,7 +439,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 8),
           Text(
             s.impersonatingCompanyNotice,
-            style: const TextStyle(color: AppTheme.textSecondary),
+            style: TextStyle(color: AppTheme.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -531,7 +533,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               foregroundColor: AppTheme.textPrimary,
-                              side: const BorderSide(
+                              side: BorderSide(
                                 color: AppTheme.textSecondary,
                               ),
                             ),
@@ -581,6 +583,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               const MyDependentsCard(),
               const MyDocumentsCard(),
+              const AppearanceCard(),
               const TwoFactorCard(),
               const SizedBox(height: 16),
               _buildPasswordCard(s),
@@ -633,7 +636,7 @@ class _NotificationSettingsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(s.notificationSettings,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary)),
@@ -652,7 +655,7 @@ class _NotificationSettingsCard extends StatelessWidget {
                 initialValue: reminderMinutes,
                 decoration: InputDecoration(
                     labelText: s.shiftReminderMinutesLabel,
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                         fontSize: 13, color: AppTheme.textSecondary)),
                 items: reminderOptions
                     .map((m) => DropdownMenuItem(
@@ -678,7 +681,7 @@ class _NotificationSettingsCard extends StatelessWidget {
                 initialValue: checkInOutMinutes,
                 decoration: InputDecoration(
                     labelText: s.checkInOutNotifMinutesLabel,
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                         fontSize: 13, color: AppTheme.textSecondary)),
                 items: checkInOutOptions
                     .map((m) => DropdownMenuItem(
@@ -736,7 +739,7 @@ class _NotifRow extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.w500)),
               Text(subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary)),
             ],
           ),
@@ -828,14 +831,14 @@ class _InfoCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary)),
             if (subtitle != null) ...[
               const SizedBox(height: 4),
               Text(subtitle!,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary)),
             ],
             const SizedBox(height: 16),
@@ -861,12 +864,12 @@ class _ReadOnlyField extends StatelessWidget {
           SizedBox(
             width: 140,
             child: Text(label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppTheme.textSecondary)),
           ),
           Expanded(
             child: Text(value,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: AppTheme.textPrimary)),
@@ -902,7 +905,7 @@ class _EditableField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle:
-            const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+            TextStyle(fontSize: 13, color: AppTheme.textSecondary),
       ),
     );
   }

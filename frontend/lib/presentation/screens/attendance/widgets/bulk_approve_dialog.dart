@@ -101,7 +101,7 @@ class _BulkApproveDialogState extends State<_BulkApproveDialog> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(s.bulkApproveMonthDesc,
-                        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<AttendancePeriod>(
                       initialValue: _period,

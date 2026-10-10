@@ -565,6 +565,16 @@ V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem 
 - Dùng `PayrollPeriod.of(year, month, cutoffDay)` để tính from/to — không hardcode ngày 1 đến cuối tháng.
 - `cutoffDay` lấy từ `CompanySettingService.getByCompanyId(companyId).getPayroll().getPayrollCutoffDay()`.
 
+### Màu & giao diện tối (Bước F)
+- **Không viết cứng màu nền / chữ / viền** (`Colors.white`, `Colors.grey[600]`, `Color(0xFF64748B)`, nền "-50" như `0xFFE3F2FD`):
+  dùng `AppTheme.background` (thẻ / ô bảng), `surface` (nền trang / ô nhập), `surfaceAlt` (dòng xen kẽ), `textPrimary`,
+  `textSecondary`, `textMuted`, `border`, `AppTheme.tint(màu)` (nền nhạt theo màu trạng thái). Màu thương hiệu / trạng thái
+  (`primary`, `error`, `warning`, `secondary`) giữ nguyên; chữ trắng trên nền màu vẫn dùng `Colors.white`.
+- Các màu theo chế độ là **getter**, không dùng trong `const` (`TextStyle(color: AppTheme.textSecondary)`, không `const TextStyle(...)`);
+  hằng toàn cục chứa các màu này phải là getter (`Color get x => AppTheme.border;`), không `final` / `const`.
+- `ThemeController` (core/theme) lưu chế độ (theo máy / sáng / tối), đặt `AppTheme.isDark`; `main.dart` dựng lại cả cây khi đổi
+  (`KeyedSubtree(ValueKey(dark))`). Nút chọn ở Hồ sơ (`profile/appearance_card.dart`). Cổng /admin giữ nền tối riêng của nó.
+
 ### Hover cursor
 - Widget có `onTap`/`onPressed` trên desktop → thêm `MouseRegion(cursor: SystemMouseCursors.click)` để hiện bàn tay khi hover.
 

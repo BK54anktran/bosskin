@@ -121,7 +121,7 @@ class _ExpiringTab extends StatelessWidget {
       emptyMessage: (s) => s.docExpiringEmpty,
       header: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-        child: Text(s.docExpiringHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        child: Text(s.docExpiringHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
       ),
       builder: (context, items, _) => ListView.separated(
         padding: const EdgeInsets.all(8),
@@ -301,7 +301,7 @@ class _TypesTabState extends State<_TypesTab> {
             mouseCursor: widget.canEdit ? SystemMouseCursors.click : null,
             title: Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
               Text(t.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text(t.code, style: const TextStyle(color: AppTheme.textSecondary)),
+              Text(t.code, style: TextStyle(color: AppTheme.textSecondary)),
               if (t.required) StatusBadge(label: s.docTypeRequired, color: AppTheme.primary),
               if (t.hasExpiry) StatusBadge(label: s.docTypeHasExpiry, color: AppTheme.warning),
             ]),

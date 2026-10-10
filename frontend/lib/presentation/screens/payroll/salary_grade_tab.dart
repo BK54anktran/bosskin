@@ -238,7 +238,7 @@ class _GradeCard extends StatelessWidget {
                   Text(g.name, style: const TextStyle(fontSize: 13)),
                   Text(
                     g.departmentName ?? s.scopeCompanyLabel,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 4),
                   Text(

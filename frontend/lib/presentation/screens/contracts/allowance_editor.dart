@@ -65,7 +65,7 @@ class _AllowanceEditorState extends State<AllowanceEditor> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < _rows.length; i++) _rowView(s, i),
-        Text(s.contractAllowanceCodeHint, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+        Text(s.contractAllowanceCodeHint, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(

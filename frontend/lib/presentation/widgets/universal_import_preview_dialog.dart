@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/utils/error_utils.dart';
+import '../../core/theme/app_theme.dart';
 import '../../data/repositories/universal_excel_repository.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -107,10 +108,10 @@ class _UniversalImportPreviewDialogState
             ? Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.check_circle_outline,
-                      size: 48, color: Colors.grey[400]),
+                      size: 48, color: AppTheme.textMuted),
                   const SizedBox(height: 12),
                   Text(s.importPreviewEmpty,
-                      style: TextStyle(color: Colors.grey[600])),
+                      style: TextStyle(color: AppTheme.textSecondary)),
                 ]),
               )
             : ListView(
@@ -203,7 +204,7 @@ class _SheetSection extends StatelessWidget {
           const SizedBox(width: 8),
           if (skips > 0)
             Text(s.excelImportResultSkip(skips),
-                style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
           const SizedBox(width: 8),
           const Expanded(
               child: Divider(color: Color(0x553B82F6))),
@@ -212,7 +213,7 @@ class _SheetSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 20),
             child: Text(s.importPreviewNoChange,
-                style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
           ),
         if (creates.isNotEmpty) ...[
           _RowGroupHeader(s.importPreviewCreate, Colors.green, Icons.add_circle_outline),
@@ -435,7 +436,7 @@ class _DiffTile extends StatelessWidget {
                     Text(item.oldVal!,
                         style: TextStyle(
                             fontSize: 11,
-                            color: Colors.grey[500],
+                            color: AppTheme.textMuted,
                             decoration: TextDecoration.lineThrough)),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4),

@@ -273,7 +273,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
+              border: Border.all(color: AppTheme.textMuted),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -301,7 +301,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(s.statistics,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
               const SizedBox(width: 12),
               AnimatedBuilder(
                 animation: _tabCtrl,
@@ -623,7 +623,7 @@ class _KpiCard extends StatelessWidget {
                   Text(value,
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: color)),
                   Text(label,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   if (sub.isNotEmpty)
                     Text(sub, style: TextStyle(fontSize: 10, color: subColor)),
                 ],
@@ -680,7 +680,7 @@ class _RiskPanel extends StatelessWidget {
                 const Icon(Icons.check_circle_outline, size: 16, color: AppTheme.secondary),
                 const SizedBox(width: 8),
                 Text(s.dashboardRisksNoWarnings,
-                    style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
               ])
             else ...[
               if (riskData!.repeatedLate.isNotEmpty)
@@ -788,7 +788,7 @@ class _RiskSection extends StatelessWidget {
           ...items.map((name) => Padding(
                 padding: const EdgeInsets.only(left: 20, top: 3),
                 child: Text(name,
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               )),
         ],
@@ -846,7 +846,7 @@ class _AttendanceBody extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: selected ? AppTheme.primary : Colors.transparent,
-              border: Border.all(color: selected ? AppTheme.primary : Colors.grey.shade400),
+              border: Border.all(color: selected ? AppTheme.primary : AppTheme.textMuted),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(label,
@@ -865,7 +865,7 @@ class _AttendanceBody extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
+              border: Border.all(color: AppTheme.textMuted),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -899,7 +899,7 @@ class _AttendanceBody extends StatelessWidget {
                 () => onPeriodChanged(_AttendancePeriod.custom)),
             if (period == _AttendancePeriod.custom) ...[
               _datePill(DateFormat('dd/MM/yyyy').format(rangeFrom), onPickRangeFrom),
-              const Text('→', style: TextStyle(color: AppTheme.textSecondary)),
+              Text('→', style: TextStyle(color: AppTheme.textSecondary)),
               _datePill(DateFormat('dd/MM/yyyy').format(rangeTo), onPickRangeTo),
             ],
           ],
@@ -964,7 +964,7 @@ class _ErrorBody extends StatelessWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: AppTheme.error),
               const SizedBox(height: 12),
-              Text(message, style: const TextStyle(color: AppTheme.textSecondary)),
+              Text(message, style: TextStyle(color: AppTheme.textSecondary)),
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: onRetry,
@@ -1054,7 +1054,7 @@ class _DayDonutChart extends StatelessWidget {
         children: [
           Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         ],
       );
 }
@@ -1097,7 +1097,7 @@ class _RangeDailyLineChart extends StatelessWidget {
           children: [
             Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(label, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           ],
         );
 
@@ -1120,7 +1120,7 @@ class _RangeDailyLineChart extends StatelessWidget {
                   clipData: const FlClipData.all(),
                   gridData: FlGridData(
                     drawVerticalLine: false,
-                    getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                    getDrawingHorizontalLine: (_) => FlLine(color: AppTheme.surfaceAlt, strokeWidth: 1),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
@@ -1132,14 +1132,14 @@ class _RangeDailyLineChart extends StatelessWidget {
                         return Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(DateFormat('dd/MM').format(trend[i].date),
-                              style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                              style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
                         );
                       },
                     )),
                     leftTitles: AxisTitles(sideTitles: SideTitles(
                       showTitles: true, reservedSize: 28,
                       getTitlesWidget: (v, _) => Text(v.toInt().toString(),
-                          style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                          style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
                     )),
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -1221,7 +1221,7 @@ class _RangeBody extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(s.dashboardRangeNoData,
-                          style: const TextStyle(color: AppTheme.textSecondary)),
+                          style: TextStyle(color: AppTheme.textSecondary)),
                     ),
                   )
                 else ...[
@@ -1244,7 +1244,7 @@ class _RangeTableHeader extends StatelessWidget {
 
   Widget _headerCell(String text) => Text(text,
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary));
+      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary));
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -1253,7 +1253,7 @@ class _RangeTableHeader extends StatelessWidget {
           children: [
             Expanded(flex: 3,
                 child: Text(s.employees,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary))),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary))),
             Expanded(flex: 1, child: _headerCell(s.dashboardRangePresent)),
             Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalLate)),
             Expanded(flex: 1, child: _headerCell(s.dashboardRangeTotalAbsent)),
@@ -1295,7 +1295,7 @@ class _RangeTableRow extends StatelessWidget {
                           maxLines: 1, overflow: TextOverflow.ellipsis),
                       if (row.departmentName != null)
                         Text(row.departmentName!,
-                            style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                            style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                             maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
@@ -1378,7 +1378,7 @@ class _StatsGridRaw extends StatelessWidget {
                   Text(item.value,
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: item.color)),
                   Text(item.label,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 ],
               ),
             ],
@@ -1415,7 +1415,7 @@ class _AttendanceTodayCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Center(child: Text(s.dashboardNoAttendance,
-                    style: const TextStyle(color: AppTheme.textSecondary))),
+                    style: TextStyle(color: AppTheme.textSecondary))),
               )
             else
               ...rows.map((r) => _AttendanceRow(row: r, s: s)),
@@ -1454,9 +1454,9 @@ class _AttendanceRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(row.employeeName,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
                 Text(row.departmentName ?? '',
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
               ],
             ),
           ),
@@ -1468,10 +1468,10 @@ class _AttendanceRow extends StatelessWidget {
                     style: TextStyle(fontSize: 12, color: row.late ? AppTheme.error : AppTheme.secondary))
               else
                 Text(s.dashboardNotCheckedIn,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               if (checkOutStr != null)
                 Text(s.dashboardCheckOut(checkOutStr),
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             ],
           ),
         ],
@@ -1512,11 +1512,11 @@ class _RecentPayrollCard extends StatelessWidget {
             const SizedBox(height: 4),
             if (payroll != null)
               Text(DateFormat.yMMMM(s.localeName).format(DateTime(payroll!.year, payroll!.month)),
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 16),
             if (payroll == null)
               Center(child: Text(s.dashboardNoPayroll,
-                  style: const TextStyle(color: AppTheme.textSecondary)))
+                  style: TextStyle(color: AppTheme.textSecondary)))
             else ...[
               _buildStat(s.totalSalary, currencyFmt.format(payroll!.totalNetSalary), AppTheme.primary),
               const Divider(height: 24),
@@ -1533,7 +1533,7 @@ class _RecentPayrollCard extends StatelessWidget {
   Widget _buildStat(String label, String value, Color color) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
           Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color)),
         ],
       );
@@ -1712,7 +1712,7 @@ class _OverallStatsGrid extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('${s.dashboardAnalyticsOverall} $year',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
         const SizedBox(height: 10),
         _StatsGridRaw(items: items),
       ],
@@ -1749,7 +1749,7 @@ class _SalaryTrendChart extends StatelessWidget {
                 minX: 1, maxX: 12, minY: 0, maxY: maxY * 1.2,
                 gridData: FlGridData(
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                  getDrawingHorizontalLine: (_) => FlLine(color: AppTheme.surfaceAlt, strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -1759,13 +1759,13 @@ class _SalaryTrendChart extends StatelessWidget {
                       final month = v.toInt();
                       if (month < 1 || month > 12) return const SizedBox.shrink();
                       return Text(DateFormat.MMM().format(DateTime(2000, month)),
-                          style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary));
+                          style: TextStyle(fontSize: 10, color: AppTheme.textSecondary));
                     },
                   )),
                   leftTitles: AxisTitles(sideTitles: SideTitles(
                     showTitles: true, reservedSize: 44,
                     getTitlesWidget: (v, _) => Text(fmt.format(v),
-                        style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
                   )),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -1852,7 +1852,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             Text(s.dashboardAnalyticsDailyTimelineSubtitle,
-                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
             const SizedBox(height: 16),
             LayoutBuilder(builder: (context, constraints) {
               const tooltipWidth = 285.0;
@@ -1872,7 +1872,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                       clipData: const FlClipData.all(),
                       gridData: FlGridData(
                         drawVerticalLine: false,
-                        getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                        getDrawingHorizontalLine: (_) => FlLine(color: AppTheme.surfaceAlt, strokeWidth: 1),
                       ),
                       borderData: FlBorderData(show: false),
                       titlesData: FlTitlesData(
@@ -1884,7 +1884,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                             return Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(DateFormat('dd/MM/yyyy').format(display[i].date),
-                                  style: const TextStyle(fontSize: 8, color: AppTheme.textSecondary)),
+                                  style: TextStyle(fontSize: 8, color: AppTheme.textSecondary)),
                             );
                           },
                         )),
@@ -1973,7 +1973,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
             child: CustomPaint(painter: _DashedLinePainter(color: color, dashed: dashed)),
           ),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         ],
       );
 }
@@ -1987,16 +1987,16 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const titleStyle  = TextStyle(color: Color(0xFF111827), fontSize: 12, fontWeight: FontWeight.w700, height: 1.25);
-    const bodyStyle   = TextStyle(color: Color(0xFF111827), fontSize: 11, fontWeight: FontWeight.w600, height: 1.3);
+    final titleStyle  = TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w700, height: 1.25);
+    final bodyStyle   = TextStyle(color: AppTheme.textPrimary, fontSize: 11, fontWeight: FontWeight.w600, height: 1.3);
     const mutedStyle  = TextStyle(color: Color(0xFF6B7280), fontSize: 10, fontWeight: FontWeight.w500, height: 1.25);
     const accentStyle = TextStyle(color: Color(0xFF7C3AED), fontSize: 11, fontWeight: FontWeight.w700, height: 1.3);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppTheme.border),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 18, offset: const Offset(0, 10))],
       ),
       child: SizedBox(
@@ -2040,20 +2040,20 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(title.isNotEmpty ? title : 'N/A',
-                                    style: const TextStyle(color: Color(0xFF111827), fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
+                                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
                                     maxLines: 1, overflow: TextOverflow.ellipsis),
                               ),
                               SizedBox(
                                 width: 56,
                                 child: Text('${item.totalHours.toStringAsFixed(1)}h / $unit',
-                                    style: const TextStyle(color: Color(0xFF111827), fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
+                                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
                                     textAlign: TextAlign.right),
                               ),
                               const SizedBox(width: 8),
                               SizedBox(
                                 width: 92,
                                 child: Text(fmtCurrency.format(item.estimatedCost),
-                                    style: const TextStyle(color: Color(0xFF111827), fontSize: 10.5, fontWeight: FontWeight.w600, height: 1.2),
+                                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 10.5, fontWeight: FontWeight.w600, height: 1.2),
                                     textAlign: TextAlign.right),
                               ),
                             ],
@@ -2155,12 +2155,12 @@ class _TopLateCard extends StatelessWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: pct, backgroundColor: Colors.grey.shade100,
+                              value: pct, backgroundColor: AppTheme.surfaceAlt,
                               color: AppTheme.warning, minHeight: 5),
                           ),
                           if (r.departmentName != null)
                             Text(r.departmentName!,
-                                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                         ],
                       ),
                     ),

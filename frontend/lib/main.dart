@@ -10,6 +10,7 @@ import 'core/navigation/navigator_keys.dart';
 import 'core/config/server_config.dart';
 import 'core/localization/language_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/device_service.dart';
 import 'data/services/notification_service.dart';
@@ -48,6 +49,7 @@ void main() async {
   usePathUrlStrategy();
   await initializeDateFormatting('vi', null);
   await LanguageService.instance.load();
+  await ThemeController.instance.load();
   await DeviceService.instance.getOrCreateDeviceId();
   await NotificationService.instance.initialize();
   AuthService.instance.deviceFcmToken = NotificationService.instance.deviceToken;
@@ -295,12 +297,13 @@ class BossKinApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: LanguageService.instance,
+      animation: Listenable.merge([LanguageService.instance, ThemeController.instance]),
       builder: (_, __) {
         final locale = LanguageService.instance.locale;
+        final dark = ThemeController.instance.effectiveDark;
         return MaterialApp.router(
           onGenerateTitle: (context) => AppLocalizations.of(context).appName,
-          theme: AppTheme.light,
+          theme: dark ? AppTheme.dark : AppTheme.light,
           routerConfig: _router,
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -323,7 +326,8 @@ class BossKinApp extends StatelessWidget {
               data: mq.copyWith(
                 textScaler: TextScaler.linear(system * scale),
               ),
-              child: child!,
+              // Bước F: màu AppTheme đọc theo AppTheme.isDark, không qua Theme.of → đổi chế độ thì dựng lại cả cây
+              child: KeyedSubtree(key: ValueKey(dark), child: child!),
             );
           },
         );

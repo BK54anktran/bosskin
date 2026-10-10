@@ -140,7 +140,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 }),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.person_outline,
+                  leading: Icon(Icons.person_outline,
                       color: AppTheme.textSecondary, size: 20),
                   title: Text(
                     s.personalInfo,

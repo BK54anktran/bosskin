@@ -45,9 +45,9 @@ class _MyDependentsCardState extends State<MyDependentsCard> {
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(s.dependentsTitle,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
             const SizedBox(height: 4),
-            Text(s.dependentsHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.dependentsHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 8),
             for (final d in _items)
               ListTile(

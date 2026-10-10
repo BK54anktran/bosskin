@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/utils/error_utils.dart';
+import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Một dòng thay đổi của 1 field (field, oldValue, newValue).
@@ -135,7 +136,7 @@ class _ImportPreviewDialogState extends State<ImportPreviewDialog> {
           if (!hasChange) ...[
             const SizedBox(width: 8),
             Text(s.importPreviewNoChange,
-                style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
           ],
         ]),
       ));
@@ -204,10 +205,10 @@ class _ImportPreviewDialogState extends State<ImportPreviewDialog> {
             ? Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.check_circle_outline,
-                      size: 48, color: Colors.grey[400]),
+                      size: 48, color: AppTheme.textMuted),
                   const SizedBox(height: 12),
                   Text(s.importPreviewEmpty,
-                      style: TextStyle(color: Colors.grey[600])),
+                      style: TextStyle(color: AppTheme.textSecondary)),
                 ]),
               )
             : ListView(children: _buildContent(s)),
@@ -329,7 +330,7 @@ class _CreateTile extends StatelessWidget {
                         fontSize: 13, fontWeight: FontWeight.w500))),
             if (diff.parentCode != null && diff.parentCode!.isNotEmpty)
               Text('↖ ${diff.parentCode}',
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                  style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
           ]),
           if (diff.details.isNotEmpty) ...[
             const SizedBox(height: 6),
@@ -382,7 +383,7 @@ class _UpdateTileState extends State<_UpdateTile> {
               Expanded(
                   child: Text(diff.name, style: const TextStyle(fontSize: 13))),
               Text(s.xlChangesCount('${diff.changes.length}'),
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                  style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
               const SizedBox(width: 4),
               Icon(_expanded ? Icons.expand_less : Icons.expand_more,
                   size: 16, color: Colors.grey),
@@ -405,7 +406,7 @@ class _UpdateTileState extends State<_UpdateTile> {
               },
               children: [
                 TableRow(
-                  decoration: BoxDecoration(color: Colors.grey[100]),
+                  decoration: BoxDecoration(color: AppTheme.surfaceAlt),
                   children: [
                     _th('Field'),
                     _th(s.importPreviewOld),
@@ -573,11 +574,11 @@ class _DetailsRow extends StatelessWidget {
                       TextSpan(
                           text: '${e.key}: ',
                           style: TextStyle(
-                              color: Colors.grey[600],
+                              color: AppTheme.textSecondary,
                               fontWeight: FontWeight.w500)),
                       TextSpan(
                           text: e.value,
-                          style: const TextStyle(color: Colors.black87)),
+                          style: TextStyle(color: AppTheme.textPrimary)),
                     ],
                   ),
                 ),

@@ -31,14 +31,14 @@ class PaginationBar extends StatelessWidget {
 
     return Container(
       height: 40,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2F4F7),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceAlt,
         border: Border(top: BorderSide(color: AppTheme.border)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(children: [
         Text('${s.rowsPerPage}:',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         const SizedBox(width: 6),
         PopupMenuButton<int>(
           initialValue: pageSize,
@@ -68,7 +68,7 @@ class PaginationBar extends StatelessWidget {
         ),
         const Spacer(),
         Text('$first–$last / $total',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         const SizedBox(width: 4),
         IconButton(
           icon: const Icon(Icons.chevron_left, size: 18),

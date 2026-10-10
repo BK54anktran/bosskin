@@ -696,12 +696,12 @@ class _PayrollCard extends StatelessWidget {
                           children: [
                             if (p.departmentName != null)
                               Text(p.departmentName!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 12,
                                       color: AppTheme.textSecondary)),
                             if (p.salaryGradeCode != null) ...[
                               if (p.departmentName != null)
-                                const Text(' · ',
+                                Text(' · ',
                                     style: TextStyle(
                                         fontSize: 12,
                                         color: AppTheme.textSecondary)),
@@ -757,7 +757,7 @@ class _PayrollCard extends StatelessWidget {
                   '   ${s.nightShiftHours}: ${(p.nightHours ?? 0).toStringAsFixed(1)}h'
                   '   ${s.otDayShift}: ${(p.dayOt ?? 0).toStringAsFixed(1)}h'
                   '   ${s.otNightShift}: ${(p.nightOt ?? 0).toStringAsFixed(1)}h',
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                 ),
               ],
               const SizedBox(height: 10),
@@ -812,7 +812,7 @@ class _InfoTile extends StatelessWidget {
         children: [
           Text(label,
               style:
-                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
           Text(value,
               style:
                   valueStyle ?? const TextStyle(fontWeight: FontWeight.w600)),
@@ -1204,7 +1204,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
                           SizedBox(
                             width: 70,
                             child: Text(emp.employeeCode,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 11,
                                     color: AppTheme.textSecondary,
                                     fontFamily: 'monospace')),
@@ -1556,13 +1556,13 @@ class _PayslipDialogState extends State<_PayslipDialog> {
               Text(
                 '${p.employeeName} — ${formatPayrollPeriod(s, p.periodFrom, p.periodTo, p.month, p.year)}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondary),
               ),
               if (p.departmentName != null)
                 Text(
                   '${p.departmentName}${p.positionName != null ? ' · ${p.positionName}' : ''}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary),
                 ),
               const Divider(height: 24),
@@ -1631,7 +1631,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
               const SizedBox(height: 8),
               if (p.note != null && p.note!.isNotEmpty)
                 Text('${s.note}: ${p.note}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12, color: AppTheme.textSecondary)),
               const SizedBox(height: 4),
               const SizedBox(height: 16),

@@ -1824,4 +1824,9 @@
   ,"auditActDocumentApprove": "Approve document"
   ,"auditActDocumentReject": "Reject document"
   ,"auditActDocumentView": "View / download document"
+  ,"appearanceTitle": "Appearance"
+  ,"appearanceHint": "Choose light, dark or follow the device setting. Saved on this device."
+  ,"appearanceSystem": "System"
+  ,"appearanceLight": "Light"
+  ,"appearanceDark": "Dark"
 }

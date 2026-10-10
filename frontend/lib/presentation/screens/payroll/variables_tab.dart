@@ -155,7 +155,7 @@ class _VariablesTabState extends State<VariablesTab> {
                 padding: const EdgeInsets.only(left: 8, bottom: 2),
                 child: Row(
                   children: [
-                    const Icon(Icons.arrow_right, size: 16, color: AppTheme.textSecondary),
+                    Icon(Icons.arrow_right, size: 16, color: AppTheme.textSecondary),
                     Expanded(child: Text('${u.formulaLabel} (${u.effectiveDate})',
                         style: const TextStyle(fontSize: 13))),
                   ],
@@ -381,7 +381,7 @@ class _VariablesTabState extends State<VariablesTab> {
                                                 )),
                                                 Expanded(flex: 2, child: Text(
                                                   v.scope == VariableScope.global ? (v.category ?? '—') : '—',
-                                                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                                                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                                   overflow: TextOverflow.ellipsis,
                                                 )),
                                                 Expanded(flex: 2, child: _ScopeChip(v.scope, v.scopeLabel)),
@@ -426,7 +426,7 @@ class _VariablesTabState extends State<VariablesTab> {
                                                             ),
                                                           ],
                                                         )
-                                                      : const Text('—',
+                                                      : Text('—',
                                                           style: TextStyle(color: AppTheme.textSecondary)),
                                                 ),
                                               ],
@@ -523,7 +523,7 @@ class _VariableCard extends StatelessWidget {
                   // Mô tả
                   Text(
                     v.label,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -546,7 +546,7 @@ class _VariableCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       v.category!,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                     ),
                   ],
                 ],

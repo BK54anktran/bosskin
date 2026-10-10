@@ -93,12 +93,12 @@ class _TwoFactorScreenState extends State<TwoFactorScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(_isSetup ? s.twoFactorSetupDesc : s.twoFactorVerifyDesc,
-            style: const TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: AppTheme.textSecondary)),
         if (_isSetup && uri != null) ...[
           const SizedBox(height: 16),
           Center(
             child: Container(
-              color: Colors.white,
+              color: AppTheme.background,
               padding: const EdgeInsets.all(8),
               child: QrImageView(data: uri, size: 200),
             ),
@@ -146,7 +146,7 @@ class _TwoFactorScreenState extends State<TwoFactorScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        Text(s.twoFactorRecoveryDesc, style: const TextStyle(color: AppTheme.textSecondary)),
+        Text(s.twoFactorRecoveryDesc, style: TextStyle(color: AppTheme.textSecondary)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(12),

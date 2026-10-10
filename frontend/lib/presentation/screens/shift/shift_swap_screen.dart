@@ -147,7 +147,7 @@ class _ShiftSwapScreenState extends State<ShiftSwapScreen> {
                           return Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.background,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: AppTheme.border),
                             ),
@@ -177,14 +177,14 @@ class _ShiftSwapScreenState extends State<ShiftSwapScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text('${s.reason}: ${r.reason}',
-                                      style: const TextStyle(color: AppTheme.textSecondary)),
+                                      style: TextStyle(color: AppTheme.textSecondary)),
                                 ),
                               if ((r.adminNote ?? '').isNotEmpty || r.processedByName != null)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     [r.processedByName, r.adminNote].where((x) => (x ?? '').isNotEmpty).join(' · '),
-                                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                   ),
                                 ),
                               if (pending && ((_canApprove && !involved) || mine)) ...[
@@ -318,7 +318,7 @@ class _CreateSwapDialogState extends State<_CreateSwapDialog> {
                 if (_myShifts.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text(s.swapNoUpcoming, style: const TextStyle(color: AppTheme.textSecondary)),
+                    child: Text(s.swapNoUpcoming, style: TextStyle(color: AppTheme.textSecondary)),
                   ),
                 const SizedBox(height: 8),
                 if (_mine != null) Text(s.swapPickColleague, style: const TextStyle(fontWeight: FontWeight.w600)),

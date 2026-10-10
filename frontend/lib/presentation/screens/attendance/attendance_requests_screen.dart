@@ -353,7 +353,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
                     ),
                     const SizedBox(height: 12),
                     Material(
-                      color: Colors.white,
+                      color: AppTheme.background,
                       child: TabBar(
                         controller: _tabs,
                         tabs: [
@@ -562,7 +562,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
                     ] else ...[
                       Text(
                         attendanceMessage(s, info?.message),
-                        style: const TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                     ],
                   ],
@@ -755,7 +755,7 @@ class _RequestForm extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.border),
       ),
@@ -885,7 +885,7 @@ class _RequestForm extends StatelessWidget {
                 children: [
                   Text(
                     s.otDayNight,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -913,7 +913,7 @@ class _RequestForm extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     s.otScope,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -967,7 +967,7 @@ class _RequestForm extends StatelessWidget {
                 children: [
                   Text(
                     s.extraHoursDayNight,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -1095,13 +1095,13 @@ class _DayShiftsSection extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.background,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppTheme.border),
         ),
         child: Text(
           attendanceMessage(s, dayInfo?.message),
-          style: const TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
       );
     }
@@ -1177,7 +1177,7 @@ class _ShiftInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
@@ -1211,7 +1211,7 @@ class _ShiftInfoCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             mainTime,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               color: AppTheme.textPrimary,
             ),
@@ -1219,7 +1219,7 @@ class _ShiftInfoCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '$checkIn | $checkOut',
-            style: const TextStyle(color: AppTheme.textSecondary),
+            style: TextStyle(color: AppTheme.textSecondary),
           ),
         ],
       ),
@@ -1288,7 +1288,7 @@ class _FilterPanelState extends State<_FilterPanel> {
           width: 150,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.background,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppTheme.border),
           ),
@@ -1296,7 +1296,7 @@ class _FilterPanelState extends State<_FilterPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11, color: AppTheme.textSecondary)),
               const SizedBox(height: 2),
               Text(
@@ -1375,7 +1375,7 @@ class _FilterPanelState extends State<_FilterPanel> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.border),
       ),
@@ -1572,7 +1572,7 @@ class _RequestListState extends State<_RequestList> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.background,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppTheme.border),
           ),
@@ -1605,7 +1605,7 @@ class _RequestListState extends State<_RequestList> {
                           '${r.departmentName} • ${_requestTypeLabel(s, r.requestType)}'
                           '${(r.requestType == 'OT' || r.requestType == 'EXTRA') && r.requestedOvertimePeriod != null ? ' • ${_periodLabel(s, r.requestedOvertimePeriod)}' : ''}'
                           '${r.requestType == 'OT' && r.requestedOvertimeScope != null ? ' • ${_scopeLabel(s, r.requestedOvertimeScope)}' : ''}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppTheme.textSecondary,
                           ),
@@ -1638,7 +1638,7 @@ class _RequestListState extends State<_RequestList> {
               const SizedBox(height: 4),
               Text(
                 '${s.createdAt}: ${_formatDateTime(r.createdAt)}',
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 4),
               Text(
@@ -1649,14 +1649,14 @@ class _RequestListState extends State<_RequestList> {
                 Text(
                   '${r.status == 'APPROVED' ? s.approvedBy : s.rejectedBy}: ${r.processedByName ?? ''}'
                   ' • ${_formatDateTime(r.processedAt)}',
-                  style: const TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: AppTheme.textSecondary),
                 ),
               ],
               if (r.adminNote != null && r.adminNote!.trim().isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Text(
                   '${s.response}: ${r.adminNote}',
-                  style: const TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: AppTheme.textSecondary),
                 ),
               ],
               if (widget.canApprove && r.status == 'PENDING') ...[

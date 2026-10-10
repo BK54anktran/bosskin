@@ -105,7 +105,7 @@ class _TeamApprovalsScreenState extends State<TeamApprovalsScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(s.teamApprovalsHint, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text(s.teamApprovalsHint, style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
           const SizedBox(height: 12),
           if (d.leaves.isNotEmpty) ...[
             _SectionTitle(s.leaves, d.leaves.length),
@@ -191,7 +191,7 @@ class _TeamApprovalsScreenState extends State<TeamApprovalsScreen> {
           if ((reason ?? '').isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text('${s.reason}: $reason', style: const TextStyle(color: AppTheme.textSecondary)),
+              child: Text('${s.reason}: $reason', style: TextStyle(color: AppTheme.textSecondary)),
             ),
           const SizedBox(height: 8),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [

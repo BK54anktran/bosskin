@@ -309,7 +309,7 @@ class _SideNav extends StatelessWidget {
 
     return Container(
       width: 220,
-      color: Colors.white,
+      color: AppTheme.background,
       child: Column(
         children: [
           Expanded(
@@ -510,7 +510,7 @@ class _NotificationSheet extends StatelessWidget {
               children: [
                 Text(
                   s.notifications,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -544,7 +544,7 @@ class _NotificationSheet extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     s.noNotificationsYet,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textSecondary, fontSize: 14),
                   ),
                 ],
@@ -595,7 +595,7 @@ class _NotificationTile extends StatelessWidget {
           if (notification.body.isNotEmpty)
             Text(
               notification.body,
-              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -687,7 +687,7 @@ class AppProfileMenu extends StatelessWidget {
                 children: [
                   Text(
                     user?.fullName ?? s.user,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: AppTheme.textPrimary,
@@ -696,7 +696,7 @@ class AppProfileMenu extends StatelessWidget {
                   if (user?.email != null)
                     Text(
                       user!.email,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
@@ -709,11 +709,11 @@ class AppProfileMenu extends StatelessWidget {
               value: 'profile',
               child: Row(
                 children: [
-                  const Icon(Icons.person_outline,
+                  Icon(Icons.person_outline,
                       size: 18, color: AppTheme.textSecondary),
                   const SizedBox(width: 10),
                   Text(s.personalInfo,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 14, color: AppTheme.textPrimary)),
                 ],
               ),
@@ -722,19 +722,19 @@ class AppProfileMenu extends StatelessWidget {
               value: 'language',
               child: Row(
                 children: [
-                  const Icon(Icons.language_outlined,
+                  Icon(Icons.language_outlined,
                       size: 18, color: AppTheme.textSecondary),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       s.language,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 14, color: AppTheme.textPrimary),
                     ),
                   ),
                   Text(
                     LanguageService.instance.localeLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12, color: AppTheme.textSecondary),
                   ),
                 ],

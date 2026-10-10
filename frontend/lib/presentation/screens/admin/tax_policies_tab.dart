@@ -100,7 +100,7 @@ class _TaxPoliciesTabState extends State<TaxPoliciesTab> {
     if (_error != null) return EmptyState(icon: Icons.error_outline, message: _error!, actionLabel: s.retry, onAction: _load);
     return ListView(padding: const EdgeInsets.all(24), children: [
       Row(children: [
-        Expanded(child: Text(s.taxPolicyIntro, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13))),
+        Expanded(child: Text(s.taxPolicyIntro, style: TextStyle(color: AppTheme.textSecondary, fontSize: 13))),
         const SizedBox(width: 12),
         MouseRegion(
           cursor: SystemMouseCursors.click,
@@ -131,7 +131,7 @@ class _PolicyCard extends StatelessWidget {
     final brackets = (p['brackets'] as List? ?? const []).cast<Map<String, dynamic>>();
     final minWages = (p['minWages'] as List? ?? const []).cast<num>();
     final updatedBy = p['updatedBy'] as String?;
-    const label = TextStyle(fontSize: 12, color: AppTheme.textSecondary);
+    final label = TextStyle(fontSize: 12, color: AppTheme.textSecondary);
     Widget kv(String k, String v) => Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -319,7 +319,7 @@ class _TaxPolicyDialogState extends State<_TaxPolicyDialog> {
             ]),
             const SizedBox(height: 16),
             Text(s.taxBrackets, style: const TextStyle(fontWeight: FontWeight.w600)),
-            Text(s.taxBracketsHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.taxBracketsHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 8),
             for (var i = 0; i < _brackets.length; i++)
               Padding(

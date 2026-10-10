@@ -5321,4 +5321,20 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActDocumentView => 'Xem / tải tài liệu';
+
+  @override
+  String get appearanceTitle => 'Giao diện';
+
+  @override
+  String get appearanceHint =>
+      'Chọn giao diện sáng, tối hoặc theo cài đặt của máy. Lưu trên máy này.';
+
+  @override
+  String get appearanceSystem => 'Theo máy';
+
+  @override
+  String get appearanceLight => 'Sáng';
+
+  @override
+  String get appearanceDark => 'Tối';
 }

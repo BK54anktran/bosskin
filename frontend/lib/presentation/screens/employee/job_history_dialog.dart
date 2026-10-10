@@ -138,7 +138,7 @@ class _JobHistoryDialogState extends State<JobHistoryDialog> {
                   ),
               ]),
               const SizedBox(height: 4),
-              Text(s.jobHistoryHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              Text(s.jobHistoryHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               const SizedBox(height: 8),
               Expanded(
                 child: _loading

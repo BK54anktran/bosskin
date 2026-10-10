@@ -78,7 +78,7 @@ Widget _deptOptionLabel(DepartmentFlat d) {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: Colors.grey[700],
+              color: AppTheme.textSecondary,
             ),
           ),
           const SizedBox(width: 4),
@@ -148,7 +148,7 @@ class _RolesScreenState extends State<RolesScreen>
     return Column(
       children: [
         Container(
-          color: Colors.white,
+          color: AppTheme.background,
           child: TabBar(
             controller: _tabController,
             labelColor: AppTheme.primary,
@@ -485,14 +485,14 @@ class _RoleCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         role.description!,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12, color: AppTheme.textSecondary),
                       ),
                     ],
                     const SizedBox(height: 4),
                     Text(
                       '${role.permissions.length} ${s.permissionsLabel}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12, color: AppTheme.textSecondary),
                     ),
                   ],
@@ -770,7 +770,7 @@ class _RoleEditDialogState extends State<_RoleEditDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(perm.code,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 11, color: AppTheme.textSecondary)),
             if (_permUiHint(s, perm.code) != null)
               Row(children: [
@@ -879,7 +879,7 @@ class _RoleEditDialogState extends State<_RoleEditDialog> {
               ),
               const SizedBox(height: 8),
               Text(s.permissionsLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                       color: AppTheme.textPrimary)),
@@ -1309,7 +1309,7 @@ class _UserCard extends StatelessWidget {
                     if (user.fullName != null) ...[
                       const SizedBox(height: 1),
                       Text(user.email,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppTheme.textSecondary)),
                     ],
                     if (user.roles.isNotEmpty) ...[
@@ -1634,7 +1634,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
                             fontWeight: FontWeight.w600, fontSize: 15)),
                     if (widget.user.fullName != null)
                       Text(widget.user.email,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppTheme.textSecondary)),
                   ],
                 ),
@@ -1671,7 +1671,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
                               style: const TextStyle(fontSize: 14)),
                           subtitle: role.description != null
                               ? Text(role.description!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 12,
                                       color: AppTheme.textSecondary))
                               : null,
@@ -1746,7 +1746,7 @@ class _UserRoleDialogState extends State<_UserRoleDialog>
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(p.code,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 fontSize: 11,
                                                 color: AppTheme.textSecondary)),
                                         if (_permUiHint(s, p.code) != null)
@@ -2063,7 +2063,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           Text(
             widget.permDescription,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.textSecondary,
                 fontWeight: FontWeight.normal),
@@ -2084,7 +2084,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                   style: const TextStyle(
                       fontWeight: FontWeight.w600, fontSize: 14)),
               subtitle: Text(s.scopeCompanyDesc,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11, color: AppTheme.textSecondary)),
               value: _allCompany,
               onChanged: _toggleAllCompany,
@@ -2098,7 +2098,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: Text(s.scopeSelfDesc,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 11, color: AppTheme.textSecondary)),
                 value: _selfOnly,
                 onChanged: _toggleSelfOnly,
@@ -2112,7 +2112,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: Text(s.scopeMyDepartmentDesc,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 11, color: AppTheme.textSecondary)),
                 value: _myDeptOnly,
                 onChanged: _toggleMyDeptOnly,
@@ -2126,7 +2126,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: Text(s.scopeMyDepartmentAndBelowDesc,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 11, color: AppTheme.textSecondary)),
                 value: _myDeptAndDesc,
                 onChanged: _toggleMyDeptAndDesc,
@@ -2134,7 +2134,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
               ),
             const Divider(height: 12),
             Text(s.orSelectSpecificDepartment,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 11, color: AppTheme.textSecondary)),
             const SizedBox(height: 4),
             Expanded(
@@ -2172,7 +2172,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                                           style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w900,
-                                            color: Colors.grey[800],
+                                            color: AppTheme.textPrimary,
                                           ),
                                         ),
                                       )
@@ -2181,7 +2181,7 @@ class _DeptScopeDialogState extends State<_DeptScopeDialog> {
                               const SizedBox(width: 6),
                               if (dept.level > 0) ...[
                                 Icon(Icons.subdirectory_arrow_right,
-                                    size: 16, color: Colors.grey[500]),
+                                    size: 16, color: AppTheme.textMuted),
                                 const SizedBox(width: 6),
                               ],
                               Expanded(

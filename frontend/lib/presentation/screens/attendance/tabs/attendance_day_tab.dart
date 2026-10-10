@@ -373,7 +373,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     final showActual = displayVal.isNotEmpty && displayVal != overrideVal;
     return Container(
       width: width, height: attDayRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -390,7 +390,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
                 ],
               ]),
               if (showActual)
-                Text('($displayVal)', style: const TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                Text('($displayVal)', style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
             ])
           : Row(mainAxisSize: MainAxisSize.min, children: [
               Text(displayVal, style: TextStyle(fontSize: 12,
@@ -587,7 +587,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       children: [
         // Toolbar
         Container(
-          color: Colors.white,
+          color: AppTheme.background,
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
@@ -624,7 +624,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
         const Divider(height: 1),
         // Checklist toolbar
         Container(
-          color: Colors.white,
+          color: AppTheme.background,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Row(children: [
             const Spacer(),
@@ -735,7 +735,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
               ? Center(child: Text(_error!, style: const TextStyle(color: AppTheme.error)))
               : _rows.isEmpty && !_loading
                   ? Center(child: Text(s.noAttendanceDataForThisDay,
-                        style: const TextStyle(color: AppTheme.textSecondary)))
+                        style: TextStyle(color: AppTheme.textSecondary)))
                   : _buildTable(),
         ),
       ],
@@ -840,12 +840,12 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
 
     return Container(
       height: 40,
-      decoration: const BoxDecoration(color: Color(0xFFF5F5F5),
+      decoration: BoxDecoration(color: AppTheme.surfaceAlt,
           border: Border(top: BorderSide(color: attGridLine))),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(children: [
         Text('${s.rowsPerPage}:',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         const SizedBox(width: 6),
         PopupMenuButton<int>(
           initialValue: _pageSize, position: PopupMenuPosition.over, tooltip: '',
@@ -866,7 +866,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
         ),
         const Spacer(),
         Text('$first-$last / $total',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         const SizedBox(width: 4),
         IconButton(icon: const Icon(Icons.chevron_left, size: 18),
             onPressed: page > 0 ? () => setState(() => _page = page - 1) : null,
@@ -891,24 +891,24 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     final first = row.first;
     final bg = selected ? AppTheme.primary.withValues(alpha: 0.10)
         : row.holidayName != null ? holidayCellColor
-        : row.weekend ? const Color(0xFFFFF3E0)
-        : _isToday ? const Color(0xFFE3F2FD) : Colors.white;
+        : row.weekend ? AppTheme.tint(AppTheme.warning)
+        : _isToday ? AppTheme.tint(AppTheme.primary) : AppTheme.background;
     final cell = Container(
       width: width, height: height, alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLine, width: 0.8),
       )),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(first.employeeFullName, maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
         const SizedBox(height: 2),
         Text(
           [first.employeeCode, if (first.departmentName.isNotEmpty) first.departmentName]
               .where((e) => e.isNotEmpty).join(' • '),
           maxLines: 1, overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+          style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
         ),
       ]),
     );
@@ -923,7 +923,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   Widget _dayCell({required double width, required Color bg, required Widget child}) {
     return Container(
       width: width, height: attDayRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),
@@ -1061,7 +1061,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       visibleLeave = effectiveLeaves.firstWhere((l) => l.leaveApplied == true, orElse: () => effectiveLeaves.last);
     }
     final hasAnyDayRange = effectiveLeaves.any((l) => l.leaveMode == 'DAY_RANGE');
-    final effectiveBg = hasAnyDayRange && isLeave ? const Color(0xFFE8F5E9) : bg;
+    final effectiveBg = hasAnyDayRange && isLeave ? AppTheme.tint(AppTheme.secondary) : bg;
 
     Widget buildBadge(DayViewLeaveInfo l) {
       final notApplied = l.leaveApplied == false;
@@ -1167,7 +1167,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       ]),
       if ((slot.shiftStart ?? '').isNotEmpty || (slot.shiftEnd ?? '').isNotEmpty)
         Text(_formatShiftRange(slot.shiftStart, slot.shiftEnd),
-            style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
             overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
     ]));
   }
@@ -1239,7 +1239,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       width: width, height: attDayRowHeight, alignment: Alignment.center,
       decoration: BoxDecoration(
           color: highlight ? AppTheme.warning.withValues(alpha: 0.08) : bg,
-          border: const Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
+          border: Border(bottom: BorderSide(color: attGridLineLight, width: 0.9),
               right: BorderSide(color: attGridLineLight, width: 0.8))),
       child: Text(text, style: TextStyle(fontSize: 12,
           fontWeight: val > 0 ? FontWeight.w600 : FontWeight.normal,
@@ -1287,7 +1287,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     };
     final child = Container(
       width: width, height: attDayRowHeight, alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, border: const Border(
+      decoration: BoxDecoration(color: bg, border: Border(
         bottom: BorderSide(color: attGridLineLight, width: 0.9),
         right: BorderSide(color: attGridLineLight, width: 0.8),
       )),

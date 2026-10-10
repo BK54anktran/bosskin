@@ -78,7 +78,7 @@ class _MyDocumentsCardState extends State<MyDocumentsCard> {
             Row(children: [
               Expanded(
                 child: Text(s.docMyTitle,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
               ),
               if (_types.isNotEmpty)
                 TextButton.icon(
@@ -88,10 +88,10 @@ class _MyDocumentsCardState extends State<MyDocumentsCard> {
                 ),
             ]),
             const SizedBox(height: 4),
-            Text(s.docSelfHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.docSelfHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 8),
             if (_items.isEmpty)
-              Text(s.docEmpty, style: const TextStyle(color: AppTheme.textSecondary))
+              Text(s.docEmpty, style: TextStyle(color: AppTheme.textSecondary))
             else
               for (final d in _items)
                 DocumentTile(

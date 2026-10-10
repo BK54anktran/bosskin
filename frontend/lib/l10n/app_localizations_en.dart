@@ -5331,4 +5331,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActDocumentView => 'View / download document';
+
+  @override
+  String get appearanceTitle => 'Appearance';
+
+  @override
+  String get appearanceHint =>
+      'Choose light, dark or follow the device setting. Saved on this device.';
+
+  @override
+  String get appearanceSystem => 'System';
+
+  @override
+  String get appearanceLight => 'Light';
+
+  @override
+  String get appearanceDark => 'Dark';
 }

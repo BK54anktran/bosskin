@@ -90,11 +90,11 @@ class _EmployeeLocationsScreenState extends State<EmployeeLocationsScreen> {
               : _locations.isEmpty
                   ? Center(
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.location_off_outlined,
+                        Icon(Icons.location_off_outlined,
                             size: 48, color: AppTheme.textSecondary),
                         const SizedBox(height: 12),
                         Text(s.noLocations,
-                            style: const TextStyle(color: AppTheme.textSecondary)),
+                            style: TextStyle(color: AppTheme.textSecondary)),
                         const SizedBox(height: 16),
                         FilledButton.icon(
                           onPressed: () => _openForm(),

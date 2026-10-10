@@ -122,7 +122,7 @@ class _DependentsDialogState extends State<DependentsDialog> {
                   ),
               ]),
               const SizedBox(height: 4),
-              Text(s.dependentsHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              Text(s.dependentsHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               const SizedBox(height: 8),
               Expanded(
                 child: _loading
@@ -347,7 +347,7 @@ class _DependentFormDialogState extends State<_DependentFormDialog> {
             const SizedBox(height: 4),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(s.dependentMonthHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              child: Text(s.dependentMonthHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             ),
             const SizedBox(height: 12),
             AppDropdown<String>(

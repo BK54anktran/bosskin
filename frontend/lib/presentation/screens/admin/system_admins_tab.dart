@@ -85,7 +85,7 @@ class _SystemAdminsTabState extends State<SystemAdminsTab> {
             const SizedBox(height: 12),
             TextField(controller: nameCtrl, decoration: InputDecoration(labelText: s.fullName, border: const OutlineInputBorder())),
             const SizedBox(height: 10),
-            Text(s.sysAdminAddNote, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.sysAdminAddNote, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           ]),
         ),
         actions: [
@@ -150,7 +150,7 @@ class _SystemAdminsTabState extends State<SystemAdminsTab> {
     if (_error != null) return EmptyState(icon: Icons.error_outline, message: _error!, actionLabel: s.retry, onAction: _load);
     return ListView(padding: const EdgeInsets.all(24), children: [
       Row(children: [
-        Expanded(child: Text(s.sysAdminIntro, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13))),
+        Expanded(child: Text(s.sysAdminIntro, style: TextStyle(color: AppTheme.textSecondary, fontSize: 13))),
         const SizedBox(width: 12),
         MouseRegion(
           cursor: SystemMouseCursors.click,
@@ -162,7 +162,7 @@ class _SystemAdminsTabState extends State<SystemAdminsTab> {
         Card(
           elevation: 0,
           margin: const EdgeInsets.only(bottom: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: AppTheme.border)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: AppTheme.border)),
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppTheme.primary.withValues(alpha: 0.1),

@@ -435,9 +435,9 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     if (_employees.isEmpty) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
+          Icon(Icons.people_outline, size: 64, color: AppTheme.textMuted),
           const SizedBox(height: 12),
-          Text(s.noEmployeesFound, style: TextStyle(color: Colors.grey[600])),
+          Text(s.noEmployeesFound, style: TextStyle(color: AppTheme.textSecondary)),
         ]),
       );
     }
@@ -641,7 +641,7 @@ class _EmployeeCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppTheme.surfaceAlt,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(e.employeeCode,
@@ -709,9 +709,9 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: Colors.grey[500]),
+          Icon(icon, size: 13, color: AppTheme.textMuted),
           const SizedBox(width: 3),
-          Text(text, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+          Text(text, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         ],
       );
 }

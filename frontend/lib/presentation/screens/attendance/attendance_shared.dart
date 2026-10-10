@@ -46,8 +46,8 @@ const double attDayFirstColW = 190;
 const double attDayRowHeight = 72;
 const double attHeadHeight  = 52;
 const String attEmpty       = '';
-const Color  attGridLine      = Color(0xFFD7DCE3);
-const Color  attGridLineLight = Color(0xFFE1E5EA);
+Color get attGridLine => AppTheme.border;
+Color get attGridLineLight => AppTheme.border;
 
 // ── Merged row models (public so tab files can use them) ──────────────────────
 
@@ -240,7 +240,7 @@ Future<void> showAttRequestCardsDialog(
               width: 620,
               child: visibleRequests.isEmpty
                   ? Text(s.noApprovedRequests,
-                      style: const TextStyle(color: AppTheme.textSecondary))
+                      style: TextStyle(color: AppTheme.textSecondary))
                   : SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -314,7 +314,7 @@ Future<void> showAttLeaveRequestCardDialog(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.background,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: attGridLineLight),
                 ),
@@ -330,18 +330,18 @@ Future<void> showAttLeaveRequestCardDialog(
                             children: [
                               Text(
                                 leaveCode == null ? s.leave : '${s.leave} ($leaveCode)',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                               ),
                               const SizedBox(height: 3),
                               Text('$employeeName • $departmentName',
-                                  style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
+                                  style: TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
                             ],
                           ),
                         ),
                         attRequestStatusBadge(s, status),
                         const SizedBox(width: 8),
                         Text(s.apply,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                         const SizedBox(width: 4),
                         Transform.scale(
                           scale: 0.72,
@@ -430,7 +430,7 @@ Widget attDetailLine(String label, String value, {Color? valueColor, bool strike
     padding: const EdgeInsets.only(bottom: 8),
     child: RichText(
       text: TextSpan(
-        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+        style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
         children: [
           TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
           TextSpan(
@@ -518,7 +518,7 @@ class _AttEditTimeCellState extends State<AttEditTimeCell> {
       height: widget.height,
       decoration: BoxDecoration(
         color: widget.bg,
-        border: const Border(
+        border: Border(
           bottom: BorderSide(color: attGridLineLight, width: 0.9),
           right: BorderSide(color: attGridLineLight, width: 0.8),
         ),
@@ -539,11 +539,11 @@ class _AttEditTimeCellState extends State<AttEditTimeCell> {
             filled: false,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: attGridLine, width: 0.8),
+              borderSide: BorderSide(color: attGridLine, width: 0.8),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: attGridLine, width: 0.8),
+              borderSide: BorderSide(color: attGridLine, width: 0.8),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
@@ -552,11 +552,11 @@ class _AttEditTimeCellState extends State<AttEditTimeCell> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             counterText: '',
             hintText: 'HH:MM',
-            hintStyle: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            hintStyle: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
             suffixIcon: widget.ctrl.text.isNotEmpty
                 ? GestureDetector(
                     onTap: () => widget.ctrl.clear(),
-                    child: const Icon(Icons.close, size: 13, color: AppTheme.textSecondary),
+                    child: Icon(Icons.close, size: 13, color: AppTheme.textSecondary),
                   )
                 : null,
             suffixIconConstraints: const BoxConstraints(minWidth: 18, minHeight: 18),
@@ -625,7 +625,7 @@ class _AttLeaveInfoCardState extends State<AttLeaveInfoCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: attGridLineLight),
       ),
@@ -641,17 +641,17 @@ class _AttLeaveInfoCardState extends State<AttLeaveInfoCard> {
                   children: [
                     Text(
                       l.leaveCode == null ? s.leave : '${s.leave} (${l.leaveCode})',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                     ),
                     const SizedBox(height: 3),
                     Text('${widget.employeeName} • ${widget.departmentName}',
-                        style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
                   ],
                 ),
               ),
               attRequestStatusBadge(s, status),
               const SizedBox(width: 8),
-              Text(s.apply, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+              Text(s.apply, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
               const SizedBox(width: 4),
               Transform.scale(
                 scale: 0.72,
@@ -799,7 +799,7 @@ class _AttRequestInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: attGridLineLight),
       ),
@@ -814,10 +814,10 @@ class _AttRequestInfoCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
                     const SizedBox(height: 3),
                     Text('${req.employeeName} • ${req.departmentName}',
-                        style: const TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 11.5, color: AppTheme.textSecondary)),
                     if (StatusBadge.managerStep(s,
                             awaitingManagerName: req.awaitingManagerName,
                             managerApprovedByName: req.managerApprovedByName) case final badge?)
@@ -833,7 +833,7 @@ class _AttRequestInfoCard extends StatelessWidget {
                   if (req.status == 'APPROVED') ...[
                     const SizedBox(width: 8),
                     Text(s.apply,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                     const SizedBox(width: 4),
                     Transform.scale(
                       scale: 0.72,

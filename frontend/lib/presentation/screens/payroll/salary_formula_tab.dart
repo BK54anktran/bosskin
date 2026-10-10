@@ -241,7 +241,7 @@ class _FormulaCard extends StatelessWidget {
                       ),
                       Text(
                         '${f.salaryGradeCode} — ${f.salaryGradeName}  ·  ${f.departmentName ?? s.scopeCompanyLabel}',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                       ),
                     ],
                   ),
@@ -296,7 +296,7 @@ class _FormulaPreview extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(expr,
-                style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: AppTheme.textSecondary),
+                style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: AppTheme.textSecondary),
                 maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
         ],
@@ -450,7 +450,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(entry.key,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
         const SizedBox(height: 4),
         Wrap(
           spacing: 6, runSpacing: 4,
@@ -641,7 +641,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                 const SizedBox(height: 4),
                 Text(
                   s.payFormulaInlineNote,
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                 ),
               ],
               const SizedBox(height: 16),
@@ -729,7 +729,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                           children: [
                             Text(
                               s.payFormulaVarsChipHint(s.formulaVariables),
-                              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                             ),
                             const SizedBox(height: 8),
                             ...buildSystemVarChips(s, _systemVars, _insertVar),
@@ -737,7 +737,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             Row(
                               children: [
                                 Text(s.varGlobalSection,
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () => _openCustomVarDialog(),
@@ -750,7 +750,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                               final visibleGlobals = _globalVars.where((v) => v.showInFormula).toList();
                               if (visibleGlobals.isEmpty) {
                                 return Text(s.varNoGlobal,
-                                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary,
+                                    style: TextStyle(fontSize: 11, color: AppTheme.textSecondary,
                                         fontStyle: FontStyle.italic));
                               }
                               // Nhóm theo category
@@ -789,7 +789,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             Row(
                               children: [
                                 Text(s.varPrivateSection,
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () => _openPrivateVarDialog(),
@@ -807,7 +807,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                             const SizedBox(height: 4),
                             if (_privateVars.isEmpty)
                               Text(s.varNoPrivate,
-                                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary,
+                                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary,
                                       fontStyle: FontStyle.italic))
                             else
                               Wrap(
@@ -1047,10 +1047,10 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
           InkWell(onTap: onAdd, child: Icon(Icons.add_circle_outline, size: 16, color: color)),
         ]),
         const SizedBox(height: 2),
-        Text(subtitle, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
+        Text(subtitle, style: TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
         const SizedBox(height: 4),
         if (vars.isEmpty)
-          Text(s.payNoItems, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic))
+          Text(s.payNoItems, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic))
         else
           ReorderableListView(
             shrinkWrap: true,
@@ -1084,7 +1084,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                   ),
                   subtitle: Text(
                     entries[i].key,
-                    style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontFamily: 'monospace'),
+                    style: TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontFamily: 'monospace'),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1096,7 +1096,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
                       const SizedBox(width: 8),
                       InkWell(
                         onTap: () => onEdit(entries[i].key, entries[i].value),
-                        child: const Icon(Icons.edit_outlined, size: 16, color: AppTheme.textSecondary),
+                        child: Icon(Icons.edit_outlined, size: 16, color: AppTheme.textSecondary),
                       ),
                     ],
                   ),
@@ -1337,7 +1337,7 @@ class _CustomVarDialogState extends State<_CustomVarDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(s.varChipInsertHint,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
                   ...buildSystemVarChips(s, _systemVars, _insertVar, compact: true),
                   ...buildGroupedGlobalChips(s, _globalVars, _insertVar),
@@ -1566,7 +1566,7 @@ class _DeductionVarDialogState extends State<_DeductionVarDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(s.varChipInsertHint,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
                   ...buildSystemVarChips(s, widget.systemVars, _insertVar, compact: true),
                   ...buildGroupedGlobalChips(s, widget.globalVars, _insertVar),
@@ -1689,7 +1689,7 @@ List<Widget> buildGroupedGlobalChips(
   return sortedKeys.map((cat) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(cat, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+      Text(cat, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
           color: AppTheme.textSecondary)),
       const SizedBox(height: 3),
       Wrap(
@@ -1732,7 +1732,7 @@ class _GlobalVarChip extends StatelessWidget {
           label: Text(name, style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
           visualDensity: VisualDensity.compact,
           onPressed: onInsert,
-          deleteIcon: const Icon(Icons.edit, size: 12, color: AppTheme.textSecondary),
+          deleteIcon: Icon(Icons.edit, size: 12, color: AppTheme.textSecondary),
           onDeleted: onEdit,
         ),
       );
@@ -1908,7 +1908,7 @@ class _PrivateVarDialogState extends State<_PrivateVarDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(s.varChipInsertHint,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
                   const SizedBox(height: 6),
                   ...buildSystemVarChips(s, widget.systemVars, _insertVar, compact: true),
                   ...buildGroupedGlobalChips(s, widget.globalVars, _insertVar),

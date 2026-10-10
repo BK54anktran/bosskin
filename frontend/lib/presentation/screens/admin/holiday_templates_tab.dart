@@ -107,7 +107,7 @@ class _HolidayTemplatesTabState extends State<HolidayTemplatesTab> {
         ),
       ]),
       const SizedBox(height: 4),
-      Text(s.holidayTemplateAdminHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+      Text(s.holidayTemplateAdminHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
       const SizedBox(height: 8),
       if (_error != null) Text(_error!, style: const TextStyle(color: AppTheme.error)),
       if (_loading)

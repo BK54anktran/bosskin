@@ -535,7 +535,7 @@ class _LeavesScreenState extends State<LeavesScreen>
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppTheme.border),
                 ),
@@ -568,7 +568,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                               ),
                               Text(
                                 '${r['departmentName'] ?? ''} • ${r['leaveTypeName'] ?? ''}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary,
                                 ),
@@ -591,7 +591,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                     Text(
                       '${s.createdAt}: ${_fmtDateTime(r['createdAt']?.toString())}',
                       style:
-                          const TextStyle(color: AppTheme.textSecondary),
+                          TextStyle(color: AppTheme.textSecondary),
                     ),
                     if ((r['reason'] ?? '').toString().trim().isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -601,14 +601,14 @@ class _LeavesScreenState extends State<LeavesScreen>
                       const SizedBox(height: 4),
                       Text(
                         '${status == 'APPROVED' ? s.approvedBy : (status == 'REJECTED' ? s.rejectedBy : s.cancel)}: ${r['processedByName'] ?? ''} • ${_fmtDateTime(r['processedAt']?.toString())}',
-                        style: const TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                     ],
                     if ((r['adminNote'] ?? '').toString().trim().isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         '${s.response}: ${r['adminNote']}',
-                        style: const TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                     ],
                     // Children (đơn con từng ngày)
@@ -630,7 +630,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                           padding: const EdgeInsets.only(bottom: 4),
                           child: Row(
                             children: [
-                              const Icon(Icons.subdirectory_arrow_right, size: 14, color: AppTheme.textSecondary),
+                              Icon(Icons.subdirectory_arrow_right, size: 14, color: AppTheme.textSecondary),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -871,7 +871,7 @@ class _LeavesScreenState extends State<LeavesScreen>
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppTheme.border),
                 ),
@@ -916,7 +916,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                           const SizedBox(height: 6),
                           Text(
                             '${s.leaveUnit}: ${t['unit']} • ${s.leaveDeductPerDay}: ${t['deductPerDay'] ?? 1} • ${t['paid'] == true ? s.leavePaid : s.leaveUnpaid}${t['requiresBalance'] == false ? ' • ${s.leaveNoBalance}' : ''}',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 13,
                                 color: AppTheme.textSecondary),
                           ),
@@ -924,7 +924,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                             const SizedBox(height: 4),
                             Text(
                               t['description'].toString(),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary),
                             ),
@@ -1006,7 +1006,7 @@ class _LeavesScreenState extends State<LeavesScreen>
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppTheme.border),
                 ),
@@ -1026,7 +1026,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                           if (r['leaveTypeName'] != null)
                           Text(
                             r['leaveTypeName'],
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.textSecondary),
                           ),
@@ -1035,7 +1035,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                           const SizedBox(height: 6),
                           Text(
                             '${s.department}: ${r['departmentName'] ?? s.leaveAllCompany}',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.textSecondary),
                           ),
@@ -1044,7 +1044,7 @@ class _LeavesScreenState extends State<LeavesScreen>
                             const SizedBox(height: 4),
                             Text(
                               '${s.leaveValidity}: ${_d(r['validFrom'])} → ${_d(r['validTo'])}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary),
                             ),
@@ -1968,7 +1968,7 @@ class _EmployeeGrantHistoryDialogState
               '${s.leaveLedgerPool(pool, _fmtDate(e['grantedAt']))}',
               style: const TextStyle(fontSize: 12)),
           trailing: Text(_fmtDate(e['createdAt']),
-              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         );
       },
     );
@@ -2211,7 +2211,7 @@ class _EmployeeGrantHistoryDialogState
                       width: colWidths[0],
                       child: Text(_fmtDate(g['grantedAt']),
                           textAlign: TextAlign.left,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppTheme.textSecondary)),
                     ),
                     SizedBox(
@@ -2240,7 +2240,7 @@ class _EmployeeGrantHistoryDialogState
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(s.leaveDepleted,
-                                  style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                                  style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
                             ),
                           ],
                         ],
@@ -2334,13 +2334,13 @@ class _EmployeeGrantHistoryDialogState
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(s.leaveDepleted,
-                                style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
                           ),
                         ],
                       ],
                     ),
                     Text(_fmtDate(g['grantedAt']),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12, color: AppTheme.textSecondary)),
                   ],
                 ),
@@ -2360,7 +2360,7 @@ class _EmployeeGrantHistoryDialogState
                 const SizedBox(height: 4),
                 Text(
                   '${s.leaveValidity}: ${_fmtDate(g['validFrom'])} → ${_fmtDate(g['validTo'])}',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary),
                 ),
               ],
@@ -2378,7 +2378,7 @@ class _EmployeeGrantHistoryDialogState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 11, color: AppTheme.textSecondary)),
           Text(value,
               style: TextStyle(

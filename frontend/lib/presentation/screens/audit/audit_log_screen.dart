@@ -261,7 +261,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
             child: _rows.isEmpty && !_loading
                 ? Center(
                     child: Text(s.auditEmpty,
-                        style: const TextStyle(color: AppTheme.textSecondary)))
+                        style: TextStyle(color: AppTheme.textSecondary)))
                 : ListView.separated(
                     itemCount: _rows.length + 1,
                     separatorBuilder: (_, __) => const Divider(height: 1),
@@ -308,7 +308,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
               child: Text(
                 '${created != null ? _timeFmt.format(created) : ''} · ${r['actorEmail'] ?? '-'}',
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
               ),
             ),
             if (impersonated) ...[
@@ -346,7 +346,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
             if (r['ip'] != null) s.auditIp('${r['ip']}'),
             if (r['requestId'] != null) s.auditRequestId('${r['requestId']}'),
           ].join('   '),
-          style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+          style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
         ),
       ],
     );

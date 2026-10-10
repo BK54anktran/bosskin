@@ -284,7 +284,7 @@ class _FilterDialogState extends State<_FilterDialog> {
     return AlertDialog(
       title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(s.reportExportOptions,
-            style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary,
+            style: TextStyle(fontSize: 13, color: AppTheme.textSecondary,
                 fontWeight: FontWeight.normal)),
         const SizedBox(height: 2),
         Text(widget.reportTitle,
@@ -388,9 +388,9 @@ class _DateBtn extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.calendar_today_outlined, size: 13, color: AppTheme.textSecondary),
+            Icon(Icons.calendar_today_outlined, size: 13, color: AppTheme.textSecondary),
             const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary)),
+            Text(label, style: TextStyle(fontSize: 12, color: AppTheme.textPrimary)),
           ]),
         ),
       ),
@@ -419,7 +419,7 @@ class _ReportGroup extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.border),
+        side: BorderSide(color: AppTheme.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -508,7 +508,7 @@ class _ReportItem extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-          Text(desc, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(desc, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ])),
         const SizedBox(width: 12),
         MouseRegion(

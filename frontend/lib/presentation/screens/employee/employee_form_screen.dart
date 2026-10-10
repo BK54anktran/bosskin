@@ -422,7 +422,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(s.sensitiveMaskedHint,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 ),
               _row([
                 _field(TextFormField(
@@ -512,7 +512,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
               suffixIcon: const Icon(Icons.calendar_today, size: 18)),
           child: Text(
             value != null ? DateFormat('dd/MM/yyyy').format(value) : '—',
-            style: TextStyle(color: value != null ? null : Colors.grey[500]),
+            style: TextStyle(color: value != null ? null : AppTheme.textMuted),
           ),
         ),
       );

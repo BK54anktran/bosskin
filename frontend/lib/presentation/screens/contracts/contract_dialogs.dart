@@ -236,7 +236,7 @@ class _ContractDetailDialogState extends State<ContractDetailDialog> {
   Widget _info(String label, String value) => SizedBox(
         width: 190,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
           Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
         ]),
       );
@@ -538,7 +538,7 @@ class _AppendixFormDialogState extends State<AppendixFormDialog> {
         width: 600,
         child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(s.contractAppendixKeepHint, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(s.contractAppendixKeepHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             gap,
             Row(children: [
               Expanded(

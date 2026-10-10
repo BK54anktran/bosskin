@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/department_model.dart';
+import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
 class DepartmentPickerField extends StatelessWidget {
@@ -248,7 +249,7 @@ class _DepartmentMultiPickerDialogState
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
-                              color: Colors.grey[800],
+                              color: AppTheme.textPrimary,
                             ),
                           ),
                         )
@@ -257,7 +258,7 @@ class _DepartmentMultiPickerDialogState
                 const SizedBox(width: 6),
                 if (d.level > 0) ...[
                   Icon(Icons.subdirectory_arrow_right,
-                      size: 16, color: Colors.grey[500]),
+                      size: 16, color: AppTheme.textMuted),
                   const SizedBox(width: 6),
                 ],
                 Expanded(
@@ -404,7 +405,7 @@ class _DepartmentPickerDialogState extends State<_DepartmentPickerDialog> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w900,
-                                  color: Colors.grey[800],
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                             )
@@ -413,7 +414,7 @@ class _DepartmentPickerDialogState extends State<_DepartmentPickerDialog> {
                     const SizedBox(width: 6),
                     if (d.level > 0) ...[
                       Icon(Icons.subdirectory_arrow_right,
-                          size: 16, color: Colors.grey[500]),
+                          size: 16, color: AppTheme.textMuted),
                       const SizedBox(width: 6),
                     ],
                     Expanded(

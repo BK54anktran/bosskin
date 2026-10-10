@@ -212,7 +212,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
             const Icon(Icons.admin_panel_settings_outlined, size: 64, color: AppTheme.primary),
             const SizedBox(height: 16),
             Text(s.impersonatingCompanyNotice,
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondary),
                 textAlign: TextAlign.center),
           ],
         ),
@@ -401,7 +401,7 @@ class _InfoPanel extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.background,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppTheme.border),
         ),
@@ -417,7 +417,7 @@ class _InfoPanel extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                     ),
@@ -449,7 +449,7 @@ class _ShiftPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.border),
       ),
@@ -468,7 +468,7 @@ class _ShiftPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${s.checkInTime}: ${shift.checkInFrom} - ${shift.checkInTo} | ${s.checkOutTime}: ${shift.checkOutFrom} - ${shift.checkOutTo}',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
           ),
         ],
       ),
@@ -489,7 +489,7 @@ class _MessagePanel extends StatelessWidget {
           border: Border.all(color: AppTheme.warning.withValues(alpha: 0.25)),
         ),
         child:
-            Text(message, style: const TextStyle(color: AppTheme.textPrimary)),
+            Text(message, style: TextStyle(color: AppTheme.textPrimary)),
       );
 }
 
@@ -570,7 +570,7 @@ class _InfoTile extends StatelessWidget {
               ),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 10, color: AppTheme.textSecondary),
               ),
             ],
@@ -609,7 +609,7 @@ class _HistorySection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.border),
       ),
@@ -633,7 +633,7 @@ class _HistorySection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 s.noHistoryThisMonth,
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondary),
               ),
             )
           else
@@ -671,7 +671,7 @@ class _HistorySection extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             '${s.checkIn}: ${a.checkIn != null ? timeFmt.format(a.checkIn!) : ''}  |  ${s.checkOut}: ${a.checkOut != null ? timeFmt.format(a.checkOut!) : ''}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                             ),
@@ -793,11 +793,11 @@ class _LocationMapPanelState extends State<_LocationMapPanel> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.location_off_outlined,
+                              Icon(Icons.location_off_outlined,
                                   size: 32, color: AppTheme.textSecondary),
                               const SizedBox(height: 8),
                               Text(s.locationUnavailable,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: AppTheme.textSecondary, fontSize: 13)),
                             ],
                           ),

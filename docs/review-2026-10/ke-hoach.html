@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV) và N (tài liệu nhân sự) xong; AWS để sau, làm tiếp D–F</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV), N (tài liệu nhân sự) và F (giao diện tối) xong; AWS để sau, làm tiếp D, E</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -130,7 +130,7 @@
           <li>Script đối chiếu công/lương cho pilot (so bảng chấm cũ với BossKin, xuất chênh lệch).</li>
           <li>Mẫu Excel nhập dữ liệu thật (NV, ca, số dư phép đầu kỳ) và hướng dẫn nhập.</li>
         </ul></td><td>Chạy thử hạ tầng bằng công cụ kiểm tra (không cần tài khoản); nhập mẫu vào môi trường thử thành công</td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
-      <tr><td><b>F</b> · Giao diện tối</td><td>Chế độ tối cho app Flutter, theo cài đặt hệ thống, có nút chuyển trong hồ sơ.</td><td>Các màn chính đọc rõ ở cả hai chế độ</td><td>Không</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+      <tr><td><b>F</b> · Giao diện tối</td><td>Chế độ tối cho app Flutter, theo cài đặt hệ thống, có nút chuyển trong hồ sơ.</td><td>Các màn chính đọc rõ ở cả hai chế độ</td><td>Không</td><td><span class="st done">Xong 10/10</span><div class="muted" style="margin-top:6px">Hồ sơ → "Giao diện": Theo máy / Sáng / Tối (lưu trên máy, <code>ThemeController</code>; "Theo máy" đổi theo cài đặt hệ thống ngay). <code>AppTheme</code> có <code>light</code> + <code>dark</code>; màu nền / chữ / viền (<code>background</code>, <code>surface</code>, <code>surfaceAlt</code>, <code>textPrimary</code>, <code>textSecondary</code>, <code>textMuted</code>, <code>border</code>, <code>tint()</code>) đổi theo chế độ, màu thương hiệu / trạng thái giữ nguyên. Đã thay ~60 chỗ màu viết cứng (nền trắng, chữ xám, nền "-50" của ô cuối tuần / hôm nay / ngày lễ) bằng màu theo chế độ. Kiểm bằng ảnh chụp bản web ở cả hai chế độ: Tổng quan, Nhân viên, Chấm công, Ca làm, Lương, Nghỉ phép, Hợp đồng, Tài liệu, Phòng ban, Phân quyền, Báo cáo, Cài đặt công ty, Hồ sơ. Cổng system admin (/admin) giữ giao diện sáng.</div></td></tr>
       <tr><td><b>G</b> · Trang giới thiệu & dùng thử</td><td>
         <ul class="clean">
           <li>Trang tĩnh <code>landing/</code> (host Netlify), video giới thiệu 90 giây + bản ngắn 1 phút và bản dọc 9:16.</li>
