@@ -27,6 +27,7 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 | `BOOTSTRAP_ADD_SYSADMIN_EMAIL`, `BOOTSTRAP_ADD_SYSADMIN_PASSWORD` | Không | Thêm một system admin lúc khởi động nếu email chưa có (không sửa tài khoản đang có). Dùng khi không vào được /admin; xoá sau khi đăng nhập được |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có | Nội dung JSON hoặc base64. Không đặt → tắt push |
 | `AWS_S3_BUCKET`, `AWS_REGION` | Nên có | Trên EB dùng IAM role của instance, không cần `AWS_ACCESS_KEY` |
+| `DOCUMENTS_STORAGE`, `DOCUMENTS_LOCAL_DIR`, `DOCUMENTS_LINK_TTL_SECONDS` | Không | Tài liệu nhân sự (bước N): `s3` / `local`, trống = `s3` khi có bucket. Object trên S3 không công khai, chỉ cấp presigned GET (mặc định 300 giây). Bản web tải file qua presigned URL nên bucket cần CORS cho phép `GET` từ origin của app. `local` chỉ dùng cho dev (mặc định `~/.bosskin/documents`) |
 | `REQUIRE_SYSADMIN_2FA` | Không | Mặc định `true`: system admin phải cài 2FA ở lần đăng nhập đầu. Chỉ đặt `false` khi khẩn cấp (mục 11) |
 | `JWT_EXPIRATION_MS` | Không | Mặc định 1800000 (30 phút) |
 | `LOG_LEVEL_APP` | Không | Mặc định `INFO` ở prod |

@@ -2,11 +2,18 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:typed_data';
 
-Future<({Uint8List bytes, String filename})?> pickImageFile() async {
+Future<({Uint8List bytes, String filename})?> pickImageFile() =>
+    _pick('image/jpeg,image/png,image/webp,image/gif');
+
+/// Bước N — chọn file tài liệu nhân sự: PDF, ảnh, Word.
+Future<({Uint8List bytes, String filename})?> pickDocumentFile() =>
+    _pick('application/pdf,image/jpeg,image/png,image/webp,.doc,.docx');
+
+Future<({Uint8List bytes, String filename})?> _pick(String accept) async {
   final completer = Completer<({Uint8List bytes, String filename})?>();
 
   final input = html.FileUploadInputElement()
-    ..accept = 'image/jpeg,image/png,image/webp,image/gif';
+    ..accept = accept;
 
   input.onChange.listen((event) async {
     final file = input.files?.first;

@@ -436,6 +436,8 @@ class DashboardRiskData {
   final List<DashboardNoSalaryGradeRisk> noSalaryGrade;
   /// Bước L: hợp đồng cần gia hạn (chỉ có khi có quyền CONTRACT_VIEW).
   final List<DashboardContractExpiringRisk> contractExpiring;
+  /// Bước N: tài liệu nhân sự sắp / đã hết hạn (chỉ có khi có quyền EMPLOYEE_DOCUMENT_VIEW).
+  final List<DashboardDocumentExpiringRisk> documentExpiring;
   final int totalWarnings;
 
   const DashboardRiskData({
@@ -444,6 +446,7 @@ class DashboardRiskData {
     required this.probationEnding,
     required this.noSalaryGrade,
     this.contractExpiring = const [],
+    this.documentExpiring = const [],
     required this.totalWarnings,
   });
 
@@ -462,6 +465,9 @@ class DashboardRiskData {
             .toList(),
         contractExpiring: (j['contractExpiring'] as List? ?? const [])
             .map((e) => DashboardContractExpiringRisk.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        documentExpiring: (j['documentExpiring'] as List? ?? const [])
+            .map((e) => DashboardDocumentExpiringRisk.fromJson(e as Map<String, dynamic>))
             .toList(),
         totalWarnings: (j['totalWarnings'] as num).toInt(),
       );
@@ -588,6 +594,28 @@ class DashboardContractExpiringRisk {
         contractId: (j['contractId'] as num).toInt(),
         employeeName: (j['employeeName'] ?? '').toString(),
         contractNo: (j['contractNo'] ?? '').toString(),
+        daysLeft: (j['daysLeft'] as num?)?.toInt() ?? 0,
+      );
+}
+
+class DashboardDocumentExpiringRisk {
+  final int documentId;
+  final String employeeName;
+  final String typeName;
+  /// Âm = đã quá hạn.
+  final int daysLeft;
+
+  const DashboardDocumentExpiringRisk({
+    required this.documentId,
+    required this.employeeName,
+    required this.typeName,
+    required this.daysLeft,
+  });
+
+  factory DashboardDocumentExpiringRisk.fromJson(Map<String, dynamic> j) => DashboardDocumentExpiringRisk(
+        documentId: (j['documentId'] as num).toInt(),
+        employeeName: (j['employeeName'] ?? '').toString(),
+        typeName: (j['typeName'] ?? '').toString(),
         daysLeft: (j['daysLeft'] as num?)?.toInt() ?? 0,
       );
 }

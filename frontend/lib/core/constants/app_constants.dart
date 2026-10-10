@@ -40,6 +40,7 @@ class AppRoutes {
   static const String orgChart = '/org-chart';
   static const String teamApprovals = '/team-approvals';
   static const String contracts = '/contracts';
+  static const String documents = '/documents';
 
   // Admin routes
   static const String adminLogin = '/admin/login';

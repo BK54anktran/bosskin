@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>1. Kiến trúc hệ thống</h1>
     <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap. Trang giới thiệu tĩnh (Netlify) gửi yêu cầu dùng thử vào Supabase.</p>
-    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V17, 38 controller).</p>
+    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V18, 40 controller).</p>
   </section>
   <ul class="toc">
     <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
@@ -61,7 +61,7 @@ flowchart LR
       TILE["MapTile proxy + cache đĩa"]
     end
   end
-  DB[("MySQL 8<br/>47 bảng · Flyway V1 baseline → V17")]
+  DB[("MySQL 8<br/>49 bảng · Flyway V1 baseline → V18")]
   S3[("AWS S3<br/>ảnh, tài liệu, file Excel")]
   FCM["Firebase FCM"]
   OSM["tile.openstreetmap.org"]
@@ -134,7 +134,7 @@ sequenceDiagram
     </ul></div>
     <div class="card"><b>Mô hình quyền</b><ul class="clean">
       <li>Quyền = role ∪ quyền trực tiếp (quyền trực tiếp ghi đè theo module).</li>
-      <li>50 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*, CALENDAR_*, CONTRACT_*, SHIFT_SWAP_APPROVE, AUDIT_VIEW...).</li>
+      <li>52 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*, CALENDAR_*, CONTRACT_*, SHIFT_SWAP_APPROVE, AUDIT_VIEW...).</li>
       <li>Dữ liệu nhạy cảm (CCCD, số tài khoản, MST, sổ BHXH) che còn 4 ký tự cuối ở API, Excel, báo cáo khi thiếu <code>EMPLOYEE_SENSITIVE_VIEW</code> (<code>core/SensitiveData</code>); gửi lại bản che thì giữ giá trị cũ.</li>
       <li>Không tự sửa quyền của mình, chỉ cấp được quyền mình đang có; không tự duyệt công / đơn / lương của mình.</li>
       <li><code>VIEW</code> là tiền đề của quyền khác trong module.</li>
@@ -166,7 +166,7 @@ flowchart LR
   </pre></div>
   <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Netlify. Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
-  <h2 id="api">Danh sách API (38 controller)</h2>
+  <h2 id="api">Danh sách API (40 controller)</h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Controller</th><th>Đường dẫn gốc</th><th>Chức năng</th></tr></thead>
     <tbody>
@@ -190,6 +190,8 @@ flowchart LR
       <tr><td>ContractController</td><td><code>/api/v1/contracts</code> (+ <code>/{id}/activate</code>, <code>/{id}/terminate</code>, <code>/{id}/appendices</code>, <code>/appendices/{id}</code>, <code>/expiring</code>, <code>/export</code>, <code>/preview-import</code>, <code>/import</code>)</td><td>Hợp đồng lao động, phụ lục, phụ cấp (bước L, V16). Quyền <code>CONTRACT_VIEW</code> (+ phạm vi phòng ban), <code>CONTRACT_EDIT</code>, <code>CONTRACT_DELETE</code>; chặn hai HĐ hiệu lực chồng ngày; bảng lương lấy lương / lương đóng BH / phụ cấp theo HĐ hiệu lực trong kỳ; báo hết hạn hằng ngày 07:30.</td></tr>
       <tr><td>EmployeeLocationController</td><td><code>/api/v1/employees/{id}/locations</code></td><td>Vị trí check-in riêng từng nhân viên</td></tr>
       <tr><td>DependentController</td><td><code>/api/v1/dependents</code> (+ <code>/self</code>)</td><td>Người phụ thuộc giảm trừ gia cảnh (bước M): xem theo <code>EMPLOYEE_VIEW</code> + phạm vi, sửa cần <code>EMPLOYEE_UPDATE</code>, NV tự xem ở Hồ sơ; MST / CCCD che khi thiếu <code>EMPLOYEE_SENSITIVE_VIEW</code></td></tr>
+      <tr><td>DocumentController</td><td><code>/api/v1/document-types</code>, <code>/api/v1/employee-documents</code> (+ <code>/pending</code>, <code>/expiring</code>, <code>/missing</code>, <code>/{id}/link</code>, <code>/approve</code>, <code>/reject</code>, <code>/self</code>)</td><td>Tài liệu nhân sự (bước N): xem theo <code>EMPLOYEE_DOCUMENT_VIEW</code> + phạm vi, sửa / duyệt cần <code>EMPLOYEE_DOCUMENT_EDIT</code>; NV tự gửi (chờ duyệt) ở Hồ sơ; file chỉ trả link ký tạm, mỗi lần lấy ghi nhật ký</td></tr>
+      <tr><td>PublicDocumentFileController</td><td><code>GET /api/v1/public/document-files?t=</code></td><td>Tải file tài liệu khi lưu cục bộ (dev / test): token ký HMAC có hạn thay cho đăng nhập (sai chữ ký 403, quá hạn 410)</td></tr>
       <tr><td>DepartmentController</td><td><code>/api/v1/departments</code></td><td>Cây phòng ban, import/export</td></tr>
       <tr><td>PositionController</td><td><code>/api/v1/positions</code></td><td>Chức vụ</td></tr>
       <tr><td>PayrollController</td><td><code>/api/v1/payrolls</code></td><td>Tạo, sửa nháp, tính lại, duyệt, trả, xuất phiếu, phiếu của tôi</td></tr>

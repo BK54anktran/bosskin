@@ -351,13 +351,14 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 | `LaborContract` | `labor_contracts` | hợp đồng; phụ lục `contract_appendices`, phụ cấp `contract_allowances` (V16) |
 | `EmployeeDependent` | `employee_dependents` | người phụ thuộc, giảm trừ theo tháng (V17) |
+| `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V17** (`V17__employee_tax_insurance.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V18** (`V18__employee_documents.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
-V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm
-→ Migration tiếp theo phải là **V18**
+V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự
+→ Migration tiếp theo phải là **V19**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -486,6 +487,23 @@ V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem 
   `/reports/dependents` (EMPLOYEE_VIEW + phạm vi phòng ban).
 - FE: mục "Thuế & bảo hiểm" ở form NV, hộp `employee/dependents_dialog.dart` (nút ở danh sách NV), `profile/my_dependents_card.dart`,
   `PayslipTaxInfo(showEmployerCost:)`, 3 ô tỷ lệ ở Cài đặt công ty, 2 báo cáo mới. Test: `DependentTest`.
+
+## Tài liệu nhân sự (Bước N)
+- V18: `document_types` (theo công ty, mã unique qua `code_key`, `required`, `has_expiry`; 6 loại mặc định — công ty mới do
+  `DocumentService.createDefaultTypes` cấp trong `CompanyService.create`), `employee_documents` (`file_key` không phải URL, ngày cấp /
+  hết hạn, `contract_id` phải cùng NV, `status` PENDING/APPROVED/REJECTED, xoá mềm). Quyền `EMPLOYEE_DOCUMENT_VIEW` (phạm vi phòng ban) /
+  `EMPLOYEE_DOCUMENT_EDIT`, cấp sẵn cho Admin.
+- File riêng tư: `DocumentStorageService` — `app.documents.storage` `s3` (presigned GET) | `local` (thư mục, link
+  `/api/v1/public/document-files?t=` ký HMAC bằng `jwt.secret`); trống = s3 khi có bucket. TTL `link-ttl-seconds` (300).
+  Test chạy `local`. Không dùng `UploadController` / URL công khai cho giấy tờ cá nhân. PDF / ảnh / Word ≤ 10 MB.
+- API `/api/v1/document-types`, `/api/v1/employee-documents` (+ `/pending`, `/expiring?days=`, `/missing`, `/{id}/link`,
+  `/{id}/approve|reject`, `/self`, `/self/{id}/link`, `DELETE /self/{id}` khi còn chờ). Nhật ký `DOCUMENT_TYPE_*`, `DOCUMENT_UPLOAD|UPDATE|
+  DELETE|APPROVE|REJECT|VIEW` (mỗi lần lấy link). NV tự gửi = PENDING, không tự duyệt bản của mình (`error.document.cannot_review_own`).
+- Sắp hết hạn: bản đã duyệt hết hạn muộn nhất mỗi NV × loại, trong `companies.contract_expiry_warning_days`; Tổng quan
+  `documentExpiring`; báo đẩy 07:35 (N / 7 / 0 ngày). Thiếu bắt buộc: chưa có bản đã duyệt còn hạn.
+- FE: `widgets/document_widgets.dart` (`DocumentTile`, `DocumentUploadDialog`, `downloadDocument`), `employee/employee_documents_dialog.dart`,
+  màn `/documents` (`screens/documents/`), `profile/my_documents_card.dart`; `pickDocumentFile()` (web: PDF / ảnh / Word, mobile: ảnh).
+  Test: `DocumentTest` (`Api.uploadWith`, `Api.rawGet`).
 
 ## Màn hình Flutter
 | Screen | Path |

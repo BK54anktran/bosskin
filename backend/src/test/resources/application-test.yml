@@ -21,6 +21,10 @@ app:
     secret-key: test
     bucket: bosskin-test
     endpoint: http://localhost:9
+  documents:
+    # Tài liệu nhân sự lưu thư mục tạm khi test (không gọi S3)
+    storage: local
+    local-dir: ${java.io.tmpdir}/bosskin-test-documents
   firebase:
     # Không bao giờ dùng service account thật khi chạy test
     service-account-path: /nonexistent/firebase-test.json

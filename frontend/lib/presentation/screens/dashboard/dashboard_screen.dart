@@ -721,6 +721,15 @@ class _RiskPanel extends StatelessWidget {
                   items: riskData!.contractExpiring.take(3).map((r) =>
                       '${r.employeeName} (${r.contractNo}) — ${r.daysLeft >= 0 ? s.contractDaysLeft(r.daysLeft) : s.contractOverdue(-r.daysLeft)}').toList(),
                 ),
+              if (riskData!.documentExpiring.isNotEmpty)
+                _RiskSection(
+                  icon: Icons.folder_shared_outlined,
+                  color: AppTheme.warning,
+                  title: s.dashboardRisksDocumentExpiring,
+                  count: riskData!.documentExpiring.length,
+                  items: riskData!.documentExpiring.take(3).map((r) =>
+                      '${r.employeeName} (${r.typeName}) — ${r.daysLeft >= 0 ? s.contractDaysLeft(r.daysLeft) : s.contractOverdue(-r.daysLeft)}').toList(),
+                ),
               if (riskData!.noSalaryGrade.isNotEmpty)
                 _RiskSection(
                   icon: Icons.money_off_outlined,

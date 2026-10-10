@@ -5119,4 +5119,206 @@ class AppLocalizationsVi extends AppLocalizations {
   String dependentDeleteConfirm(String name) {
     return 'Xoá người phụ thuộc $name? Kỳ lương tính lại sau đó sẽ không còn giảm trừ cho người này.';
   }
+
+  @override
+  String get docScreenTitle => 'Tài liệu nhân sự';
+
+  @override
+  String get docTitleDialog => 'Tài liệu';
+
+  @override
+  String get docMyTitle => 'Tài liệu của tôi';
+
+  @override
+  String get docStatusPending => 'Chờ duyệt';
+
+  @override
+  String get docStatusApproved => 'Đã duyệt';
+
+  @override
+  String get docStatusRejected => 'Bị từ chối';
+
+  @override
+  String get docExpired => 'Đã hết hạn';
+
+  @override
+  String docExpiresInDays(int days) {
+    return 'Còn $days ngày';
+  }
+
+  @override
+  String get docExpiresOn => 'Hết hạn';
+
+  @override
+  String get docIssuedOn => 'Ngày cấp';
+
+  @override
+  String get docContract => 'Hợp đồng';
+
+  @override
+  String get docNoContract => 'Không gắn hợp đồng';
+
+  @override
+  String get docReviewNote => 'Ghi chú duyệt';
+
+  @override
+  String get docDownload => 'Tải về';
+
+  @override
+  String docDownloaded(String name) {
+    return 'Đã tải $name';
+  }
+
+  @override
+  String get docUpload => 'Tải lên tài liệu';
+
+  @override
+  String get docSubmit => 'Gửi bổ sung';
+
+  @override
+  String get docSubmitted => 'Đã gửi, chờ nhân sự duyệt';
+
+  @override
+  String get docEdit => 'Sửa thông tin tài liệu';
+
+  @override
+  String get docType => 'Loại tài liệu';
+
+  @override
+  String get docTitle => 'Tiêu đề / số giấy tờ';
+
+  @override
+  String get docNoFile => 'Chưa chọn file';
+
+  @override
+  String get docChooseFile => 'Chọn file';
+
+  @override
+  String get docFileHint =>
+      'PDF, ảnh (JPG, PNG, WEBP) hoặc Word, tối đa 10 MB. Trên điện thoại chỉ chọn được ảnh.';
+
+  @override
+  String get docSelfHint =>
+      'Tài liệu bạn gửi cần nhân sự duyệt mới được tính là đã nộp. Bản đang chờ duyệt có thể rút lại.';
+
+  @override
+  String get docEmpty => 'Chưa có tài liệu';
+
+  @override
+  String docMissingRequired(String types) {
+    return 'Còn thiếu: $types';
+  }
+
+  @override
+  String docDeleteConfirm(String name) {
+    return 'Xoá tài liệu $name? Có thể khôi phục từ cơ sở dữ liệu nếu cần.';
+  }
+
+  @override
+  String get docTabExpiring => 'Sắp hết hạn';
+
+  @override
+  String get docTabMissing => 'Thiếu bắt buộc';
+
+  @override
+  String get docTabPending => 'Chờ duyệt';
+
+  @override
+  String get docTabTypes => 'Loại tài liệu';
+
+  @override
+  String get docExpiringHint =>
+      'Bản mới nhất của mỗi loại sẽ hết hạn trong số ngày báo trước của công ty (cài đặt cùng hợp đồng) hoặc đã hết hạn.';
+
+  @override
+  String get docExpiringEmpty => 'Không có tài liệu sắp hết hạn';
+
+  @override
+  String get docMissingEmpty => 'Nhân viên đã đủ tài liệu bắt buộc';
+
+  @override
+  String get docPendingEmpty => 'Không có tài liệu chờ duyệt';
+
+  @override
+  String get docTypeEmpty => 'Chưa có loại tài liệu';
+
+  @override
+  String get docTypeAdd => 'Thêm loại tài liệu';
+
+  @override
+  String get docTypeEdit => 'Sửa loại tài liệu';
+
+  @override
+  String get docTypeCode => 'Mã';
+
+  @override
+  String get docTypeName => 'Tên loại';
+
+  @override
+  String get docTypeOrder => 'Thứ tự';
+
+  @override
+  String get docTypeRequired => 'Bắt buộc';
+
+  @override
+  String get docTypeRequiredHint =>
+      'Nhân viên thiếu loại này sẽ nằm trong danh sách thiếu';
+
+  @override
+  String get docTypeHasExpiry => 'Có hạn dùng';
+
+  @override
+  String get docTypeHasExpiryHint =>
+      'Bắt buộc nhập ngày hết hạn và cảnh báo khi sắp hết hạn';
+
+  @override
+  String docTypeDeleteConfirm(String name) {
+    return 'Xoá loại tài liệu $name? Tài liệu đã tải lên vẫn giữ nguyên.';
+  }
+
+  @override
+  String get dashboardRisksDocumentExpiring => 'Tài liệu sắp hết hạn';
+
+  @override
+  String get permUiEmployeeDocumentView =>
+      'Xem tài liệu nhân sự, danh sách sắp hết hạn / thiếu';
+
+  @override
+  String get permUiEmployeeDocumentEdit =>
+      'Tải lên, sửa, xoá, duyệt tài liệu; cấu hình loại tài liệu';
+
+  @override
+  String get permDescEmployeeDocumentView =>
+      'Xem tài liệu nhân sự của nhân viên';
+
+  @override
+  String get permDescEmployeeDocumentEdit =>
+      'Tải lên / sửa / xoá / duyệt tài liệu nhân sự, cấu hình loại tài liệu';
+
+  @override
+  String get auditActDocumentTypeCreate => 'Thêm loại tài liệu';
+
+  @override
+  String get auditActDocumentTypeUpdate => 'Sửa loại tài liệu';
+
+  @override
+  String get auditActDocumentTypeDelete => 'Xoá loại tài liệu';
+
+  @override
+  String get auditActDocumentUpload => 'Tải lên tài liệu';
+
+  @override
+  String get auditActDocumentUpdate => 'Sửa tài liệu';
+
+  @override
+  String get auditActDocumentDelete => 'Xoá tài liệu';
+
+  @override
+  String get auditActDocumentApprove => 'Duyệt tài liệu';
+
+  @override
+  String get auditActDocumentReject => 'Từ chối tài liệu';
+
+  @override
+  String get auditActDocumentView => 'Xem / tải tài liệu';
 }

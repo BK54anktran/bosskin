@@ -5130,4 +5130,205 @@ class AppLocalizationsEn extends AppLocalizations {
   String dependentDeleteConfirm(String name) {
     return 'Delete dependent $name? Payrolls recalculated afterwards no longer deduct for this person.';
   }
+
+  @override
+  String get docScreenTitle => 'HR documents';
+
+  @override
+  String get docTitleDialog => 'Documents';
+
+  @override
+  String get docMyTitle => 'My documents';
+
+  @override
+  String get docStatusPending => 'Pending review';
+
+  @override
+  String get docStatusApproved => 'Approved';
+
+  @override
+  String get docStatusRejected => 'Rejected';
+
+  @override
+  String get docExpired => 'Expired';
+
+  @override
+  String docExpiresInDays(int days) {
+    return '$days days left';
+  }
+
+  @override
+  String get docExpiresOn => 'Expires';
+
+  @override
+  String get docIssuedOn => 'Issued on';
+
+  @override
+  String get docContract => 'Contract';
+
+  @override
+  String get docNoContract => 'No contract';
+
+  @override
+  String get docReviewNote => 'Review note';
+
+  @override
+  String get docDownload => 'Download';
+
+  @override
+  String docDownloaded(String name) {
+    return 'Downloaded $name';
+  }
+
+  @override
+  String get docUpload => 'Upload document';
+
+  @override
+  String get docSubmit => 'Submit document';
+
+  @override
+  String get docSubmitted => 'Submitted, waiting for HR review';
+
+  @override
+  String get docEdit => 'Edit document details';
+
+  @override
+  String get docType => 'Document type';
+
+  @override
+  String get docTitle => 'Title / document number';
+
+  @override
+  String get docNoFile => 'No file selected';
+
+  @override
+  String get docChooseFile => 'Choose file';
+
+  @override
+  String get docFileHint =>
+      'PDF, image (JPG, PNG, WEBP) or Word, up to 10 MB. On phones only images can be picked.';
+
+  @override
+  String get docSelfHint =>
+      'Documents you submit count as filed only after HR approves them. Pending ones can be withdrawn.';
+
+  @override
+  String get docEmpty => 'No documents yet';
+
+  @override
+  String docMissingRequired(String types) {
+    return 'Missing: $types';
+  }
+
+  @override
+  String docDeleteConfirm(String name) {
+    return 'Delete document $name? It can be restored from the database if needed.';
+  }
+
+  @override
+  String get docTabExpiring => 'Expiring';
+
+  @override
+  String get docTabMissing => 'Missing required';
+
+  @override
+  String get docTabPending => 'Pending review';
+
+  @override
+  String get docTabTypes => 'Document types';
+
+  @override
+  String get docExpiringHint =>
+      'Latest copy of each type that expires within the company\'s warning window (same setting as contracts) or has expired.';
+
+  @override
+  String get docExpiringEmpty => 'No documents expiring soon';
+
+  @override
+  String get docMissingEmpty => 'All employees have the required documents';
+
+  @override
+  String get docPendingEmpty => 'No documents waiting for review';
+
+  @override
+  String get docTypeEmpty => 'No document types yet';
+
+  @override
+  String get docTypeAdd => 'Add document type';
+
+  @override
+  String get docTypeEdit => 'Edit document type';
+
+  @override
+  String get docTypeCode => 'Code';
+
+  @override
+  String get docTypeName => 'Type name';
+
+  @override
+  String get docTypeOrder => 'Order';
+
+  @override
+  String get docTypeRequired => 'Required';
+
+  @override
+  String get docTypeRequiredHint =>
+      'Employees without it appear in the missing list';
+
+  @override
+  String get docTypeHasExpiry => 'Has expiry';
+
+  @override
+  String get docTypeHasExpiryHint =>
+      'Requires an expiry date and warns before it expires';
+
+  @override
+  String docTypeDeleteConfirm(String name) {
+    return 'Delete document type $name? Uploaded documents are kept.';
+  }
+
+  @override
+  String get dashboardRisksDocumentExpiring => 'Documents expiring';
+
+  @override
+  String get permUiEmployeeDocumentView =>
+      'View HR documents and expiring / missing lists';
+
+  @override
+  String get permUiEmployeeDocumentEdit =>
+      'Upload, edit, delete, review documents; configure document types';
+
+  @override
+  String get permDescEmployeeDocumentView => 'View employees\' HR documents';
+
+  @override
+  String get permDescEmployeeDocumentEdit =>
+      'Upload / edit / delete / review HR documents, configure document types';
+
+  @override
+  String get auditActDocumentTypeCreate => 'Create document type';
+
+  @override
+  String get auditActDocumentTypeUpdate => 'Update document type';
+
+  @override
+  String get auditActDocumentTypeDelete => 'Delete document type';
+
+  @override
+  String get auditActDocumentUpload => 'Upload document';
+
+  @override
+  String get auditActDocumentUpdate => 'Update document';
+
+  @override
+  String get auditActDocumentDelete => 'Delete document';
+
+  @override
+  String get auditActDocumentApprove => 'Approve document';
+
+  @override
+  String get auditActDocumentReject => 'Reject document';
+
+  @override
+  String get auditActDocumentView => 'View / download document';
 }

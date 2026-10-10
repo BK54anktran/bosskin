@@ -45,6 +45,7 @@ class DashboardServiceTest {
     @Mock private ShiftAssignmentRepository shiftAssignmentRepository;
     @Mock private AttendanceCalculationService calcSvc;
     @Mock private com.bosskin.service.ContractService contractService;
+    @Mock private com.bosskin.service.DocumentService documentService;
 
     @InjectMocks private DashboardService service;
 

@@ -34,6 +34,7 @@ public class CompanyService {
     private final com.bosskin.repository.RolePermDeptScopeRepository rolePermDeptScopeRepository;
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder      passwordEncoder;
+    private final DocumentService      documentService;
 
     public List<CompanyResponse> findAll() {
         return companyRepository.findAll().stream().map(this::toResponse).toList();
@@ -104,6 +105,9 @@ public class CompanyService {
             .enabled(true)
             .build();
         userRepository.save(admin);
+
+        // 4. Danh mục loại tài liệu nhân sự mặc định (Bước N)
+        documentService.createDefaultTypes(company.getId());
 
         return toResponse(company);
     }

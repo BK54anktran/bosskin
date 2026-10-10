@@ -47,6 +47,7 @@
     <li><a href="#phep">7. Nghỉ phép</a></li>
     <li><a href="#luong">8. Bảng lương</a></li>
     <li><a href="#nhac">9. Nhắc nhở push</a></li>
+    <li><a href="#tailieu">10. Tài liệu nhân sự</a></li>
   </ul>
 
   <h2 id="tong">0. Luồng tổng từ ca đến lương</h2>
@@ -295,6 +296,15 @@ flowchart LR
     <li><code>CheckInOutReminderScheduler</code> mỗi 60 giây: so khớp theo khoảng thời gian (không phụ thuộc đúng phút) → push check-in trước ca, check-out sau ca.</li>
     <li>Push có nút "Check-in" → app gọi đúng API tự chấm (F1). FCM token gắn theo phiên: đăng xuất gỡ token, token chết tự gỡ (F10).</li>
     <li>Múi giờ JVM cố định <code>Asia/Ho_Chi_Minh</code>. Còn rủi ro: chạy nhiều instance gửi trùng (chưa có khoá phân tán).</li>
+  </ol>
+
+  <h2 id="tailieu">10. Tài liệu nhân sự (bước N, V18)</h2>
+  <ol class="steps">
+    <li>Công ty có danh mục loại tài liệu (6 loại mặc định, sửa ở màn "Tài liệu nhân sự" → tab Loại tài liệu); cờ <b>bắt buộc</b> đưa NV thiếu vào danh sách thiếu, cờ <b>có hạn</b> bắt nhập ngày hết hạn.</li>
+    <li>HR (<code>EMPLOYEE_DOCUMENT_EDIT</code>) tải file lên hồ sơ NV → bản ghi <code>APPROVED</code>. NV tự gửi ở Hồ sơ → <code>PENDING</code>, HR duyệt / từ chối (không tự duyệt bản của mình); NV rút được bản còn chờ.</li>
+    <li>File không bao giờ có URL công khai: xem / tải gọi <code>/{id}/link</code> → link ký tạm 5 phút (S3 presigned, hoặc <code>/api/v1/public/document-files?t=</code> ký HMAC khi lưu cục bộ), mỗi lần lấy link ghi nhật ký <code>DOCUMENT_VIEW</code>.</li>
+    <li>Sắp hết hạn: với mỗi NV × loại lấy bản đã duyệt hết hạn muộn nhất; bản đó hết hạn trong số ngày báo trước của công ty (chung với hợp đồng) hoặc đã hết hạn → danh sách + mục ở Tổng quan; 07:35 mỗi ngày báo đẩy khi còn đúng N / 7 / 0 ngày. Có bản mới còn hạn thì tự rời danh sách.</li>
+    <li>Thiếu bắt buộc: NV chưa nghỉ việc chưa có bản <i>đã duyệt, còn hạn</i> của loại bắt buộc (bản chờ duyệt hoặc hết hạn vẫn tính là thiếu).</li>
   </ol>
 </main>
 <footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 10/10/2026</footer>

@@ -109,6 +109,33 @@ public class Api {
         }
     }
 
+    /** Gửi file multipart (field "file") kèm kiểu nội dung và tham số form — dùng cho tải tài liệu. */
+    public Res uploadWith(String token, String url, String filename, String contentType, byte[] bytes,
+                          java.util.Map<String, String> params) {
+        try {
+            var req = org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(url)
+                .file(new org.springframework.mock.web.MockMultipartFile("file", filename, contentType, bytes))
+                .accept(MediaType.APPLICATION_JSON);
+            params.forEach(req::param);
+            if (token != null) req.header("Authorization", "Bearer " + token);
+            MockHttpServletResponse r = mvc.perform(req).andReturn().getResponse();
+            String raw = r.getContentAsString(StandardCharsets.UTF_8);
+            return new Res(r.getStatus(), raw.isBlank() ? json.nullNode() : safeParse(raw), raw);
+        } catch (Exception e) {
+            throw new IllegalStateException("UPLOAD " + url + " lỗi: " + e.getMessage(), e);
+        }
+    }
+
+    /** GET không đăng nhập, trả mã trạng thái + byte (link tải ký tạm). */
+    public java.util.Map.Entry<Integer, byte[]> rawGet(String url) {
+        try {
+            MockHttpServletResponse r = mvc.perform(request(HttpMethod.GET, url)).andReturn().getResponse();
+            return java.util.Map.entry(r.getStatus(), r.getContentAsByteArray());
+        } catch (Exception e) {
+            throw new IllegalStateException("GET " + url + " lỗi: " + e.getMessage(), e);
+        }
+    }
+
     private JsonNode safeParse(String raw) {
         try {
             return json.readTree(raw);

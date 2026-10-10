@@ -9526,6 +9526,372 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xoá người phụ thuộc {name}? Kỳ lương tính lại sau đó sẽ không còn giảm trừ cho người này.'**
   String dependentDeleteConfirm(String name);
+
+  /// No description provided for @docScreenTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu nhân sự'**
+  String get docScreenTitle;
+
+  /// No description provided for @docTitleDialog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu'**
+  String get docTitleDialog;
+
+  /// No description provided for @docMyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu của tôi'**
+  String get docMyTitle;
+
+  /// No description provided for @docStatusPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ duyệt'**
+  String get docStatusPending;
+
+  /// No description provided for @docStatusApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt'**
+  String get docStatusApproved;
+
+  /// No description provided for @docStatusRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bị từ chối'**
+  String get docStatusRejected;
+
+  /// No description provided for @docExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hết hạn'**
+  String get docExpired;
+
+  /// No description provided for @docExpiresInDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {days} ngày'**
+  String docExpiresInDays(int days);
+
+  /// No description provided for @docExpiresOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết hạn'**
+  String get docExpiresOn;
+
+  /// No description provided for @docIssuedOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày cấp'**
+  String get docIssuedOn;
+
+  /// No description provided for @docContract.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng'**
+  String get docContract;
+
+  /// No description provided for @docNoContract.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gắn hợp đồng'**
+  String get docNoContract;
+
+  /// No description provided for @docReviewNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú duyệt'**
+  String get docReviewNote;
+
+  /// No description provided for @docDownload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải về'**
+  String get docDownload;
+
+  /// No description provided for @docDownloaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tải {name}'**
+  String docDownloaded(String name);
+
+  /// No description provided for @docUpload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lên tài liệu'**
+  String get docUpload;
+
+  /// No description provided for @docSubmit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi bổ sung'**
+  String get docSubmit;
+
+  /// No description provided for @docSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi, chờ nhân sự duyệt'**
+  String get docSubmitted;
+
+  /// No description provided for @docEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa thông tin tài liệu'**
+  String get docEdit;
+
+  /// No description provided for @docType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại tài liệu'**
+  String get docType;
+
+  /// No description provided for @docTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiêu đề / số giấy tờ'**
+  String get docTitle;
+
+  /// No description provided for @docNoFile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa chọn file'**
+  String get docNoFile;
+
+  /// No description provided for @docChooseFile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn file'**
+  String get docChooseFile;
+
+  /// No description provided for @docFileHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'PDF, ảnh (JPG, PNG, WEBP) hoặc Word, tối đa 10 MB. Trên điện thoại chỉ chọn được ảnh.'**
+  String get docFileHint;
+
+  /// No description provided for @docSelfHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu bạn gửi cần nhân sự duyệt mới được tính là đã nộp. Bản đang chờ duyệt có thể rút lại.'**
+  String get docSelfHint;
+
+  /// No description provided for @docEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tài liệu'**
+  String get docEmpty;
+
+  /// No description provided for @docMissingRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu: {types}'**
+  String docMissingRequired(String types);
+
+  /// No description provided for @docDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá tài liệu {name}? Có thể khôi phục từ cơ sở dữ liệu nếu cần.'**
+  String docDeleteConfirm(String name);
+
+  /// No description provided for @docTabExpiring.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp hết hạn'**
+  String get docTabExpiring;
+
+  /// No description provided for @docTabMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiếu bắt buộc'**
+  String get docTabMissing;
+
+  /// No description provided for @docTabPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ duyệt'**
+  String get docTabPending;
+
+  /// No description provided for @docTabTypes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại tài liệu'**
+  String get docTabTypes;
+
+  /// No description provided for @docExpiringHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản mới nhất của mỗi loại sẽ hết hạn trong số ngày báo trước của công ty (cài đặt cùng hợp đồng) hoặc đã hết hạn.'**
+  String get docExpiringHint;
+
+  /// No description provided for @docExpiringEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có tài liệu sắp hết hạn'**
+  String get docExpiringEmpty;
+
+  /// No description provided for @docMissingEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đã đủ tài liệu bắt buộc'**
+  String get docMissingEmpty;
+
+  /// No description provided for @docPendingEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có tài liệu chờ duyệt'**
+  String get docPendingEmpty;
+
+  /// No description provided for @docTypeEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có loại tài liệu'**
+  String get docTypeEmpty;
+
+  /// No description provided for @docTypeAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm loại tài liệu'**
+  String get docTypeAdd;
+
+  /// No description provided for @docTypeEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa loại tài liệu'**
+  String get docTypeEdit;
+
+  /// No description provided for @docTypeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã'**
+  String get docTypeCode;
+
+  /// No description provided for @docTypeName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên loại'**
+  String get docTypeName;
+
+  /// No description provided for @docTypeOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thứ tự'**
+  String get docTypeOrder;
+
+  /// No description provided for @docTypeRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc'**
+  String get docTypeRequired;
+
+  /// No description provided for @docTypeRequiredHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên thiếu loại này sẽ nằm trong danh sách thiếu'**
+  String get docTypeRequiredHint;
+
+  /// No description provided for @docTypeHasExpiry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có hạn dùng'**
+  String get docTypeHasExpiry;
+
+  /// No description provided for @docTypeHasExpiryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc nhập ngày hết hạn và cảnh báo khi sắp hết hạn'**
+  String get docTypeHasExpiryHint;
+
+  /// No description provided for @docTypeDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá loại tài liệu {name}? Tài liệu đã tải lên vẫn giữ nguyên.'**
+  String docTypeDeleteConfirm(String name);
+
+  /// No description provided for @dashboardRisksDocumentExpiring.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu sắp hết hạn'**
+  String get dashboardRisksDocumentExpiring;
+
+  /// No description provided for @permUiEmployeeDocumentView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem tài liệu nhân sự, danh sách sắp hết hạn / thiếu'**
+  String get permUiEmployeeDocumentView;
+
+  /// No description provided for @permUiEmployeeDocumentEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lên, sửa, xoá, duyệt tài liệu; cấu hình loại tài liệu'**
+  String get permUiEmployeeDocumentEdit;
+
+  /// No description provided for @permDescEmployeeDocumentView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem tài liệu nhân sự của nhân viên'**
+  String get permDescEmployeeDocumentView;
+
+  /// No description provided for @permDescEmployeeDocumentEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lên / sửa / xoá / duyệt tài liệu nhân sự, cấu hình loại tài liệu'**
+  String get permDescEmployeeDocumentEdit;
+
+  /// No description provided for @auditActDocumentTypeCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm loại tài liệu'**
+  String get auditActDocumentTypeCreate;
+
+  /// No description provided for @auditActDocumentTypeUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa loại tài liệu'**
+  String get auditActDocumentTypeUpdate;
+
+  /// No description provided for @auditActDocumentTypeDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá loại tài liệu'**
+  String get auditActDocumentTypeDelete;
+
+  /// No description provided for @auditActDocumentUpload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lên tài liệu'**
+  String get auditActDocumentUpload;
+
+  /// No description provided for @auditActDocumentUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa tài liệu'**
+  String get auditActDocumentUpdate;
+
+  /// No description provided for @auditActDocumentDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá tài liệu'**
+  String get auditActDocumentDelete;
+
+  /// No description provided for @auditActDocumentApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt tài liệu'**
+  String get auditActDocumentApprove;
+
+  /// No description provided for @auditActDocumentReject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối tài liệu'**
+  String get auditActDocumentReject;
+
+  /// No description provided for @auditActDocumentView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem / tải tài liệu'**
+  String get auditActDocumentView;
 }
 
 class _AppLocalizationsDelegate

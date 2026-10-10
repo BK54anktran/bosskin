@@ -37,6 +37,7 @@ import 'presentation/screens/audit/audit_log_screen.dart';
 import 'presentation/screens/shift/shift_swap_screen.dart';
 import 'presentation/screens/employee/org_chart_screen.dart';
 import 'presentation/screens/contracts/contracts_screen.dart';
+import 'presentation/screens/documents/documents_screen.dart';
 import 'presentation/screens/team_approvals/team_approvals_screen.dart';
 import 'presentation/widgets/app_shell.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -166,6 +167,10 @@ final _router = GoRouter(
         GoRoute(
           path: AppRoutes.contracts,
           pageBuilder: (_, __) => const NoTransitionPage(child: ContractsScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.documents,
+          pageBuilder: (_, __) => const NoTransitionPage(child: DocumentsScreen()),
         ),
         GoRoute(
           path: AppRoutes.orgChart,

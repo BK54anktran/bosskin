@@ -83,6 +83,12 @@ app:
     bucket: ${AWS_S3_BUCKET:}
     endpoint: ${AWS_S3_ENDPOINT:}   # để trống nếu dùng AWS thật, điền nếu dùng MinIO
 
+  # Bước N: tài liệu nhân sự (file riêng tư, chỉ cấp link ký tạm). storage: s3 | local; trống = s3 khi có bucket.
+  documents:
+    storage: ${DOCUMENTS_STORAGE:}
+    local-dir: ${DOCUMENTS_LOCAL_DIR:${user.home}/.bosskin/documents}
+    link-ttl-seconds: ${DOCUMENTS_LINK_TTL_SECONDS:300}
+
   cors:
     # Origin được gọi API từ trình duyệt (bản web). Prod: đặt CORS_ALLOWED_ORIGINS=https://app.ten-mien.vn
     # Hỗ trợ pattern, vd http://localhost:* cho flutter run -d chrome (cổng ngẫu nhiên)

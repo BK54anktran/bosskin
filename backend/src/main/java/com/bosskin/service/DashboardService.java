@@ -46,6 +46,7 @@ public class DashboardService {
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final AttendanceCalculationService calcSvc;
     private final ContractService contractService;
+    private final DocumentService documentService;
 
     @Transactional(readOnly = true)
     public DashboardDTO.Response getDashboard(User user, Long departmentId, LocalDate date) {
@@ -571,14 +572,29 @@ public class DashboardService {
             }
         }
 
+        // 6. Bước N: tài liệu nhân sự sắp / đã hết hạn
+        List<DashboardDTO.DocumentExpiringRisk> documentExpiring = new ArrayList<>();
+        if (user.hasPermission(DocumentService.VIEW)) {
+            for (var d : documentService.expiring(companyId, user.getId(), null)) {
+                if (departmentId != null && !departmentId.equals(d.getDepartmentId())) continue;
+                documentExpiring.add(DashboardDTO.DocumentExpiringRisk.builder()
+                    .documentId(d.getId()).employeeId(d.getEmployeeId()).employeeCode(d.getEmployeeCode())
+                    .employeeName(d.getEmployeeName()).departmentName(d.getDepartmentName())
+                    .typeName(d.getTypeName()).expiresOn(d.getExpiresOn())
+                    .daysLeft(d.getDaysToExpiry() != null ? d.getDaysToExpiry() : 0)
+                    .build());
+            }
+        }
+
         int total = repeatedLate.size() + missingCheckout.size() + probationEnding.size() + noSalaryGrade.size()
-            + contractExpiring.size();
+            + contractExpiring.size() + documentExpiring.size();
         return DashboardDTO.RiskResponse.builder()
             .repeatedLate(repeatedLate)
             .missingCheckout(missingCheckout)
             .probationEnding(probationEnding)
             .noSalaryGrade(noSalaryGrade)
             .contractExpiring(contractExpiring)
+            .documentExpiring(documentExpiring)
             .totalWarnings(total)
             .build();
     }

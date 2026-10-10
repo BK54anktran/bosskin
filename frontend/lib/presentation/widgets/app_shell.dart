@@ -212,6 +212,8 @@ class _AppShellState extends State<AppShell>
             requiredPermission: 'EMPLOYEE_VIEW'),
         _NavItem(s.contractsTitle, Icons.description_outlined, AppRoutes.contracts,
             requiredPermission: 'CONTRACT_VIEW'),
+        _NavItem(s.docScreenTitle, Icons.folder_shared_outlined, AppRoutes.documents,
+            requiredPermission: 'EMPLOYEE_DOCUMENT_VIEW'),
         _NavItem(
             s.departments, Icons.account_tree_outlined, AppRoutes.departments,
             requiredPermission: 'DEPARTMENT_VIEW'),
@@ -281,6 +283,7 @@ class _AppShellState extends State<AppShell>
       AppRoutes.auditLogs => s.auditLogTitle,
       AppRoutes.orgChart => s.orgChartTitle,
       AppRoutes.contracts => s.contractsTitle,
+      AppRoutes.documents => s.docScreenTitle,
       AppRoutes.teamApprovals => s.teamApprovalsTitle,
       _ => s.appName,
     };

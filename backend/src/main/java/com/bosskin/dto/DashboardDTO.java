@@ -170,7 +170,22 @@ public class DashboardDTO {
         private List<NoSalaryGradeRisk> noSalaryGrade;
         /** Bước L: hợp đồng cần gia hạn (chỉ khi có CONTRACT_VIEW). */
         private List<ContractExpiringRisk> contractExpiring;
+        /** Bước N: tài liệu nhân sự sắp / đã hết hạn (chỉ khi có EMPLOYEE_DOCUMENT_VIEW). */
+        private List<DocumentExpiringRisk> documentExpiring;
         private int totalWarnings;
+    }
+
+    @Getter @Builder
+    public static class DocumentExpiringRisk {
+        private Long documentId;
+        private Long employeeId;
+        private String employeeCode;
+        private String employeeName;
+        private String departmentName;
+        private String typeName;
+        private LocalDate expiresOn;
+        /** Âm = đã quá hạn. */
+        private int daysLeft;
     }
 
     @Getter @Builder

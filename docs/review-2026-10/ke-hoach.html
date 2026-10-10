@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động) và M (thuế &amp; BH của NV) xong; AWS để sau, làm tiếp N, D–F</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV) và N (tài liệu nhân sự) xong; AWS để sau, làm tiếp D–F</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -201,7 +201,7 @@
           <li>NV tự xem và gửi bổ sung tài liệu của mình (qua luồng yêu cầu chỉnh sửa hồ sơ có sẵn).</li>
         </ul></td>
         <td><code>V18</code> <code>document_types</code>, <code>employee_documents</code> (type, file_key, issued_on, expires_on, contract_id, uploaded_by, xoá mềm). <code>S3Service</code> thêm upload riêng tư + presigned GET. Quyền <code>EMPLOYEE_DOCUMENT_VIEW</code>/<code>EMPLOYEE_DOCUMENT_EDIT</code>. Nhật ký <code>DOCUMENT_UPLOAD/VIEW/DELETE</code>.</td>
-        <td>Link tài liệu hết hạn sau vài phút; người ngoài phạm vi không xem được; tài liệu sắp hết hạn có cảnh báo</td><td class="nw">4 BE · 4 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+        <td>Link tài liệu hết hạn sau vài phút; người ngoài phạm vi không xem được; tài liệu sắp hết hạn có cảnh báo</td><td class="nw">4 BE · 4 FE</td><td><span class="st done">Xong 10/10</span><div class="muted" style="margin-top:6px">V18 <code>document_types</code> (mã, tên, cờ bắt buộc / có hạn; 6 loại mặc định cho mọi công ty: CCCD, sơ yếu lý lịch, bằng cấp, chứng chỉ, HĐ đã ký, khám sức khoẻ) và <code>employee_documents</code> (file, ngày cấp / hết hạn, gắn HĐ cùng NV, trạng thái chờ duyệt / đã duyệt / từ chối, xoá mềm). Kho file <code>DocumentStorageService</code>: S3 không công khai + presigned GET 5 phút; chưa có S3 (dev / test) thì lưu thư mục cục bộ, link <code>/api/v1/public/document-files?t=</code> ký HMAC có hạn (sai chữ ký 403, quá hạn 410). File: PDF, ảnh, Word, ≤ 10 MB. API <code>/api/v1/document-types</code>, <code>/api/v1/employee-documents</code> (+ <code>/pending</code>, <code>/expiring</code>, <code>/missing</code>, <code>/{id}/link</code>, <code>/approve</code>, <code>/reject</code>, <code>/self</code>); xem theo <code>EMPLOYEE_DOCUMENT_VIEW</code> + phạm vi phòng ban, sửa cần <code>EMPLOYEE_DOCUMENT_EDIT</code>; nhật ký <code>DOCUMENT_*</code>, mỗi lần lấy link ghi <code>DOCUMENT_VIEW</code>. Sắp hết hạn = bản mới nhất mỗi loại của NV hết hạn trong số ngày báo trước của HĐ (bước L); mục "Tài liệu sắp hết hạn" ở Tổng quan, báo đẩy 07:35 khi còn N / 7 / 0 ngày. Thiếu bắt buộc = chưa có bản đã duyệt còn hạn. NV tự gửi ở Hồ sơ → chờ HR duyệt (không tự duyệt bản của mình), rút được khi còn chờ. <code>DocumentTest</code> 5 ca; 155 test. FE: hộp "Tài liệu" ở danh sách NV, màn "Tài liệu nhân sự" (sắp hết hạn, thiếu bắt buộc, chờ duyệt, loại tài liệu), thẻ "Tài liệu của tôi" ở Hồ sơ.</div></td></tr>
     </tbody>
   </table></div>
   <p class="muted">Tổng ≈ 25 ngày BE + 21 ngày FE (đội 1 BE + 1 FE ≈ 5–6 tuần). I và J nên xong trước kỳ lương tháng 11/2026; K → L → M phụ thuộc nhau theo thứ tự; N làm song song với M được. Mobile: chỉ thêm phần NV tự xem (HĐ của tôi, người phụ thuộc, tài liệu của tôi); quản lý dữ liệu HR làm trên web.</p>
@@ -212,6 +212,7 @@
       <li>Duyệt theo quản lý trực tiếp: <b>tuỳ chọn theo công ty, mặc định giữ cách duyệt theo quyền + phạm vi như hiện tại</b>? <span class="muted">Đã làm theo đề xuất (10/10, bước K): Cài đặt công ty → "Người duyệt đơn", mặc định theo quyền.</span></li>
       <li>Thông số thuế / BH: <b>system admin cập nhật một chỗ cho mọi công ty</b>; công ty chỉ chọn vùng lương tối thiểu? <span class="muted">Đã làm (bước I, M): thông số luật ở <code>tax_policies</code>; riêng tỷ lệ BH công ty đóng để ở Cài đặt công ty (mặc định 17,5 / 3 / 1%) vì mức TNLĐ-BNN có thể khác theo ngành.</span></li>
       <li>Bước M: người phụ thuộc <b>"Đã nộp, chờ MST" vẫn được giảm trừ</b>, chỉ "Chưa đăng ký" không tính; quyền xem dữ liệu nhạy cảm <b>chỉ cấp sẵn cho vai trò Admin</b>, công ty tự cấp thêm cho vai trò nhân sự. <span class="muted">Đã làm theo đề xuất (10/10).</span></li>
+      <li>Bước N: NV tự gửi tài liệu <b>bằng trạng thái "chờ duyệt" ngay trên tài liệu</b> (HR duyệt / từ chối ở màn Tài liệu nhân sự) thay vì đi qua yêu cầu chỉnh sửa hồ sơ (luồng đó sửa từng trường, không chứa file); cảnh báo hết hạn <b>dùng chung số ngày báo trước với hợp đồng</b>; bản trên điện thoại chỉ chọn được ảnh (chưa thêm gói chọn file). <span class="muted">Đã làm theo đề xuất (10/10).</span></li>
     </ul></div>
 
   <div class="note warn"><b>Việc cần làm ngoài code</b>

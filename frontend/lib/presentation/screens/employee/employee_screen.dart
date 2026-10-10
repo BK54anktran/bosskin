@@ -21,6 +21,7 @@ import '../../../data/repositories/salary_grade_repository.dart';
 import '../../../data/models/salary_grade.dart';
 import 'employee_form_screen.dart';
 import 'dependents_dialog.dart';
+import 'employee_documents_dialog.dart';
 import 'job_history_dialog.dart';
 
 class EmployeeScreen extends StatefulWidget {
@@ -280,6 +281,13 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     );
   }
 
+  void _openDocuments(Employee emp) {
+    showDialog(
+      context: context,
+      builder: (_) => EmployeeDocumentsDialog(employee: emp),
+    );
+  }
+
   void _openSalaryHistory(Employee emp) {
     showDialog(
       context: context,
@@ -450,6 +458,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 onSalaryHistory: () => _openSalaryHistory(_employees[i]),
                 onJobHistory: () => _openJobHistory(_employees[i]),
                 onDependents: () => _openDependents(_employees[i]),
+                onDocuments: () => _openDocuments(_employees[i]),
               ),
             ),
           ),
@@ -476,6 +485,7 @@ class _EmployeeCard extends StatelessWidget {
   final VoidCallback onSalaryHistory;
   final VoidCallback onJobHistory;
   final VoidCallback onDependents;
+  final VoidCallback onDocuments;
 
   const _EmployeeCard({
     required this.employee,
@@ -484,6 +494,7 @@ class _EmployeeCard extends StatelessWidget {
     required this.onSalaryHistory,
     required this.onJobHistory,
     required this.onDependents,
+    required this.onDocuments,
   });
 
   @override
@@ -494,6 +505,7 @@ class _EmployeeCard extends StatelessWidget {
 
     final user = AuthService.instance.currentUser;
     final canSalary = user != null && (user.isSystemAdmin || user.can('PAYROLL_CREATE'));
+    final canDocuments = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DOCUMENT_VIEW'));
     final canEdit = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_UPDATE'));
     final canDelete = isActive && user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DELETE'));
 
@@ -514,6 +526,14 @@ class _EmployeeCard extends StatelessWidget {
             onPressed: onDependents,
           ),
         ),
+        if (canDocuments)
+          Tooltip(
+            message: s.docTitleDialog,
+            child: IconButton(
+              icon: const Icon(Icons.folder_shared_outlined, size: 20),
+              onPressed: onDocuments,
+            ),
+          ),
         if (canSalary)
           Tooltip(
             message: s.salaryHistory,
@@ -560,6 +580,15 @@ class _EmployeeCard extends StatelessWidget {
             Text(s.dependentsTitle),
           ]),
         ),
+        if (canDocuments)
+          PopupMenuItem(
+            value: 'documents',
+            child: Row(children: [
+              const Icon(Icons.folder_shared_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(s.docTitleDialog),
+            ]),
+          ),
         if (canSalary)
           PopupMenuItem(
             value: 'salary',
@@ -591,6 +620,7 @@ class _EmployeeCard extends StatelessWidget {
       onSelected: (v) {
         if (v == 'job') onJobHistory();
         if (v == 'dependents') onDependents();
+        if (v == 'documents') onDocuments();
         if (v == 'salary') onSalaryHistory();
         if (v == 'edit') onEdit();
         if (v == 'delete') onDelete();
