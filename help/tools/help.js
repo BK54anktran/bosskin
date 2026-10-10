@@ -26,3 +26,12 @@
   document.addEventListener('click',function(e){if(!e.target.closest('.search')) box.style.display='none';});
   document.addEventListener('keydown',function(e){if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus();}});
 })();
+
+// Mục lục bên phải: tô mục đang đọc
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.toc-side a'));
+  if(!links.length||!('IntersectionObserver' in window))return;
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.remove('on');});var a=map[e.target.id];if(a)a.classList.add('on');}});},{rootMargin:'-70px 0px -70% 0px'});
+  Object.keys(map).forEach(function(id){var h=document.getElementById(id);if(h)io.observe(h);});
+})();

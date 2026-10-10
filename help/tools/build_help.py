@@ -77,7 +77,7 @@ def nav(pages, current):
     return '\n'.join(parts)
 
 
-def page(title, body, pages, current, desc):
+def page(title, body, pages, current, desc, aside=''):
     return f'''<!doctype html>
 <html lang="vi">
 <head>
@@ -85,20 +85,21 @@ def page(title, body, pages, current, desc):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title) + ' · ' if title else ''}Trợ giúp BossKin</title>
 <meta name="description" content="{html.escape(desc)}">
-<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>{CSS}</style>
 </head>
 <body>
-<header class="top">
+<header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Mở menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
-  <a class="brand" href="index.html"><span class="logo">B</span> BossKin <span class="brand-sub">Trợ giúp</span></a>
+  <a class="brand" href="index.html"><img class="logo" src="img/logo-80.png" width="34" height="34" alt=""> BossKin <span class="brand-sub">Trợ giúp</span></a>
   <div class="search"><input id="q" type="search" placeholder="Tìm hướng dẫn… (vd. nghỉ phép, khoá kỳ)" autocomplete="off"><div id="results"></div></div>
-</header>
+</div></header>
 <div class="wrap">
 <nav class="side">{nav(pages, current)}</nav>
 <main class="content">{body}</main>
+{aside}
 </div>
 <div id="lightbox" hidden><img alt=""></div>
 <script>window.HELP_INDEX = {json.dumps(SEARCH, ensure_ascii=False)};</script>
@@ -134,7 +135,8 @@ def main():
         body = (f'<div class="crumb"><a href="index.html">Trợ giúp</a> › {p["group"]}</div>'
                 f'<h1>{html.escape(p["title"])}</h1><p class="lead">{p.get("summary", "")}</p>'
                 f'<p class="who"><b>Dành cho:</b> {p.get("who", "")}</p>{toc_html}{p["html"]}{pager}')
-        open(os.path.join(ROOT, p['slug'] + '.html'), 'w', encoding='utf-8').write(page(p['title'], body, pages, p['slug'], p.get('summary', '')))
+        aside = ('<aside class="toc-side"><b>Trong trang này</b>' + ''.join(f'<a href="#{i}">{plain(t)}</a>' for i, t in toc) + '</aside>') if len(toc) > 1 else ''
+        open(os.path.join(ROOT, p['slug'] + '.html'), 'w', encoding='utf-8').write(page(p['title'], body, pages, p['slug'], p.get('summary', ''), aside))
     # Trang chủ
     cards = []
     for g in GROUPS:
