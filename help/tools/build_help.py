@@ -102,6 +102,7 @@ def page(title, body, pages, current, desc, aside=''):
 <main class="content">{body}</main>
 {aside}
 </div>
+{FOOTER}
 <div id="lightbox" hidden><img alt=""></div>
 <script>/* Giống window.BOSSKIN.appUrl ở landing/index.html: '' = ẩn nút Đăng nhập */
 window.HELP_APP_URL = location.port === '8099' ? 'http://localhost:3000/login' : '';
@@ -110,6 +111,28 @@ window.HELP_INDEX = {json.dumps(SEARCH, ensure_ascii=False)};</script>
 </body>
 </html>
 '''
+
+
+FOOTER = """<footer class="site">
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="../"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
+      <p>Phần mềm chấm công, xếp ca, nghỉ phép và tính lương cho doanh nghiệp Việt Nam. Dùng trên điện thoại Android và trình duyệt web, tiếng Việt và tiếng Anh.</p>
+      <a class="foot-cta" href="../#lien-he">Đăng ký dùng thử</a>
+    </div>
+    <div class="foot-col"><h4>Sản phẩm</h4><ul>
+      <li><a href="../#video">Video giới thiệu</a></li><li><a href="../#tinh-nang">Tính năng</a></li>
+      <li><a href="../#vai-tro">Dành cho ai</a></li><li><a href="../#hoi-dap">Hỏi đáp</a></li></ul></div>
+    <div class="foot-col"><h4>Hướng dẫn</h4><ul>
+      <li><a href="bat-dau.html">Bắt đầu sử dụng</a></li><li><a href="thong-tin-ca-nhan.html">Cho nhân viên</a></li>
+      <li><a href="duyet-cho-nhom.html">Cho quản lý</a></li><li><a href="nhan-vien.html">Cho nhân sự</a></li>
+      <li><a href="bang-luong.html">Cho kế toán</a></li><li><a href="cau-hoi.html">Câu hỏi thường gặp</a></li></ul></div>
+    <div class="foot-col"><h4>Liên hệ</h4><ul class="foot-contact">
+      <li><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="../#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
+      <li class="js-app-row" hidden><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li></ul></div>
+  </div>
+  <div class="foot-bottom"><div class="foot-bottom-in"><span>© <span class="js-yr"></span> BossKin. Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng.</span><a href="#">Lên đầu trang ↑</a></div></div>
+</footer>"""
 
 
 SEARCH = []

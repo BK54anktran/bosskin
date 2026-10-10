@@ -178,9 +178,22 @@
   .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
   @media (max-width: 860px) { .contact .wrap { grid-template-columns: 1fr; } .contact .row { grid-template-columns: 1fr; } }
 
-  footer { padding-block: 34px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
-  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
-footer a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  /* ── chân trang (dùng chung kiểu với trang trợ giúp help/) ── */
+  footer.site { background: var(--navy); color: rgba(255,255,255,.72); font-size: 15px; }
+  footer.site a { color: rgba(255,255,255,.72); text-decoration: none; }
+  footer.site a:hover { color: #fff; }
+  .foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 40px; padding-block: 56px 40px; }
+  footer.site .foot-brand .brand { color: #fff; margin-bottom: 14px; }
+  .foot-brand p { margin: 0 0 18px; line-height: 1.65; max-width: 340px; }
+  .foot-col h4 { margin: 4px 0 14px; color: #fff; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .foot-contact li { display: flex; gap: 10px; align-items: flex-start; }
+  .foot-contact .ic { flex: none; width: 20px; opacity: .7; }
+  .foot-bottom { border-top: 1px solid rgba(255,255,255,.1); }
+  .foot-bottom .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding-block: 18px; font-size: 14px; color: rgba(255,255,255,.55); }
+  footer.site .btn { padding: 10px 18px; font-size: 15px; }
+  @media (max-width: 900px) { .foot-grid { grid-template-columns: 1fr 1fr; gap: 32px; } .foot-brand { grid-column: 1 / -1; } }
+  @media (max-width: 520px) { .foot-grid { gap: 28px 20px; padding-block: 44px 28px; } .foot-col:last-child { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -429,8 +442,46 @@ footer a { color: inherit; text-decoration: underline; text-underline-offset: 3p
 </section>
 </main>
 
-<footer>
-  <div class="wrap"><span>© <span id="yr"></span> BossKin · <a href="help/">Hướng dẫn sử dụng</a></span><span>Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng</span></div>
+<footer class="site">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="#"><img src="assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
+      <p>Phần mềm chấm công, xếp ca, nghỉ phép và tính lương cho doanh nghiệp Việt Nam. Dùng trên điện thoại Android và trình duyệt web, tiếng Việt và tiếng Anh.</p>
+      <a class="btn btn-primary" href="#lien-he">Đăng ký dùng thử</a>
+    </div>
+    <div class="foot-col">
+      <h4>Sản phẩm</h4>
+      <ul>
+        <li><a href="#video">Video giới thiệu</a></li>
+        <li><a href="#tinh-nang">Tính năng</a></li>
+        <li><a href="#vai-tro">Dành cho ai</a></li>
+        <li><a href="#hoi-dap">Hỏi đáp</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Hướng dẫn</h4>
+      <ul>
+        <li><a href="help/bat-dau.html">Bắt đầu sử dụng</a></li>
+        <li><a href="help/thong-tin-ca-nhan.html">Cho nhân viên</a></li>
+        <li><a href="help/duyet-cho-nhom.html">Cho quản lý</a></li>
+        <li><a href="help/nhan-vien.html">Cho nhân sự</a></li>
+        <li><a href="help/bang-luong.html">Cho kế toán</a></li>
+        <li><a href="help/cau-hoi.html">Câu hỏi thường gặp</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Liên hệ</h4>
+      <ul class="foot-contact">
+        <li class="js-phone" hidden><span class="ic">☎</span><a></a></li>
+        <li class="js-mail" hidden><span class="ic">✉</span><a></a></li>
+        <li class="js-nocontact"><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
+        <li class="js-app-row"><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <div class="wrap"><span>© <span id="yr"></span> BossKin. Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng.</span><a href="#">Lên đầu trang ↑</a></div>
+  </div>
 </footer>
 
 <script>
@@ -442,11 +493,17 @@ footer a { color: inherit; text-decoration: underline; text-underline-offset: 3p
     tg.addEventListener('click', function () { var o = top.classList.toggle('open'); tg.setAttribute('aria-expanded', o); tg.textContent = o ? '✕' : '☰'; });
     document.querySelectorAll('nav.links a').forEach(function (a) { a.addEventListener('click', function () { top.classList.remove('open'); tg.setAttribute('aria-expanded', 'false'); tg.textContent = '☰'; }); });
     document.querySelectorAll('.js-app').forEach(function (a) { if (cfg.appUrl) a.href = cfg.appUrl; else a.hidden = true; });
+    document.querySelectorAll('.js-app-row').forEach(function (r) { r.hidden = !cfg.appUrl; });
     var direct = document.getElementById('direct');
     var lines = [];
     if (cfg.contactPhone) lines.push('Điện thoại / Zalo: <b>' + cfg.contactPhone + '</b>');
     if (cfg.contactEmail) lines.push('Email: <b>' + cfg.contactEmail + '</b>');
     if (lines.length) { direct.innerHTML = lines.join('<br>'); direct.hidden = false; }
+    // Chân trang: điện thoại / email theo cấu hình; không có thì gợi ý để lại thông tin
+    function setContact(sel, text, href) { var li = document.querySelector(sel); if (!li || !text) return; var a = li.querySelector('a'); a.textContent = text; a.href = href; li.hidden = false; }
+    setContact('.js-phone', cfg.contactPhone, 'tel:' + String(cfg.contactPhone || '').replace(/[^0-9+]/g, ''));
+    setContact('.js-mail', cfg.contactEmail, 'mailto:' + cfg.contactEmail);
+    if (cfg.contactPhone || cfg.contactEmail) document.querySelector('.js-nocontact').hidden = true;
 
     var ERR = {
       'error.trial.name_required': 'Vui lòng nhập họ tên.',

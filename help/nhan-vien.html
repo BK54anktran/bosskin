@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>:root{color-scheme:light;--ink:#0f172a;--ink-2:#334155;--muted:#56657a;--line:#e2e8f0;--accent:#1d4ed8;--accent-bg:rgba(37,99,235,.08);--bg:#fff;--bg-soft:#f4f7fc;--card:#fff;--warn:#b45309;--warn-bg:#fff7ed;--blue:#2563eb}
+[hidden]{display:none!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eefb;--ink-2:#c5d0e6;--muted:#a3b0c8;--line:#24324f;--accent:#8ab4ff;--accent-bg:rgba(138,180,255,.12);--bg:#0a1224;--bg-soft:#0f1a33;--card:#121f3d;--warn:#fbbf24;--warn-bg:rgba(251,191,36,.08);color-scheme:dark}}
 :root[data-theme="dark"]{--ink:#e8eefb;--ink-2:#c5d0e6;--muted:#a3b0c8;--line:#24324f;--accent:#8ab4ff;--accent-bg:rgba(138,180,255,.12);--bg:#0a1224;--bg-soft:#0f1a33;--card:#121f3d;--warn:#fbbf24;--warn-bg:rgba(251,191,36,.08);color-scheme:dark}
 *{box-sizing:border-box}
@@ -89,6 +90,21 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;paddi
 .home .menu-btn{display:none}
 @media (max-width:900px){.home .menu-btn{display:block}.side-site{display:block;margin:0 0 6px;padding:0 0 10px;border-bottom:1px solid var(--line)}.side-site a{font-weight:600}}.home .content{max-width:1180px;margin:0 auto}
 .side .search #results{width:100%}
+
+/* Chân trang giống trang giới thiệu */
+footer.site{background:#0b1630;color:rgba(255,255,255,.72);font-size:15px;margin-top:20px}
+footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hover{color:#fff}
+.foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.2fr;gap:40px;max-width:1180px;margin:0 auto;padding:56px 20px 40px}
+.foot-brand .brand{margin-bottom:14px;color:#fff!important}.foot-brand p{margin:0 0 18px;line-height:1.65;max-width:340px}
+.foot-cta{display:inline-block;padding:10px 18px;border-radius:999px;background:#2563eb;color:#fff!important;font-weight:700}.foot-cta:hover{background:#1d4ed8}
+.foot-col h4{margin:4px 0 14px;color:#fff;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.foot-col ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.foot-col li{margin:0}
+.foot-contact li{display:flex;gap:10px;align-items:flex-start}.foot-contact .ic{flex:none;width:20px;opacity:.7}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.1)}
+.foot-bottom-in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;max-width:1180px;margin:0 auto;padding:18px 20px;font-size:14px;color:rgba(255,255,255,.55)}
+@media (max-width:900px){.foot-grid{grid-template-columns:1fr 1fr;gap:32px}.foot-brand{grid-column:1/-1}}
+@media (max-width:520px){.foot-grid{gap:28px 20px;padding:44px 16px 28px}.foot-col:last-child{grid-column:1/-1}}
+@media print{footer.site{display:none}}
 </style>
 </head>
 <body>
@@ -222,6 +238,26 @@ cơ quan thuế. Trạng thái <em>Chưa đăng ký</em> thì không được t�
 <figure><a href="img/org-chart-dept.webp" class="zoom"><img src="img/org-chart-dept.webp" alt="Sơ đồ theo phòng ban" loading="lazy" width="1440" height="900"></a><figcaption>Sơ đồ theo phòng ban</figcaption></figure><div class="pager"><a href="nghi-phep-quan-ly.html">← Quản lý nghỉ phép</a><a href="phong-ban.html">Phòng ban và chức vụ →</a></div></main>
 <aside class="toc-side"><b>Trong trang này</b><a href="#danh-sach-nhan-vien">Danh sách nhân viên</a><a href="#them-nhan-vien">Thêm nhân viên</a><a href="#sua-ho-so">Sửa hồ sơ</a><a href="#qua-trinh-cong-tac">Quá trình công tác</a><a href="#nguoi-phu-thuoc">Người phụ thuộc</a><a href="#tai-lieu-cua-nhan-vien">Tài liệu của nhân viên</a><a href="#so-do-to-chuc">Sơ đồ tổ chức</a></aside>
 </div>
+<footer class="site">
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="../"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
+      <p>Phần mềm chấm công, xếp ca, nghỉ phép và tính lương cho doanh nghiệp Việt Nam. Dùng trên điện thoại Android và trình duyệt web, tiếng Việt và tiếng Anh.</p>
+      <a class="foot-cta" href="../#lien-he">Đăng ký dùng thử</a>
+    </div>
+    <div class="foot-col"><h4>Sản phẩm</h4><ul>
+      <li><a href="../#video">Video giới thiệu</a></li><li><a href="../#tinh-nang">Tính năng</a></li>
+      <li><a href="../#vai-tro">Dành cho ai</a></li><li><a href="../#hoi-dap">Hỏi đáp</a></li></ul></div>
+    <div class="foot-col"><h4>Hướng dẫn</h4><ul>
+      <li><a href="bat-dau.html">Bắt đầu sử dụng</a></li><li><a href="thong-tin-ca-nhan.html">Cho nhân viên</a></li>
+      <li><a href="duyet-cho-nhom.html">Cho quản lý</a></li><li><a href="nhan-vien.html">Cho nhân sự</a></li>
+      <li><a href="bang-luong.html">Cho kế toán</a></li><li><a href="cau-hoi.html">Câu hỏi thường gặp</a></li></ul></div>
+    <div class="foot-col"><h4>Liên hệ</h4><ul class="foot-contact">
+      <li><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="../#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
+      <li class="js-app-row" hidden><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li></ul></div>
+  </div>
+  <div class="foot-bottom"><div class="foot-bottom-in"><span>© <span class="js-yr"></span> BossKin. Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng.</span><a href="#">Lên đầu trang ↑</a></div></div>
+</footer>
 <div id="lightbox" hidden><img alt=""></div>
 <script>/* Giống window.BOSSKIN.appUrl ở landing/index.html: '' = ẩn nút Đăng nhập */
 window.HELP_APP_URL = location.port === '8099' ? 'http://localhost:3000/login' : '';
@@ -265,7 +301,7 @@ window.HELP_INDEX = [{"t": "Đăng nhập", "p": "Bắt đầu sử dụng", "u"
 })();
 
 // Nút Đăng nhập như trang giới thiệu
-(function(){var u=window.HELP_APP_URL;document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});})();
+(function(){var u=window.HELP_APP_URL;document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});document.querySelectorAll('.js-app-row').forEach(function(r){r.hidden=!u;});document.querySelectorAll('.js-yr').forEach(function(s){s.textContent=new Date().getFullYear();});})();
 </script>
 </body>
 </html>

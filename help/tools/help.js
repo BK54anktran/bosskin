@@ -37,4 +37,4 @@
 })();
 
 // Nút Đăng nhập như trang giới thiệu
-(function(){var u=window.HELP_APP_URL;document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});})();
+(function(){var u=window.HELP_APP_URL;document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});document.querySelectorAll('.js-app-row').forEach(function(r){r.hidden=!u;});document.querySelectorAll('.js-yr').forEach(function(s){s.textContent=new Date().getFullYear();});})();
