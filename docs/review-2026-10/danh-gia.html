@@ -25,7 +25,7 @@
   <section class="hero">
     <h1>4. Đánh giá: điểm mạnh, điểm yếu, thiếu sót</h1>
     <p>Mỗi điểm yếu có mã (S = bảo mật, A = chấm công, L = phép & lương, D = dữ liệu, F = frontend, O = vận hành), mức độ, vị trí trong code và hướng sửa. Đường dẫn backend tính từ <code>backend/src/main/java/com/bosskin/</code>, frontend từ <code>frontend/lib/</code>.</p>
-      <p class="meta">Review gốc ngày 08/10/2026. Cột <b>Trạng thái</b> cập nhật 09/10/2026 theo trang <a href="ke-hoach.html">Kế hoạch</a> và đối chiếu code trên <code>main</code>; vị trí dòng code là của bản review gốc.</p>
+      <p class="meta">Review gốc ngày 08/10/2026. Cột <b>Trạng thái</b> cập nhật 10/10/2026 theo trang <a href="ke-hoach.html">Kế hoạch</a> và đối chiếu code trên <code>main</code>; vị trí dòng code là của bản review gốc.</p>
   </section>
   <ul class="toc">
     <li><a href="#manh">Điểm mạnh</a></li>
@@ -101,13 +101,13 @@
   <h2 id="thieu">Thiếu sót so với hệ thống chấm công chuẩn ở Việt Nam</h2>
   <div class="grid g3">
     <div class="card"><b>Ngày lễ & lịch làm việc</b><ul class="clean">
-      <li>Không có bảng ngày lễ/Tết; loại ca HOLIDAY/DAY_OFF đã bị bỏ (V102).</li>
-      <li>Cuối tuần cố định T7/CN; không có lịch tuần theo phòng ban (T7 nửa ngày...).</li>
-      <li>Ngày công chuẩn là số cố định (22), không theo lịch thực tế của tháng.</li>
+      <li><b>Đã có (10/10/2026, V14):</b> bảng ngày lễ theo năm (mẫu hệ thống 2026–2027 gồm 24/11 từ 01/07/2026 theo NQ 28/2026/QH16, công ty chỉnh lại; nghỉ bù / ngày làm bù), lịch tuần theo công ty và phòng ban (cả ngày / nửa ngày / nghỉ), bỏ T7/CN cố định ở bảng công và file Excel.</li>
+      <li><b>Đã có (V14):</b> công chuẩn kỳ tính theo lịch (tuỳ chọn công ty, mặc định vẫn số cố định 22); biến <code>HOLIDAY_DAYS</code>; đơn nghỉ không tính ngày lễ; xoay ca bỏ qua ngày lễ.</li>
+      <li>Còn thiếu: ngày liền kề 2/9, nghỉ bù / hoán đổi phải đối chiếu thông báo hằng năm và system admin cập nhật mẫu tay.</li>
     </ul></div>
     <div class="card"><b>Làm thêm giờ (BLLĐ 2019)</b><ul class="clean">
       <li>Chưa có hệ số OT 150% / 200% / 300%, phụ cấp làm đêm 30%, +20% OT đêm.</li>
-      <li>Không phân biệt OT ngày thường / ngày nghỉ tuần / ngày lễ.</li>
+      <li>Không phân biệt OT ngày thường / ngày nghỉ tuần / ngày lễ. <i>Đã có (V14): biến <code>HOLIDAY_OT_HOURS</code> (giờ làm vào ngày lễ nghỉ) để công thức tự nhân hệ số.</i></li>
       <li>Không có trần OT (40 giờ/tháng, 200–300 giờ/năm) và cảnh báo.</li>
       <li>Không có nghỉ bù quy đổi từ OT.</li>
     </ul></div>
@@ -160,7 +160,7 @@
     </ul></div>
   </div>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · trạng thái cập nhật 09/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · trạng thái cập nhật 10/10/2026</footer>
 
 <script>
 const SEV = { crit: 'Nghiêm trọng', high: 'Cao', med: 'Trung bình', low: 'Thấp' };
@@ -260,9 +260,10 @@ const ST = {};
 expand(['S1-10','S12','S13','S14','A1-9','A11-19','L1-3','L5-16','L18','D1-4','D7','F1-10','F12','O1','O3']).forEach(k => ST[k] = 'done');
 expand(['O2','O4','L4']).forEach(k => ST[k] = 'part');
 expand(['S11','A10','L17','D5','F11']).forEach(k => ST[k] = 'later');
-/** Ghi chú trạng thái (09/10/2026). */
+/** Ghi chú trạng thái (10/10/2026). */
 const STN = {
   S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Trần BH theo chính sách xong (V13); lương đóng BH theo HĐ ở bước L', L17: 'Sau go-live, đợt 3',
+  L3: 'Công chuẩn theo lịch làm việc (tuỳ chọn, V14)', L11: 'Đơn nhiều ngày bỏ qua ngày lễ nghỉ (V14)',
   D5: 'Sau go-live, đợt 4', F11: 'Để sau go-live (tái cấu trúc dần)', F12: 'Cỡ chữ, cache xong; dark mode = bước F',
   O2: 'Múi giờ JVM + so khớp theo khoảng xong; chưa có khoá phân tán', O4: 'Health, request-id, .ebextensions xong; metrics/cảnh báo ở Mốc 5'
 };

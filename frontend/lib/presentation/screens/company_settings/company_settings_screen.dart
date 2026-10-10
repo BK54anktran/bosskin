@@ -6,15 +6,49 @@ import '../../../data/repositories/company_setting_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/location_picker_field.dart';
+import '../../../data/services/auth_service.dart';
+import 'work_calendar_tab.dart';
 
-class CompanySettingsScreen extends StatefulWidget {
+/// Cài đặt công ty: tab "Chung" (quyền COMPANY_SETTING_VIEW) và "Lịch làm việc" (CALENDAR_VIEW, bước J).
+class CompanySettingsScreen extends StatelessWidget {
   const CompanySettingsScreen({super.key});
 
   @override
-  State<CompanySettingsScreen> createState() => _CompanySettingsScreenState();
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context);
+    final u = AuthService.instance.currentUser;
+    final sys = u?.isSystemAdmin ?? false;
+    final canGeneral = sys || (u?.can('COMPANY_SETTING_VIEW') ?? false);
+    final canCalendar = sys || (u?.can('CALENDAR_VIEW') ?? false);
+    final tabs = <(String, Widget)>[
+      if (canGeneral) (s.companySettingsGeneralTab, const CompanySettingsGeneralTab()),
+      if (canCalendar) (s.workCalendarTab, const WorkCalendarTab()),
+    ];
+    if (tabs.isEmpty) return const SizedBox.shrink();
+    if (tabs.length == 1) return tabs.first.$2;
+    return DefaultTabController(
+      length: tabs.length,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        TabBar(
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+          tabs: [for (final t in tabs) Tab(text: t.$1)],
+        ),
+        Expanded(child: TabBarView(children: [for (final t in tabs) t.$2])),
+      ]),
+    );
+  }
 }
 
-class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
+class CompanySettingsGeneralTab extends StatefulWidget {
+  const CompanySettingsGeneralTab({super.key});
+
+  @override
+  State<CompanySettingsGeneralTab> createState() => _CompanySettingsGeneralTabState();
+}
+
+class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
   final _repo = CompanySettingRepository();
   bool _loading = true;
   bool _saving = false;
@@ -28,6 +62,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   final _standardWorkDaysCtrl = TextEditingController(text: '22');
   final _cutoffDayCtrl = TextEditingController(text: '1');
   int _minWageRegion = 1;
+  bool _standardDaysFromCalendar = false;
 
   bool _locationCheckEnabled = false;
   bool _deviceBindingEnabled = false;
@@ -85,6 +120,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         _standardWorkDaysCtrl.text = ((payroll?['standardWorkDays'] as num?)?.toInt() ?? 22).toString();
         _cutoffDayCtrl.text = ((payroll?['payrollCutoffDay'] as num?)?.toInt() ?? 1).toString();
         _minWageRegion = (payroll?['minWageRegion'] as num?)?.toInt() ?? 1;
+        _standardDaysFromCalendar = payroll?['standardDaysFromCalendar'] == true;
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
         _deviceBindingEnabled = attendance['deviceBindingEnabled'] == true;
         _checkInLat = (attendance['checkInLatitude'] as num?)?.toDouble();
@@ -218,6 +254,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           'standardWorkDays': int.tryParse(_standardWorkDaysCtrl.text.trim()) ?? 22,
           'payrollCutoffDay': int.tryParse(_cutoffDayCtrl.text.trim()) ?? 1,
           'minWageRegion': _minWageRegion,
+          'standardDaysFromCalendar': _standardDaysFromCalendar,
         },
       });
       if (!mounted) return;
@@ -334,15 +371,24 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(s.payrollSettings, style: const TextStyle(fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _standardWorkDaysCtrl,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: s.standardWorkDaysLabel,
-                              suffixText: s.daysSuffix,
-                            ),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _standardDaysFromCalendar,
+                            onChanged: (v) => setState(() => _standardDaysFromCalendar = v),
+                            title: Text(s.standardDaysFromCalendar),
+                            subtitle: Text(s.standardDaysFromCalendarHint, style: const TextStyle(fontSize: 12)),
                           ),
+                          if (!_standardDaysFromCalendar) ...[
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _standardWorkDaysCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: s.standardWorkDaysLabel,
+                                suffixText: s.daysSuffix,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _cutoffDayCtrl,

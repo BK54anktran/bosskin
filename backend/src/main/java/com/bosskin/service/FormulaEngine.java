@@ -29,6 +29,8 @@ public class FormulaEngine {
             "BASE_RATE", "STANDARD_WORK_DAYS", "HOURS_PER_DAY",
             // Nghỉ phép theo loại (L1)
             "PAID_LEAVE_DAYS", "UNPAID_LEAVE_DAYS",
+            // Ngày lễ (bước J)
+            "HOLIDAY_DAYS", "HOLIDAY_OT_HOURS",
             // Bảo hiểm & thuế hệ thống tính sẵn — dùng được trong công thức NET (L5)
             "SOCIAL_INS", "HEALTH_INS", "UNEMPLOYMENT_INS", "TOTAL_INSURANCE", "PIT",
             // Khoản chỉnh tay trên bảng lương nháp (L6)
@@ -117,10 +119,13 @@ public class FormulaEngine {
         put("DAY_OT",         new SystemVar("Tổng giờ OT ca ngày",               "Chấm công — giờ"));
         put("NIGHT_OT",       new SystemVar("Tổng giờ OT ca đêm",               "Chấm công — giờ"));
         put("TOTAL_OT_HOURS", new SystemVar("Tổng giờ làm thêm (DAY_OT + NIGHT_OT)", "Chấm công — giờ"));
+        // Ngày lễ (bước J — theo lịch tuần của phòng + danh sách ngày lễ)
+        put("HOLIDAY_DAYS",     new SystemVar("Số ngày lễ hưởng lương rơi vào ngày làm theo lịch", "Chấm công — ngày"));
+        put("HOLIDAY_OT_HOURS", new SystemVar("Tổng giờ làm vào ngày lễ / nghỉ bù",              "Chấm công — giờ"));
         // Lương & Hợp đồng
         put("BASE_RATE",          new SystemVar("Đơn giá cơ bản từ bậc lương",   "Lương & Hợp đồng"));
         put("CONTRACT_SALARY",    new SystemVar("Lương cơ bản theo hợp đồng",    "Lương & Hợp đồng"));
-        put("STANDARD_WORK_DAYS", new SystemVar("Số ngày công chuẩn/tháng",      "Lương & Hợp đồng"));
+        put("STANDARD_WORK_DAYS", new SystemVar("Số ngày công chuẩn của kỳ (cố định hoặc theo lịch làm việc)", "Lương & Hợp đồng"));
         put("HOURS_PER_DAY",      new SystemVar("Số giờ làm/ngày",              "Lương & Hợp đồng"));
         put("GROSS",              new SystemVar("Lương gộp (kết quả công thức Gross)", "Lương & Hợp đồng"));
         // Thuế & bảo hiểm (bước I — theo chính sách thuế của kỳ)

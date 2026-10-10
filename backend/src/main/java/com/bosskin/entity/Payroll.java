@@ -92,8 +92,9 @@ public class Payroll extends BaseEntity {
     @Column(name = "salary_grade_name", length = 255)
     private String salaryGradeName;
 
-    @Column(name = "standard_work_days")
-    private Integer standardWorkDays;
+    /** Công chuẩn kỳ (V14: có thể lẻ nửa ngày khi tính theo lịch tuần). */
+    @Column(name = "standard_work_days", precision = 5, scale = 2)
+    private java.math.BigDecimal standardWorkDays;
 
     @Column(name = "period_from")
     private LocalDate periodFrom;

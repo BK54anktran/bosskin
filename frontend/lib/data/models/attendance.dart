@@ -69,6 +69,8 @@ class TimesheetRow {
   final DateTime date;
   final String dayLabel;
   final bool weekend;
+  /// Tên ngày lễ (bước J) — null nếu không phải ngày lễ.
+  final String? holidayName;
 
   final String? shiftName;
   final String? shiftColor;
@@ -134,6 +136,7 @@ class TimesheetRow {
     required this.date,
     required this.dayLabel,
     required this.weekend,
+    this.holidayName,
     this.shiftName,
     this.shiftColor,
     this.shiftStart,
@@ -188,6 +191,7 @@ class TimesheetRow {
         date: DateTime.parse(j['date']),
         dayLabel: j['dayLabel'] ?? '',
         weekend: j['weekend'] ?? false,
+        holidayName: j['holidayName'] as String?,
         shiftName: j['shiftName'],
         shiftColor: j['shiftColor'],
         shiftStart: j['shiftStart'],
@@ -253,6 +257,8 @@ class DayViewRow {
   final DateTime date;
   final String dayLabel;
   final bool weekend;
+  /// Tên ngày lễ (bước J) — null nếu không phải ngày lễ.
+  final String? holidayName;
 
   final String? shiftName;
   final String? shiftColor;
@@ -327,6 +333,7 @@ class DayViewRow {
     required this.date,
     required this.dayLabel,
     required this.weekend,
+    this.holidayName,
     this.shiftName,
     this.shiftColor,
     this.shiftStart,
@@ -389,6 +396,7 @@ class DayViewRow {
         date: DateTime.parse(j['date'] as String),
         dayLabel: j['dayLabel'] as String? ?? '',
         weekend: j['weekend'] as bool? ?? false,
+        holidayName: j['holidayName'] as String?,
         shiftName: j['shiftName'] as String?,
         shiftColor: j['shiftColor'] as String?,
         shiftStart: j['shiftStart'] as String?,

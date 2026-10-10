@@ -50,6 +50,7 @@ public class AttendanceExcelService {
     private final ShiftAssignmentRepository shiftAssignmentRepo;
     private final ExcelI18n excelI18n;
     private final ExcelHistoryHelper historyHelper;
+    private final WorkCalendarService workCalendarService;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter SHEET_DATE_FMT = DateTimeFormatter.ofPattern("MM-yyyy");
@@ -331,6 +332,8 @@ public class AttendanceExcelService {
 
         // Fetch attendances for the month
         List<Attendance> attendances = attendanceRepo.findByCompanyAndDateRange(companyId, from, to);
+        // Bước J: tô ngày nghỉ theo lịch làm việc (cột tiêu đề: lịch mặc định; ô: lịch phòng của NV) + ngày lễ
+        WorkCalendarService.CalendarView calendar = workCalendarService.view(companyId, from, to);
         // empId -> date -> Attendance (one per date as per unique constraint)
         Map<Long, Map<LocalDate, Attendance>> grid = new HashMap<>();
         for (Attendance a : attendances) {
@@ -423,8 +426,7 @@ public class AttendanceExcelService {
             }
             for (int c = 0; c < dates.size(); c++) {
                 LocalDate d = dates.get(c);
-                boolean weekend = d.getDayOfWeek() == java.time.DayOfWeek.SATURDAY
-                    || d.getDayOfWeek() == java.time.DayOfWeek.SUNDAY;
+                boolean weekend = calendar.isOff(null, d);
                 int dow = d.getDayOfWeek().getValue() % 7;
                 Cell cell = hRow.createCell(fixedCols.length + c);
                 cell.setCellValue(d.getDayOfMonth() + "/" + d.getMonthValue() + "\n" + WEEKDAY_VI[dow] + "\n*");
@@ -447,8 +449,7 @@ public class AttendanceExcelService {
                 Map<LocalDate, Attendance> dayMap = grid.getOrDefault(emp.getId(), Map.of());
                 for (int c = 0; c < dates.size(); c++) {
                     LocalDate d = dates.get(c);
-                    boolean weekend = d.getDayOfWeek() == java.time.DayOfWeek.SATURDAY
-                        || d.getDayOfWeek() == java.time.DayOfWeek.SUNDAY;
+                    boolean weekend = calendar.isOff(emp.getDepartment() != null ? emp.getDepartment().getId() : null, d);
                     Attendance att = dayMap.get(d);
                     String cellVal = formatCellValue(att);
                     Cell cell = row.createCell(fixedCols.length + c);

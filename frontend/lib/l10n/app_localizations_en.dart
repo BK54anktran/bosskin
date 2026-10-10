@@ -4329,4 +4329,242 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get multiplierSuffix => '×';
+
+  @override
+  String get adminTabHolidays => 'Holiday template';
+
+  @override
+  String get auditActHolidayCreate => 'Add holiday';
+
+  @override
+  String get auditActHolidayUpdate => 'Edit holiday';
+
+  @override
+  String get auditActHolidayDelete => 'Delete holiday';
+
+  @override
+  String get auditActHolidayImport => 'Import holidays from Excel';
+
+  @override
+  String get auditActHolidayTemplateCreate => 'Add template holiday';
+
+  @override
+  String get auditActHolidayTemplateUpdate => 'Edit template holiday';
+
+  @override
+  String get auditActHolidayTemplateDelete => 'Delete template holiday';
+
+  @override
+  String get auditActWorkCalendarCreate => 'Add work calendar';
+
+  @override
+  String get auditActWorkCalendarUpdate => 'Edit work calendar';
+
+  @override
+  String get auditActWorkCalendarDelete => 'Delete work calendar';
+
+  @override
+  String get calPrevYear => 'Previous year';
+
+  @override
+  String get calNextYear => 'Next year';
+
+  @override
+  String get companySettingsGeneralTab => 'General';
+
+  @override
+  String get workCalendarTab => 'Work calendar';
+
+  @override
+  String get dowMon => 'Mon';
+
+  @override
+  String get dowTue => 'Tue';
+
+  @override
+  String get dowWed => 'Wed';
+
+  @override
+  String get dowThu => 'Thu';
+
+  @override
+  String get dowFri => 'Fri';
+
+  @override
+  String get dowSat => 'Sat';
+
+  @override
+  String get dowSun => 'Sun';
+
+  @override
+  String get workDayFull => 'Full day';
+
+  @override
+  String get workDayHalf => 'Half day';
+
+  @override
+  String get workDayOff => 'Day off';
+
+  @override
+  String get holidayTitle => 'Holidays';
+
+  @override
+  String get holidayAdd => 'Add holiday';
+
+  @override
+  String get holidayEdit => 'Edit holiday';
+
+  @override
+  String get holidayDate => 'Date';
+
+  @override
+  String get holidayName => 'Holiday name';
+
+  @override
+  String get holidayNameRequired => 'Holiday name is required';
+
+  @override
+  String get holidayType => 'Type';
+
+  @override
+  String get holidayTypeHoliday => 'Holiday';
+
+  @override
+  String get holidayTypeCompensatory => 'Compensatory day off';
+
+  @override
+  String get holidayTypeSwapWorkday => 'Swapped workday';
+
+  @override
+  String get holidayTypeHolidayHint =>
+      'Public holiday. Turn off \"paid\" for a swapped day off.';
+
+  @override
+  String get holidayTypeCompensatoryHint =>
+      'Day off in lieu when a holiday falls on a weekly day off.';
+
+  @override
+  String get holidayTypeSwapWorkdayHint =>
+      'A weekly day off becomes a full working day (in exchange for a swapped day off).';
+
+  @override
+  String get holidayPaid => 'Paid';
+
+  @override
+  String get holidayUnpaid => 'Unpaid';
+
+  @override
+  String get holidayPaidLabel => 'Paid';
+
+  @override
+  String get holidayPaidHint =>
+      'Paid days still count toward standard days and the HOLIDAY_DAYS variable.';
+
+  @override
+  String get holidayUsingTemplate => 'Using system template';
+
+  @override
+  String get holidayCustomized => 'Customized by company';
+
+  @override
+  String get holidayTemplateHint =>
+      'This year follows the system template. Adding, editing or deleting a day copies the template to your company, which then manages this year on its own.';
+
+  @override
+  String get holidayCustomizedHint =>
+      'Your company manages this year\'s list; changes to the system template no longer apply.';
+
+  @override
+  String get holidayTemplateAdminHint =>
+      'Default list for every company. A company that has customized a year keeps its own list for that year.';
+
+  @override
+  String get holidayEmpty => 'No holidays this year';
+
+  @override
+  String get rotationSkipHolidays =>
+      'Skip holidays (no shifts on holiday days off)';
+
+  @override
+  String get standardDaysFromCalendar => 'Standard days from work calendar';
+
+  @override
+  String get standardDaysFromCalendarHint =>
+      'Counts working days in the period from the department\'s weekly calendar (half day = 0.5); paid holidays still count. Turn off to use a fixed number.';
+
+  @override
+  String get workCalendarWeekTitle => 'Weekly work calendar';
+
+  @override
+  String get workCalendarWeekHint =>
+      'Departments without a calendar use their parent\'s, then the default calendar.';
+
+  @override
+  String get workCalendarDefaultName => 'Default calendar';
+
+  @override
+  String get workCalendarDefaultHint =>
+      'Applies to every department without its own calendar';
+
+  @override
+  String get workCalendarNoDepartments => 'No departments assigned';
+
+  @override
+  String get workCalendarAdd => 'Add calendar';
+
+  @override
+  String get workCalendarEdit => 'Edit calendar';
+
+  @override
+  String get workCalendarName => 'Calendar name';
+
+  @override
+  String get workCalendarNameRequired => 'Calendar name is required';
+
+  @override
+  String get workCalendarPatternHint =>
+      'Tap a day to cycle: full day → half day → off.';
+
+  @override
+  String get workCalendarDepartments => 'Departments';
+
+  @override
+  String get workCalendarDepartmentsHint =>
+      'Child departments without a calendar follow it.';
+
+  @override
+  String get workCalendarDeptHasOther =>
+      'Uses another calendar — selecting moves it here';
+
+  @override
+  String get permModuleCalendar => 'Work calendar';
+
+  @override
+  String get permUiCalendarView =>
+      'Opens the Work calendar tab in Company settings';
+
+  @override
+  String get permUiCalendarManage => 'Add / edit holidays and weekly calendars';
+
+  @override
+  String get permDescCalendarView => 'View holidays and weekly work calendars';
+
+  @override
+  String get permDescCalendarManage =>
+      'Edit holidays, import from Excel, edit company and department weekly calendars';
+
+  @override
+  String holidayDeleteConfirm(String name, String date) {
+    return 'Delete holiday \"$name\" ($date)?';
+  }
+
+  @override
+  String workCalendarDeleteConfirm(String name) {
+    return 'Delete calendar \"$name\"? Its departments fall back to their parent\'s / the default calendar.';
+  }
+
+  @override
+  String workCalendarWeekDays(String days) {
+    return '$days days / week';
+  }
 }

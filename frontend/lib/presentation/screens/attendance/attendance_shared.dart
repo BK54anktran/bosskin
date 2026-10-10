@@ -56,6 +56,7 @@ class AttMergedDayViewRow {
 
   DayViewRow get first => slots.first;
   bool get weekend => first.weekend;
+  String? get holidayName => first.holidayName;
 }
 
 class AttMergedTimesheetRow {
@@ -64,6 +65,7 @@ class AttMergedTimesheetRow {
 
   TimesheetRow get first => rows.first;
   bool get weekend => first.weekend;
+  String? get holidayName => first.holidayName;
 }
 
 // ── Top-level parse helpers (public) ─────────────────────────────────────────

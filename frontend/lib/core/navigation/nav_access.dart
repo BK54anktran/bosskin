@@ -24,7 +24,7 @@ const Map<String, List<String>> routeAnyOf = {
   AppRoutes.selfPayroll: ['ATTENDANCE_SELF'],
   AppRoutes.roles: ['ROLE_VIEW'],
   AppRoutes.leaves: ['LEAVE_VIEW'],
-  AppRoutes.companySettings: ['COMPANY_SETTING_VIEW'],
+  AppRoutes.companySettings: ['COMPANY_SETTING_VIEW', 'CALENDAR_VIEW'],
   // Backend lọc từng sheet theo quyền module; vào màn chỉ cần một trong hai quyền Excel.
   AppRoutes.excelImportExport: ['EXCEL_EXPORT', 'EXCEL_IMPORT'],
   AppRoutes.reports: ['REPORT_VIEW'],

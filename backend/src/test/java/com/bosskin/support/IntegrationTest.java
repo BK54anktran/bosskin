@@ -32,6 +32,8 @@ public abstract class IntegrationTest {
         .withUrlParam("useSSL", "false");
 
     static {
+        // Như BosskinApplication.main — máy chạy test (CI) thường để UTC, createdAt sẽ lệch 7 giờ so với clock nghiệp vụ
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         MYSQL.start();
     }
 

@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 09/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C và trang giới thiệu xong; AWS để sau, làm tiếp D–F</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026) và J (ngày lễ) xong; AWS để sau, làm tiếp K, D–F</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -165,8 +165,8 @@
           <li>Lịch tuần theo công ty, ghi đè theo phòng ban: mỗi thứ là nghỉ / nửa ngày / cả ngày (vd. T7 làm sáng). Bỏ 5 chỗ đang cố định T7/CN trong <code>AttendanceController</code>, <code>AttendanceExcelService</code>, <code>ShiftExcelService</code>.</li>
           <li>Ảnh hưởng: công chuẩn kỳ tính từ lịch (tuỳ chọn giữ số cố định 22); biến <code>HOLIDAY_DAYS</code> (lễ hưởng lương), <code>HOLIDAY_OT_HOURS</code> (làm ngày lễ); đơn nghỉ không tính ngày lễ; xoay ca có tuỳ chọn bỏ qua ngày lễ.</li>
         </ul></td>
-        <td><code>V14</code> <code>holidays</code> (company_id NULL = mẫu hệ thống, date, name, paid, type HOLIDAY/COMPENSATORY/SWAP_WORKDAY), <code>work_calendars</code> + <code>work_calendar_days</code>, <code>departments.work_calendar_id</code>. API <code>/api/v1/holidays</code>, <code>/api/v1/work-calendars</code>; quyền <code>CALENDAR_VIEW</code>/<code>CALENDAR_MANAGE</code>. FE: tab "Lịch làm việc" trong Cài đặt công ty, ngày lễ tô màu ở lưới phân ca và bảng công.</td>
-        <td>Kỳ 11/2026 nghỉ 24/11 có lương; phòng làm T7 nửa ngày ra công chuẩn đúng; làm ngày lễ ra giờ OT lễ; import lịch Tết 2027 qua xem trước</td><td class="nw">4 BE · 3 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+        <td><code>V14</code> <code>holidays</code> (company_id NULL = mẫu hệ thống, date, name, paid, type HOLIDAY/COMPENSATORY/SWAP_WORKDAY), <code>work_calendars</code> (<code>week_pattern</code> 7 ký tự T2→CN: F cả ngày / H nửa ngày / O nghỉ), <code>departments.work_calendar_id</code>, <code>companies.standard_days_from_calendar</code>. API <code>/api/v1/holidays</code>, <code>/api/v1/work-calendars</code>; quyền <code>CALENDAR_VIEW</code>/<code>CALENDAR_MANAGE</code>. FE: tab "Lịch làm việc" trong Cài đặt công ty, ngày lễ tô màu ở lưới phân ca và bảng công.</td>
+        <td>Kỳ 11/2026 nghỉ 24/11 có lương; phòng làm T7 nửa ngày ra công chuẩn đúng; làm ngày lễ ra giờ OT lễ; import lịch Tết 2027 qua xem trước</td><td class="nw">4 BE · 3 FE</td><td><span class="st done">Xong 10/10</span><div class="muted" style="margin-top:6px">V14 <code>holidays</code> + <code>work_calendars</code>; mẫu hệ thống 2026–2027, công ty sửa lần đầu thì chép mẫu năm đó sang (copy-on-write); lịch phòng ban → phòng cha → mặc định công ty; bỏ 5 chỗ cố định T7/CN. <code>WorkCalendarTest</code> 11 ca (11/2026 lịch mặc định = 21 công, <code>HOLIDAY_DAYS</code> = 1; phòng T7 làm sáng = 23; làm ngày lễ ra <code>HOLIDAY_OT_HOURS</code>; nhập Tết 2027 qua xem trước); 133 test. FE: tab "Lịch làm việc" ở Cài đặt công ty, tab "Ngày lễ mẫu" ở /admin, tô màu ngày lễ ở lưới ca và bảng công, xoay ca "Bỏ qua ngày lễ". Ngày liền kề 2/9, nghỉ bù / hoán đổi 2026–2027 cần đối chiếu thông báo chính thức hằng năm (system admin sửa mẫu).</div></td></tr>
       <tr><td><b>K</b> · Lịch sử công tác + quản lý trực tiếp</td><td>
         <ul class="clean">
           <li>Mỗi thay đổi phòng ban / chức vụ / bậc lương / quản lý là một bản ghi có ngày hiệu lực và lý do (tuyển mới, thuyên chuyển, thăng chức, điều chỉnh lương); hồ sơ NV giữ bản hiện hành, bản tương lai tự áp dụng đúng ngày. Hết cập nhật đè.</li>
@@ -207,7 +207,7 @@
   <p class="muted">Tổng ≈ 25 ngày BE + 21 ngày FE (đội 1 BE + 1 FE ≈ 5–6 tuần). I và J nên xong trước kỳ lương tháng 11/2026; K → L → M phụ thuộc nhau theo thứ tự; N làm song song với M được. Mobile: chỉ thêm phần NV tự xem (HĐ của tôi, người phụ thuộc, tài liệu của tôi); quản lý dữ liệu HR làm trên web.</p>
   <div class="note"><b>Cần chủ dự án chốt</b> (đề xuất in đậm)
     <ul class="clean">
-      <li>Ngày lễ: <b>hệ thống cấp mẫu theo năm, công ty chỉnh lại</b> — hay mỗi công ty tự nhập từ đầu?</li>
+      <li>Ngày lễ: <b>hệ thống cấp mẫu theo năm, công ty chỉnh lại</b> — hay mỗi công ty tự nhập từ đầu? <span class="muted">Đã làm theo đề xuất (10/10, bước J): mẫu hệ thống, công ty chỉnh thì chép mẫu năm đó sang.</span></li>
       <li>Nguồn lương: <b>hợp đồng + phụ lục là nguồn lương / lương đóng BH duy nhất</b>, bỏ <code>employees.contract_salary</code> và gộp <code>salary_histories</code> vào lịch sử HĐ — hay giữ song song?</li>
       <li>Duyệt theo quản lý trực tiếp: <b>tuỳ chọn theo công ty, mặc định giữ cách duyệt theo quyền + phạm vi như hiện tại</b>?</li>
       <li>Thông số thuế / BH: <b>system admin cập nhật một chỗ cho mọi công ty</b>; công ty chỉ chọn vùng lương tối thiểu?</li>
@@ -470,6 +470,6 @@ gantt
     <div class="card kpi"><div class="n">1 kỳ</div><div class="l">chạy song song với khách pilot, kết quả khớp</div></div>
   </div>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 09/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 10/10/2026</footer>
 </body>
 </html>

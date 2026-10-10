@@ -80,6 +80,22 @@ public class Api {
         }
     }
 
+    /** Gửi file multipart (field "file") — dùng cho /preview-import, /import. */
+    public Res upload(String token, String url, String filename, byte[] bytes) {
+        try {
+            var req = org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(url)
+                .file(new org.springframework.mock.web.MockMultipartFile("file", filename,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes))
+                .accept(MediaType.APPLICATION_JSON);
+            if (token != null) req.header("Authorization", "Bearer " + token);
+            MockHttpServletResponse r = mvc.perform(req).andReturn().getResponse();
+            String raw = r.getContentAsString(StandardCharsets.UTF_8);
+            return new Res(r.getStatus(), raw.isBlank() ? json.nullNode() : safeParse(raw), raw);
+        } catch (Exception e) {
+            throw new IllegalStateException("UPLOAD " + url + " lỗi: " + e.getMessage(), e);
+        }
+    }
+
     private JsonNode safeParse(String raw) {
         try {
             return json.readTree(raw);

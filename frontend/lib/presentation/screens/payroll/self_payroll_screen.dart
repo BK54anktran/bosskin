@@ -135,7 +135,7 @@ class _SelfPayrollCard extends StatelessWidget {
         ),
         title: Text(s.monthLabel(p.month),
             style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${s.presentDays}: ${p.presentDays ?? '-'}/${p.standardWorkDays ?? 22}'),
+        subtitle: Text('${s.presentDays}: ${p.presentDays ?? '-'}/${formatDays(p.standardWorkDays ?? 22)}'),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -202,7 +202,7 @@ class _SelfPayslipDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: AppTheme.textSecondary)),
               const Divider(height: 24),
-              _Row(s.presentDays, '${p.presentDays ?? '-'} / ${p.standardWorkDays ?? 22}'),
+              _Row(s.presentDays, '${p.presentDays ?? '-'} / ${formatDays(p.standardWorkDays ?? 22)}'),
               _Row(s.dayShiftHours,  '${(p.dayHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
               _Row(s.nightShiftHours,'${(p.nightHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
               _Row(s.otDayShift,     '${(p.dayOt ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
@@ -215,7 +215,7 @@ class _SelfPayslipDialog extends StatelessWidget {
               ] else ...[
                 _Row(s.baseSalaryMonthly, _fmt2(p.baseSalary)),
                 _Row(s.actualWorkDays,
-                    '${p.presentDays ?? 0} / ${p.standardWorkDays ?? 22} ${s.daysSuffix}'),
+                    '${p.presentDays ?? 0} / ${formatDays(p.standardWorkDays ?? 22)} ${s.daysSuffix}'),
               ],
               const SizedBox(height: 4),
               // ── Thu nhập (chỉ hiện nếu có) ──

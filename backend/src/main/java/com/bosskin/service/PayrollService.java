@@ -49,6 +49,7 @@ public class PayrollService {
     private final com.bosskin.repository.AttendanceApproveLeaveRepository approveLeaveRepository;
     private final ObjectMapper               objectMapper;
     private final TaxPolicyService           taxPolicyService;
+    private final WorkCalendarService        workCalendarService;
 
     @Transactional
     public Payroll generatePayroll(Long employeeId, int year, int month) {
@@ -162,7 +163,9 @@ public class PayrollService {
         Map<String, Payroll.DeductionEntry> incomeEntries    = new java.util.LinkedHashMap<>();
         Map<String, Payroll.DeductionEntry> allowanceEntries = new java.util.LinkedHashMap<>();
 
-        Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period);
+        // Bước J: công chuẩn / ngày lễ theo lịch tuần của phòng + danh sách ngày lễ
+        WorkCalendarService.CalendarView calendar = workCalendarService.view(employee.getCompany().getId(), period.from(), period.to());
+        Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period, calendar);
         putTaxPolicyVars(vars, policy, employee, baseSalary);
 
         List<FormulaVariable> globalVarList = formulaVariableRepository
@@ -268,7 +271,7 @@ public class PayrollService {
             .salaryGradeId(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getId() : null)
             .salaryGradeCode(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getCode() : null)
             .salaryGradeName(employee.getSalaryGrade() != null ? employee.getSalaryGrade().getName() : null)
-            .standardWorkDays(employee.getCompany().getStandardWorkDays())
+            .standardWorkDays(vars.get("STANDARD_WORK_DAYS"))
             .familyDeduction(vars.get("FAMILY_DEDUCTION"))
             .insuranceBase(vars.get("INSURANCE_BASE"))
             .periodFrom(period.from())
@@ -502,7 +505,7 @@ public class PayrollService {
 
     private Map<String, BigDecimal> buildFormulaVariables(
             List<Attendance> attendances, BigDecimal baseRate,
-            Employee employee, PayrollPeriod period) {
+            Employee employee, PayrollPeriod period, WorkCalendarService.CalendarView calendar) {
 
         // ── Ngày công ─────────────────────────────────────────────────────────
         long presentDays = attendances.stream()
@@ -584,7 +587,19 @@ public class PayrollService {
 
         // L3: biến cài đặt trước đây được công bố nhưng không bao giờ gán giá trị
         Company company = employee.getCompany();
-        vars.put("STANDARD_WORK_DAYS", BigDecimal.valueOf(company.getStandardWorkDays()));
+        Long deptId = employee.getDepartment() != null ? employee.getDepartment().getId() : null;
+        WorkCalendarService.PeriodDays periodDays = calendar.periodDays(deptId, period.from(), period.to());
+        vars.put("STANDARD_WORK_DAYS", company.isStandardDaysFromCalendar()
+            ? periodDays.standardDays() : BigDecimal.valueOf(company.getStandardWorkDays()));
+        vars.put("HOLIDAY_DAYS", periodDays.holidayDays());
+        double holidayHours = attendances.stream()
+            .filter(a -> calendar.isHolidayOff(a.getDate()))
+            .mapToDouble(a -> (a.getSnapDayHours() != null ? a.getSnapDayHours() : 0)
+                + (a.getSnapNightHours() != null ? a.getSnapNightHours() : 0)
+                + (a.getSnapDayOt() != null ? a.getSnapDayOt() : 0)
+                + (a.getSnapNightOt() != null ? a.getSnapNightOt() : 0))
+            .sum();
+        vars.put("HOLIDAY_OT_HOURS", BigDecimal.valueOf(holidayHours).setScale(2, RoundingMode.HALF_UP));
         vars.put("HOURS_PER_DAY", company.getLeaveHoursPerDay() != null
             ? company.getLeaveHoursPerDay() : BigDecimal.valueOf(8));
 

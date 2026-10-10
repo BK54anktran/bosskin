@@ -8104,6 +8104,438 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'×'**
   String get multiplierSuffix;
+
+  /// No description provided for @adminTabHolidays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày lễ mẫu'**
+  String get adminTabHolidays;
+
+  /// No description provided for @auditActHolidayCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ngày lễ'**
+  String get auditActHolidayCreate;
+
+  /// No description provided for @auditActHolidayUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa ngày lễ'**
+  String get auditActHolidayUpdate;
+
+  /// No description provided for @auditActHolidayDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá ngày lễ'**
+  String get auditActHolidayDelete;
+
+  /// No description provided for @auditActHolidayImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập ngày lễ từ Excel'**
+  String get auditActHolidayImport;
+
+  /// No description provided for @auditActHolidayTemplateCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ngày lễ mẫu'**
+  String get auditActHolidayTemplateCreate;
+
+  /// No description provided for @auditActHolidayTemplateUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa ngày lễ mẫu'**
+  String get auditActHolidayTemplateUpdate;
+
+  /// No description provided for @auditActHolidayTemplateDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá ngày lễ mẫu'**
+  String get auditActHolidayTemplateDelete;
+
+  /// No description provided for @auditActWorkCalendarCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm lịch làm việc'**
+  String get auditActWorkCalendarCreate;
+
+  /// No description provided for @auditActWorkCalendarUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa lịch làm việc'**
+  String get auditActWorkCalendarUpdate;
+
+  /// No description provided for @auditActWorkCalendarDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá lịch làm việc'**
+  String get auditActWorkCalendarDelete;
+
+  /// No description provided for @calPrevYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm trước'**
+  String get calPrevYear;
+
+  /// No description provided for @calNextYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm sau'**
+  String get calNextYear;
+
+  /// No description provided for @companySettingsGeneralTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chung'**
+  String get companySettingsGeneralTab;
+
+  /// No description provided for @workCalendarTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch làm việc'**
+  String get workCalendarTab;
+
+  /// No description provided for @dowMon.
+  ///
+  /// In vi, this message translates to:
+  /// **'T2'**
+  String get dowMon;
+
+  /// No description provided for @dowTue.
+  ///
+  /// In vi, this message translates to:
+  /// **'T3'**
+  String get dowTue;
+
+  /// No description provided for @dowWed.
+  ///
+  /// In vi, this message translates to:
+  /// **'T4'**
+  String get dowWed;
+
+  /// No description provided for @dowThu.
+  ///
+  /// In vi, this message translates to:
+  /// **'T5'**
+  String get dowThu;
+
+  /// No description provided for @dowFri.
+  ///
+  /// In vi, this message translates to:
+  /// **'T6'**
+  String get dowFri;
+
+  /// No description provided for @dowSat.
+  ///
+  /// In vi, this message translates to:
+  /// **'T7'**
+  String get dowSat;
+
+  /// No description provided for @dowSun.
+  ///
+  /// In vi, this message translates to:
+  /// **'CN'**
+  String get dowSun;
+
+  /// No description provided for @workDayFull.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm cả ngày'**
+  String get workDayFull;
+
+  /// No description provided for @workDayHalf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm nửa ngày'**
+  String get workDayHalf;
+
+  /// No description provided for @workDayOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ'**
+  String get workDayOff;
+
+  /// No description provided for @holidayTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày lễ'**
+  String get holidayTitle;
+
+  /// No description provided for @holidayAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ngày lễ'**
+  String get holidayAdd;
+
+  /// No description provided for @holidayEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa ngày lễ'**
+  String get holidayEdit;
+
+  /// No description provided for @holidayDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày'**
+  String get holidayDate;
+
+  /// No description provided for @holidayName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên ngày lễ'**
+  String get holidayName;
+
+  /// No description provided for @holidayNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập tên ngày lễ'**
+  String get holidayNameRequired;
+
+  /// No description provided for @holidayType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại'**
+  String get holidayType;
+
+  /// No description provided for @holidayTypeHoliday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày lễ'**
+  String get holidayTypeHoliday;
+
+  /// No description provided for @holidayTypeCompensatory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ bù'**
+  String get holidayTypeCompensatory;
+
+  /// No description provided for @holidayTypeSwapWorkday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm bù'**
+  String get holidayTypeSwapWorkday;
+
+  /// No description provided for @holidayTypeHolidayHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày nghỉ lễ / Tết. Tắt \"có lương\" để nhập ngày nghỉ hoán đổi.'**
+  String get holidayTypeHolidayHint;
+
+  /// No description provided for @holidayTypeCompensatoryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ bù khi ngày lễ trùng ngày nghỉ hằng tuần.'**
+  String get holidayTypeCompensatoryHint;
+
+  /// No description provided for @holidayTypeSwapWorkdayHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày nghỉ hằng tuần chuyển thành ngày làm cả ngày (đổi lấy ngày nghỉ hoán đổi).'**
+  String get holidayTypeSwapWorkdayHint;
+
+  /// No description provided for @holidayPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có lương'**
+  String get holidayPaid;
+
+  /// No description provided for @holidayUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lương'**
+  String get holidayUnpaid;
+
+  /// No description provided for @holidayPaidLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hưởng lương'**
+  String get holidayPaidLabel;
+
+  /// No description provided for @holidayPaidHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày có lương vẫn tính vào công chuẩn và biến HOLIDAY_DAYS.'**
+  String get holidayPaidHint;
+
+  /// No description provided for @holidayUsingTemplate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng mẫu hệ thống'**
+  String get holidayUsingTemplate;
+
+  /// No description provided for @holidayCustomized.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty đã chỉnh'**
+  String get holidayCustomized;
+
+  /// No description provided for @holidayTemplateHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm này đang theo danh sách mẫu của hệ thống. Thêm, sửa hoặc xoá một ngày sẽ chép mẫu sang công ty, từ đó công ty tự quản lý năm này.'**
+  String get holidayTemplateHint;
+
+  /// No description provided for @holidayCustomizedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công ty tự quản lý danh sách năm này; thay đổi ở mẫu hệ thống không còn áp dụng.'**
+  String get holidayCustomizedHint;
+
+  /// No description provided for @holidayTemplateAdminHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh sách mặc định cho mọi công ty. Công ty đã tự chỉnh năm nào thì giữ bản riêng của năm đó.'**
+  String get holidayTemplateAdminHint;
+
+  /// No description provided for @holidayEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ngày lễ trong năm này'**
+  String get holidayEmpty;
+
+  /// No description provided for @rotationSkipHolidays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua ngày lễ (không xếp ca vào ngày nghỉ lễ)'**
+  String get rotationSkipHolidays;
+
+  /// No description provided for @standardDaysFromCalendar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công chuẩn theo lịch làm việc'**
+  String get standardDaysFromCalendar;
+
+  /// No description provided for @standardDaysFromCalendarHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đếm ngày làm trong kỳ theo lịch tuần của phòng ban (nửa ngày = 0,5), ngày lễ có lương vẫn tính. Tắt để dùng số cố định.'**
+  String get standardDaysFromCalendarHint;
+
+  /// No description provided for @workCalendarWeekTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch làm việc trong tuần'**
+  String get workCalendarWeekTitle;
+
+  /// No description provided for @workCalendarWeekHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban chưa gán lịch dùng lịch của phòng cha, rồi đến lịch mặc định.'**
+  String get workCalendarWeekHint;
+
+  /// No description provided for @workCalendarDefaultName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch mặc định'**
+  String get workCalendarDefaultName;
+
+  /// No description provided for @workCalendarDefaultHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp cho mọi phòng ban chưa gán lịch riêng'**
+  String get workCalendarDefaultHint;
+
+  /// No description provided for @workCalendarNoDepartments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa gán phòng ban nào'**
+  String get workCalendarNoDepartments;
+
+  /// No description provided for @workCalendarAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm lịch'**
+  String get workCalendarAdd;
+
+  /// No description provided for @workCalendarEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa lịch'**
+  String get workCalendarEdit;
+
+  /// No description provided for @workCalendarName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên lịch'**
+  String get workCalendarName;
+
+  /// No description provided for @workCalendarNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập tên lịch'**
+  String get workCalendarNameRequired;
+
+  /// No description provided for @workCalendarPatternHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm vào từng ngày để đổi: cả ngày → nửa ngày → nghỉ.'**
+  String get workCalendarPatternHint;
+
+  /// No description provided for @workCalendarDepartments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng ban áp dụng'**
+  String get workCalendarDepartments;
+
+  /// No description provided for @workCalendarDepartmentsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phòng con chưa gán lịch sẽ dùng theo.'**
+  String get workCalendarDepartmentsHint;
+
+  /// No description provided for @workCalendarDeptHasOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng lịch khác — chọn sẽ chuyển sang lịch này'**
+  String get workCalendarDeptHasOther;
+
+  /// No description provided for @permModuleCalendar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch làm việc'**
+  String get permModuleCalendar;
+
+  /// No description provided for @permUiCalendarView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở tab Lịch làm việc trong Cài đặt công ty'**
+  String get permUiCalendarView;
+
+  /// No description provided for @permUiCalendarManage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm / sửa ngày lễ và lịch tuần'**
+  String get permUiCalendarManage;
+
+  /// No description provided for @permDescCalendarView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem ngày lễ và lịch làm việc tuần'**
+  String get permDescCalendarView;
+
+  /// No description provided for @permDescCalendarManage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa ngày lễ, nhập Excel, sửa lịch tuần của công ty và phòng ban'**
+  String get permDescCalendarManage;
+
+  /// No description provided for @holidayDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá ngày lễ \"{name}\" ({date})?'**
+  String holidayDeleteConfirm(String name, String date);
+
+  /// No description provided for @workCalendarDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá lịch \"{name}\"? Phòng ban đang dùng sẽ quay về lịch của phòng cha / mặc định.'**
+  String workCalendarDeleteConfirm(String name);
+
+  /// No description provided for @workCalendarWeekDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} công / tuần'**
+  String workCalendarWeekDays(String days);
 }
 
 class _AppLocalizationsDelegate

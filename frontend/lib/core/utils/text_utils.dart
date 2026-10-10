@@ -22,3 +22,9 @@ String foldSearchText(String input) {
   }
   return out.toLowerCase().trim();
 }
+
+/// Số ngày công gọn: 22 → "22", 23.5 → "23.5" (công chuẩn có thể lẻ nửa ngày).
+String formatDays(num v) {
+  if (v == v.roundToDouble()) return v.toInt().toString();
+  return v.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
+}

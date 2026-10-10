@@ -331,6 +331,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
   late DateTime _to;
   int _startOffset = 0;
   int _stagger = 0;
+  bool _skipHolidays = true;
   bool _isLoading = true;
   bool _isRunning = false;
 
@@ -375,7 +376,8 @@ class _GenerateDialogState extends State<_GenerateDialog> {
           from: _fmt.format(_from),
           to: _fmt.format(_to),
           startOffset: _startOffset,
-          staggerPerEmployee: _stagger);
+          staggerPerEmployee: _stagger,
+          skipHolidays: _skipHolidays);
       if (mounted) Navigator.pop(context, res);
     } catch (e) {
       if (mounted) {
@@ -441,7 +443,14 @@ class _GenerateDialogState extends State<_GenerateDialog> {
               ),
             ),
           ]),
-          const SizedBox(height: 8),
+          CheckboxListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: _skipHolidays,
+            onChanged: (v) => setState(() => _skipHolidays = v ?? false),
+            title: Text(s.rotationSkipHolidays),
+          ),
           TextField(
             controller: _searchCtrl,
             onChanged: (_) => setState(() {}),

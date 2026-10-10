@@ -41,7 +41,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -78,6 +77,7 @@ public class AttendanceController {
     private jakarta.persistence.EntityManager entityManager;
     private final com.bosskin.service.PeriodLockService periodLockService;
     private final com.bosskin.audit.AuditService audit;
+    private final com.bosskin.service.WorkCalendarService workCalendarService;
 
     private static final ZoneId ATTENDANCE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -211,6 +211,7 @@ public class AttendanceController {
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
             rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
         }
+        markCalendar(rows, employee, from, to);
         return ResponseEntity.ok(rows);
     }
 
@@ -261,6 +262,7 @@ public class AttendanceController {
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
             rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
         }
+        markCalendar(rows, employee, from, to);
         return ResponseEntity.ok(rows);
     }
 
@@ -324,7 +326,28 @@ public class AttendanceController {
                 ).stream();
             })
             .toList();
+        markCalendarDay(rows, company.getId(), date);
         return ResponseEntity.ok(rows);
+    }
+
+    /** Bước J: ngày nghỉ theo lịch tuần của phòng + ngày lễ (thay cho T7/CN cố định). */
+    private void markCalendar(List<AttendanceDTO.TimesheetRow> rows, Employee employee, LocalDate from, LocalDate to) {
+        var cal = workCalendarService.view(employee.getCompany().getId(), from, to);
+        Long deptId = employee.getDepartment() != null ? employee.getDepartment().getId() : null;
+        for (AttendanceDTO.TimesheetRow r : rows) {
+            r.setWeekend(cal.isOff(deptId, r.getDate()));
+            var h = cal.holiday(r.getDate());
+            r.setHolidayName(h != null ? h.getName() : null);
+        }
+    }
+
+    private void markCalendarDay(List<AttendanceDTO.DayViewRow> rows, Long companyId, LocalDate date) {
+        var cal = workCalendarService.view(companyId, date, date);
+        var h = cal.holiday(date);
+        for (AttendanceDTO.DayViewRow r : rows) {
+            r.setWeekend(cal.isOff(r.getDepartmentId(), date));
+            r.setHolidayName(h != null ? h.getName() : null);
+        }
     }
 
     private List<AttendanceDTO.TimesheetRow> buildTimesheetRows(
@@ -397,7 +420,6 @@ public class AttendanceController {
         return AttendanceDTO.TimesheetRow.builder()
             .date(date)
             .dayLabel(dayLabel)
-            .weekend(date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY)
             .shiftAssignmentId(assignment != null ? assignment.getId() : null)
             .shiftName(data.shiftName())
             .shiftColor(data.shiftColor())
@@ -535,7 +557,6 @@ public class AttendanceController {
             .departmentName(department != null ? department.getName() : null)
             .date(date)
             .dayLabel(dayLabel)
-            .weekend(date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY)
             .shiftAssignmentId(assignment != null ? assignment.getId() : null)
             .shiftName(data.shiftName())
             .shiftColor(data.shiftColor())
@@ -1879,6 +1900,7 @@ public class AttendanceController {
         List<AttendanceDTO.TimesheetRow> rows = new ArrayList<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1))
             rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
+        markCalendar(rows, employee, from, to);
         return attendanceExcelService.exportTimesheetRange(
             user.getCompany().getId(), user.getId(),
             employee.getFullName(), employee.getEmployeeCode(), from, to, rows,
@@ -1934,6 +1956,7 @@ public class AttendanceController {
                 resolveAttendancePolicy(employee)
             ).stream())
             .toList();
+        markCalendarDay(rows, company.getId(), date);
 
         return attendanceExcelService.exportDayView(user.getCompany().getId(), user.getId(),
             date, rows,

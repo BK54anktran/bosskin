@@ -8,7 +8,10 @@ import '../../../core/utils/text_utils.dart';
 import '../../../data/models/work_shift.dart';
 import '../../../data/models/employee.dart';
 import '../../../data/repositories/company_setting_repository.dart';
+import '../../../data/models/work_calendar.dart';
+import '../../../data/repositories/work_calendar_repository.dart';
 import '../../../data/services/api_service.dart';
+import '../../widgets/holiday_widgets.dart';
 import '../../../data/services/auth_service.dart';
 import '../../widgets/pagination_bar.dart';
 
@@ -58,6 +61,8 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
   bool _loadingEmps = true;
   bool _loadingAssigns = false;
   int _cutoffDay = 1; // loaded from company settings
+  WorkCalendarView _calendar = WorkCalendarView.empty; // ngày lễ + lịch tuần (bước J)
+  final _calendarRepo = WorkCalendarRepository();
 
   // ── Quick-fill panel ────────────────────────────────────────────────────
   bool _panelOpen = false;
@@ -243,6 +248,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     final from = _fmt(days.first);
     final to = _fmt(days.last);
     try {
+      final calendarFuture = _calendarRepo.view(days.first, days.last);
       final list = await ApiService.instance.get<List<ShiftAssignment>>(
         '/shifts/assignments',
         (d) => (d as List)
@@ -250,9 +256,11 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
             .toList(),
         queryParams: {'from': from, 'to': to, '_t': DateTime.now().millisecondsSinceEpoch},
       );
+      final calendar = await calendarFuture;
       if (mounted) {
         setState(() {
           _assignments = list;
+          _calendar = calendar;
           _loadingAssigns = false;
         });
       }
@@ -790,11 +798,12 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
               child: Row(
                 children: periodDays.map((date) {
                   final dow = date.weekday;
-                  final wknd = dow >= 6;
-                  return _cell(
+                  final holiday = _calendar.holiday(date);
+                  final wknd = _calendar.isOff(null, date);
+                  final head = _cell(
                     dayW,
                     _headH,
-                    _headBg,
+                    holiday != null && holiday.isDayOff ? holidayCellColor : _headBg,
                     border: const Border(
                         right: BorderSide(color: _border),
                         bottom: BorderSide(color: _border, width: 2)),
@@ -816,6 +825,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                                       : AppTheme.textSecondary)),
                         ]),
                   );
+                  return holiday == null ? head : Tooltip(message: holiday.name, child: head);
                 }).toList(),
               ),
             ),
@@ -845,9 +855,12 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
                           i.isOdd ? const Color(0xFFF8F9FA) : Colors.white;
                       return Row(
                         children: periodDays.map((date) {
-                          final dow = date.weekday;
-                          final wknd = dow >= 6;
-                          final bg = wknd ? const Color(0xFFFFF0F0) : rowBg;
+                          final holiday = _calendar.holiday(date);
+                          final bg = holiday != null && holiday.isDayOff
+                              ? holidayCellColor
+                              : _calendar.isOff(emp.departmentId, date)
+                                  ? const Color(0xFFFFF0F0)
+                                  : rowBg;
 
                           final dateStr = _fmt(date);
                           final prevDate = DateTime(date.year, date.month, date.day - 1);

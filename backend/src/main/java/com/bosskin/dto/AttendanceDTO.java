@@ -92,7 +92,10 @@ public class AttendanceDTO {
     public static class TimesheetRow {
         private LocalDate date;
         private String dayLabel;   // T2..CN
+        /** Ngày nghỉ theo lịch làm việc của phòng hoặc ngày lễ (bước J). */
         private boolean weekend;
+        /** Tên ngày lễ / nghỉ bù / làm bù nếu có (bước J). */
+        private String holidayName;
 
         // Shift
         private Long shiftAssignmentId;
@@ -181,7 +184,10 @@ public class AttendanceDTO {
         private String departmentName;
         private LocalDate date;
         private String dayLabel;   // T2..CN
+        /** Ngày nghỉ theo lịch làm việc của phòng hoặc ngày lễ (bước J). */
         private boolean weekend;
+        /** Tên ngày lễ / nghỉ bù / làm bù nếu có (bước J). */
+        private String holidayName;
 
         // Shift
         private Long shiftAssignmentId;

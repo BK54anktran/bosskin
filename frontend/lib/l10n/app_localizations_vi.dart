@@ -4327,4 +4327,241 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get multiplierSuffix => '×';
+
+  @override
+  String get adminTabHolidays => 'Ngày lễ mẫu';
+
+  @override
+  String get auditActHolidayCreate => 'Thêm ngày lễ';
+
+  @override
+  String get auditActHolidayUpdate => 'Sửa ngày lễ';
+
+  @override
+  String get auditActHolidayDelete => 'Xoá ngày lễ';
+
+  @override
+  String get auditActHolidayImport => 'Nhập ngày lễ từ Excel';
+
+  @override
+  String get auditActHolidayTemplateCreate => 'Thêm ngày lễ mẫu';
+
+  @override
+  String get auditActHolidayTemplateUpdate => 'Sửa ngày lễ mẫu';
+
+  @override
+  String get auditActHolidayTemplateDelete => 'Xoá ngày lễ mẫu';
+
+  @override
+  String get auditActWorkCalendarCreate => 'Thêm lịch làm việc';
+
+  @override
+  String get auditActWorkCalendarUpdate => 'Sửa lịch làm việc';
+
+  @override
+  String get auditActWorkCalendarDelete => 'Xoá lịch làm việc';
+
+  @override
+  String get calPrevYear => 'Năm trước';
+
+  @override
+  String get calNextYear => 'Năm sau';
+
+  @override
+  String get companySettingsGeneralTab => 'Chung';
+
+  @override
+  String get workCalendarTab => 'Lịch làm việc';
+
+  @override
+  String get dowMon => 'T2';
+
+  @override
+  String get dowTue => 'T3';
+
+  @override
+  String get dowWed => 'T4';
+
+  @override
+  String get dowThu => 'T5';
+
+  @override
+  String get dowFri => 'T6';
+
+  @override
+  String get dowSat => 'T7';
+
+  @override
+  String get dowSun => 'CN';
+
+  @override
+  String get workDayFull => 'Làm cả ngày';
+
+  @override
+  String get workDayHalf => 'Làm nửa ngày';
+
+  @override
+  String get workDayOff => 'Nghỉ';
+
+  @override
+  String get holidayTitle => 'Ngày lễ';
+
+  @override
+  String get holidayAdd => 'Thêm ngày lễ';
+
+  @override
+  String get holidayEdit => 'Sửa ngày lễ';
+
+  @override
+  String get holidayDate => 'Ngày';
+
+  @override
+  String get holidayName => 'Tên ngày lễ';
+
+  @override
+  String get holidayNameRequired => 'Cần nhập tên ngày lễ';
+
+  @override
+  String get holidayType => 'Loại';
+
+  @override
+  String get holidayTypeHoliday => 'Ngày lễ';
+
+  @override
+  String get holidayTypeCompensatory => 'Nghỉ bù';
+
+  @override
+  String get holidayTypeSwapWorkday => 'Làm bù';
+
+  @override
+  String get holidayTypeHolidayHint =>
+      'Ngày nghỉ lễ / Tết. Tắt \"có lương\" để nhập ngày nghỉ hoán đổi.';
+
+  @override
+  String get holidayTypeCompensatoryHint =>
+      'Nghỉ bù khi ngày lễ trùng ngày nghỉ hằng tuần.';
+
+  @override
+  String get holidayTypeSwapWorkdayHint =>
+      'Ngày nghỉ hằng tuần chuyển thành ngày làm cả ngày (đổi lấy ngày nghỉ hoán đổi).';
+
+  @override
+  String get holidayPaid => 'Có lương';
+
+  @override
+  String get holidayUnpaid => 'Không lương';
+
+  @override
+  String get holidayPaidLabel => 'Hưởng lương';
+
+  @override
+  String get holidayPaidHint =>
+      'Ngày có lương vẫn tính vào công chuẩn và biến HOLIDAY_DAYS.';
+
+  @override
+  String get holidayUsingTemplate => 'Đang dùng mẫu hệ thống';
+
+  @override
+  String get holidayCustomized => 'Công ty đã chỉnh';
+
+  @override
+  String get holidayTemplateHint =>
+      'Năm này đang theo danh sách mẫu của hệ thống. Thêm, sửa hoặc xoá một ngày sẽ chép mẫu sang công ty, từ đó công ty tự quản lý năm này.';
+
+  @override
+  String get holidayCustomizedHint =>
+      'Công ty tự quản lý danh sách năm này; thay đổi ở mẫu hệ thống không còn áp dụng.';
+
+  @override
+  String get holidayTemplateAdminHint =>
+      'Danh sách mặc định cho mọi công ty. Công ty đã tự chỉnh năm nào thì giữ bản riêng của năm đó.';
+
+  @override
+  String get holidayEmpty => 'Chưa có ngày lễ trong năm này';
+
+  @override
+  String get rotationSkipHolidays =>
+      'Bỏ qua ngày lễ (không xếp ca vào ngày nghỉ lễ)';
+
+  @override
+  String get standardDaysFromCalendar => 'Công chuẩn theo lịch làm việc';
+
+  @override
+  String get standardDaysFromCalendarHint =>
+      'Đếm ngày làm trong kỳ theo lịch tuần của phòng ban (nửa ngày = 0,5), ngày lễ có lương vẫn tính. Tắt để dùng số cố định.';
+
+  @override
+  String get workCalendarWeekTitle => 'Lịch làm việc trong tuần';
+
+  @override
+  String get workCalendarWeekHint =>
+      'Phòng ban chưa gán lịch dùng lịch của phòng cha, rồi đến lịch mặc định.';
+
+  @override
+  String get workCalendarDefaultName => 'Lịch mặc định';
+
+  @override
+  String get workCalendarDefaultHint =>
+      'Áp cho mọi phòng ban chưa gán lịch riêng';
+
+  @override
+  String get workCalendarNoDepartments => 'Chưa gán phòng ban nào';
+
+  @override
+  String get workCalendarAdd => 'Thêm lịch';
+
+  @override
+  String get workCalendarEdit => 'Sửa lịch';
+
+  @override
+  String get workCalendarName => 'Tên lịch';
+
+  @override
+  String get workCalendarNameRequired => 'Cần nhập tên lịch';
+
+  @override
+  String get workCalendarPatternHint =>
+      'Bấm vào từng ngày để đổi: cả ngày → nửa ngày → nghỉ.';
+
+  @override
+  String get workCalendarDepartments => 'Phòng ban áp dụng';
+
+  @override
+  String get workCalendarDepartmentsHint =>
+      'Phòng con chưa gán lịch sẽ dùng theo.';
+
+  @override
+  String get workCalendarDeptHasOther =>
+      'Đang dùng lịch khác — chọn sẽ chuyển sang lịch này';
+
+  @override
+  String get permModuleCalendar => 'Lịch làm việc';
+
+  @override
+  String get permUiCalendarView => 'Mở tab Lịch làm việc trong Cài đặt công ty';
+
+  @override
+  String get permUiCalendarManage => 'Thêm / sửa ngày lễ và lịch tuần';
+
+  @override
+  String get permDescCalendarView => 'Xem ngày lễ và lịch làm việc tuần';
+
+  @override
+  String get permDescCalendarManage =>
+      'Sửa ngày lễ, nhập Excel, sửa lịch tuần của công ty và phòng ban';
+
+  @override
+  String holidayDeleteConfirm(String name, String date) {
+    return 'Xoá ngày lễ \"$name\" ($date)?';
+  }
+
+  @override
+  String workCalendarDeleteConfirm(String name) {
+    return 'Xoá lịch \"$name\"? Phòng ban đang dùng sẽ quay về lịch của phòng cha / mặc định.';
+  }
+
+  @override
+  String workCalendarWeekDays(String days) {
+    return '$days công / tuần';
+  }
 }

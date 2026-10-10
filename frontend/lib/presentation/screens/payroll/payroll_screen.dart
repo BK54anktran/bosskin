@@ -752,7 +752,7 @@ class _PayrollCard extends StatelessWidget {
               if (p.presentDays != null) ...[
                 const SizedBox(height: 6),
                 Text(
-                  '${s.presentDays}: ${p.presentDays}/${p.standardWorkDays ?? 22}'
+                  '${s.presentDays}: ${p.presentDays}/${formatDays(p.standardWorkDays ?? 22)}'
                   '   ${s.dayShiftHours}: ${(p.dayHours ?? 0).toStringAsFixed(1)}h'
                   '   ${s.nightShiftHours}: ${(p.nightHours ?? 0).toStringAsFixed(1)}h'
                   '   ${s.otDayShift}: ${(p.dayOt ?? 0).toStringAsFixed(1)}h'
@@ -1568,7 +1568,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
               const Divider(height: 24),
               // Attendance summary
               _Row(s.presentDays,
-                  '${p.presentDays ?? '-'} / ${p.standardWorkDays ?? 22} ${s.daysSuffix}'),
+                  '${p.presentDays ?? '-'} / ${formatDays(p.standardWorkDays ?? 22)} ${s.daysSuffix}'),
               _Row(s.dayShiftHours,
                   '${(p.dayHours ?? 0).toStringAsFixed(1)} ${s.hourSuffix}'),
               _Row(s.nightShiftHours,
@@ -1583,7 +1583,7 @@ class _PayslipDialogState extends State<_PayslipDialog> {
               ] else ...[
                 _Row(s.baseSalaryMonthly, _fmt(p.baseSalary)),
                 _Row(s.actualWorkDays,
-                    '${p.presentDays ?? 0} / ${p.standardWorkDays ?? 22} ${s.daysSuffix}'),
+                    '${p.presentDays ?? 0} / ${formatDays(p.standardWorkDays ?? 22)} ${s.daysSuffix}'),
               ],
               const SizedBox(height: 4),
               // ── Thu nhập (chỉ hiện nếu có) ──

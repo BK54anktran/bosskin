@@ -14,6 +14,7 @@ String permissionModuleLabel(AppLocalizations s, String module) => switch (modul
       'COMPANY' => s.company,
       'LEAVE' => s.leave,
       'EXCEL' => s.permModuleExcel,
+      'CALENDAR' => s.permModuleCalendar,
       _ => module,
     };
 
@@ -57,6 +58,8 @@ String? permissionUiHint(AppLocalizations s, String code) => switch (code) {
       'COMPANY_SETTING_MANAGE' => s.permUiCompanySettingManage,
       'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permUiLeaveCreateForOthers,
       'AUDIT_VIEW' => s.permUiAuditView,
+      'CALENDAR_VIEW' => s.permUiCalendarView,
+      'CALENDAR_MANAGE' => s.permUiCalendarManage,
       _ => null,
     };
 
@@ -101,5 +104,7 @@ String permissionDescription(AppLocalizations s, String code, String fallback) =
       'LEAVE_REQUEST_CREATE_FOR_OTHERS' => s.permDescLeaveCreateForOthers,
       'DASHBOARD_VIEW' => s.permDescDashboardView,
       'AUDIT_VIEW' => s.permDescAuditView,
+      'CALENDAR_VIEW' => s.permDescCalendarView,
+      'CALENDAR_MANAGE' => s.permDescCalendarManage,
       _ => fallback,
     };

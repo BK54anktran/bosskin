@@ -45,6 +45,8 @@ public class CompanySettingDTO {
         private int payrollCutoffDay;
         /** Vùng lương tối thiểu 1–4 (trần BHTN), V13. */
         private int minWageRegion;
+        /** Bước J: công chuẩn đếm theo lịch tuần + ngày lễ thay cho số cố định. */
+        private boolean standardDaysFromCalendar;
     }
 
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
@@ -89,6 +91,8 @@ public class CompanySettingDTO {
         @NotNull private Integer payrollCutoffDay;
         /** Không gửi = giữ nguyên. */
         private Integer minWageRegion;
+        /** Không gửi = giữ nguyên. */
+        private Boolean standardDaysFromCalendar;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

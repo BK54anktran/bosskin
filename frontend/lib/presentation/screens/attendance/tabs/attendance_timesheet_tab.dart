@@ -17,6 +17,7 @@ import '../../../../data/services/department_service.dart';
 import '../../../widgets/department_picker_field.dart';
 import '../../../widgets/import_preview_dialog.dart';
 import '../attendance_shared.dart';
+import '../../../widgets/holiday_widgets.dart';
 import '../widgets/attendance_grid.dart';
 
 // ── Tab key ───────────────────────────────────────────────────────────────────
@@ -972,8 +973,10 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final isToday = row.date.year == DateTime.now().year &&
         row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
     final color = selected ? AppTheme.primary.withValues(alpha: 0.10)
+        : row.holidayName != null ? holidayCellColor
         : row.weekend ? const Color(0xFFFFF3E0)
         : isToday ? const Color(0xFFE3F2FD) : Colors.white;
+    final dayColor = row.holidayName != null ? holidayTextColor : row.weekend ? AppTheme.warning : null;
     final cell = Container(
       width: width, height: attRowHeight, alignment: Alignment.center,
       decoration: BoxDecoration(color: color, border: const Border(
@@ -982,12 +985,13 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       )),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text('${row.date.day}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-            color: row.weekend ? AppTheme.warning : (isToday ? AppTheme.primary : AppTheme.textPrimary))),
+            color: dayColor ?? (isToday ? AppTheme.primary : AppTheme.textPrimary))),
         Text(row.dayLabel, style: TextStyle(fontSize: 10,
-            color: row.weekend ? AppTheme.warning : AppTheme.textSecondary)),
+            color: dayColor ?? AppTheme.textSecondary)),
       ]),
     );
-    return onTap == null ? cell : GestureDetector(onTap: onTap, child: cell);
+    final tipped = row.holidayName == null ? cell : Tooltip(message: row.holidayName!, child: cell);
+    return onTap == null ? tipped : GestureDetector(onTap: onTap, child: tipped);
   }
 
   Widget _dateCellMerged(AttMergedTimesheetRow row, double height,
@@ -996,8 +1000,10 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final isToday = first.date.year == DateTime.now().year &&
         first.date.month == DateTime.now().month && first.date.day == DateTime.now().day;
     final color = selected ? AppTheme.primary.withValues(alpha: 0.10)
+        : row.holidayName != null ? holidayCellColor
         : row.weekend ? const Color(0xFFFFF3E0)
         : isToday ? const Color(0xFFE3F2FD) : Colors.white;
+    final dayColor = row.holidayName != null ? holidayTextColor : row.weekend ? AppTheme.warning : null;
     final cell = Container(
       width: width, height: height, alignment: Alignment.center,
       decoration: BoxDecoration(color: color, border: const Border(
@@ -1006,12 +1012,13 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       )),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text('${first.date.day}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-            color: row.weekend ? AppTheme.warning : (isToday ? AppTheme.primary : AppTheme.textPrimary))),
+            color: dayColor ?? (isToday ? AppTheme.primary : AppTheme.textPrimary))),
         Text(first.dayLabel, style: TextStyle(fontSize: 10,
-            color: row.weekend ? AppTheme.warning : AppTheme.textSecondary)),
+            color: dayColor ?? AppTheme.textSecondary)),
       ]),
     );
-    return onTap == null ? cell : GestureDetector(onTap: onTap, child: cell);
+    final tipped = row.holidayName == null ? cell : Tooltip(message: row.holidayName!, child: cell);
+    return onTap == null ? tipped : GestureDetector(onTap: onTap, child: tipped);
   }
 
   Widget _inlineCellT({
@@ -1063,6 +1070,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final isToday = row.date.year == DateTime.now().year &&
         row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
     final bg = selected ? AppTheme.primary.withValues(alpha: 0.08)
+        : row.holidayName != null ? holidayCellColor
         : row.weekend ? const Color(0xFFFFF3E0)
         : isToday ? const Color(0xFFE3F2FD) : Colors.white;
 

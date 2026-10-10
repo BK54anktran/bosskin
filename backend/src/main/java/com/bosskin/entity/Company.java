@@ -122,6 +122,11 @@ public class Company extends BaseEntity {
     @Builder.Default
     private int standardWorkDays = 22;
 
+    /** Bước J: true = công chuẩn kỳ lương đếm theo lịch tuần + ngày lễ; false = số cố định standardWorkDays. */
+    @Column(name = "standard_days_from_calendar", nullable = false)
+    @Builder.Default
+    private boolean standardDaysFromCalendar = false;
+
     @Column(name = "payroll_cutoff_day", nullable = false)
     @Builder.Default
     private int payrollCutoffDay = 1;

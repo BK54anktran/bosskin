@@ -147,7 +147,8 @@ class ShiftPlanRepository {
           required String from,
           required String to,
           int startOffset = 0,
-          int staggerPerEmployee = 0}) =>
+          int staggerPerEmployee = 0,
+          bool skipHolidays = false}) =>
       _api.post(
         '/shift-rotations/$rotationId/generate',
         (d) => RotationGenerateResult.fromJson(d as Map<String, dynamic>),
@@ -157,6 +158,7 @@ class ShiftPlanRepository {
           'to': to,
           'startOffset': startOffset,
           'staggerPerEmployee': staggerPerEmployee,
+          'skipHolidays': skipHolidays,
         },
       );
 

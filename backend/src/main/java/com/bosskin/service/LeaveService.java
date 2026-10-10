@@ -35,6 +35,7 @@ public class LeaveService {
     private final DeptScopeService deptScopeService;
     private final AttendanceRepository attendanceRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
+    private final WorkCalendarService workCalendarService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -200,6 +201,11 @@ public class LeaveService {
         Map<LocalDate, List<ShiftAssignment>> schedule = scheduleAround(emp.getId(), req.getFromDate(), req.getToDate());
         if (!schedule.isEmpty() && !schedule.containsKey(req.getFromDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.no_shift_days");
+        }
+        // Bước J: ngày lễ / nghỉ bù không cần xin nghỉ
+        if (workCalendarService.view(emp.getCompany().getId(), req.getFromDate(), req.getFromDate())
+                .isHolidayOff(req.getFromDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.holiday|" + req.getFromDate());
         }
         if (req.getMode() == LeaveRequest.Mode.HOUR_RANGE && req.getFromTime() != null && req.getToTime() != null
                 && req.getToTime().isAfter(req.getFromTime())) {
@@ -660,9 +666,11 @@ public class LeaveService {
         // L11: chỉ tính ngày có ca. NV đã được xếp ca trong khoảng này → bỏ ngày không có ca (T7, CN, ngày nghỉ);
         // chưa xếp ca ngày nào → giữ cách tính theo lịch như cũ.
         Map<LocalDate, List<ShiftAssignment>> schedule = scheduleAround(emp.getId(), req.getFromDate(), req.getToDate());
+        // Bước J: không tính ngày lễ / nghỉ bù
+        var calendar = workCalendarService.view(emp.getCompany().getId(), req.getFromDate(), req.getToDate());
         java.util.List<LocalDate> leaveDays = new java.util.ArrayList<>();
         for (LocalDate d = req.getFromDate(); !d.isAfter(req.getToDate()); d = d.plusDays(1)) {
-            if (schedule.isEmpty() || schedule.containsKey(d)) leaveDays.add(d);
+            if ((schedule.isEmpty() || schedule.containsKey(d)) && !calendar.isHolidayOff(d)) leaveDays.add(d);
         }
         if (leaveDays.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.no_shift_days");

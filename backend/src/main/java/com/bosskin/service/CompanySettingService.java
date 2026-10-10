@@ -62,6 +62,9 @@ public class CompanySettingService {
                 }
                 c.setMinWageRegion(region);
             }
+            if (req.getPayroll().getStandardDaysFromCalendar() != null) {
+                c.setStandardDaysFromCalendar(req.getPayroll().getStandardDaysFromCalendar());
+            }
         }
         if (req.getAttendance().getDeviceBindingEnabled() != null) {
             c.setDeviceBindingEnabled(req.getAttendance().getDeviceBindingEnabled());
@@ -154,6 +157,7 @@ public class CompanySettingService {
                 .standardWorkDays(c.getStandardWorkDays())
                 .payrollCutoffDay(c.getPayrollCutoffDay())
                 .minWageRegion(c.getMinWageRegion())
+                .standardDaysFromCalendar(c.isStandardDaysFromCalendar())
                 .build())
             .build();
     }

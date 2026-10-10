@@ -30,6 +30,7 @@ public class ShiftRotationService {
     private final WorkShiftRepository shiftRepo;
     private final EmployeeRepository employeeRepo;
     private final WorkShiftService shiftService;
+    private final WorkCalendarService workCalendarService;
 
     @Transactional(readOnly = true)
     public List<ShiftRotationDTO.Response> list(Long companyId) {
@@ -83,13 +84,15 @@ public class ShiftRotationService {
         int assigned = 0, cleared = 0, unchanged = 0;
         List<ShiftRotationDTO.Conflict> conflicts = new ArrayList<>();
         List<Long> empIds = req.getEmployeeIds();
+        WorkCalendarService.CalendarView calendar = req.isSkipHolidays()
+            ? workCalendarService.view(companyId, req.getFrom(), req.getTo()) : WorkCalendarService.CalendarView.defaults();
         for (int i = 0; i < empIds.size(); i++) {
             Employee emp = employeeRepo.findByIdAndCompanyId(empIds.get(i), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
             for (LocalDate d = req.getFrom(); !d.isAfter(req.getTo()); d = d.plusDays(1)) {
                 long k = ChronoUnit.DAYS.between(req.getFrom(), d) + req.getStartOffset()
                     + (long) i * req.getStaggerPerEmployee();
-                List<Long> shiftIds = days.get((int) Math.floorMod(k, (long) n));
+                List<Long> shiftIds = calendar.isHolidayOff(d) ? List.of() : days.get((int) Math.floorMod(k, (long) n));
                 try {
                     switch (shiftService.applyRotationDay(companyId, emp.getId(), d, shiftIds, createdBy)) {
                         case ASSIGNED -> assigned++;

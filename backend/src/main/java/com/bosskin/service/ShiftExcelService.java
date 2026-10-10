@@ -35,6 +35,7 @@ public class ShiftExcelService {
     private final com.bosskin.repository.EmployeeRepository employeeRepo;
     private final DeptScopeService deptScopeService;
     private final ExcelI18n excelI18n;
+    private final WorkCalendarService workCalendarService;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -68,6 +69,9 @@ public class ShiftExcelService {
         // Build date list
         List<LocalDate> dates = new ArrayList<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) dates.add(d);
+        // Bước J: ngày nghỉ theo lịch làm việc + ngày lễ (thay cho T7/CN cố định)
+        WorkCalendarService.CalendarView calendar = workCalendarService.view(companyId, from, to);
+        Map<Long, Long> empDeptIds = new HashMap<>();
 
         // All employees sorted by name, filtered by department if specified
         List<com.bosskin.entity.Employee> allEmps = employeeRepo.findAllByCompanyIdFetchDepartment(companyId)
@@ -89,6 +93,7 @@ public class ShiftExcelService {
             empCodes.put(e.getId(), e.getEmployeeCode());
             empNames.put(e.getId(), e.getFullName());
             empDepts.put(e.getId(), e.getDepartment() != null ? e.getDepartment().getName() : "");
+            if (e.getDepartment() != null) empDeptIds.put(e.getId(), e.getDepartment().getId());
             grid.put(e.getId(), new HashMap<>());
         }
 
@@ -189,7 +194,7 @@ public class ShiftExcelService {
             }
             for (int c = 0; c < dates.size(); c++) {
                 LocalDate d = dates.get(c);
-                boolean weekend = d.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || d.getDayOfWeek() == java.time.DayOfWeek.SUNDAY;
+                boolean weekend = calendar.isOff(null, d);
                 int dow = d.getDayOfWeek().getValue() % 7;
                 org.apache.poi.ss.usermodel.Cell cell = hRow.createCell(fixedCols.length + c);
                 cell.setCellValue(d.getDayOfMonth() + "/" + d.getMonthValue() + "\n" + WEEKDAY_VI[dow]);
@@ -224,7 +229,7 @@ public class ShiftExcelService {
                 }
                 for (int c = 0; c < dates.size(); c++) {
                     LocalDate d = dates.get(c);
-                    boolean weekend = d.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || d.getDayOfWeek() == java.time.DayOfWeek.SUNDAY;
+                    boolean weekend = calendar.isOff(empDeptIds.get(empId), d);
                     List<String> vals = dayMap.getOrDefault(d, List.of());
                     String val = String.join("\n", vals);
                     org.apache.poi.ss.usermodel.Cell cell = row.createCell(fixedCols.length + c);

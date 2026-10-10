@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>3. Luồng nghiệp vụ hiện tại</h1>
     <p>Mô tả các luồng đúng như code đang chạy. Ô <b style="color:var(--crit)">viền đỏ</b> trên sơ đồ là điểm còn rủi ro (chi tiết và trạng thái ở trang <a href="danh-gia.html">Đánh giá</a>).</p>
-    <p class="meta">Review gốc 08/10/2026 mô tả các luồng lúc đó (nhiều điểm lỗi). Trang này vẽ lại ngày 09/10/2026 theo code trên <code>main</code> sau Mốc 1–4, Bước 1, 2, A, C.</p>
+    <p class="meta">Review gốc 08/10/2026 mô tả các luồng lúc đó (nhiều điểm lỗi). Trang này vẽ lại ngày 09/10/2026 theo code trên <code>main</code> sau Mốc 1–4, Bước 1, 2, A, C; cập nhật 10/10/2026 thêm ngày lễ &amp; lịch làm việc (bước J, V14).</p>
   </section>
   <div class="card">
     <b>Bức tranh chung:</b> Công ty → Phòng ban/Nhân viên → <b>Phân ca</b> (đơn lẻ, hàng loạt, xoay ca, đổi ca) → Nhân viên <b>check-in/out</b> → Hệ thống <b>tính công</b> (tính tức thời) → Nhân viên gửi <b>đơn</b> bổ sung công / nghỉ phép → Quản lý <b>duyệt bảng công</b> (snapshot, có thể duyệt cả kỳ) → <b>khoá kỳ công</b> → HR <b>tạo bảng lương</b> từ công đã duyệt → Duyệt → Thanh toán → Nhân viên xem phiếu. Thao tác nhạy cảm ghi <b>nhật ký thao tác</b>.
@@ -38,6 +38,7 @@
     <li><a href="#tong">0. Luồng tổng từ ca đến lương</a></li>
     <li><a href="#onboard">1. Onboarding công ty & nhân viên</a></li>
     <li><a href="#ca">2. Phân ca</a></li>
+    <li><a href="#lich">2b. Ngày lễ &amp; lịch làm việc</a></li>
     <li><a href="#checkin">3. Check-in / Check-out</a></li>
     <li><a href="#tinhcong">4. Tính công</a></li>
     <li><a href="#don">5. Đơn chấm công & duyệt</a></li>
@@ -91,8 +92,18 @@ flowchart TD
     <li>Phân hàng loạt (<code>/assignments/bulk</code>): dùng chung kiểm tra với phân ca đơn lẻ (<code>validatePlacement</code>).</li>
     <li>Import Excel: xem trước (<code>/preview-import</code>) rồi đối chiếu từng ô — giữ ca không đổi, chỉ thêm/sửa/xoá ô khác; không xoá ca đã có công.</li>
     <li>Xoá ca: chặn khi ca đã duyệt hoặc đã có công / đơn chấm công.</li>
-    <li>Mẫu xoay ca (<code>/shift-rotations/{id}/generate</code>): sinh phân ca cho nhiều NV, lệch ngày từng người, ngày đã có công giữ nguyên.</li>
+    <li>Mẫu xoay ca (<code>/shift-rotations/{id}/generate</code>): sinh phân ca cho nhiều NV, lệch ngày từng người, ngày đã có công giữ nguyên; tuỳ chọn <code>skipHolidays</code> ("Bỏ qua ngày lễ") không xếp ca vào ngày lễ nghỉ.</li>
     <li>Đổi / nhường ca (<code>/shift-swaps</code>): NV gửi yêu cầu với đồng nghiệp, người có <code>SHIFT_SWAP_APPROVE</code> duyệt; kiểm chồng giờ và kỳ khoá.</li>
+  </ol>
+
+  <h2 id="lich">2b. Ngày lễ &amp; lịch làm việc</h2>
+  <ol class="steps">
+    <li>Ngày lễ theo năm (<code>/api/v1/holidays</code>): mẫu hệ thống (<code>company_id</code> NULL, system admin sửa ở <code>/admin/holidays</code>, có sẵn 2026–2027). Công ty chưa chỉnh năm nào thì dùng mẫu năm đó; lần thêm / sửa / xoá đầu tiên chép mẫu năm đó sang công ty, từ đó chỉ dùng danh sách của công ty. Loại <code>HOLIDAY</code> (cờ hưởng lương), <code>COMPENSATORY</code> (nghỉ bù), <code>SWAP_WORKDAY</code> (ngày nghỉ tuần thành ngày làm).</li>
+    <li>Nhập Excel: xem trước (<code>/preview-import</code>) theo ngày, cột "Xóa (x)" để xoá dòng, rồi mới <code>/import</code>. Mọi thao tác ghi nhật ký <code>HOLIDAY_*</code>, <code>HOLIDAY_TEMPLATE_*</code>, <code>WORK_CALENDAR_*</code>.</li>
+    <li>Lịch tuần (<code>/api/v1/work-calendars</code>): 7 ký tự T2→CN, F cả ngày / H nửa ngày / O nghỉ (mặc định <code>FFFFFOO</code>). Lịch của NV = lịch phòng ban → phòng cha → lịch mặc định công ty.</li>
+    <li>Bảng công, xem theo ngày, lưới phân ca, file Excel công / ca đọc lịch (<code>/work-calendars/view</code>) thay cho T7/CN cố định; dòng ngày lễ có <code>holidayName</code>, FE tô màu ngày lễ và ngày nghỉ.</li>
+    <li>Đơn nghỉ 1 ngày rơi vào ngày lễ nghỉ → <code>error.leave.holiday</code>; đơn nhiều ngày bỏ qua ngày lễ nghỉ.</li>
+    <li>Lương: công chuẩn theo lịch khi bật "Công chuẩn theo lịch làm việc" (xem mục 8). Ngày liền kề 2/9, nghỉ bù / hoán đổi cần đối chiếu thông báo chính thức hằng năm.</li>
   </ol>
 
   <h2 id="checkin">3. Check-in / Check-out (nhân viên tự chấm)</h2>
@@ -127,7 +138,7 @@ sequenceDiagram
   <div class="diagram"><pre class="mermaid">
 flowchart TD
   IN["GET /attendances/timesheet · /day-view"] --> K["Kỳ công theo ngày chốt (PayrollPeriod)"]
-  K --> L["Tải: công, đơn đã duyệt, phân ca, phép đã duyệt"]
+  K --> L["Tải: công, đơn đã duyệt, phân ca, phép đã duyệt,<br/>lịch tuần + ngày lễ (holidayName)"]
   L --> S["Mỗi ngày × slot"]
   S --> T["Giờ ca: snapshot của phân ca<br/>(ca linh hoạt: số phút phải làm)"]
   T --> RQ["Áp đơn sửa giờ đã duyệt:<br/>thay giờ thực (lùi được giờ)"]
@@ -138,7 +149,7 @@ flowchart TD
   OT --> FL["Trạng thái: LATE · EARLY_OUT · ON_TIME · OVERTIME · LEAVE<br/>(ca linh hoạt thiếu giờ = LATE)"]
   FL --> OUT["Hiển thị bảng công"]
   </pre></div>
-  <p class="cap">Hình 7. Chưa có hệ số OT theo luật (150/200/300%), trần OT tháng/năm, ngày lễ — xem "Thiếu sót" ở trang Đánh giá.</p>
+  <p class="cap">Hình 7. Ngày lễ và ngày nghỉ tuần lấy từ lịch làm việc (V14). Chưa có hệ số OT theo luật (150/200/300%), trần OT tháng/năm — xem "Thiếu sót" ở trang Đánh giá.</p>
 
   <h2 id="don">5. Đơn chấm công & duyệt</h2>
   <div class="grid g2">
@@ -224,14 +235,14 @@ stateDiagram-v2
   CANCELLED --> [*]
     </pre></div>
   </div>
-  <p class="cap">Nghỉ theo giờ trừ phần trùng giờ nghỉ giữa ca. Có lịch ca ±7 ngày mà ngày xin không có ca → <code>error.leave.no_shift_days</code>. Sổ trừ/hoàn xem ở hộp "Lịch sử phép" → tab "Sổ trừ/hoàn".</p>
+  <p class="cap">Nghỉ theo giờ trừ phần trùng giờ nghỉ giữa ca. Có lịch ca ±7 ngày mà ngày xin không có ca → <code>error.leave.no_shift_days</code>. Đơn 1 ngày vào ngày lễ nghỉ → <code>error.leave.holiday</code>; đơn nhiều ngày bỏ qua ngày lễ nghỉ. Sổ trừ/hoàn xem ở hộp "Lịch sử phép" → tab "Sổ trừ/hoàn".</p>
 
   <h2 id="luong">8. Bảng lương</h2>
   <div class="diagram"><pre class="mermaid">
 flowchart LR
   CF["Cấu hình: bậc lương (ngày/giờ),<br/>biến global, công thức gross/net"] --> GEN
   UI["FE gọi từng NV<br/>POST /payrolls/generate"] --> GEN["generatePayroll<br/>(kỳ theo ngày chốt)"]
-  GEN --> V["Biến hệ thống: giờ/ngày công, ngày phép có/không lương,<br/>STANDARD_WORK_DAYS, HOURS_PER_DAY, BASE_RATE..."]
+  GEN --> V["Biến hệ thống: giờ/ngày công, ngày phép có/không lương,<br/>STANDARD_WORK_DAYS (số cố định hoặc theo lịch),<br/>HOLIDAY_DAYS, HOLIDAY_OT_HOURS, HOURS_PER_DAY, BASE_RATE..."]
   V --> CV["Biến global + riêng<br/>theo thứ tự phụ thuộc, trước / sau GROSS"]
   CV --> GR["GROSS = biểu thức gross<br/>(IF chỉ tính nhánh chọn, ROUND)"]
   GR --> INS["BH / thuế là biến hệ thống<br/>theo chính sách thuế của kỳ (trần BH, giảm trừ, biểu thuế)<br/>dùng được trong NET"]
@@ -244,6 +255,7 @@ flowchart LR
   PAID --> SELF["NV xem /payrolls/self"]
   </pre></div>
   <p class="cap">Hình 8. Không tự duyệt / sửa / trả lương của chính mình (<code>error.payroll.cannot_process_own</code>). Lỗi công thức chỉ rõ biến và nhân viên. Mọi thao tác lương ghi nhật ký. Chưa có: BH theo lương HĐ có trần/sàn, người phụ thuộc, file chi lương ngân hàng (sau go-live).</p>
+  <div class="note"><b>Công chuẩn theo lịch</b> (cài đặt công ty "Công chuẩn theo lịch làm việc", <code>companies.standard_days_from_calendar</code>): tắt → <code>STANDARD_WORK_DAYS</code> là số cố định như cũ; bật → đếm từng ngày trong kỳ theo lịch của NV: ngày thường cộng F = 1 / H = 0,5, <code>SWAP_WORKDAY</code> cộng 1, ngày lễ nghỉ có lương cộng theo trọng số của thứ đó, ngày lễ không lương cộng 0. <code>HOLIDAY_DAYS</code> = số ngày lễ có lương trong kỳ (theo trọng số tuần), <code>HOLIDAY_OT_HOURS</code> = giờ làm vào ngày lễ nghỉ. Ví dụ 11/2026, lịch mặc định: 21 công (gồm 24/11 nghỉ có lương, <code>HOLIDAY_DAYS</code> = 1); phòng T7 làm sáng (<code>FFFFFHO</code>): 23. Phiếu lưu <code>standard_work_days</code> dạng <code>decimal(5,2)</code>.</div>
 
   <h2 id="nhac">9. Nhắc nhở push (FCM)</h2>
   <ol class="steps">
@@ -253,6 +265,6 @@ flowchart LR
     <li>Múi giờ JVM cố định <code>Asia/Ho_Chi_Minh</code>. Còn rủi ro: chạy nhiều instance gửi trùng (chưa có khoá phân tán).</li>
   </ol>
 </main>
-<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 09/10/2026</footer>
+<footer>BossKin · Tài liệu review nội bộ · 08/10/2026 · cập nhật 10/10/2026</footer>
 </body>
 </html>

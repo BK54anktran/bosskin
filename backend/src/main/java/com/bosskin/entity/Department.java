@@ -82,4 +82,8 @@ public class Department extends BaseEntity {
 
     @Column(name = "rounding_work_minutes")
     private Integer roundingWorkMinutes;
+
+    /** Bước J: lịch làm việc tuần riêng của phòng; null = theo phòng cha → lịch mặc định công ty. */
+    @Column(name = "work_calendar_id")
+    private Long workCalendarId;
 }

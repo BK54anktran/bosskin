@@ -142,11 +142,11 @@ function NewRole($name, $perms) {
 }
 $roleQL = NewRole 'Quản lý' @('ATTENDANCE_VIEW','ATTENDANCE_MANAGE','ATTENDANCE_APPROVE','ATTENDANCE_REQUEST_APPROVE',
   'ATTENDANCE_PERIOD_LOCK','SHIFT_VIEW','SHIFT_MANAGE','EMPLOYEE_VIEW','DEPARTMENT_VIEW','LEAVE_VIEW','LEAVE_REQUEST_APPROVE',
-  'DASHBOARD_VIEW','REPORT_VIEW')
+  'DASHBOARD_VIEW','REPORT_VIEW','CALENDAR_VIEW')
 $roleNS = NewRole 'Nhân sự' @('EMPLOYEE_VIEW','EMPLOYEE_CREATE','EMPLOYEE_UPDATE','DEPARTMENT_VIEW','DEPARTMENT_MANAGE',
   'POSITION_MANAGE','ATTENDANCE_VIEW','SHIFT_VIEW','SHIFT_MANAGE','LEAVE_VIEW','LEAVE_TYPE_VIEW','LEAVE_TYPE_MANAGE',
   'LEAVE_GRANT_MANUAL','LEAVE_ACCRUAL_VIEW','LEAVE_ACCRUAL_MANAGE','LEAVE_REQUEST_CREATE_FOR_OTHERS',
-  'EXCEL_EXPORT','EXCEL_IMPORT','DASHBOARD_VIEW','REPORT_VIEW')
+  'EXCEL_EXPORT','EXCEL_IMPORT','DASHBOARD_VIEW','REPORT_VIEW','CALENDAR_VIEW','CALENDAR_MANAGE')
 $roleKT = NewRole 'Kế toán' @('PAYROLL_VIEW','PAYROLL_CREATE','PAYROLL_APPROVE','PAYROLL_PAY','EMPLOYEE_VIEW',
   'ATTENDANCE_VIEW','DASHBOARD_VIEW','EXCEL_EXPORT')
 
@@ -289,12 +289,18 @@ foreach ($k in $emp.Keys) {
   Write-Host "  $($emp[$k].name): $($days.Count) ngày"
 }
 
+# ── 9a. Lịch làm việc (bước J): xưởng làm sáng thứ 7; ngày lễ dùng mẫu hệ thống (có 24/11) ─
+Step 'Lịch làm việc'
+Call POST '/api/v1/work-calendars' @{ name = 'Xưởng: T7 làm sáng'; weekPattern = 'FFFFFHO'; departmentIds = @($dept['SX']) } | Out-Null
+$hol = Call GET '/api/v1/holidays?year=2026'
+Write-Host "  $(@($hol.items).Count) ngày lễ 2026 (mẫu hệ thống)"
+
 # ── 9b. Xoay ca tháng 11: 2 ca 1 – 2 ca 2 – 2 ca đêm – 2 nghỉ cho 2 công nhân (lệch 2 ngày) ─
 Step 'Xoay ca tháng 11'
 $rot = Call POST '/api/v1/shift-rotations' @{ name = 'Xoay 2-2-2-2 (xưởng)'
   days = @(@($shift['CA1']), @($shift['CA1']), @($shift['CA2']), @($shift['CA2']), @($shift['DEM']), @($shift['DEM']), @(), @()) }
 $gen = Call POST "/api/v1/shift-rotations/$($rot.id)/generate" @{ employeeIds = @($emp['cn1'].id, $emp['cn2'].id)
-  from = '2026-11-01'; to = '2026-11-30'; startOffset = 0; staggerPerEmployee = 2 }
+  from = '2026-11-01'; to = '2026-11-30'; startOffset = 0; staggerPerEmployee = 2; skipHolidays = $true }
 Write-Host "  xếp $($gen.assignedDays) ngày, $(@($gen.conflicts).Count) ngày lỗi"
 # Mai làm ca linh hoạt cả tuần 02–06/11 (thay ca hành chính)
 for ($d = [datetime]'2026-11-02'; $d -le [datetime]'2026-11-06'; $d = $d.AddDays(1)) { Assign 'ktv' 'LH' $d }

@@ -27,7 +27,8 @@
 - Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`,
   `dev\reset-db.cmd` (xoá sạch DB dev, migrate lại, tạo system admin từ `BOOTSTRAP_SYSADMIN_*` trong `backend/.env`),
   `dev\seed-th.cmd` (công ty mẫu "TH company": 4 phòng ban, 8 NV có tài khoản, 4 vai trò, 7 ca gồm ca đêm, ca gãy và
-  ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân, 4 loại phép, công đã duyệt
+  ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân (bỏ qua ngày lễ), lịch "Xưởng: T7 làm sáng" (`FFFFFHO`)
+  cho Xưởng sản xuất, 4 loại phép, công đã duyệt
   01/09–07/10, đơn chờ duyệt (sửa giờ, nghỉ phép, đổi ca), bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
 - Cách chạy: chủ dự án bật `dev\runner.cmd` một lần (để cửa sổ mở). Claude ghi tên lệnh vào
@@ -347,9 +348,9 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `WorkShift` | `work_shifts` | ca làm việc |
 
 ## Migration version hiện tại
-Cao nhất: **V13** (`V13__tax_policies.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
-V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 chính sách thuế / BH
-→ Migration tiếp theo phải là **V14**
+Cao nhất: **V14** (`V14__holidays_work_calendars.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc
+→ Migration tiếp theo phải là **V15**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -397,6 +398,22 @@ V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13
 - Tối đa `WorkShiftService.MAX_SHIFTS_PER_DAY` = 4 ca/ngày; kiểm tra chồng giờ dùng `validatePlacement`.
 - Mẫu xoay ca `shift_rotations` (`/api/v1/shift-rotations`, sinh phân ca `/{id}/generate`), đổi/nhường ca
   `shift_swap_requests` (`/api/v1/shift-swaps`, quyền duyệt `SHIFT_SWAP_APPROVE`). Màn FE: tab "Xoay ca" ở Ca làm, màn "Đổi ca".
+
+## Ngày lễ & lịch làm việc (Bước J)
+- V14: `holidays` (`company_id` NULL = mẫu hệ thống theo năm; `type` HOLIDAY | COMPENSATORY | SWAP_WORKDAY, `paid`; unique `(company_key, date_key)`),
+  `work_calendars` (`week_pattern` 7 ký tự T2→CN: F cả ngày / H nửa ngày / O nghỉ, mặc định `FFFFFOO`; ≤ 1 lịch `is_default`/công ty),
+  `departments.work_calendar_id`, `companies.standard_days_from_calendar`, `payrolls.standard_work_days` decimal(5,2).
+- Copy-on-write: công ty chưa chỉnh năm nào thì dùng mẫu năm đó; lần thêm/sửa/xoá đầu tiên chép mẫu năm đó sang công ty.
+  System admin sửa mẫu ở `/admin/holidays` (tab "Ngày lễ mẫu"). Mẫu 2026–2027: ngày liền kề 2/9, nghỉ bù / hoán đổi phải đối chiếu thông báo hằng năm.
+- Lịch của NV: lịch phòng ban → phòng cha → mặc định công ty (`WorkCalendarService`, snapshot `CalendarView`). Không viết cứng T7/CN nữa.
+- API `/api/v1/holidays` (?year, CRUD, export, preview-import/import theo ngày, cột "Xóa (x)"), `/api/v1/work-calendars` (CRUD, `default`,
+  `departments`, `view?from&to` — đọc được với CALENDAR_VIEW / SHIFT_VIEW / ATTENDANCE_VIEW / ATTENDANCE_SELF). Quyền `CALENDAR_VIEW`/`CALENDAR_MANAGE`.
+  Nhật ký `HOLIDAY_*`, `HOLIDAY_TEMPLATE_*`, `WORK_CALENDAR_*`.
+- Lương: bật "Công chuẩn theo lịch làm việc" → `STANDARD_WORK_DAYS` = F 1 / H 0,5, SWAP_WORKDAY +1, lễ có lương + trọng số thứ đó, lễ không lương 0;
+  tắt → số cố định như cũ. Biến `HOLIDAY_DAYS`, `HOLIDAY_OT_HOURS`. Ví dụ 11/2026 lịch mặc định = 21 (24/11 nghỉ có lương), `FFFFFHO` = 23.
+- Đơn nghỉ 1 ngày vào ngày lễ nghỉ → `error.leave.holiday`; đơn nhiều ngày bỏ qua ngày lễ nghỉ. Sinh xoay ca có `skipHolidays`.
+- FE: Cài đặt công ty có tab "Chung" + "Lịch làm việc" (cần CALENDAR_VIEW); lưới ca và bảng công tô màu ngày lễ / ngày nghỉ (`holidayName`).
+  Test: `WorkCalendarTest`.
 
 ## Màn hình Flutter
 | Screen | Path |

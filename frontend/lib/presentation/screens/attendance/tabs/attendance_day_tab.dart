@@ -16,6 +16,7 @@ import '../../../../data/services/department_service.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../widgets/department_picker_field.dart';
 import '../attendance_shared.dart';
+import '../../../widgets/holiday_widgets.dart';
 import '../widgets/attendance_grid.dart';
 
 // ── Tab key ───────────────────────────────────────────────────────────────────
@@ -889,6 +890,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       {bool selected = false, VoidCallback? onTap}) {
     final first = row.first;
     final bg = selected ? AppTheme.primary.withValues(alpha: 0.10)
+        : row.holidayName != null ? holidayCellColor
         : row.weekend ? const Color(0xFFFFF3E0)
         : _isToday ? const Color(0xFFE3F2FD) : Colors.white;
     final cell = Container(

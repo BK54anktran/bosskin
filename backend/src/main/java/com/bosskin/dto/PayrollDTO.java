@@ -44,7 +44,7 @@ public class PayrollDTO {
         private String salaryGradeCode;
         private String salaryGradeName;
         private String payType;
-        private Integer standardWorkDays;
+        private java.math.BigDecimal standardWorkDays;
         @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate periodFrom;
         @JsonFormat(pattern = "yyyy-MM-dd")

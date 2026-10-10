@@ -36,6 +36,8 @@ public class ShiftRotationDTO {
         private int startOffset;
         /** Mỗi người sau lệch thêm bao nhiêu ngày so với người trước (để các tổ xoay so le). */
         private int staggerPerEmployee;
+        /** Bước J: ngày lễ / nghỉ bù để trống ca (chu kỳ vẫn chạy tiếp). */
+        private boolean skipHolidays;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

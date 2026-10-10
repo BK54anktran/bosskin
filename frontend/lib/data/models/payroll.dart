@@ -109,7 +109,8 @@ class Payroll {
   final DateTime? paidAt;
   final DateTime? approvedAt;
   final String? payType;
-  final int? standardWorkDays;
+  /// Công chuẩn kỳ — có thể lẻ nửa ngày khi tính theo lịch làm việc (bước J).
+  final num? standardWorkDays;
   final DateTime? periodFrom;
   final DateTime? periodTo;
 
@@ -201,7 +202,7 @@ class Payroll {
         paidAt: j['paidAt'] != null ? DateTime.tryParse(j['paidAt'] as String) : null,
         approvedAt: j['approvedAt'] != null ? DateTime.tryParse(j['approvedAt'] as String) : null,
         payType: j['payType'] as String?,
-        standardWorkDays: (j['standardWorkDays'] as num?)?.toInt(),
+        standardWorkDays: j['standardWorkDays'] as num?,
         periodFrom: j['periodFrom'] != null ? DateTime.tryParse(j['periodFrom'] as String) : null,
         periodTo: j['periodTo'] != null ? DateTime.tryParse(j['periodTo'] as String) : null,
       );

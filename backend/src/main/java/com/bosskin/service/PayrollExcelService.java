@@ -229,7 +229,7 @@ public class PayrollExcelService {
         row.setPayType(nvl(p.getPayType()));
         row.setPeriodFrom(p.getPeriodFrom() != null ? p.getPeriodFrom().format(DATE_FMT) : "");
         row.setPeriodTo(p.getPeriodTo() != null ? p.getPeriodTo().format(DATE_FMT) : "");
-        row.setStandardWorkDays(p.getStandardWorkDays() != null ? String.valueOf(p.getStandardWorkDays()) : "");
+        row.setStandardWorkDays(p.getStandardWorkDays() != null ? p.getStandardWorkDays().stripTrailingZeros().toPlainString() : "");
         row.setPresentDays(p.getPresentDays() != null ? String.valueOf(p.getPresentDays()) : "");
         row.setBaseSalary(fmtMoney(p.getBaseSalary()));
         row.setAllowance(fmtMoney(p.getAllowance()));
