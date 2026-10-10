@@ -38,8 +38,8 @@ public class FormulaEngine {
             // Thuế & bảo hiểm theo chính sách kỳ (bước I)
             "PERSONAL_DEDUCTION", "DEPENDENT_DEDUCTION", "DEPENDENTS", "FAMILY_DEDUCTION",
             "INSURANCE_BASE", "INSURANCE_CAP", "UNEMPLOYMENT_BASE", "UNEMPLOYMENT_CAP",
-            // Hợp đồng & thâm niên
-            "CONTRACT_SALARY",
+            // Hợp đồng & thâm niên (bước L: lương đóng BH, phụ cấp theo hợp đồng; ALLOWANCE_<mã> nhận động)
+            "CONTRACT_SALARY", "INSURANCE_SALARY", "CONTRACT_ALLOWANCE", "TAXABLE_ALLOWANCE", "NON_TAXABLE_ALLOWANCE",
             "TENURE_YEARS", "TENURE_MONTHS", "TENURE_DAYS",
             // Kết quả
             "GROSS"
@@ -124,7 +124,11 @@ public class FormulaEngine {
         put("HOLIDAY_OT_HOURS", new SystemVar("Tổng giờ làm vào ngày lễ / nghỉ bù",              "Chấm công — giờ"));
         // Lương & Hợp đồng
         put("BASE_RATE",          new SystemVar("Đơn giá cơ bản từ bậc lương",   "Lương & Hợp đồng"));
-        put("CONTRACT_SALARY",    new SystemVar("Lương cơ bản theo hợp đồng",    "Lương & Hợp đồng"));
+        put("CONTRACT_SALARY",    new SystemVar("Lương cơ bản theo hợp đồng (bình quân theo công chuẩn nếu đổi lương giữa kỳ)", "Lương & Hợp đồng"));
+        put("INSURANCE_SALARY",   new SystemVar("Lương đóng BH theo hợp đồng (chưa áp trần)", "Lương & Hợp đồng"));
+        put("CONTRACT_ALLOWANCE", new SystemVar("Tổng phụ cấp theo hợp đồng / phụ lục", "Lương & Hợp đồng"));
+        put("TAXABLE_ALLOWANCE",  new SystemVar("Phụ cấp hợp đồng chịu thuế TNCN", "Lương & Hợp đồng"));
+        put("NON_TAXABLE_ALLOWANCE", new SystemVar("Phụ cấp hợp đồng không chịu thuế TNCN", "Lương & Hợp đồng"));
         put("STANDARD_WORK_DAYS", new SystemVar("Số ngày công chuẩn của kỳ (cố định hoặc theo lịch làm việc)", "Lương & Hợp đồng"));
         put("HOURS_PER_DAY",      new SystemVar("Số giờ làm/ngày",              "Lương & Hợp đồng"));
         put("GROSS",              new SystemVar("Lương gộp (kết quả công thức Gross)", "Lương & Hợp đồng"));
@@ -334,7 +338,7 @@ public class FormulaEngine {
 
         // Check for unknown variables (FUNCTION tokens are always allowed if in BUILTIN_FUNCTIONS)
         for (Token t : tokens) {
-            if (t.type == TokenType.VARIABLE && !allowedVars.contains(t.value)) {
+            if (t.type == TokenType.VARIABLE && !allowedVars.contains(t.value) && !isContractAllowance(t.value)) {
                 errors.add("Biến không hợp lệ: " + t.value);
             }
         }
@@ -355,6 +359,11 @@ public class FormulaEngine {
         }
 
         return errors;
+    }
+
+    /** Bước L: ALLOWANCE_<mã phụ cấp hợp đồng> — mã do công ty đặt nên nhận theo tiền tố. */
+    public static boolean isContractAllowance(String name) {
+        return name != null && name.startsWith("ALLOWANCE_") && name.length() > "ALLOWANCE_".length();
     }
 
     // ─── Exception ─────────────────────────────────────────────────────────────
@@ -626,7 +635,8 @@ public class FormulaEngine {
                 consumeAny();
                 BigDecimal val = vars.get(t.value);
                 if (val == null) {
-                    if (skipDepth > 0) return BigDecimal.ZERO;
+                    // Bước L: phụ cấp hợp đồng mà nhân viên không có = 0
+                    if (skipDepth > 0 || isContractAllowance(t.value)) return BigDecimal.ZERO;
                     throw new FormulaEvaluationException("Biến chưa được gán giá trị: " + t.value);
                 }
                 return val;

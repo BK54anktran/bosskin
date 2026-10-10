@@ -32,6 +32,7 @@ public class EmployeeImportService {
     private final PasswordEncoder       passwordEncoder;
     private final DeptScopeService      deptScopeService;
     private final JobHistoryService     jobHistoryService;
+    private final com.bosskin.repository.LaborContractRepository laborContractRepo;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String DEFAULT_PASSWORD = "Bosskin@123";
@@ -313,7 +314,9 @@ public class EmployeeImportService {
                 if (!isBlank(row.getIdentityCard())) emp.setIdentityCard(row.getIdentityCard().trim());
                 if (!isBlank(row.getBankAccount()))  emp.setBankAccount(row.getBankAccount().trim());
                 if (!isBlank(row.getBankName()))     emp.setBankName(row.getBankName().trim());
-                if (!isBlank(row.getContractSalary()))emp.setContractSalary(parseMoney(row.getContractSalary()));
+                // Bước L: lương HĐ của NV đã có hợp đồng do hợp đồng quản lý — bỏ qua cột này
+                if (!isBlank(row.getContractSalary()) && !laborContractRepo.managesSalary(emp.getId()))
+                    emp.setContractSalary(parseMoney(row.getContractSalary()));
                 if (!isBlank(row.getStatus()))       emp.setStatus(parseStatus(row.getStatus()));
                 if (!isBlank(row.getDepartmentCode()))
                     emp.setDepartment(resolveDept(deptMap, row.getDepartmentCode(), code));
@@ -404,7 +407,7 @@ public class EmployeeImportService {
             if (!row.getSalaryGradeCode().trim().equalsIgnoreCase(empCode))
                 changes.add("excel.col.employee.salaryGradeCode:" + empCode + "→" + row.getSalaryGradeCode().trim());
         }
-        if (!isBlank(row.getContractSalary())) {
+        if (!isBlank(row.getContractSalary()) && !laborContractRepo.managesSalary(emp.getId())) {
             BigDecimal newVal = parseMoney(row.getContractSalary());
             if (newVal != null && (emp.getContractSalary() == null
                     || emp.getContractSalary().compareTo(newVal) != 0))
@@ -554,7 +557,7 @@ public class EmployeeImportService {
             emp.setBankAccount(isBlank(row.getBankAccount()) ? null : row.getBankAccount().trim());
         if (presentColumns.contains("employee.bankName"))
             emp.setBankName(isBlank(row.getBankName()) ? null : row.getBankName().trim());
-        if (presentColumns.contains("employee.contractSalary"))
+        if (presentColumns.contains("employee.contractSalary") && !laborContractRepo.managesSalary(emp.getId()))
             emp.setContractSalary(isBlank(row.getContractSalary()) ? null : parseMoney(row.getContractSalary()));
         if (presentColumns.contains("employee.departmentCode") && !isBlank(row.getDepartmentCode()))
             emp.setDepartment(resolveDept(deptMap, row.getDepartmentCode(), emp.getEmployeeCode()));

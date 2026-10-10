@@ -149,7 +149,8 @@
       <li>Không có file chi lương ngân hàng, phiếu lương PDF/email.</li>
     </ul></div>
     <div class="card"><b>Hồ sơ nhân sự</b><ul class="clean">
-      <li>Thiếu hợp đồng lao động, người phụ thuộc, MST, sổ BHXH, lịch sử công tác, tài liệu, onboarding/offboarding.</li>
+      <li><b>Đã có (10/10/2026):</b> lịch sử công tác + quản lý trực tiếp (V15), hợp đồng lao động + phụ lục + phụ cấp, cảnh báo hết hạn (V16).</li>
+      <li>Còn thiếu: người phụ thuộc, MST, sổ BHXH (bước M), tài liệu (bước N), onboarding/offboarding.</li>
     </ul></div>
     <div class="card"><b>Bảo mật doanh nghiệp</b><ul class="clean">
       <li><b>Đã có (10/2026):</b> nhật ký thao tác, 2FA (TOTP), khoá tạm sau nhiều lần sai, chính sách mật khẩu, bắt đổi mật khẩu lần đầu; không tự duyệt công / phép / lương của mình.</li>
@@ -263,7 +264,7 @@ expand(['O2','O4','L4','L17']).forEach(k => ST[k] = 'part');
 expand(['S11','A10','D5','F11']).forEach(k => ST[k] = 'later');
 /** Ghi chú trạng thái (10/10/2026). */
 const STN = {
-  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Trần BH theo chính sách xong (V13); lương đóng BH theo HĐ ở bước L', L17: 'Bậc lương + phòng ban theo quá trình công tác hiệu lực ở cuối kỳ (V15); chưa chia tỷ lệ khi đổi giữa kỳ, lương HĐ ở bước L',
+  S11: 'HTTPS ở Mốc 5 (AWS)', A10: 'Không cần: DB dựng lại từ V1 baseline', L4: 'Trần BH theo chính sách (V13); lương đóng BH theo HĐ + phụ cấp đóng BH (V16); còn thiếu sàn BH', L17: 'Bậc lương + phòng ban theo quá trình công tác ở cuối kỳ (V15); lương HĐ theo HĐ + phụ lục, chia theo công chuẩn khi đổi giữa kỳ (V16); bậc lương đổi giữa kỳ chưa chia tỷ lệ',
   L3: 'Công chuẩn theo lịch làm việc (tuỳ chọn, V14)', L11: 'Đơn nhiều ngày bỏ qua ngày lễ nghỉ (V14)',
   D5: 'Sau go-live, đợt 4', F11: 'Để sau go-live (tái cấu trúc dần)', F12: 'Cỡ chữ, cache xong; dark mode = bước F',
   O2: 'Múi giờ JVM + so khớp theo khoảng xong; chưa có khoá phân tán', O4: 'Health, request-id, .ebextensions xong; metrics/cảnh báo ở Mốc 5'

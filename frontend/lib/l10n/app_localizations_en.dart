@@ -4724,4 +4724,254 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActManagerReject => 'Direct manager rejected';
+
+  @override
+  String get contractsTitle => 'Labor contracts';
+
+  @override
+  String get contractNo => 'Contract no.';
+
+  @override
+  String get contractType => 'Contract type';
+
+  @override
+  String get contractTypeProbation => 'Probation';
+
+  @override
+  String get contractTypeFixedTerm => 'Fixed term';
+
+  @override
+  String get contractTypeIndefinite => 'Indefinite term';
+
+  @override
+  String get contractTypeSeasonal => 'Seasonal';
+
+  @override
+  String get contractTypeService => 'Service / freelance';
+
+  @override
+  String get contractStatusDraft => 'Draft';
+
+  @override
+  String get contractStatusActive => 'Active';
+
+  @override
+  String get contractStatusExpired => 'Expired';
+
+  @override
+  String get contractStatusTerminated => 'Terminated';
+
+  @override
+  String get contractNeedsRenewal => 'Needs renewal';
+
+  @override
+  String contractRenewalBanner(int count) {
+    return '$count contracts are expiring or overdue without a follow-up contract — tap to view';
+  }
+
+  @override
+  String get contractSignDate => 'Sign date';
+
+  @override
+  String get contractStartDate => 'Start date';
+
+  @override
+  String get contractEndDate => 'End date';
+
+  @override
+  String get contractBaseSalary => 'Base salary';
+
+  @override
+  String get contractInsuranceSalary => 'Insurance salary';
+
+  @override
+  String get contractInsuranceSalaryHint =>
+      'Blank = salary + insurable allowances';
+
+  @override
+  String get contractPositionTitle => 'Job title';
+
+  @override
+  String get contractCurrentSalary => 'Current salary';
+
+  @override
+  String get contractAllowances => 'Allowances';
+
+  @override
+  String get contractAllowanceAdd => 'Add allowance';
+
+  @override
+  String get contractAllowanceCode => 'Code';
+
+  @override
+  String get contractAllowanceName => 'Allowance name';
+
+  @override
+  String get contractAllowanceAmount => 'Amount';
+
+  @override
+  String get contractAllowanceInsurable => 'Insurable';
+
+  @override
+  String get contractAllowanceTaxable => 'Taxable';
+
+  @override
+  String get contractAllowanceNonTaxable => 'Non-taxable';
+
+  @override
+  String get contractAllowanceCodeHint =>
+      'Code uses A–Z, 0–9, _ — use it in payroll formulas as ALLOWANCE_<code>';
+
+  @override
+  String get contractAppendices => 'Appendices';
+
+  @override
+  String get contractAppendixAdd => 'Add appendix';
+
+  @override
+  String get contractAppendixEdit => 'Edit appendix';
+
+  @override
+  String get contractAppendixNo => 'Appendix no.';
+
+  @override
+  String contractAppendixCount(int count) {
+    return '$count appendices';
+  }
+
+  @override
+  String get contractAppendixKeepHint =>
+      'Blank fields keep the previous value. The new salary applies from the effective date; a pay period with a change is averaged by standard work days.';
+
+  @override
+  String get contractAppendixOverridesAllowances =>
+      'Replace allowances from this date';
+
+  @override
+  String contractEffectiveFrom(String date) {
+    return 'from $date';
+  }
+
+  @override
+  String get contractAdd => 'Add contract';
+
+  @override
+  String get contractEdit => 'Edit contract';
+
+  @override
+  String get contractActivate => 'Activate';
+
+  @override
+  String contractActivateConfirm(String no) {
+    return 'Activate contract $no? The employee\'s contract salary will follow this contract.';
+  }
+
+  @override
+  String get contractTerminate => 'Terminate';
+
+  @override
+  String contractTerminateTitle(String no) {
+    return 'Terminate contract $no';
+  }
+
+  @override
+  String get contractTerminationDate => 'Termination date (last working day)';
+
+  @override
+  String contractDeleteConfirm(String no) {
+    return 'Delete contract $no? Unapproved pay periods will no longer use it.';
+  }
+
+  @override
+  String contractAppendixDeleteConfirm(String no) {
+    return 'Delete appendix $no?';
+  }
+
+  @override
+  String contractDaysLeft(int days) {
+    return '$days days left';
+  }
+
+  @override
+  String contractOverdue(int days) {
+    return '$days days overdue';
+  }
+
+  @override
+  String get contractNoEnd => 'No end date';
+
+  @override
+  String get contractEmpty => 'No contracts yet';
+
+  @override
+  String get contractSearchHint =>
+      'Search contract no., name, code, department';
+
+  @override
+  String get contractSaved => 'Contract saved';
+
+  @override
+  String get contractRequiredFields => 'Fill in all fields marked *';
+
+  @override
+  String get dashboardRisksContractExpiring => 'Contracts to renew';
+
+  @override
+  String get companyContractWarningDays => 'Contract expiry warning (days)';
+
+  @override
+  String get companyContractWarningDaysHelper =>
+      'Contracts ending within this many days show under \"Needs renewal\" and on the Overview; HR is notified at this mark, 7 days and the last day.';
+
+  @override
+  String get permModuleContract => 'Labor contracts';
+
+  @override
+  String get permUiContractView =>
+      'Open the Contracts screen and see expiring contracts on the Overview';
+
+  @override
+  String get permUiContractEdit =>
+      'Add, edit, activate, terminate contracts and appendices, import Excel';
+
+  @override
+  String get permUiContractDelete => 'Delete contracts';
+
+  @override
+  String get permDescContractView =>
+      'View labor contracts, appendices and allowances (within department scope)';
+
+  @override
+  String get permDescContractEdit =>
+      'Create and edit contracts and appendices; contract salary feeds payroll';
+
+  @override
+  String get permDescContractDelete => 'Delete labor contracts';
+
+  @override
+  String get auditActContractCreate => 'Contract created';
+
+  @override
+  String get auditActContractUpdate => 'Contract updated';
+
+  @override
+  String get auditActContractActivate => 'Contract activated';
+
+  @override
+  String get auditActContractTerminate => 'Contract terminated';
+
+  @override
+  String get auditActContractDelete => 'Contract deleted';
+
+  @override
+  String get auditActContractAppendixCreate => 'Contract appendix added';
+
+  @override
+  String get auditActContractAppendixUpdate => 'Contract appendix updated';
+
+  @override
+  String get auditActContractAppendixDelete => 'Contract appendix deleted';
+
+  @override
+  String get auditActContractImport => 'Contracts imported from Excel';
 }

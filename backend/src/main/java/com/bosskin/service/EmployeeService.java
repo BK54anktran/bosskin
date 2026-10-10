@@ -48,6 +48,7 @@ public class EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final DeptScopeService deptScopeService;
     private final JobHistoryService jobHistoryService;
+    private final com.bosskin.repository.LaborContractRepository laborContractRepository;
 
     public PageResponse<EmployeeDTO.Response> findAll(
         Long companyId, Long userId, int page, int size, String search,
@@ -232,7 +233,14 @@ public class EmployeeService {
         } else {
             e.setSalaryGrade(null);
         }
-        if (req.getContractSalary() != null) e.setContractSalary(req.getContractSalary());
+        if (req.getContractSalary() != null
+                && (e.getContractSalary() == null || e.getContractSalary().compareTo(req.getContractSalary()) != 0)) {
+            // Bước L: có hợp đồng thì lương HĐ đổi bằng hợp đồng / phụ lục
+            if (laborContractRepository.managesSalary(e.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.contract.salary_managed_by_contract");
+            }
+            e.setContractSalary(req.getContractSalary());
+        }
         if (req.isManagerIdPresent()) {
             e.setManager(req.getManagerId() == null ? null : jobHistoryService.resolveManager(e, req.getManagerId(), companyId));
         }

@@ -146,7 +146,8 @@ $roleQL = NewRole 'Quản lý' @('ATTENDANCE_VIEW','ATTENDANCE_MANAGE','ATTENDAN
 $roleNS = NewRole 'Nhân sự' @('EMPLOYEE_VIEW','EMPLOYEE_CREATE','EMPLOYEE_UPDATE','DEPARTMENT_VIEW','DEPARTMENT_MANAGE',
   'POSITION_MANAGE','ATTENDANCE_VIEW','SHIFT_VIEW','SHIFT_MANAGE','LEAVE_VIEW','LEAVE_TYPE_VIEW','LEAVE_TYPE_MANAGE',
   'LEAVE_GRANT_MANUAL','LEAVE_ACCRUAL_VIEW','LEAVE_ACCRUAL_MANAGE','LEAVE_REQUEST_CREATE_FOR_OTHERS',
-  'EXCEL_EXPORT','EXCEL_IMPORT','DASHBOARD_VIEW','REPORT_VIEW','CALENDAR_VIEW','CALENDAR_MANAGE')
+  'EXCEL_EXPORT','EXCEL_IMPORT','DASHBOARD_VIEW','REPORT_VIEW','CALENDAR_VIEW','CALENDAR_MANAGE',
+  'CONTRACT_VIEW','CONTRACT_EDIT')
 $roleKT = NewRole 'Kế toán' @('PAYROLL_VIEW','PAYROLL_CREATE','PAYROLL_APPROVE','PAYROLL_PAY','EMPLOYEE_VIEW',
   'ATTENDANCE_VIEW','DASHBOARD_VIEW','EXCEL_EXPORT')
 
@@ -229,6 +230,39 @@ Call POST "/api/v1/employees/$($emp['cn3'].id)/job-histories" @{ effectiveFrom =
   departmentId = $dept['SX']; positionId = $pos['QD']; salaryGradeId = $gradeSX; managerId = $emp['gd'].id
   note = 'Lên quản đốc ca đêm' } | Out-Null
 Write-Host '  GD quản lý NS, KTT, QĐ; KTT quản lý KTV; QĐ quản lý 3 công nhân; công ty duyệt theo quyền (mặc định)'
+
+# ── 6c. Hợp đồng lao động (Bước L) ─────────────────────────────────────────
+Step 'Hợp đồng lao động'
+$lunch = @{ code = 'AN_TRUA'; name = 'Ăn trưa'; amount = 730000; insurable = $false; taxable = $false }
+$resp  = @{ code = 'TRACH_NHIEM'; name = 'Trách nhiệm'; amount = 2000000; insurable = $true; taxable = $true }
+$contracts = @(
+  # key, số HĐ, loại, bắt đầu, kết thúc, phụ cấp trách nhiệm
+  @('gd',  'TH-HD-001', 'INDEFINITE', '2025-01-02', $null,        $true),
+  @('ns',  'TH-HD-002', 'INDEFINITE', '2025-01-02', $null,        $true),
+  @('ktt', 'TH-HD-003', 'INDEFINITE', '2025-01-02', $null,        $true),
+  @('ktv', 'TH-HD-004', 'FIXED_TERM', '2025-01-02', '2026-10-31', $false),
+  @('qd',  'TH-HD-005', 'INDEFINITE', '2025-01-02', $null,        $true),
+  @('cn1', 'TH-HD-006', 'FIXED_TERM', '2025-01-02', '2026-12-31', $false),
+  @('cn2', 'TH-HD-007', 'FIXED_TERM', '2025-01-02', '2027-01-01', $false),
+  @('cn3', 'TH-HD-008', 'FIXED_TERM', '2025-01-02', '2027-12-31', $false)
+)
+$hd = @{}
+foreach ($c in $contracts) {
+  $allow = @($lunch); if ($c[5]) { $allow += $resp }
+  $hd[$c[0]] = (Call POST '/api/v1/contracts' @{ employeeId = $emp[$c[0]].id; contractNo = $c[1]; contractType = $c[2]
+    status = 'ACTIVE'; signDate = $c[3]; startDate = $c[3]; endDate = $c[4]; baseSalary = $person[$c[0]][7]
+    positionTitle = $null; allowances = $allow }).id
+}
+# Tài tăng lương giữa kỳ 9 (16/09) → bảng lương nháp tháng 9 tính bình quân theo công chuẩn
+Call POST "/api/v1/contracts/$($hd['cn1'])/appendices" @{ appendixNo = 'PL-01'; effectiveFrom = '2026-09-16'
+  baseSalary = 9600000; note = 'Tăng lương sau đánh giá' } | Out-Null
+# Nam lên quản đốc 01/12/2026: phụ lục đổi lương + chức danh + thêm phụ cấp trách nhiệm
+Call POST "/api/v1/contracts/$($hd['cn3'])/appendices" @{ appendixNo = 'PL-01'; effectiveFrom = '2026-12-01'
+  baseSalary = 15000000; positionTitle = 'Quản đốc ca đêm'; overridesAllowances = $true; allowances = @($lunch, $resp) } | Out-Null
+# Hợp đồng mới chờ ký cho Mai (nối tiếp HĐ hết hạn 31/10) — để nháp, HR kích hoạt khi ký
+Call POST '/api/v1/contracts' @{ employeeId = $emp['ktv'].id; contractNo = 'TH-HD-009'; contractType = 'FIXED_TERM'
+  status = 'DRAFT'; startDate = '2026-11-01'; endDate = '2028-10-31'; baseSalary = 14000000; allowances = @($lunch) } | Out-Null
+Write-Host '  8 hợp đồng hiệu lực (Mai hết hạn 31/10 → cần gia hạn, HĐ mới đang nháp), phụ lục tăng lương Tài 16/09, Nam 01/12'
 
 # ── 7. Phân ca: tháng 9 + tháng 10/2026 ─────────────────────────────────────
 Step 'Phân ca'

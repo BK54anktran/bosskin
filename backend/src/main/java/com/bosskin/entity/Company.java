@@ -135,6 +135,11 @@ public class Company extends BaseEntity {
     @Builder.Default
     private ApprovalMode approvalMode = ApprovalMode.PERMISSION;
 
+    /** Bước L: báo trước hợp đồng sắp hết hạn (ngày). */
+    @Column(name = "contract_expiry_warning_days", nullable = false)
+    @Builder.Default
+    private int contractExpiryWarningDays = 30;
+
     @Column(name = "payroll_cutoff_day", nullable = false)
     @Builder.Default
     private int payrollCutoffDay = 1;

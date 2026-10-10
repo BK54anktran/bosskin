@@ -8806,6 +8806,450 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Quản lý trực tiếp từ chối'**
   String get auditActManagerReject;
+
+  /// No description provided for @contractsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng lao động'**
+  String get contractsTitle;
+
+  /// No description provided for @contractNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số hợp đồng'**
+  String get contractNo;
+
+  /// No description provided for @contractType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại hợp đồng'**
+  String get contractType;
+
+  /// No description provided for @contractTypeProbation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử việc'**
+  String get contractTypeProbation;
+
+  /// No description provided for @contractTypeFixedTerm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác định thời hạn'**
+  String get contractTypeFixedTerm;
+
+  /// No description provided for @contractTypeIndefinite.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xác định thời hạn'**
+  String get contractTypeIndefinite;
+
+  /// No description provided for @contractTypeSeasonal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời vụ'**
+  String get contractTypeSeasonal;
+
+  /// No description provided for @contractTypeService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cộng tác / dịch vụ'**
+  String get contractTypeService;
+
+  /// No description provided for @contractStatusDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nháp'**
+  String get contractStatusDraft;
+
+  /// No description provided for @contractStatusActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu lực'**
+  String get contractStatusActive;
+
+  /// No description provided for @contractStatusExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết hạn'**
+  String get contractStatusExpired;
+
+  /// No description provided for @contractStatusTerminated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm dứt'**
+  String get contractStatusTerminated;
+
+  /// No description provided for @contractNeedsRenewal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần gia hạn'**
+  String get contractNeedsRenewal;
+
+  /// No description provided for @contractRenewalBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} hợp đồng sắp hết hạn hoặc đã quá hạn mà chưa có hợp đồng nối tiếp — bấm để xem'**
+  String contractRenewalBanner(int count);
+
+  /// No description provided for @contractSignDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày ký'**
+  String get contractSignDate;
+
+  /// No description provided for @contractStartDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày hiệu lực'**
+  String get contractStartDate;
+
+  /// No description provided for @contractEndDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày kết thúc'**
+  String get contractEndDate;
+
+  /// No description provided for @contractBaseSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương cơ bản'**
+  String get contractBaseSalary;
+
+  /// No description provided for @contractInsuranceSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương đóng BH'**
+  String get contractInsuranceSalary;
+
+  /// No description provided for @contractInsuranceSalaryHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trống = lương + phụ cấp đóng BH'**
+  String get contractInsuranceSalaryHint;
+
+  /// No description provided for @contractPositionTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức danh'**
+  String get contractPositionTitle;
+
+  /// No description provided for @contractCurrentSalary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương đang áp dụng'**
+  String get contractCurrentSalary;
+
+  /// No description provided for @contractAllowances.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ cấp'**
+  String get contractAllowances;
+
+  /// No description provided for @contractAllowanceAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm phụ cấp'**
+  String get contractAllowanceAdd;
+
+  /// No description provided for @contractAllowanceCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã'**
+  String get contractAllowanceCode;
+
+  /// No description provided for @contractAllowanceName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên phụ cấp'**
+  String get contractAllowanceName;
+
+  /// No description provided for @contractAllowanceAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền'**
+  String get contractAllowanceAmount;
+
+  /// No description provided for @contractAllowanceInsurable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng BH'**
+  String get contractAllowanceInsurable;
+
+  /// No description provided for @contractAllowanceTaxable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chịu thuế'**
+  String get contractAllowanceTaxable;
+
+  /// No description provided for @contractAllowanceNonTaxable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không chịu thuế'**
+  String get contractAllowanceNonTaxable;
+
+  /// No description provided for @contractAllowanceCodeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã gồm A–Z, 0–9, _ — dùng trong công thức lương là ALLOWANCE_<mã>'**
+  String get contractAllowanceCodeHint;
+
+  /// No description provided for @contractAppendices.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ lục'**
+  String get contractAppendices;
+
+  /// No description provided for @contractAppendixAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm phụ lục'**
+  String get contractAppendixAdd;
+
+  /// No description provided for @contractAppendixEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa phụ lục'**
+  String get contractAppendixEdit;
+
+  /// No description provided for @contractAppendixNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số phụ lục'**
+  String get contractAppendixNo;
+
+  /// No description provided for @contractAppendixCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} phụ lục'**
+  String contractAppendixCount(int count);
+
+  /// No description provided for @contractAppendixKeepHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô để trống giữ nguyên giá trị trước đó. Lương mới áp dụng từ ngày hiệu lực; kỳ lương có ngày đổi được tính bình quân theo công chuẩn.'**
+  String get contractAppendixKeepHint;
+
+  /// No description provided for @contractAppendixOverridesAllowances.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thay bộ phụ cấp từ ngày này'**
+  String get contractAppendixOverridesAllowances;
+
+  /// No description provided for @contractEffectiveFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'từ {date}'**
+  String contractEffectiveFrom(String date);
+
+  /// No description provided for @contractAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm hợp đồng'**
+  String get contractAdd;
+
+  /// No description provided for @contractEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa hợp đồng'**
+  String get contractEdit;
+
+  /// No description provided for @contractActivate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích hoạt'**
+  String get contractActivate;
+
+  /// No description provided for @contractActivateConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích hoạt hợp đồng {no}? Lương HĐ của nhân viên sẽ theo hợp đồng này.'**
+  String contractActivateConfirm(String no);
+
+  /// No description provided for @contractTerminate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm dứt'**
+  String get contractTerminate;
+
+  /// No description provided for @contractTerminateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm dứt hợp đồng {no}'**
+  String contractTerminateTitle(String no);
+
+  /// No description provided for @contractTerminationDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày chấm dứt (ngày làm việc cuối)'**
+  String get contractTerminationDate;
+
+  /// No description provided for @contractDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá hợp đồng {no}? Kỳ lương chưa duyệt sẽ không còn tính theo hợp đồng này.'**
+  String contractDeleteConfirm(String no);
+
+  /// No description provided for @contractAppendixDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá phụ lục {no}?'**
+  String contractAppendixDeleteConfirm(String no);
+
+  /// No description provided for @contractDaysLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {days} ngày'**
+  String contractDaysLeft(int days);
+
+  /// No description provided for @contractOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn {days} ngày'**
+  String contractOverdue(int days);
+
+  /// No description provided for @contractNoEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thời hạn'**
+  String get contractNoEnd;
+
+  /// No description provided for @contractEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có hợp đồng nào'**
+  String get contractEmpty;
+
+  /// No description provided for @contractSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm số HĐ, tên, mã NV, phòng ban'**
+  String get contractSearchHint;
+
+  /// No description provided for @contractSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu hợp đồng'**
+  String get contractSaved;
+
+  /// No description provided for @contractRequiredFields.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điền đủ các ô có dấu *'**
+  String get contractRequiredFields;
+
+  /// No description provided for @dashboardRisksContractExpiring.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng cần gia hạn'**
+  String get dashboardRisksContractExpiring;
+
+  /// No description provided for @companyContractWarningDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo trước hợp đồng hết hạn (ngày)'**
+  String get companyContractWarningDays;
+
+  /// No description provided for @companyContractWarningDaysHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng còn ít ngày hơn số này hiện ở \"Cần gia hạn\" và Tổng quan; HR nhận thông báo khi còn đúng số ngày này, 7 ngày và ngày cuối.'**
+  String get companyContractWarningDaysHelper;
+
+  /// No description provided for @permModuleContract.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng lao động'**
+  String get permModuleContract;
+
+  /// No description provided for @permUiContractView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở màn Hợp đồng, thấy cảnh báo hợp đồng hết hạn ở Tổng quan'**
+  String get permUiContractView;
+
+  /// No description provided for @permUiContractEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm / sửa / kích hoạt / chấm dứt hợp đồng, phụ lục, nhập Excel'**
+  String get permUiContractEdit;
+
+  /// No description provided for @permUiContractDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá hợp đồng'**
+  String get permUiContractDelete;
+
+  /// No description provided for @permDescContractView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem hợp đồng lao động, phụ lục, phụ cấp (theo phạm vi phòng ban)'**
+  String get permDescContractView;
+
+  /// No description provided for @permDescContractEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo / sửa hợp đồng và phụ lục; lương hợp đồng dùng cho bảng lương'**
+  String get permDescContractEdit;
+
+  /// No description provided for @permDescContractDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá hợp đồng lao động'**
+  String get permDescContractDelete;
+
+  /// No description provided for @auditActContractCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo hợp đồng'**
+  String get auditActContractCreate;
+
+  /// No description provided for @auditActContractUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa hợp đồng'**
+  String get auditActContractUpdate;
+
+  /// No description provided for @auditActContractActivate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích hoạt hợp đồng'**
+  String get auditActContractActivate;
+
+  /// No description provided for @auditActContractTerminate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm dứt hợp đồng'**
+  String get auditActContractTerminate;
+
+  /// No description provided for @auditActContractDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá hợp đồng'**
+  String get auditActContractDelete;
+
+  /// No description provided for @auditActContractAppendixCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm phụ lục hợp đồng'**
+  String get auditActContractAppendixCreate;
+
+  /// No description provided for @auditActContractAppendixUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa phụ lục hợp đồng'**
+  String get auditActContractAppendixUpdate;
+
+  /// No description provided for @auditActContractAppendixDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá phụ lục hợp đồng'**
+  String get auditActContractAppendixDelete;
+
+  /// No description provided for @auditActContractImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập hợp đồng từ Excel'**
+  String get auditActContractImport;
 }
 
 class _AppLocalizationsDelegate

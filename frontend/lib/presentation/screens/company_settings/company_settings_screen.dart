@@ -62,6 +62,8 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
   final _hoursPerDayCtrl = TextEditingController(text: '8');
   final _standardWorkDaysCtrl = TextEditingController(text: '22');
   final _cutoffDayCtrl = TextEditingController(text: '1');
+  /// Bước L: báo trước hợp đồng hết hạn (ngày)
+  final _contractWarningCtrl = TextEditingController(text: '30');
   int _minWageRegion = 1;
   bool _standardDaysFromCalendar = false;
   /// Bước K: PERMISSION (mặc định) | MANAGER_THEN_HR
@@ -94,6 +96,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
     _hoursPerDayCtrl.dispose();
     _standardWorkDaysCtrl.dispose();
     _cutoffDayCtrl.dispose();
+    _contractWarningCtrl.dispose();
     _checkInBeforeCtrl.dispose();
     _checkInAfterCtrl.dispose();
     _checkOutBeforeCtrl.dispose();
@@ -125,6 +128,8 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
         _minWageRegion = (payroll?['minWageRegion'] as num?)?.toInt() ?? 1;
         _standardDaysFromCalendar = payroll?['standardDaysFromCalendar'] == true;
         _approvalMode = ((data['approval'] as Map?)?['mode'] as String?) ?? 'PERMISSION';
+        _contractWarningCtrl.text =
+            (((data['contract'] as Map?)?['expiryWarningDays'] as num?)?.toInt() ?? 30).toString();
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
         _deviceBindingEnabled = attendance['deviceBindingEnabled'] == true;
         _checkInLat = (attendance['checkInLatitude'] as num?)?.toDouble();
@@ -261,6 +266,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
           'standardDaysFromCalendar': _standardDaysFromCalendar,
         },
         'approval': {'mode': _approvalMode},
+        'contract': {'expiryWarningDays': int.tryParse(_contractWarningCtrl.text.trim()) ?? 30},
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -390,6 +396,15 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                           const SizedBox(height: 4),
                           Text(s.approvalModeHelper,
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _contractWarningCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: s.companyContractWarningDays,
+                              helperText: s.companyContractWarningDaysHelper,
+                            ),
+                          ),
                         ],
                       ),
                     ),

@@ -4721,4 +4721,252 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActManagerReject => 'Quản lý trực tiếp từ chối';
+
+  @override
+  String get contractsTitle => 'Hợp đồng lao động';
+
+  @override
+  String get contractNo => 'Số hợp đồng';
+
+  @override
+  String get contractType => 'Loại hợp đồng';
+
+  @override
+  String get contractTypeProbation => 'Thử việc';
+
+  @override
+  String get contractTypeFixedTerm => 'Xác định thời hạn';
+
+  @override
+  String get contractTypeIndefinite => 'Không xác định thời hạn';
+
+  @override
+  String get contractTypeSeasonal => 'Thời vụ';
+
+  @override
+  String get contractTypeService => 'Cộng tác / dịch vụ';
+
+  @override
+  String get contractStatusDraft => 'Nháp';
+
+  @override
+  String get contractStatusActive => 'Hiệu lực';
+
+  @override
+  String get contractStatusExpired => 'Hết hạn';
+
+  @override
+  String get contractStatusTerminated => 'Chấm dứt';
+
+  @override
+  String get contractNeedsRenewal => 'Cần gia hạn';
+
+  @override
+  String contractRenewalBanner(int count) {
+    return '$count hợp đồng sắp hết hạn hoặc đã quá hạn mà chưa có hợp đồng nối tiếp — bấm để xem';
+  }
+
+  @override
+  String get contractSignDate => 'Ngày ký';
+
+  @override
+  String get contractStartDate => 'Ngày hiệu lực';
+
+  @override
+  String get contractEndDate => 'Ngày kết thúc';
+
+  @override
+  String get contractBaseSalary => 'Lương cơ bản';
+
+  @override
+  String get contractInsuranceSalary => 'Lương đóng BH';
+
+  @override
+  String get contractInsuranceSalaryHint => 'Trống = lương + phụ cấp đóng BH';
+
+  @override
+  String get contractPositionTitle => 'Chức danh';
+
+  @override
+  String get contractCurrentSalary => 'Lương đang áp dụng';
+
+  @override
+  String get contractAllowances => 'Phụ cấp';
+
+  @override
+  String get contractAllowanceAdd => 'Thêm phụ cấp';
+
+  @override
+  String get contractAllowanceCode => 'Mã';
+
+  @override
+  String get contractAllowanceName => 'Tên phụ cấp';
+
+  @override
+  String get contractAllowanceAmount => 'Số tiền';
+
+  @override
+  String get contractAllowanceInsurable => 'Đóng BH';
+
+  @override
+  String get contractAllowanceTaxable => 'Chịu thuế';
+
+  @override
+  String get contractAllowanceNonTaxable => 'Không chịu thuế';
+
+  @override
+  String get contractAllowanceCodeHint =>
+      'Mã gồm A–Z, 0–9, _ — dùng trong công thức lương là ALLOWANCE_<mã>';
+
+  @override
+  String get contractAppendices => 'Phụ lục';
+
+  @override
+  String get contractAppendixAdd => 'Thêm phụ lục';
+
+  @override
+  String get contractAppendixEdit => 'Sửa phụ lục';
+
+  @override
+  String get contractAppendixNo => 'Số phụ lục';
+
+  @override
+  String contractAppendixCount(int count) {
+    return '$count phụ lục';
+  }
+
+  @override
+  String get contractAppendixKeepHint =>
+      'Ô để trống giữ nguyên giá trị trước đó. Lương mới áp dụng từ ngày hiệu lực; kỳ lương có ngày đổi được tính bình quân theo công chuẩn.';
+
+  @override
+  String get contractAppendixOverridesAllowances =>
+      'Thay bộ phụ cấp từ ngày này';
+
+  @override
+  String contractEffectiveFrom(String date) {
+    return 'từ $date';
+  }
+
+  @override
+  String get contractAdd => 'Thêm hợp đồng';
+
+  @override
+  String get contractEdit => 'Sửa hợp đồng';
+
+  @override
+  String get contractActivate => 'Kích hoạt';
+
+  @override
+  String contractActivateConfirm(String no) {
+    return 'Kích hoạt hợp đồng $no? Lương HĐ của nhân viên sẽ theo hợp đồng này.';
+  }
+
+  @override
+  String get contractTerminate => 'Chấm dứt';
+
+  @override
+  String contractTerminateTitle(String no) {
+    return 'Chấm dứt hợp đồng $no';
+  }
+
+  @override
+  String get contractTerminationDate => 'Ngày chấm dứt (ngày làm việc cuối)';
+
+  @override
+  String contractDeleteConfirm(String no) {
+    return 'Xoá hợp đồng $no? Kỳ lương chưa duyệt sẽ không còn tính theo hợp đồng này.';
+  }
+
+  @override
+  String contractAppendixDeleteConfirm(String no) {
+    return 'Xoá phụ lục $no?';
+  }
+
+  @override
+  String contractDaysLeft(int days) {
+    return 'Còn $days ngày';
+  }
+
+  @override
+  String contractOverdue(int days) {
+    return 'Quá hạn $days ngày';
+  }
+
+  @override
+  String get contractNoEnd => 'Không thời hạn';
+
+  @override
+  String get contractEmpty => 'Chưa có hợp đồng nào';
+
+  @override
+  String get contractSearchHint => 'Tìm số HĐ, tên, mã NV, phòng ban';
+
+  @override
+  String get contractSaved => 'Đã lưu hợp đồng';
+
+  @override
+  String get contractRequiredFields => 'Điền đủ các ô có dấu *';
+
+  @override
+  String get dashboardRisksContractExpiring => 'Hợp đồng cần gia hạn';
+
+  @override
+  String get companyContractWarningDays => 'Báo trước hợp đồng hết hạn (ngày)';
+
+  @override
+  String get companyContractWarningDaysHelper =>
+      'Hợp đồng còn ít ngày hơn số này hiện ở \"Cần gia hạn\" và Tổng quan; HR nhận thông báo khi còn đúng số ngày này, 7 ngày và ngày cuối.';
+
+  @override
+  String get permModuleContract => 'Hợp đồng lao động';
+
+  @override
+  String get permUiContractView =>
+      'Mở màn Hợp đồng, thấy cảnh báo hợp đồng hết hạn ở Tổng quan';
+
+  @override
+  String get permUiContractEdit =>
+      'Thêm / sửa / kích hoạt / chấm dứt hợp đồng, phụ lục, nhập Excel';
+
+  @override
+  String get permUiContractDelete => 'Xoá hợp đồng';
+
+  @override
+  String get permDescContractView =>
+      'Xem hợp đồng lao động, phụ lục, phụ cấp (theo phạm vi phòng ban)';
+
+  @override
+  String get permDescContractEdit =>
+      'Tạo / sửa hợp đồng và phụ lục; lương hợp đồng dùng cho bảng lương';
+
+  @override
+  String get permDescContractDelete => 'Xoá hợp đồng lao động';
+
+  @override
+  String get auditActContractCreate => 'Tạo hợp đồng';
+
+  @override
+  String get auditActContractUpdate => 'Sửa hợp đồng';
+
+  @override
+  String get auditActContractActivate => 'Kích hoạt hợp đồng';
+
+  @override
+  String get auditActContractTerminate => 'Chấm dứt hợp đồng';
+
+  @override
+  String get auditActContractDelete => 'Xoá hợp đồng';
+
+  @override
+  String get auditActContractAppendixCreate => 'Thêm phụ lục hợp đồng';
+
+  @override
+  String get auditActContractAppendixUpdate => 'Sửa phụ lục hợp đồng';
+
+  @override
+  String get auditActContractAppendixDelete => 'Xoá phụ lục hợp đồng';
+
+  @override
+  String get auditActContractImport => 'Nhập hợp đồng từ Excel';
 }

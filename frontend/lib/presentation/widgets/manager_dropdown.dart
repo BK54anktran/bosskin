@@ -6,11 +6,13 @@ import '../../data/repositories/employee_repository.dart';
 
 /// Bước K — chọn quản lý trực tiếp (nhân viên đang làm, trừ chính người đang sửa).
 /// Backend kiểm vòng lặp quản lý; ở đây chỉ loại chính mình.
+/// Bước L dùng lại để chọn nhân viên cho hợp đồng ([allowNone] = false, [label] = Nhân viên).
 class ManagerDropdown extends StatefulWidget {
   final int? value;
   final int? excludeEmployeeId;
   final ValueChanged<int?> onChanged;
   final String? label;
+  final bool allowNone;
 
   const ManagerDropdown({
     super.key,
@@ -18,6 +20,7 @@ class ManagerDropdown extends StatefulWidget {
     required this.onChanged,
     this.excludeEmployeeId,
     this.label,
+    this.allowNone = true,
   });
 
   @override
@@ -60,7 +63,7 @@ class _ManagerDropdownState extends State<ManagerDropdown> {
       borderRadius: BorderRadius.circular(12),
       decoration: InputDecoration(labelText: label, isDense: true),
       items: [
-        DropdownMenuItem<int?>(value: null, child: Text(s.directManagerNone)),
+        if (widget.allowNone) DropdownMenuItem<int?>(value: null, child: Text(s.directManagerNone)),
         ...options.map((e) => DropdownMenuItem<int?>(
               value: e.id,
               child: Text('${e.fullName} · ${e.employeeCode} · ${e.departmentName}', overflow: TextOverflow.ellipsis),

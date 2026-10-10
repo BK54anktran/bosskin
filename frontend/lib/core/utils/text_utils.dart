@@ -1,4 +1,5 @@
 import 'package:bosskin/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 /// Trả về chuỗi kỳ lương: "25/04 – 24/05/2026" nếu có period, fallback "Tháng 5/2026"
 String formatPayrollPeriod(AppLocalizations s, DateTime? from, DateTime? to, int month, int year) {
@@ -28,3 +29,8 @@ String formatDays(num v) {
   if (v == v.roundToDouble()) return v.toInt().toString();
   return v.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
 }
+
+final _moneyFmt = NumberFormat('#,###', 'vi_VN');
+
+/// Số tiền có phân cách nghìn: 12000000 → "12.000.000"; null → "—".
+String formatMoney(num? v) => v == null ? '—' : _moneyFmt.format(v);

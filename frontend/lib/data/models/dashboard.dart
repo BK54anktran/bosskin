@@ -434,6 +434,8 @@ class DashboardRiskData {
   final List<DashboardMissingCheckoutRisk> missingCheckout;
   final List<DashboardProbationEndingRisk> probationEnding;
   final List<DashboardNoSalaryGradeRisk> noSalaryGrade;
+  /// Bước L: hợp đồng cần gia hạn (chỉ có khi có quyền CONTRACT_VIEW).
+  final List<DashboardContractExpiringRisk> contractExpiring;
   final int totalWarnings;
 
   const DashboardRiskData({
@@ -441,6 +443,7 @@ class DashboardRiskData {
     required this.missingCheckout,
     required this.probationEnding,
     required this.noSalaryGrade,
+    this.contractExpiring = const [],
     required this.totalWarnings,
   });
 
@@ -456,6 +459,9 @@ class DashboardRiskData {
             .toList(),
         noSalaryGrade: (j['noSalaryGrade'] as List? ?? const [])
             .map((e) => DashboardNoSalaryGradeRisk.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        contractExpiring: (j['contractExpiring'] as List? ?? const [])
+            .map((e) => DashboardContractExpiringRisk.fromJson(e as Map<String, dynamic>))
             .toList(),
         totalWarnings: (j['totalWarnings'] as num).toInt(),
       );
@@ -561,5 +567,27 @@ class DashboardNoSalaryGradeRisk {
         employeeCode: j['employeeCode'] ?? '',
         employeeName: j['employeeName'] ?? '',
         departmentName: j['departmentName'],
+      );
+}
+
+class DashboardContractExpiringRisk {
+  final int contractId;
+  final String employeeName;
+  final String contractNo;
+  /// Âm = đã quá hạn.
+  final int daysLeft;
+
+  const DashboardContractExpiringRisk({
+    required this.contractId,
+    required this.employeeName,
+    required this.contractNo,
+    required this.daysLeft,
+  });
+
+  factory DashboardContractExpiringRisk.fromJson(Map<String, dynamic> j) => DashboardContractExpiringRisk(
+        contractId: (j['contractId'] as num).toInt(),
+        employeeName: (j['employeeName'] ?? '').toString(),
+        contractNo: (j['contractNo'] ?? '').toString(),
+        daysLeft: (j['daysLeft'] as num?)?.toInt() ?? 0,
       );
 }

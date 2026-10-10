@@ -80,6 +80,19 @@ public class Api {
         }
     }
 
+    /** Tải file (xuất Excel) — trả nguyên byte. */
+    public byte[] download(String token, String url) {
+        try {
+            MockHttpServletRequestBuilder req = request(HttpMethod.GET, url);
+            if (token != null) req.header("Authorization", "Bearer " + token);
+            MockHttpServletResponse r = mvc.perform(req).andReturn().getResponse();
+            if (r.getStatus() != 200) throw new IllegalStateException("GET " + url + " → " + r.getStatus());
+            return r.getContentAsByteArray();
+        } catch (Exception e) {
+            throw new IllegalStateException("DOWNLOAD " + url + " lỗi: " + e.getMessage(), e);
+        }
+    }
+
     /** Gửi file multipart (field "file") — dùng cho /preview-import, /import. */
     public Res upload(String token, String url, String filename, byte[] bytes) {
         try {

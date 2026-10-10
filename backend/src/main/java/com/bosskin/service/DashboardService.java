@@ -45,6 +45,7 @@ public class DashboardService {
     private final PayrollRepository payrollRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final AttendanceCalculationService calcSvc;
+    private final ContractService contractService;
 
     @Transactional(readOnly = true)
     public DashboardDTO.Response getDashboard(User user, Long departmentId, LocalDate date) {
@@ -556,12 +557,28 @@ public class DashboardService {
                 .build());
         }
 
-        int total = repeatedLate.size() + missingCheckout.size() + probationEnding.size() + noSalaryGrade.size();
+        // 5. Bước L: hợp đồng cần gia hạn (theo số ngày báo trước của công ty)
+        List<DashboardDTO.ContractExpiringRisk> contractExpiring = new ArrayList<>();
+        if (user.hasPermission("CONTRACT_VIEW")) {
+            for (var c : contractService.expiring(companyId, user.getId(), null)) {
+                if (departmentId != null && !departmentId.equals(c.getDepartmentId())) continue;
+                contractExpiring.add(DashboardDTO.ContractExpiringRisk.builder()
+                    .contractId(c.getId()).employeeId(c.getEmployeeId()).employeeCode(c.getEmployeeCode())
+                    .employeeName(c.getEmployeeName()).departmentName(c.getDepartmentName())
+                    .contractNo(c.getContractNo()).endDate(c.getEndDate())
+                    .daysLeft(c.getDaysToEnd() != null ? c.getDaysToEnd() : 0)
+                    .build());
+            }
+        }
+
+        int total = repeatedLate.size() + missingCheckout.size() + probationEnding.size() + noSalaryGrade.size()
+            + contractExpiring.size();
         return DashboardDTO.RiskResponse.builder()
             .repeatedLate(repeatedLate)
             .missingCheckout(missingCheckout)
             .probationEnding(probationEnding)
             .noSalaryGrade(noSalaryGrade)
+            .contractExpiring(contractExpiring)
             .totalWarnings(total)
             .build();
     }

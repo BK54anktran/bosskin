@@ -52,6 +52,7 @@ public class PayrollService {
     private final TaxPolicyService           taxPolicyService;
     private final WorkCalendarService        workCalendarService;
     private final JobHistoryService          jobHistoryService;
+    private final ContractService            contractService;
 
     @Transactional
     public Payroll generatePayroll(Long employeeId, int year, int month) {
@@ -170,9 +171,11 @@ public class PayrollService {
 
         // Bước J: công chuẩn / ngày lễ theo lịch tuần của phòng + danh sách ngày lễ
         WorkCalendarService.CalendarView calendar = workCalendarService.view(employee.getCompany().getId(), period.from(), period.to());
+        Long effectiveDeptId = effective.department() != null ? effective.department().getId() : null;
         Map<String, BigDecimal> vars = buildFormulaVariables(attendances, baseSalary, employee, period, calendar,
-            effective.department() != null ? effective.department().getId() : null);
-        putTaxPolicyVars(vars, policy, employee, baseSalary);
+            effectiveDeptId);
+        putContractVars(vars, contractService.payTerms(employee, period, calendar, effectiveDeptId), baseSalary);
+        putTaxPolicyVars(vars, policy, employee);
 
         List<FormulaVariable> globalVarList = formulaVariableRepository
             .findByCompanyIdOrderByName(employee.getCompany().getId());
@@ -215,7 +218,7 @@ public class PayrollService {
             // Giai đoạn 2: biến phụ thuộc GROSS (trừ bảo hiểm/thuế hệ thống)
             vars = formulaEngine.resolveCustomVarsExcept(usedCustomExprs, vars, systemComputed);
 
-            // Bảo hiểm tính trên lương HĐ (không có thì đơn giá bậc lương), đã áp trần theo chính sách (bước I)
+            // Bảo hiểm tính trên INSURANCE_SALARY (hợp đồng, bước L), đã áp trần theo chính sách (bước I)
             BigDecimal insuranceBase    = vars.get("INSURANCE_BASE");
             BigDecimal unemploymentBase = vars.get("UNEMPLOYMENT_BASE");
             BigDecimal socialRate   = vars.getOrDefault("SOCIAL_INS_RATE",  DEFAULT_SOCIAL_INS_RATE);
@@ -489,15 +492,37 @@ public class PayrollService {
         "SOCIAL_INS", "HEALTH_INS", "UNEMPLOYMENT_INS", "TOTAL_INSURANCE", "PIT");
 
     /**
-     * Bước I: biến thuế / BH theo chính sách của kỳ. Lương đóng BH = lương HĐ (không có thì đơn giá bậc lương),
+     * Bước L: biến theo hợp đồng hiệu lực trong kỳ. Có hợp đồng → CONTRACT_SALARY = lương bình quân theo công chuẩn
+     * từng đoạn (tăng lương giữa kỳ bằng phụ lục), INSURANCE_SALARY / ALLOWANCE_* ở ngày cuối kỳ có hợp đồng.
+     * Chưa có hợp đồng → như trước: lương HĐ trên hồ sơ nhân viên, lương đóng BH = lương HĐ hoặc đơn giá bậc lương.
+     */
+    private static void putContractVars(Map<String, BigDecimal> vars, Optional<ContractService.PayTerms> terms,
+                                        BigDecimal baseSalary) {
+        if (terms.isPresent()) {
+            ContractService.PayTerms t = terms.get();
+            vars.put("CONTRACT_SALARY",       t.contractSalary());
+            vars.put("INSURANCE_SALARY",      t.insuranceSalary());
+            vars.put("CONTRACT_ALLOWANCE",    t.allowanceTotal());
+            vars.put("TAXABLE_ALLOWANCE",     t.taxableAllowance());
+            vars.put("NON_TAXABLE_ALLOWANCE", t.nonTaxableAllowance());
+            t.allowances().forEach((code, amount) -> vars.put("ALLOWANCE_" + code, amount));
+            return;
+        }
+        BigDecimal contractSalary = vars.get("CONTRACT_SALARY");
+        BigDecimal raw = contractSalary != null && contractSalary.signum() > 0 ? contractSalary : baseSalary;
+        vars.put("INSURANCE_SALARY",      raw != null ? raw : BigDecimal.ZERO);
+        vars.put("CONTRACT_ALLOWANCE",    BigDecimal.ZERO);
+        vars.put("TAXABLE_ALLOWANCE",     BigDecimal.ZERO);
+        vars.put("NON_TAXABLE_ALLOWANCE", BigDecimal.ZERO);
+    }
+
+    /**
+     * Bước I: biến thuế / BH theo chính sách của kỳ. Lương đóng BH = INSURANCE_SALARY (bước L),
      * BHXH/BHYT tối đa {@code insurance_cap_multiplier} × mức tham chiếu, BHTN tối đa
      * {@code unemployment_cap_multiplier} × lương tối thiểu vùng của công ty. Người phụ thuộc: bước M (hiện 0).
      */
-    private static void putTaxPolicyVars(Map<String, BigDecimal> vars, TaxPolicy policy, Employee employee,
-                                         BigDecimal baseSalary) {
-        BigDecimal contractSalary = employee.getContractSalary();
-        BigDecimal raw = contractSalary != null && contractSalary.signum() > 0 ? contractSalary : baseSalary;
-        if (raw == null) raw = BigDecimal.ZERO;
+    private static void putTaxPolicyVars(Map<String, BigDecimal> vars, TaxPolicy policy, Employee employee) {
+        BigDecimal raw = vars.getOrDefault("INSURANCE_SALARY", BigDecimal.ZERO);
         BigDecimal insuranceCap = policy.getReferenceWage()
             .multiply(BigDecimal.valueOf(policy.getInsuranceCapMultiplier()));
         BigDecimal unemploymentCap = policy.minWageOfRegion(employee.getCompany().getMinWageRegion())

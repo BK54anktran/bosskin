@@ -29,7 +29,8 @@
   `dev\seed-th.cmd` (công ty mẫu "TH company": 4 phòng ban, 8 NV có tài khoản, 4 vai trò, 7 ca gồm ca đêm, ca gãy và
   ca linh hoạt, phân ca 9–10/2026, mẫu xoay ca + phân ca xoay tháng 11 cho 2 công nhân (bỏ qua ngày lễ), lịch "Xưởng: T7 làm sáng" (`FFFFFHO`)
   cho Xưởng sản xuất, quản lý trực tiếp (GĐ → NS/KTT/QĐ, KTT → KTV, QĐ → 3 công nhân) + mốc tương lai 01/12/2026
-  (Nam lên quản đốc), 4 loại phép, công đã duyệt
+  (Nam lên quản đốc), 8 hợp đồng (Mai hết hạn 31/10 → cần gia hạn, HĐ mới nháp; phụ lục tăng lương Tài 16/09, Nam 01/12),
+  4 loại phép, công đã duyệt
   01/09–07/10, đơn chờ duyệt (sửa giờ, nghỉ phép, đổi ca), bảng lương nháp tháng 9; log `dev/logs/seed-th.log`).
   Sửa nghiệp vụ/API mà seed hỏng → sửa `dev/seed-th.ps1` cùng lúc (quy tắc 2).
 - Cách chạy: chủ dự án bật `dev\runner.cmd` một lần (để cửa sổ mở). Claude ghi tên lệnh vào
@@ -347,12 +348,13 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `Attendance` | `attendances` | chấm công, FK → Employee |
 | `LeaveRequest` | `leave_requests` | nghỉ phép |
 | `WorkShift` | `work_shifts` | ca làm việc |
+| `LaborContract` | `labor_contracts` | hợp đồng; phụ lục `contract_appendices`, phụ cấp `contract_allowances` (V16) |
 
 ## Migration version hiện tại
-Cao nhất: **V15** (`V15__job_history_manager.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V16** (`V16__labor_contracts.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
-V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt
-→ Migration tiếp theo phải là **V16**
+V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp
+→ Migration tiếp theo phải là **V17**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -439,6 +441,29 @@ V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt
   (`employee/org_chart_screen.dart`), màn `/team-approvals` (menu chỉ hiện khi `TeamApprovalService.visible`), `StatusBadge.managerStep`
   ở danh sách đơn nghỉ / sửa công / đổi ca, chọn chế độ ở Cài đặt công ty. Test: `JobHistoryTest`.
 
+## Hợp đồng lao động (Bước L)
+- V16: `labor_contracts` (DRAFT | ACTIVE | TERMINATED; "hết hạn" = ACTIVE có `end_date` < hôm nay, không lưu; unique `contract_no_key` theo công ty),
+  `contract_appendices` (trường NULL = giữ giá trị trước; `overrides_allowances` thay cả bộ phụ cấp), `contract_allowances`
+  (`appendix_id` NULL = phụ cấp gốc; `code` → biến `ALLOWANCE_<code>`, cờ `insurable` / `taxable`), `companies.contract_expiry_warning_days` (30).
+  Migration chuyển mỗi NV có `contract_salary` > 0 thành HĐ INDEFINITE ACTIVE `HD-<mã NV>` từ ngày vào làm.
+- `ContractService`: kiểm loại (FIXED_TERM ≤ 36 tháng, INDEFINITE không có ngày kết thúc, PROBATION / SEASONAL cần ngày kết thúc),
+  chặn 2 HĐ không nháp chồng ngày (`error.contract.overlap|<số HĐ>`), phụ lục phải sau ngày bắt đầu và trong thời hạn.
+  Chấm dứt: `termination_date` = ngày làm cuối. Nhật ký `CONTRACT_*`.
+- `employees.contract_salary` **chưa xoá** (chờ chủ dự án đồng ý): dự phòng cho NV chưa có HĐ, tự đồng bộ = lương HĐ hiệu lực hôm nay
+  (`syncEmployeeSalary` khi lưu HĐ / phụ lục và `dailyJob` 07:30 VN). NV đã có HĐ không nháp → PUT nhân viên đổi lương = 409
+  `error.contract.salary_managed_by_contract`; import NV bỏ qua cột lương HĐ.
+- Lương (`ContractService.payTerms`): `CONTRACT_SALARY` = bình quân lương từng đoạn theo công chuẩn lịch (`calendar.periodDays`), ngày không có HĐ
+  bỏ qua; `INSURANCE_SALARY` (mức riêng hoặc lương + phụ cấp đóng BH, ở ngày cuối kỳ có HĐ) → `INSURANCE_BASE` / `UNEMPLOYMENT_BASE`;
+  `ALLOWANCE_<mã>`, `CONTRACT_ALLOWANCE`, `TAXABLE_ALLOWANCE`, `NON_TAXABLE_ALLOWANCE`. Không có HĐ → như cũ. `FormulaEngine` nhận mọi
+  `ALLOWANCE_*` (thiếu = 0); mã `MANUAL` cấm (trùng `ALLOWANCE_MANUAL`).
+- Cảnh báo: `/expiring?days=` (ACTIVE kết thúc ≤ hôm nay + N hoặc đã quá hạn, NV chưa nghỉ, chưa có HĐ nối tiếp không nháp), mục
+  `contractExpiring` ở `/dashboard/risks` (khi có CONTRACT_VIEW), FCM cho tài khoản có CONTRACT_VIEW khi còn đúng N / 7 / 0 ngày.
+- API `/api/v1/contracts` (CONTRACT_VIEW + phạm vi; sửa CONTRACT_EDIT; xoá CONTRACT_DELETE), `/{id}/activate`, `/{id}/terminate`,
+  `/{id}/appendices`, `/appendices/{id}`, `/export` (sheet hợp đồng + sheet phụ cấp), `/preview-import`, `/import` (sheet 2 vắng = giữ phụ cấp).
+- FE: màn `/contracts` (`screens/contracts/`), `DateField` (widgets), `ManagerDropdown(allowNone: false)` để chọn NV, `formatMoney`
+  (text_utils), ô báo trước ở Cài đặt công ty. Mã lỗi lồng (`error.contract.import_row|HD|error.contract.overlap|HD0`) được
+  `error_utils` dịch đệ quy. Test: `ContractTest`.
+
 ## Màn hình Flutter
 | Screen | Path |
 |--------|------|
@@ -450,6 +475,7 @@ V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt
 | Leaves | `screens/leaves/` |
 | Roles & Permissions | `screens/roles/` |
 | Shifts | `screens/shift/` |
+| Contracts | `screens/contracts/` |
 
 ---
 

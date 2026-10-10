@@ -56,12 +56,19 @@ public class CompanySettingDTO {
         private String mode;
     }
 
+    /** Bước L: báo trước hợp đồng sắp hết hạn. */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class ContractSetting {
+        private int expiryWarningDays;
+    }
+
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Response {
         private AttendanceSetting attendance;
         private LeaveSetting leaves;
         private PayrollSetting payroll;
         private ApprovalSetting approval;
+        private ContractSetting contract;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -109,11 +116,18 @@ public class CompanySettingDTO {
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ContractUpsert {
+        @NotNull private Integer expiryWarningDays;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class Upsert {
         @Valid @NotNull private AttendanceUpsert attendance;
         @Valid @NotNull private LeaveUpsert leaves;
         @Valid private PayrollUpsert payroll;
         /** Không gửi = giữ nguyên. */
         @Valid private ApprovalUpsert approval;
+        /** Không gửi = giữ nguyên. */
+        @Valid private ContractUpsert contract;
     }
 }

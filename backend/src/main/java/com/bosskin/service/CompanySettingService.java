@@ -118,6 +118,14 @@ public class CompanySettingService {
             }
         }
 
+        if (req.getContract() != null) {
+            int days = req.getContract().getExpiryWarningDays();
+            if (days < 1 || days > 180) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.contract_warning_days_invalid");
+            }
+            c.setContractExpiryWarningDays(days);
+        }
+
         companyRepository.save(c);
         return toResponse(c);
     }
@@ -169,6 +177,9 @@ public class CompanySettingService {
                 .build())
             .approval(CompanySettingDTO.ApprovalSetting.builder()
                 .mode((c.getApprovalMode() != null ? c.getApprovalMode() : com.bosskin.entity.Company.ApprovalMode.PERMISSION).name())
+                .build())
+            .contract(CompanySettingDTO.ContractSetting.builder()
+                .expiryWarningDays(c.getContractExpiryWarningDays())
                 .build())
             .build();
     }

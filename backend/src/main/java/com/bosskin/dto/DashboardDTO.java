@@ -168,7 +168,22 @@ public class DashboardDTO {
         private List<MissingCheckoutRisk> missingCheckout;
         private List<ProbationEndingRisk> probationEnding;
         private List<NoSalaryGradeRisk> noSalaryGrade;
+        /** Bước L: hợp đồng cần gia hạn (chỉ khi có CONTRACT_VIEW). */
+        private List<ContractExpiringRisk> contractExpiring;
         private int totalWarnings;
+    }
+
+    @Getter @Builder
+    public static class ContractExpiringRisk {
+        private Long contractId;
+        private Long employeeId;
+        private String employeeCode;
+        private String employeeName;
+        private String departmentName;
+        private String contractNo;
+        private LocalDate endDate;
+        /** Âm = đã quá hạn. */
+        private int daysLeft;
     }
 
     @Getter @Builder

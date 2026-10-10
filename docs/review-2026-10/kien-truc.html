@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>1. Kiến trúc hệ thống</h1>
     <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap. Trang giới thiệu tĩnh (Netlify) gửi yêu cầu dùng thử vào Supabase.</p>
-    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V15, 36 controller).</p>
+    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V16, 37 controller).</p>
   </section>
   <ul class="toc">
     <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
@@ -61,7 +61,7 @@ flowchart LR
       TILE["MapTile proxy + cache đĩa"]
     end
   end
-  DB[("MySQL 8<br/>43 bảng · Flyway V1 baseline → V15")]
+  DB[("MySQL 8<br/>46 bảng · Flyway V1 baseline → V16")]
   S3[("AWS S3<br/>ảnh, tài liệu, file Excel")]
   FCM["Firebase FCM"]
   OSM["tile.openstreetmap.org"]
@@ -134,7 +134,7 @@ sequenceDiagram
     </ul></div>
     <div class="card"><b>Mô hình quyền</b><ul class="clean">
       <li>Quyền = role ∪ quyền trực tiếp (quyền trực tiếp ghi đè theo module).</li>
-      <li>46 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*, CALENDAR_*, SHIFT_SWAP_APPROVE, AUDIT_VIEW...).</li>
+      <li>49 mã quyền theo module (EMPLOYEE_*, ATTENDANCE_*, LEAVE_*, PAYROLL_*, CALENDAR_*, CONTRACT_*, SHIFT_SWAP_APPROVE, AUDIT_VIEW...).</li>
       <li>Không tự sửa quyền của mình, chỉ cấp được quyền mình đang có; không tự duyệt công / đơn / lương của mình.</li>
       <li><code>VIEW</code> là tiền đề của quyền khác trong module.</li>
       <li>Quyền được nạp lại từ DB mỗi request → đổi role có hiệu lực ngay.</li>
@@ -165,7 +165,7 @@ flowchart LR
   </pre></div>
   <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Netlify. Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
-  <h2 id="api">Danh sách API (36 controller)</h2>
+  <h2 id="api">Danh sách API (37 controller)</h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Controller</th><th>Đường dẫn gốc</th><th>Chức năng</th></tr></thead>
     <tbody>
@@ -186,6 +186,7 @@ flowchart LR
       <tr><td>EmployeeController</td><td><code>/api/v1/employees</code></td><td>Nhân viên CRUD, import/export</td></tr>
       <tr><td>JobHistoryController</td><td><code>/api/v1/employees/{id}/job-histories</code>, <code>/api/v1/org-chart</code></td><td>Quá trình công tác (mốc phòng ban / chức vụ / bậc / quản lý theo ngày hiệu lực; chỉ xoá mốc chưa tới ngày), sơ đồ tổ chức</td></tr>
       <tr><td>TeamApprovalController</td><td><code>/api/v1/team-approvals</code></td><td>Quản lý trực tiếp duyệt / từ chối bước 1 đơn nghỉ, đơn sửa công, đổi ca của cấp dưới (khi công ty bật <code>MANAGER_THEN_HR</code>)</td></tr>
+      <tr><td>ContractController</td><td><code>/api/v1/contracts</code> (+ <code>/{id}/activate</code>, <code>/{id}/terminate</code>, <code>/{id}/appendices</code>, <code>/appendices/{id}</code>, <code>/expiring</code>, <code>/export</code>, <code>/preview-import</code>, <code>/import</code>)</td><td>Hợp đồng lao động, phụ lục, phụ cấp (bước L, V16). Quyền <code>CONTRACT_VIEW</code> (+ phạm vi phòng ban), <code>CONTRACT_EDIT</code>, <code>CONTRACT_DELETE</code>; chặn hai HĐ hiệu lực chồng ngày; bảng lương lấy lương / lương đóng BH / phụ cấp theo HĐ hiệu lực trong kỳ; báo hết hạn hằng ngày 07:30.</td></tr>
       <tr><td>EmployeeLocationController</td><td><code>/api/v1/employees/{id}/locations</code></td><td>Vị trí check-in riêng từng nhân viên</td></tr>
       <tr><td>DepartmentController</td><td><code>/api/v1/departments</code></td><td>Cây phòng ban, import/export</td></tr>
       <tr><td>PositionController</td><td><code>/api/v1/positions</code></td><td>Chức vụ</td></tr>

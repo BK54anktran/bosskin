@@ -224,6 +224,8 @@ class _AppDrawerState extends State<AppDrawer> {
             requiredPermission: 'EMPLOYEE_VIEW'),
         _DrawerItem(s.orgChartTitle, Icons.lan_outlined, AppRoutes.orgChart,
             requiredPermission: 'EMPLOYEE_VIEW'),
+        _DrawerItem(s.contractsTitle, Icons.description_outlined, AppRoutes.contracts,
+            requiredPermission: 'CONTRACT_VIEW'),
         _DrawerItem(
             s.departments, Icons.account_tree_outlined, AppRoutes.departments,
             requiredPermission: 'DEPARTMENT_VIEW'),

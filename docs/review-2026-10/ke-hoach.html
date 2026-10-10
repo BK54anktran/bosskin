@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ) và K (lịch sử công tác) xong; AWS để sau, làm tiếp L, D–F</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác) và L (hợp đồng lao động) xong; AWS để sau, làm tiếp M, N, D–F</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -184,7 +184,7 @@
           <li>Cảnh báo: HĐ / thử việc sắp hết hạn (mặc định trước 30 ngày, cài được), ô trên Tổng quan, thông báo cho HR, danh sách "cần gia hạn"; chặn hai HĐ hiệu lực chồng nhau.</li>
         </ul></td>
         <td><code>V16</code> <code>labor_contracts</code>, <code>contract_appendices</code>, <code>contract_allowances</code>; quyền <code>CONTRACT_VIEW</code>/<code>CONTRACT_EDIT</code>/<code>CONTRACT_DELETE</code> (phạm vi theo view). API <code>/api/v1/contracts</code> (+ preview-import/import, xuất Excel, <code>/expiring</code>). Biến lương <code>CONTRACT_SALARY</code>, <code>INSURANCE_SALARY</code>, <code>ALLOWANCE_*</code>. Nhật ký <code>CONTRACT_*</code>.</td>
-        <td>Lương kỳ có phụ lục tăng lương giữa kỳ tính đúng; HĐ hết hạn sau 30 ngày hiện cảnh báo; xuất → sửa → nhập lại HĐ không lệch</td><td class="nw">6 BE · 5 FE</td><td><span class="st todo">Chưa bắt đầu</span></td></tr>
+        <td>Lương kỳ có phụ lục tăng lương giữa kỳ tính đúng; HĐ hết hạn sau 30 ngày hiện cảnh báo; xuất → sửa → nhập lại HĐ không lệch</td><td class="nw">6 BE · 5 FE</td><td><span class="st done">Xong 10/10</span><div class="muted" style="margin-top:6px">V16 <code>labor_contracts</code> (nháp / hiệu lực / chấm dứt; "hết hạn" suy ra từ ngày kết thúc), <code>contract_appendices</code> (ô trống = giữ giá trị trước, có thể thay cả bộ phụ cấp), <code>contract_allowances</code> (cờ đóng BH / chịu thuế), <code>companies.contract_expiry_warning_days</code> (mặc định 30); mỗi NV có lương HĐ được chuyển thành một HĐ không xác định thời hạn từ ngày vào làm. Kiểm thời hạn theo loại (xác định thời hạn ≤ 36 tháng, không xác định thời hạn không có ngày kết thúc), chặn hai HĐ không nháp chồng ngày. Lương: <code>CONTRACT_SALARY</code> = lương bình quân theo công chuẩn từng đoạn trong kỳ (phụ lục 16/11 lên 12 tr → kỳ 11 = 11.047.619), <code>INSURANCE_SALARY</code> = lương đóng BH ghi riêng hoặc lương + phụ cấp đóng BH ở cuối kỳ (đầu vào trần BH bước I), <code>ALLOWANCE_&lt;mã&gt;</code>, <code>CONTRACT_ALLOWANCE</code>, <code>TAXABLE_ALLOWANCE</code>, <code>NON_TAXABLE_ALLOWANCE</code>; NV chưa có HĐ vẫn tính như cũ. Cảnh báo: <code>/expiring</code>, mục "Hợp đồng cần gia hạn" ở Tổng quan, báo đẩy cho tài khoản có <code>CONTRACT_VIEW</code> lúc 07:30 khi còn đúng N / 7 / 0 ngày; có HĐ nối tiếp (không nháp) thì rời danh sách. Excel 2 sheet (hợp đồng + phụ cấp) qua xem trước. <code>ContractTest</code> 5 ca; 145 test. FE: màn "Hợp đồng lao động" (lọc trạng thái / cần gia hạn, chi tiết, phụ lục, kích hoạt, chấm dứt, xuất / nhập Excel), ô số ngày báo trước ở Cài đặt công ty.</div></td></tr>
       <tr><td><b>M</b> · Thuế &amp; bảo hiểm của nhân viên</td><td>
         <ul class="clean">
           <li>MST cá nhân, số sổ BHXH, nơi đăng ký KCB, ngày tham gia BH; lương đóng BH lấy từ HĐ (bước L), có sàn / trần theo bước I.</li>
@@ -208,7 +208,7 @@
   <div class="note"><b>Cần chủ dự án chốt</b> (đề xuất in đậm)
     <ul class="clean">
       <li>Ngày lễ: <b>hệ thống cấp mẫu theo năm, công ty chỉnh lại</b> — hay mỗi công ty tự nhập từ đầu? <span class="muted">Đã làm theo đề xuất (10/10, bước J): mẫu hệ thống, công ty chỉnh thì chép mẫu năm đó sang.</span></li>
-      <li>Nguồn lương: <b>hợp đồng + phụ lục là nguồn lương / lương đóng BH duy nhất</b>, bỏ <code>employees.contract_salary</code> và gộp <code>salary_histories</code> vào lịch sử HĐ — hay giữ song song?</li>
+      <li>Nguồn lương: <b>hợp đồng + phụ lục là nguồn lương / lương đóng BH duy nhất</b>, bỏ <code>employees.contract_salary</code> và gộp <code>salary_histories</code> vào lịch sử HĐ — hay giữ song song? <span class="muted">Đã làm (10/10, bước L): hợp đồng là nguồn lương khi NV đã có HĐ, form / import NV không sửa lương HĐ được nữa. Cột <code>employees.contract_salary</code> <b>chưa xoá</b> (quy tắc không tự xoá dữ liệu): giữ làm dự phòng cho NV chưa có HĐ và tự đồng bộ theo HĐ hiệu lực hôm nay; xoá cột + <code>salary_histories</code> khi chủ dự án đồng ý.</span></li>
       <li>Duyệt theo quản lý trực tiếp: <b>tuỳ chọn theo công ty, mặc định giữ cách duyệt theo quyền + phạm vi như hiện tại</b>? <span class="muted">Đã làm theo đề xuất (10/10, bước K): Cài đặt công ty → "Người duyệt đơn", mặc định theo quyền.</span></li>
       <li>Thông số thuế / BH: <b>system admin cập nhật một chỗ cho mọi công ty</b>; công ty chỉ chọn vùng lương tối thiểu?</li>
     </ul></div>
