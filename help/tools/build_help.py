@@ -90,20 +90,22 @@ def page(title, body, pages, current, desc, aside=''):
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>{CSS}</style>
 </head>
-<body>
+<body{' class="home"' if current == 'index' else ''}>
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Mở menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="../" title="Về trang chủ BossKin"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
-  <div class="search"><input id="q" type="search" placeholder="Tìm hướng dẫn… (vd. nghỉ phép, khoá kỳ)" autocomplete="off"><div id="results"></div></div>
   <nav class="links"><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a><a class="on" href="index.html">Trợ giúp</a></nav>
+  <div class="actions"><a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
 </div></header>
 <div class="wrap">
-<nav class="side">{nav(pages, current)}</nav>
+<nav class="side">{'' if current == 'index' else SEARCH_BOX}{nav(pages, current)}</nav>
 <main class="content">{body}</main>
 {aside}
 </div>
 <div id="lightbox" hidden><img alt=""></div>
-<script>window.HELP_INDEX = {json.dumps(SEARCH, ensure_ascii=False)};</script>
+<script>/* Giống window.BOSSKIN.appUrl ở landing/index.html: '' = ẩn nút Đăng nhập */
+window.HELP_APP_URL = location.port === '8099' ? 'http://localhost:3000/login' : '';
+window.HELP_INDEX = {json.dumps(SEARCH, ensure_ascii=False)};</script>
 <script>{JS}</script>
 </body>
 </html>
@@ -111,6 +113,8 @@ def page(title, body, pages, current, desc, aside=''):
 
 
 SEARCH = []
+SEARCH_BOX = ('<div class="search"><input id="q" type="search" placeholder="Tìm hướng dẫn…  ( / )" autocomplete="off">'
+              '<div id="results"></div></div>')
 
 
 def main():
@@ -148,6 +152,7 @@ def main():
     home = f'''<div class="hero"><h1>Trợ giúp BossKin</h1>
 <p class="lead">Hướng dẫn từng bước kèm ảnh chụp màn hình cho mọi chức năng: chấm công, ca làm, nghỉ phép, hồ sơ nhân sự, hợp đồng, bảng lương và quản trị.
 Chọn nhóm theo vai trò của bạn hoặc gõ vào ô tìm kiếm phía trên.</p>
+<div class="hero-search">{SEARCH_BOX.replace('Tìm hướng dẫn…  ( / )', 'Tìm hướng dẫn… (vd. nghỉ phép, khoá kỳ, phiếu lương)')}</div>
 <div class="roles">
 <a href="thong-tin-ca-nhan.html">🙋 Tôi là nhân viên</a><a href="duyet-cho-nhom.html">🧭 Tôi quản lý nhóm</a>
 <a href="nhan-vien.html">🗂️ Tôi làm nhân sự</a><a href="bang-luong.html">💰 Tôi làm kế toán</a><a href="phan-quyen.html">⚙️ Tôi quản trị công ty</a></div></div>

@@ -35,3 +35,6 @@
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.remove('on');});var a=map[e.target.id];if(a)a.classList.add('on');}});},{rootMargin:'-70px 0px -70% 0px'});
   Object.keys(map).forEach(function(id){var h=document.getElementById(id);if(h)io.observe(h);});
 })();
+
+// Nút Đăng nhập như trang giới thiệu
+(function(){var u=window.HELP_APP_URL;document.querySelectorAll('.js-app').forEach(function(a){if(u){a.href=u;a.hidden=false;}});})();
