@@ -93,8 +93,9 @@ def page(title, body, pages, current, desc, aside=''):
 <body>
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Mở menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
-  <a class="brand" href="index.html"><img class="logo" src="img/logo-80.png" width="34" height="34" alt=""> BossKin <span class="brand-sub">Trợ giúp</span></a>
+  <a class="brand" href="../" title="Về trang chủ BossKin"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
   <div class="search"><input id="q" type="search" placeholder="Tìm hướng dẫn… (vd. nghỉ phép, khoá kỳ)" autocomplete="off"><div id="results"></div></div>
+  <nav class="links"><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a><a class="on" href="index.html">Trợ giúp</a></nav>
 </div></header>
 <div class="wrap">
 <nav class="side">{nav(pages, current)}</nav>
