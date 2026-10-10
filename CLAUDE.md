@@ -669,7 +669,8 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
   (DB thử đã migrate hết, không dùng DB dev). `--check` (không cần DB) báo `api.md` lệch controller / `csdl.md` cũ hơn migration mới nhất.
   Mục "Kiểm tra đồng bộ" ở `quyen.md` phải ✔ (mã quyền trong code đều có trong bảng `permissions` và ngược lại).
 - `help/`: trang trợ giúp tĩnh cho người dùng (22 trang theo vai trò, ~90 ảnh). Nội dung `help/src/NN-<slug>.md` → `python3 help/tools/build_help.py`
-  → `help/*.html` (commit cả HTML). Ảnh chụp bằng `help/tools/capture.py` trên môi trường thử riêng có dữ liệu "Nội thất An Phát"
+  → `help/*.html` (commit cả HTML). Host cùng trang giới thiệu ở `/help/`: Netlify build chép `help/*.html` + `help/img` vào `landing/help/`
+  (`netlify.toml`, thư mục đó không commit); trang giới thiệu có link "Trợ giúp" ở menu và chân trang. Ảnh chụp bằng `help/tools/capture.py` trên môi trường thử riêng có dữ liệu "Nội thất An Phát"
   (`landing/video/seed_demo.py` + `help/tools/seed_help_extra.py`). Hướng dẫn: `help/README.md`.
 - Đổi màn hình / luồng → sửa trang trợ giúp tương ứng (biến lương, tên nút, bước) và chụp lại chương đó trong cùng đợt.
 

@@ -51,3 +51,6 @@ marketing/
 # Ảnh thô khi chụp trang trợ giúp
 /help/tools/.raw/
 **/__pycache__/
+
+# Trang trợ giúp chép vào landing lúc Netlify build
+/landing/help/

@@ -1,7 +1,8 @@
 # Trang trợ giúp BossKin
 
 Hướng dẫn sử dụng cho người dùng cuối (web desktop), chia theo vai trò, mỗi chức năng có các bước kèm ảnh chụp màn hình đánh dấu.
-Là HTML tĩnh: đưa nguyên thư mục `help/` (trừ `src/`, `tools/`) lên host tĩnh bất kỳ (Netlify, S3 + CloudFront, `help.<tên-miền>`).
+Là HTML tĩnh, đăng cùng trang giới thiệu ở `/help/`: lệnh build trong `netlify.toml` chép `help/*.html` và `help/img/` vào
+`landing/help/` mỗi lần deploy (push `main` có đổi `landing/` hoặc `help/`). Muốn host riêng thì đưa các file đó lên host tĩnh bất kỳ.
 
 ```
 help/

@@ -1,11 +1,12 @@
-# Netlify: host trang giới thiệu (landing/) — trang tĩnh, không cần build.
-# Kết nối repo trên Netlify là đủ; mỗi lần push main có thay đổi trong landing/ sẽ tự deploy.
+# Netlify: host trang giới thiệu (landing/) + trang trợ giúp ở /help/ (help/, đã dựng sẵn HTML).
+# Kết nối repo trên Netlify là đủ; mỗi lần push main có thay đổi trong landing/ hoặc help/ sẽ tự deploy.
 [build]
   base    = "landing"
   publish = "."
-  command = ""
-  # Bỏ qua deploy khi commit không đụng tới landing/ (tiết kiệm phút build)
-  ignore  = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
+  # Chỉ chép trang trợ giúp đã dựng (bỏ src/, tools/); không có bước build nào khác
+  command = "rm -rf help && mkdir -p help && cp ../help/*.html help/ && cp -r ../help/img help/"
+  # Bỏ qua deploy khi commit không đụng tới landing/ hay help/ (tiết kiệm phút build)
+  ignore  = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../help"
 
 [[headers]]
   for = "/*"
@@ -14,6 +15,11 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "DENY"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/help/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
 
 [[headers]]
   for = "/assets/*"
