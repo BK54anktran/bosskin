@@ -32,44 +32,68 @@ public class UserPermDeptScopeRepository {
             String.class, userId));
     }
 
-    private String moduleOf(String permCode) {
-        List<String> m = jdbc.queryForList("SELECT module FROM permissions WHERE code = ?", String.class, permCode);
-        return m.isEmpty() ? null : m.get(0);
-    }
-
     /** Returns map of permissionCode → set of allowed departmentIds (user direct + roles). Empty set = unrestricted. */
     public Map<String, Set<Long>> findScopesMap(Long userId) {
-        Set<String> directModules = new java.util.HashSet<>(jdbc.queryForList(
-            "SELECT DISTINCT p.module FROM user_permissions up " +
-            "INNER JOIN permissions p ON p.id = up.permission_id " +
-            "WHERE up.user_id = ?",
-            String.class, userId));
+        return findScopesMaps(List.of(userId)).getOrDefault(userId, new java.util.HashMap<>());
+    }
 
-        Map<String, Set<Long>> result = new java.util.HashMap<>();
+    /**
+     * Như {@link #findScopesMap(Long)} cho nhiều người dùng, mỗi loại dữ liệu một câu truy vấn
+     * (D10 — danh sách người dùng trước đây chạy 4+ câu cho từng người).
+     */
+    public Map<Long, Map<String, Set<Long>>> findScopesMaps(java.util.Collection<Long> userIds) {
+        Map<Long, Map<String, Set<Long>>> out = new java.util.HashMap<>();
+        if (userIds == null || userIds.isEmpty()) return out;
+        List<Long> ids = List.copyOf(new java.util.LinkedHashSet<>(userIds));
+        String in = String.join(",", java.util.Collections.nCopies(ids.size(), "?"));
+        Object[] args = ids.toArray();
+
+        Map<Long, Set<String>> directModules = new java.util.HashMap<>();
+        jdbc.queryForList("SELECT DISTINCT up.user_id, p.module FROM user_permissions up " +
+                "INNER JOIN permissions p ON p.id = up.permission_id WHERE up.user_id IN (" + in + ")", args)
+            .forEach(r -> directModules.computeIfAbsent(((Number) r.get("user_id")).longValue(), k -> new java.util.HashSet<>())
+                .add((String) r.get("module")));
+
+        for (Long id : ids) out.put(id, new java.util.HashMap<>());
         // User direct scopes
-        jdbc.queryForList(
-            "SELECT permission_code, department_id FROM user_permission_dept_scopes WHERE user_id = ?", userId)
-            .forEach(r -> result
+        jdbc.queryForList("SELECT user_id, permission_code, department_id FROM user_permission_dept_scopes " +
+                "WHERE user_id IN (" + in + ")", args)
+            .forEach(r -> out.get(((Number) r.get("user_id")).longValue())
                 .computeIfAbsent((String) r.get("permission_code"), k -> new java.util.HashSet<>())
                 .add(((Number) r.get("department_id")).longValue()));
         // Role scopes
         jdbc.queryForList(
-            "SELECT DISTINCT r.permission_code, r.department_id, p.module FROM role_permission_dept_scopes r " +
+            "SELECT DISTINCT ur.user_id, r.permission_code, r.department_id, p.module FROM role_permission_dept_scopes r " +
             "INNER JOIN user_roles ur ON ur.role_id = r.role_id " +
             "INNER JOIN permissions p ON p.code = r.permission_code " +
-            "WHERE ur.user_id = ?", userId)
+            "WHERE ur.user_id IN (" + in + ")", args)
             .forEach(r -> {
+                long uid = ((Number) r.get("user_id")).longValue();
                 String module = (String) r.get("module");
-                if (module != null && directModules.contains(module)) return;
-                result
+                if (module != null && directModules.getOrDefault(uid, Set.of()).contains(module)) return;
+                out.get(uid)
                     .computeIfAbsent((String) r.get("permission_code"), k -> new java.util.HashSet<>())
                     .add(((Number) r.get("department_id")).longValue());
             });
         // Vai trò không giới hạn thắng vai trò giới hạn (trừ module đã cấu hình quyền trực tiếp)
-        Set<String> unrestricted = unrestrictedRolePermCodes(userId);
-        result.entrySet().removeIf(e -> unrestricted.contains(e.getKey())
-            && !directModules.contains(moduleOf(e.getKey())));
-        return result;
+        Map<Long, Set<String>> unrestricted = new java.util.HashMap<>();
+        jdbc.queryForList(
+            "SELECT DISTINCT ur.user_id, p.code FROM user_roles ur " +
+            "INNER JOIN role_permissions rp ON rp.role_id = ur.role_id " +
+            "INNER JOIN permissions p ON p.id = rp.permission_id " +
+            "WHERE ur.user_id IN (" + in + ") AND NOT EXISTS (SELECT 1 FROM role_permission_dept_scopes s " +
+            "  WHERE s.role_id = ur.role_id AND s.permission_code = p.code)", args)
+            .forEach(r -> unrestricted.computeIfAbsent(((Number) r.get("user_id")).longValue(), k -> new java.util.HashSet<>())
+                .add((String) r.get("code")));
+        Map<String, String> moduleByCode = new java.util.HashMap<>();
+        jdbc.queryForList("SELECT code, module FROM permissions")
+            .forEach(r -> moduleByCode.put((String) r.get("code"), (String) r.get("module")));
+        for (var e : out.entrySet()) {
+            Set<String> unr = unrestricted.getOrDefault(e.getKey(), Set.of());
+            Set<String> dm = directModules.getOrDefault(e.getKey(), Set.of());
+            e.getValue().entrySet().removeIf(x -> unr.contains(x.getKey()) && !dm.contains(moduleByCode.get(x.getKey())));
+        }
+        return out;
     }
 
     /** Returns allowed departmentIds for a specific permission (user direct + roles). Empty = unrestricted. */

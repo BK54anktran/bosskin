@@ -21,6 +21,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findFirstByCompanyId(Long companyId);
     List<User> findByCompanyId(Long companyId);
 
+    /** D10: danh sách người dùng — nạp sẵn nhân viên, phòng ban, vai trò, quyền trực tiếp trong một câu. */
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT DISTINCT u FROM User u
+        LEFT JOIN FETCH u.employee e LEFT JOIN FETCH e.department
+        LEFT JOIN FETCH u.roles LEFT JOIN FETCH u.directPermissions
+        WHERE u.company.id = :companyId""")
+    List<User> findForListing(@org.springframework.data.repository.query.Param("companyId") Long companyId);
+
     List<User> findAllByFcmTokenIsNotNullAndShiftReminderMinutesIsNotNull();
     List<User> findAllByFcmTokenIsNotNullAndCheckInOutNotifMinutesIsNotNull();
 

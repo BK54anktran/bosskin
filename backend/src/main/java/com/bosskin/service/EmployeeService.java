@@ -47,6 +47,7 @@ public class EmployeeService {
     private final UserRepository userRepository;
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmployeeCodeService employeeCodeService;
     private final DeptScopeService deptScopeService;
     private final JobHistoryService jobHistoryService;
     private final com.bosskin.repository.LaborContractRepository laborContractRepository;
@@ -412,8 +413,7 @@ public class EmployeeService {
     }
 
     private String generateCode(Long companyId) {
-        long count = employeeRepository.countByCompanyId(companyId) + 1;
-        return String.format("EMP%05d", count);
+        return employeeCodeService.next(companyId);
     }
 
     private EmployeeDTO.Response toResponse(Employee e) {

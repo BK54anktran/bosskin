@@ -12,6 +12,10 @@ public class EmployeeDTO {
     /** Một hàng từ file Excel (gộp sheet 1 + sheet 2 theo employeeCode). */
     @lombok.Data
     public static class ImportRow {
+        /** D9: Excel lưu SĐT / CCCD dạng số làm mất số 0 đầu — bù lại khi đọc. */
+        public void setPhone(String v) { this.phone = com.bosskin.util.ExcelText.phone(v); }
+        public void setIdentityCard(String v) { this.identityCard = com.bosskin.util.ExcelText.identityCard(v); }
+
         // Sheet 1 — cơ bản
         private String employeeCode;
         private String fullName;

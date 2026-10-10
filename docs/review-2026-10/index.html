@@ -28,12 +28,12 @@
     <p class="meta">Ngày review: 08/10/2026 · Phạm vi: <code>backend/src</code> (Spring Boot 3.3, Java 17, MySQL, 117 migration), <code>frontend/lib</code> (Flutter web + Android), pipeline deploy · Phương pháp: đọc mã nguồn (static review), không chạy test tải hay pentest.</p>
   </section>
 
-  <div class="note"><b>Hiện trạng 10/10/2026.</b> Đã sửa 66/81 điểm yếu của bản review (4 sửa một phần, 3 để sau, 8 còn mở — xem cột Trạng thái ở trang <a href="danh-gia.html">Đánh giá</a>). Mốc 0–4, Bước 1, 2, thử nghiệm nội bộ, A (duyệt cả kỳ), B (tự build frontend), C (2FA) đã xong; 10/10 thêm bước I (thuế TNCN 2026, V13), J (ngày lễ &amp; lịch làm việc, V14) và K (lịch sử công tác + quản lý trực tiếp, V15) L (hợp đồng lao động, V16) M (MST, BHXH, người phụ thuộc, V17), N (tài liệu nhân sự, V18), F (giao diện tối) và E (hạ tầng AWS dạng file, mẫu Excel nhập dữ liệu thật, script đối chiếu pilot); D có checklist, chờ thử trên máy; còn Mốc 5 (AWS thật). Các trang Kiến trúc, Dữ liệu, Luồng nghiệp vụ đã vẽ lại theo code hiện tại; phần chấm điểm và kết luận dưới đây là của bản review gốc.</div>
+  <div class="note"><b>Hiện trạng 10/10/2026.</b> Đã sửa 71/81 điểm yếu của bản review (6 sửa một phần, 3 để sau, 1 còn mở — xem cột Trạng thái ở trang <a href="danh-gia.html">Đánh giá</a>). Mốc 0–4, Bước 1, 2, thử nghiệm nội bộ, A (duyệt cả kỳ), B (tự build frontend), C (2FA) đã xong; 10/10 thêm bước I (thuế TNCN 2026, V13), J (ngày lễ &amp; lịch làm việc, V14) và K (lịch sử công tác + quản lý trực tiếp, V15) L (hợp đồng lao động, V16) M (MST, BHXH, người phụ thuộc, V17), N (tài liệu nhân sự, V18), F (giao diện tối) và E (hạ tầng AWS dạng file, mẫu Excel nhập dữ liệu thật, script đối chiếu pilot); O–Q (dọn mục còn mở, V19; test frontend; diễn tập sao lưu / khôi phục và kịch bản UAT); D có checklist, chờ thử trên máy; còn Mốc 5 (AWS thật). Các trang Kiến trúc, Dữ liệu, Luồng nghiệp vụ đã vẽ lại theo code hiện tại; phần chấm điểm và kết luận dưới đây là của bản review gốc.</div>
   <div class="grid g4">
     <div class="card kpi"><div class="n">40</div><div class="l">REST controller (~40k dòng Java) · 10/10</div></div>
-    <div class="card kpi"><div class="n">49</div><div class="l">bảng · V1 baseline + V2–V18 · 10/10</div></div>
+    <div class="card kpi"><div class="n">50</div><div class="l">bảng · V1 baseline + V2–V19 · 10/10</div></div>
     <div class="card kpi"><div class="n">30</div><div class="l">màn hình Flutter (~52k dòng Dart) · 10/10</div></div>
-    <div class="card kpi"><div class="n">159</div><div class="l">test tự động, chạy trong CI · 10/10</div></div>
+    <div class="card kpi"><div class="n">180</div><div class="l">test tự động (166 backend + 14 frontend), chạy trong CI · 10/10</div></div>
   </div>
 
   <h2>Số liệu lúc review (08/10/2026)</h2>
@@ -101,7 +101,7 @@
   <h2>Mục lục tài liệu</h2>
   <div class="grid g3">
     <a class="card" href="kien-truc.html"><b>1. Kiến trúc</b><br><span class="lead">Thành phần, luồng request, xác thực & phân quyền, deploy, danh sách API.</span></a>
-    <a class="card" href="du-lieu.html"><b>2. Mô hình dữ liệu</b><br><span class="lead">Sơ đồ ER 49 bảng, nhóm bảng, ràng buộc & rủi ro dữ liệu (có trạng thái).</span></a>
+    <a class="card" href="du-lieu.html"><b>2. Mô hình dữ liệu</b><br><span class="lead">Sơ đồ ER 50 bảng, nhóm bảng, ràng buộc & rủi ro dữ liệu (có trạng thái).</span></a>
     <a class="card" href="luong-nghiep-vu.html"><b>3. Luồng nghiệp vụ</b><br><span class="lead">Onboarding, phân ca, check-in, tính công, đơn, duyệt, phép, lương + máy trạng thái.</span></a>
     <a class="card" href="danh-gia.html"><b>4. Đánh giá</b><br><span class="lead">Điểm mạnh, 81 điểm yếu có lọc mức độ và trạng thái, thiếu sót so với chuẩn VN.</span></a>
     <a class="card" href="ke-hoach.html"><b>5. Kế hoạch</b><br><span class="lead">Tiến độ từng mốc, bước A–H khi chưa có AWS, dữ liệu HR I–N, Gantt, quyết định đã chốt.</span></a>

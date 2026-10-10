@@ -34,7 +34,8 @@ public class DepartmentService {
 
         if (scopeIds.isEmpty()) {
             List<Department> roots = departmentRepo.findByCompanyIdAndParentIsNullOrderByName(companyId);
-            return roots.stream().map(this::toResponse).toList();
+            Map<Long, Long> counts = employeeCounts(companyId);
+            return roots.stream().map(d -> toResponse(d, counts)).toList();
         }
 
         List<Department> scoped = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
@@ -48,14 +49,29 @@ public class DepartmentService {
         }
         byParent.values().forEach(list -> list.sort(Comparator.comparing(Department::getName)));
 
+        Map<Long, Long> counts = employeeCounts(companyId);
         return byParent.getOrDefault(null, List.of()).stream()
-            .map(d -> toResponseScoped(d, byParent))
+            .map(d -> toResponseScoped(d, byParent, counts))
             .toList();
     }
 
-    private DepartmentDTO.Response toResponseScoped(Department d, Map<Long, List<Department>> byParent) {
+    /** D10: đếm NV theo phòng bằng một câu GROUP BY. */
+    private Map<Long, Long> employeeCounts(Long companyId) {
+        Map<Long, Long> m = new HashMap<>();
+        for (Object[] r : employeeRepo.countByDepartment(companyId)) {
+            if (r[0] != null) m.put(((Number) r[0]).longValue(), ((Number) r[1]).longValue());
+        }
+        return m;
+    }
+
+    private static int countOf(Department d, Map<Long, Long> counts) {
+        if (counts != null) return counts.getOrDefault(d.getId(), 0L).intValue();
+        return d.getEmployees() == null ? 0 : d.getEmployees().size();
+    }
+
+    private DepartmentDTO.Response toResponseScoped(Department d, Map<Long, List<Department>> byParent, Map<Long, Long> counts) {
         List<DepartmentDTO.Response> children = byParent.getOrDefault(d.getId(), List.of()).stream()
-            .map(child -> toResponseScoped(child, byParent))
+            .map(child -> toResponseScoped(child, byParent, counts))
             .toList();
         return DepartmentDTO.Response.builder()
             .id(d.getId()).name(d.getName()).code(d.getCode()).description(d.getDescription())
@@ -64,7 +80,7 @@ public class DepartmentService {
             .level(d.getLevel())
             .managerId(d.getManager() == null ? null : d.getManager().getId())
             .managerName(d.getManager() == null ? null : d.getManager().getFullName())
-            .employeeCount(d.getEmployees() == null ? 0 : d.getEmployees().size())
+            .employeeCount(countOf(d, counts))
             .children(children)
             .checkInLatitude(d.getCheckInLatitude())
             .checkInLongitude(d.getCheckInLongitude())
@@ -99,12 +115,13 @@ public class DepartmentService {
         byParent.values().forEach(list -> list.sort(Comparator.comparing(Department::getName)));
 
         List<DepartmentDTO.FlatItem> result = new ArrayList<>();
-        walkFlat(byParent, null, null, null, result);
+        walkFlat(byParent, null, null, null, result, employeeCounts(companyId));
         return result;
     }
 
     private void walkFlat(Map<Long, List<Department>> byParent, Long parentId,
-                          String parentName, String parentCode, List<DepartmentDTO.FlatItem> result) {
+                          String parentName, String parentCode, List<DepartmentDTO.FlatItem> result,
+                          Map<Long, Long> counts) {
         for (Department d : byParent.getOrDefault(parentId, List.of())) {
             result.add(DepartmentDTO.FlatItem.builder()
                 .id(d.getId())
@@ -115,12 +132,12 @@ public class DepartmentService {
                 .parentName(parentName)
                 .parentCode(parentCode)
                 .level(d.getLevel())
-                .employeeCount(d.getEmployees() == null ? 0 : d.getEmployees().size())
+                .employeeCount(countOf(d, counts))
                 .checkInLatitude(d.getCheckInLatitude())
                 .checkInLongitude(d.getCheckInLongitude())
                 .checkInRadiusMeters(d.getCheckInRadiusMeters())
                 .build());
-            walkFlat(byParent, d.getId(), d.getName(), d.getCode(), result);
+            walkFlat(byParent, d.getId(), d.getName(), d.getCode(), result, counts);
         }
     }
 
@@ -252,6 +269,10 @@ public class DepartmentService {
             String code = row.getCode().trim().toUpperCase();
             Department dept = existing.get(code);
             if (dept == null) continue;
+            // D8: không xoá qua import phòng ban còn nhân viên (giống nút xoá trên màn hình)
+            if (dept.getEmployees() != null && !dept.getEmployees().isEmpty())
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "error.import.department_has_employees|" + code + "|" + dept.getEmployees().size());
             deletedCodes.add(code);
             deleteIds.add(dept.getId());
             saved.remove(code);
@@ -265,7 +286,9 @@ public class DepartmentService {
             departmentRepo.flush();
         }
 
-        // ── Bước 2: upsert các hàng còn lại ────────────────────────────────
+        // ── Bước 2: upsert thông tin từng phòng (chưa gắn cha) ─────────────
+        // D8: gắn cha ở bước 3 sau khi mọi phòng trong file đã có, nên thứ tự dòng không quan trọng
+        Map<String, String> parentOf = new java.util.LinkedHashMap<>();
         for (DepartmentDTO.ImportRow row : rows) {
             if (row.getCode() == null || row.getCode().isBlank()) continue;
 
@@ -276,24 +299,14 @@ public class DepartmentService {
             if (row.getName() == null || row.getName().isBlank()) continue;
 
             String parentCode = row.getParentCode() == null ? null : row.getParentCode().trim().toUpperCase();
-
-            Department parent = null;
-            if (parentCode != null && !parentCode.isBlank()) {
-                parent = saved.get(parentCode);
-                if (parent == null)
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "error.import.parent_department_missing|" + parentCode + "|" + code);
-            }
-
-            int level = parent == null ? 0 : parent.getLevel() + 1;
+            parentOf.put(code, parentCode == null || parentCode.isBlank() ? null : parentCode);
 
             Department dept = saved.containsKey(code) ? saved.get(code) : new Department();
             dept.setCompany(company);
             dept.setCode(code);
             dept.setName(row.getName().trim());
             dept.setDescription(row.getDescription() == null ? null : row.getDescription().trim());
-            dept.setParent(parent);
-            dept.setLevel(level);
+            if (dept.getId() == null) dept.setLevel(0);
             if (row.getCheckInLatitude() != null && !row.getCheckInLatitude().isBlank()) {
                 try { dept.setCheckInLatitude(Double.parseDouble(row.getCheckInLatitude())); } catch (NumberFormatException ignored) {}
             }
@@ -306,6 +319,64 @@ public class DepartmentService {
 
             Department persisted = departmentRepo.save(dept);
             saved.put(code, persisted);
+        }
+
+        // ── Bước 3: gắn phòng cha, chặn vòng lặp, tính lại cấp ─────────────
+        for (var entry : parentOf.entrySet()) {
+            String code = entry.getKey();
+            String parentCode = entry.getValue();
+            Department dept = saved.get(code);
+            Department parent = null;
+            if (parentCode != null) {
+                parent = saved.get(parentCode);
+                if (parent == null)
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "error.import.parent_department_missing|" + parentCode + "|" + code);
+                if (parent.getId().equals(dept.getId()))
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.import.department_cycle|" + code);
+            }
+            dept.setParent(parent);
+        }
+        for (var entry : parentOf.entrySet()) {
+            Department dept = saved.get(entry.getKey());
+            if (dept.getParent() != null && isSelfOrDescendant(dept.getId(), dept.getParent()))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.import.department_cycle|" + entry.getKey());
+        }
+        departmentRepo.flush();
+        recomputeLevels(companyId);
+    }
+
+    /** D8: candidate là chính phòng deptId hoặc nằm dưới nó (đi ngược lên theo cha). */
+    private static boolean isSelfOrDescendant(Long deptId, Department candidate) {
+        Set<Long> seen = new HashSet<>();
+        for (Department d = candidate; d != null; d = d.getParent()) {
+            if (d.getId() != null && d.getId().equals(deptId)) return true;
+            if (d.getId() != null && !seen.add(d.getId())) return true; // đã có vòng sẵn
+        }
+        return false;
+    }
+
+    /** D8: cấp (level) = độ sâu trong cây; tính lại cho cả công ty sau khi đổi cha. */
+    private void recomputeLevels(Long companyId) {
+        List<Department> all = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId);
+        Map<Long, List<Department>> byParent = new HashMap<>();
+        Set<Long> ids = all.stream().map(Department::getId).collect(Collectors.toSet());
+        Deque<Department> queue = new ArrayDeque<>();
+        for (Department d : all) {
+            Long pid = d.getParent() == null ? null : d.getParent().getId();
+            if (pid == null || !ids.contains(pid)) {
+                d.setLevel(0);
+                queue.add(d);
+            } else {
+                byParent.computeIfAbsent(pid, k -> new ArrayList<>()).add(d);
+            }
+        }
+        while (!queue.isEmpty()) {
+            Department d = queue.poll();
+            for (Department c : byParent.getOrDefault(d.getId(), List.of())) {
+                c.setLevel(d.getLevel() + 1);
+                queue.add(c);
+            }
         }
     }
 
@@ -367,6 +438,9 @@ public class DepartmentService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.department.self_parent");
             parent = departmentRepo.findByIdAndCompanyId(req.getParentId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.parent_not_found"));
+            // D8: không chọn phòng con / cháu của chính nó làm phòng cha
+            if (isSelfOrDescendant(id, parent))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.department.parent_cycle");
             level = parent.getLevel() + 1;
         }
 
@@ -401,7 +475,9 @@ public class DepartmentService {
             dept.setRoundingWorkMinutes(validateRounding(req.getRoundingWorkMinutes()));
         }
 
-        return toResponse(departmentRepo.save(dept));
+        Department savedDept = departmentRepo.save(dept);
+        recomputeLevels(companyId); // D8: phòng con / cháu đổi cấp theo
+        return toResponse(savedDept);
     }
 
     @Transactional
@@ -422,6 +498,10 @@ public class DepartmentService {
     }
 
     private DepartmentDTO.Response toResponse(Department d) {
+        return toResponse(d, null);
+    }
+
+    private DepartmentDTO.Response toResponse(Department d, Map<Long, Long> counts) {
         return DepartmentDTO.Response.builder()
             .id(d.getId())
             .name(d.getName())
@@ -432,11 +512,11 @@ public class DepartmentService {
             .level(d.getLevel())
             .managerId(d.getManager() == null ? null : d.getManager().getId())
             .managerName(d.getManager() == null ? null : d.getManager().getFullName())
-            .employeeCount(d.getEmployees() == null ? 0 : d.getEmployees().size())
+            .employeeCount(countOf(d, counts))
             .children(d.getChildren() == null ? List.of() :
                 d.getChildren().stream()
                     .sorted((a, b) -> a.getName().compareTo(b.getName()))
-                    .map(this::toResponse).toList())
+                    .map(c -> toResponse(c, counts)).toList())
             .checkInLatitude(d.getCheckInLatitude())
             .checkInLongitude(d.getCheckInLongitude())
             .checkInRadiusMeters(d.getCheckInRadiusMeters())

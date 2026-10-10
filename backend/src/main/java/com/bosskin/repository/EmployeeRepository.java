@@ -23,6 +23,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByEmployeeCodeAndCompanyId(String employeeCode, Long companyId);
     long countByCompanyId(Long companyId);
     long countByCompanyIdAndDepartmentId(Long companyId, Long departmentId);
+
+    /** D10: số NV theo phòng ban trong một câu (cây phòng ban trước đây nạp toàn bộ NV từng phòng). */
+    @Query("SELECT e.department.id, COUNT(e) FROM Employee e WHERE e.company.id = :companyId GROUP BY e.department.id")
+    List<Object[]> countByDepartment(@Param("companyId") Long companyId);
     long countByPositionIdAndCompanyId(Long positionId, Long companyId);
 
     @Query("""

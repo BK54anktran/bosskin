@@ -20,6 +20,22 @@ public final class PasswordPolicy {
         return letter && digit;
     }
 
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+    private static final String LOWER = "abcdefghijkmnpqrstuvwxyz", UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ",
+        DIGIT = "23456789", SYMBOL = "@#$%&*+-=?";
+
+    /** Mật khẩu ngẫu nhiên đủ chữ thường/hoa/số/ký hiệu, bỏ ký tự dễ nhầm (l, 1, O, 0). */
+    public static String generate(int length) {
+        String all = LOWER + UPPER + DIGIT + SYMBOL;
+        char[] c = new char[Math.max(length, MIN_LENGTH)];
+        c[0] = pick(LOWER); c[1] = pick(UPPER); c[2] = pick(DIGIT); c[3] = pick(SYMBOL);
+        for (int i = 4; i < c.length; i++) c[i] = pick(all);
+        for (int i = c.length - 1; i > 0; i--) { int j = RANDOM.nextInt(i + 1); char t = c[i]; c[i] = c[j]; c[j] = t; }
+        return new String(c);
+    }
+
+    private static char pick(String s) { return s.charAt(RANDOM.nextInt(s.length())); }
+
     /** Ném 400 error.password.weak nếu mật khẩu không đạt chính sách. */
     public static void require(String pw) {
         if (!isStrong(pw)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.password.weak");

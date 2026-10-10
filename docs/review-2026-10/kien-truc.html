@@ -29,7 +29,7 @@
   <section class="hero">
     <h1>1. Kiến trúc hệ thống</h1>
     <p>Hệ thống gồm một backend monolith Spring Boot dùng chung cho nhiều công ty (multi-tenant chung schema, phân tách bằng cột <code>company_id</code>), một app Flutter chạy được cả web lẫn Android, và các dịch vụ ngoài: AWS S3, Firebase FCM, OpenStreetMap. Trang giới thiệu tĩnh (Netlify) gửi yêu cầu dùng thử vào Supabase.</p>
-    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V18, 40 controller).</p>
+    <p class="meta">Review gốc 08/10/2026, cập nhật 10/10/2026 theo code trên <code>main</code> (migration V19, 40 controller).</p>
   </section>
   <ul class="toc">
     <li><a href="#tong-quan">Sơ đồ thành phần</a></li>
@@ -55,7 +55,7 @@ flowchart LR
     subgraph BE["Spring Boot 3.3 (monolith)"]
       SEC["Security chains<br/>/admin/** · /api/v1/**<br/>JwtAuthFilter"]
       CTL["40 Controller"]
-      SVC["44 Service + 12 Excel descriptor<br/>AuditService · TwoFactorService<br/>WorkCalendarService · HolidayService"]
+      SVC["45 Service + 12 Excel descriptor<br/>AuditService · TwoFactorService<br/>WorkCalendarService · HolidayService"]
       ENG["AttendanceCalculator<br/>FormulaEngine"]
       SCH["Scheduler nhắc ca (60s)<br/>cộng phép (00:15 hằng ngày)"]
       TILE["MapTile proxy + cache đĩa"]

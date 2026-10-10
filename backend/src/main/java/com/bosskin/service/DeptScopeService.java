@@ -21,6 +21,37 @@ public class DeptScopeService {
     private final EmployeeRepository employeeRepository;
 
     /**
+     * D12: phạm vi phòng ban gửi lên (vai trò / người dùng) chỉ được chứa phòng ban của chính công ty
+     * hoặc các giá trị đặc biệt (chỉ bản thân, phòng tôi, phòng tôi và cấp dưới). Bảng scope không có
+     * khoá ngoại nên kiểm ở đây.
+     */
+    public void requireValidScopeIds(Long companyId, Map<String, ? extends java.util.Collection<Long>> scopes) {
+        if (scopes == null) return;
+        Set<Long> companyDepts = null;
+        for (var ids : scopes.values()) {
+            if (ids == null) continue;
+            for (Long id : ids) {
+                if (id == null) throw invalidScope();
+                if (id <= 0) {
+                    if (id != SCOPE_SELF_ONLY && id != SCOPE_MY_DEPARTMENT_ONLY && id != SCOPE_MY_DEPARTMENT_AND_DESC)
+                        throw invalidScope();
+                    continue;
+                }
+                if (companyDepts == null) {
+                    companyDepts = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId).stream()
+                        .map(com.bosskin.entity.Department::getId).collect(java.util.stream.Collectors.toSet());
+                }
+                if (!companyDepts.contains(id)) throw invalidScope();
+            }
+        }
+    }
+
+    private static org.springframework.web.server.ResponseStatusException invalidScope() {
+        return new org.springframework.web.server.ResponseStatusException(
+            org.springframework.http.HttpStatus.BAD_REQUEST, "error.role.scope_department_invalid");
+    }
+
+    /**
      * Returns the resolved set of allowed department IDs for a user+permission,
      * expanding every root ID to include all its descendants via BFS.
      * Empty result means unrestricted (no scope defined).

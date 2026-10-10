@@ -1,5 +1,10 @@
 import 'package:bosskin/l10n/app_localizations.dart';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import '../../../core/utils/file_saver_utils.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/permission_labels.dart';
 import '../../../core/utils/text_utils.dart';
@@ -1100,6 +1105,83 @@ class _UsersTabState extends State<_UsersTab> {
     }
   }
 
+  /// D9 — đặt lại mật khẩu cho một tài khoản: hiện mật khẩu tạm một lần, NV phải đổi khi đăng nhập.
+  Future<void> _resetPassword(AppUser user) async {
+    final s = AppLocalizations.of(context);
+    final name = user.fullName ?? user.email;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.userResetPasswordTitle),
+        content: Text(s.userResetPasswordConfirm(name)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.confirm)),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final r = await ApiService.instance.dio.post('/users/${user.id}/reset-password');
+      final pw = (r.data as Map)['password']?.toString() ?? '';
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(s.userResetPasswordDoneTitle),
+          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(s.userResetPasswordDoneHint(name)),
+            const SizedBox(height: 12),
+            SelectableText(pw, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, fontFamily: 'monospace')),
+          ]),
+          actions: [
+            TextButton.icon(
+              icon: const Icon(Icons.copy, size: 16),
+              label: Text(s.sysAdminCopyPassword),
+              onPressed: () => Clipboard.setData(ClipboardData(text: pw)),
+            ),
+            FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(s.close)),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+        );
+      }
+    }
+  }
+
+  /// D9 — cấp mật khẩu tạm mới cho các tài khoản chưa đổi mật khẩu lần đầu, tải về file Excel để phát cho NV.
+  Future<void> _issueInitialPasswords() async {
+    final s = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.userInitialPasswordsTitle),
+        content: Text(s.userInitialPasswordsConfirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.confirm)),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final r = await ApiService.instance.dio.post('/users/initial-passwords',
+          options: Options(responseType: ResponseType.bytes));
+      await saveFileToDevice(Uint8List.fromList(r.data as List<int>),
+          'mat-khau-tam-${DateFormat('yyyyMMdd-HHmm').format(DateTime.now())}.xlsx');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
+        );
+      }
+    }
+  }
+
   /// Bước C — gỡ 2FA cho người mất điện thoại; lần đăng nhập sau không cần mã.
   Future<void> _reset2fa(AppUser user) async {
     final s = AppLocalizations.of(context);
@@ -1180,6 +1262,15 @@ class _UsersTabState extends State<_UsersTab> {
                   onChanged: (v) => setState(() { _filterDeptId = v; _page = 0; }),
                 ),
               ),
+              const SizedBox(width: 12),
+              PermissionGuard(
+                permission: 'USER_MANAGE',
+                child: OutlinedButton.icon(
+                  onPressed: _issueInitialPasswords,
+                  icon: const Icon(Icons.key_outlined, size: 18),
+                  label: Text(s.userInitialPasswordsButton),
+                ),
+              ),
             ],
           ),
         ),
@@ -1202,6 +1293,7 @@ class _UsersTabState extends State<_UsersTab> {
                         onTap: () => _openRoleDialog(u),
                         onToggleEnabled: () => _toggleEnabled(u),
                         onReset2fa: () => _reset2fa(u),
+                        onResetPassword: () => _resetPassword(u),
                       );
                     },
                   ),
@@ -1225,12 +1317,14 @@ class _UserCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onToggleEnabled;
   final VoidCallback onReset2fa;
+  final VoidCallback onResetPassword;
 
   const _UserCard({
     required this.user,
     required this.onTap,
     required this.onToggleEnabled,
     required this.onReset2fa,
+    required this.onResetPassword,
   });
 
   @override
@@ -1347,6 +1441,15 @@ class _UserCard extends StatelessWidget {
                     tooltip: s.twoFactorResetTooltip,
                     icon: const Icon(Icons.phonelink_lock, size: 18, color: AppTheme.secondary),
                     onPressed: onReset2fa,
+                  ),
+                ),
+              if (user.email != AuthService.instance.currentUser?.email)
+                PermissionGuard(
+                  permission: 'USER_MANAGE',
+                  child: IconButton(
+                    tooltip: s.userResetPasswordTitle,
+                    icon: Icon(Icons.key_outlined, size: 18, color: AppTheme.textSecondary),
+                    onPressed: onResetPassword,
                   ),
                 ),
               PermissionGuard(

@@ -1,7 +1,7 @@
 name: Frontend build
 
 # Bước B: tự build bản web và APK Android cho mỗi push đụng frontend (và chạy tay được).
-# - Kiểm tra: flutter analyze (lỗi mới chặn; cảnh báo cũ chưa chặn), chuỗi tiếng Việt viết cứng.
+# - Kiểm tra: flutter analyze (lỗi mới chặn; cảnh báo cũ chưa chặn), chuỗi tiếng Việt viết cứng, flutter test.
 # - Web: build release, API_HOST lấy từ biến repo vars.API_HOST (Settings → Variables).
 # - APK: có secrets ANDROID_KEYSTORE_BASE64 (+ ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD)
 #   thì ký bằng khoá thật; chưa có thì APK ký khoá debug (chỉ để thử nội bộ). Xem docs/runbook.md mục 10.
@@ -49,6 +49,9 @@ jobs:
       - name: Chuỗi tiếng Việt viết cứng
         working-directory: .
         run: python3 tools/ci/check_vi_literals.py
+
+      - name: Test (quyền vào màn, menu nhóm, bản dịch mã lỗi backend)
+        run: flutter test
 
       - name: Build web
         run: flutter build web --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}

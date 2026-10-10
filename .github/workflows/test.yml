@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - 'backend/**'
+      - 'tools/ci/check_error_keys.py'
       - '.github/workflows/**'
   pull_request:
     paths:
@@ -27,6 +28,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+
+      - name: Mã lỗi có bản dịch vi + en
+        run: python3 tools/ci/check_error_keys.py
 
       # Integration test dùng Testcontainers (MySQL 8) — Docker có sẵn trên ubuntu-latest
       - name: Run tests

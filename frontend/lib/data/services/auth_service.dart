@@ -179,6 +179,14 @@ class AuthService extends ChangeNotifier {
 
   bool get isImpersonating => _adminUser != null;
 
+  /// Chỉ cho test: đặt người dùng hiện tại mà không gọi API / bộ nhớ máy.
+  @visibleForTesting
+  void debugSetUser(AuthUser? user, {AuthUser? impersonatedBy}) {
+    _currentUser = user;
+    _adminUser = impersonatedBy;
+    notifyListeners();
+  }
+
   bool get _isLinuxDev =>
       !kIsWeb && Platform.isLinux;
 

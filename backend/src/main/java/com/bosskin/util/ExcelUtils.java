@@ -208,13 +208,22 @@ public final class ExcelUtils {
             sheet.setColumnWidth(i, 22 * 256);
         }
 
+        // D9: cột chữ định dạng Text — ô gõ thêm (SĐT, CCCD, số TK) không mất số 0 đầu
+        CellStyle textStyle = wb.createCellStyle();
+        textStyle.setDataFormat(wb.createDataFormat().getFormat(ExcelText.TEXT_FORMAT));
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).getColType() == ExcelColumn.ColType.TEXT) sheet.setDefaultColumnStyle(i, textStyle);
+        }
+
         List<T> rows = excelSheet.getRows();
         for (int r = 0; r < rows.size(); r++) {
             Row row = sheet.createRow(r + 1);
             T data = rows.get(r);
             for (int c = 0; c < columns.size(); c++) {
                 Cell cell = row.createCell(c);
-                setCellValue(cell, columns.get(c).getValue(data), dateStyle);
+                Object val = columns.get(c).getValue(data);
+                setCellValue(cell, val, dateStyle);
+                if (val instanceof CharSequence) cell.setCellStyle(textStyle);
             }
         }
     }
@@ -328,10 +337,7 @@ public final class ExcelUtils {
         if (cell == null) return "";
         return switch (cell.getCellType()) {
             case STRING  -> cell.getStringCellValue().trim();
-            case NUMERIC -> {
-                double d = cell.getNumericCellValue();
-                yield d == Math.floor(d) ? String.valueOf((long) d) : String.valueOf(d);
-            }
+            case NUMERIC -> ExcelText.numeric(cell);
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
             default -> "";
         };

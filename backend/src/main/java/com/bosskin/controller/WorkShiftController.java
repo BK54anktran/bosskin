@@ -39,6 +39,7 @@ public class WorkShiftController {
     private final ShiftExcelService shiftExcelService;
     private final com.bosskin.service.CompanySettingService companySettingService;
     private final DepartmentRepository departmentRepository;
+    private final com.bosskin.repository.EmployeeRepository employeeRepository;
 
     // ── Export / Import Excel ────────────────────────────────────────────
 
@@ -213,7 +214,9 @@ public class WorkShiftController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @AuthenticationPrincipal User user) {
         requireShiftView(user);
-        return shiftService.listAssignments(user.getCompany().getId(), from, to);
+        return shiftService.listAssignments(user.getCompany().getId(), from, to,
+            deptScopeService.resolvedScopes(user.getId(), "SHIFT_VIEW"),
+            user.getEmployee() != null ? user.getEmployee().getId() : null);
     }
 
     @GetMapping("/assignments/employee/{empId}")
@@ -223,6 +226,11 @@ public class WorkShiftController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @AuthenticationPrincipal User user) {
         requireShiftView(user);
+        com.bosskin.entity.Employee target = employeeRepository.findByIdAndCompanyId(empId, user.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.not_found"));
+        if (!WorkShiftService.inShiftScope(target, deptScopeService.resolvedScopes(user.getId(), "SHIFT_VIEW"),
+                user.getEmployee() != null ? user.getEmployee().getId() : null))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
         return shiftService.listAssignmentsByEmployee(empId, user.getCompany().getId(), from, to);
     }
 

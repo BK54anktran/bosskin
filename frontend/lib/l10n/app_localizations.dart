@@ -9988,6 +9988,72 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Import / Export'**
   String get navImportExport;
+
+  /// No description provided for @userResetPasswordTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại mật khẩu'**
+  String get userResetPasswordTitle;
+
+  /// No description provided for @userResetPasswordConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp mật khẩu tạm mới cho {name}? Mật khẩu hiện tại hết hiệu lực, các phiên đăng nhập bị đăng xuất.'**
+  String userResetPasswordConfirm(String name);
+
+  /// No description provided for @userResetPasswordDoneTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu tạm'**
+  String get userResetPasswordDoneTitle;
+
+  /// No description provided for @userResetPasswordDoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi mật khẩu này cho {name}. Mật khẩu chỉ hiện một lần; người dùng phải đổi khi đăng nhập.'**
+  String userResetPasswordDoneHint(String name);
+
+  /// No description provided for @userInitialPasswordsButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất mật khẩu tạm'**
+  String get userInitialPasswordsButton;
+
+  /// No description provided for @userInitialPasswordsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất mật khẩu tạm'**
+  String get userInitialPasswordsTitle;
+
+  /// No description provided for @userInitialPasswordsConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp mật khẩu tạm mới cho mọi tài khoản trong phạm vi của bạn còn chưa đổi mật khẩu lần đầu (vd. vừa nhập từ Excel) và tải về file Excel để phát cho nhân viên. Mật khẩu tạm cấp trước đó sẽ hết hiệu lực.'**
+  String get userInitialPasswordsConfirm;
+
+  /// No description provided for @auditActUserResetPassword.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại mật khẩu tài khoản'**
+  String get auditActUserResetPassword;
+
+  /// No description provided for @auditActUserIssueInitialPasswords.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất mật khẩu tạm'**
+  String get auditActUserIssueInitialPasswords;
+
+  /// No description provided for @auditActProfileEditApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt yêu cầu sửa hồ sơ'**
+  String get auditActProfileEditApprove;
+
+  /// No description provided for @auditActProfileEditReject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối yêu cầu sửa hồ sơ'**
+  String get auditActProfileEditReject;
 }
 
 class _AppLocalizationsDelegate

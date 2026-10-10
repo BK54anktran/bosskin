@@ -47,7 +47,7 @@
     <p class="meta">Mã việc (S1, A3, L2…) tham chiếu trang <a href="danh-gia.html">Đánh giá</a>. Ước lượng tính theo ngày công của 1 dev; lịch tính cho đội <b>1 backend + 1 frontend</b>, bắt đầu 12/10/2026.</p>
   </section>
 
-  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV), N (tài liệu nhân sự) và F (giao diện tối) xong; AWS để sau, làm tiếp D, E</span></h2>
+  <h2>Tiến độ <span class="tag">cập nhật 10/10/2026 — Bước 1, 2, thử nghiệm nội bộ, A, B, C, trang giới thiệu, I (thuế 2026), J (ngày lễ), K (lịch sử công tác), L (hợp đồng lao động), M (thuế &amp; BH của NV), N (tài liệu nhân sự), F (giao diện tối), E và O–Q (dọn mục còn mở, test frontend, diễn tập + UAT) xong; còn D (thử máy), AWS, UAT, pilot</span></h2>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Mốc</th><th>Trạng thái</th><th>Nhánh</th><th>Kết quả / còn lại</th></tr></thead>
     <tbody>
@@ -213,6 +213,44 @@
       <li>Thông số thuế / BH: <b>system admin cập nhật một chỗ cho mọi công ty</b>; công ty chỉ chọn vùng lương tối thiểu? <span class="muted">Đã làm (bước I, M): thông số luật ở <code>tax_policies</code>; riêng tỷ lệ BH công ty đóng để ở Cài đặt công ty (mặc định 17,5 / 3 / 1%) vì mức TNLĐ-BNN có thể khác theo ngành.</span></li>
       <li>Bước M: người phụ thuộc <b>"Đã nộp, chờ MST" vẫn được giảm trừ</b>, chỉ "Chưa đăng ký" không tính; quyền xem dữ liệu nhạy cảm <b>chỉ cấp sẵn cho vai trò Admin</b>, công ty tự cấp thêm cho vai trò nhân sự. <span class="muted">Đã làm theo đề xuất (10/10).</span></li>
       <li>Bước N: NV tự gửi tài liệu <b>bằng trạng thái "chờ duyệt" ngay trên tài liệu</b> (HR duyệt / từ chối ở màn Tài liệu nhân sự) thay vì đi qua yêu cầu chỉnh sửa hồ sơ (luồng đó sửa từng trường, không chứa file); cảnh báo hết hạn <b>dùng chung số ngày báo trước với hợp đồng</b>; bản trên điện thoại chỉ chọn được ảnh (chưa thêm gói chọn file). <span class="muted">Đã làm theo đề xuất (10/10).</span></li>
+    </ul></div>
+
+  <h3 id="truoc-uat">Trước nghiệm thu (O–Q) <span class="tag">lập và xong 10/10/2026</span></h3>
+  <p class="muted">Phần code của kế hoạch đã xong; trước UAT dọn nốt các mục còn mở ở trang Đánh giá, thêm test cho frontend và diễn tập vận hành.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Bước</th><th>Nội dung</th><th>Kết quả</th><th>Trạng thái</th></tr></thead>
+    <tbody>
+      <tr><td><b>O</b> · Dọn mục còn mở</td><td>
+        <ul class="clean">
+          <li>D6 mã NV trùng sau khi xoá / khi tạo đồng thời; D8 cây phòng ban có vòng, cấp không tính lại, import xoá phòng còn NV.</li>
+          <li>D9 Excel mất số 0 đầu (SĐT, CCCD, số TK), tài khoản import dùng chung một mật khẩu cố định.</li>
+          <li>D11 duyệt sửa hồ sơ bỏ qua phạm vi, không lưu giá trị cũ; A20 ca / phân ca không lọc theo công ty / phạm vi.</li>
+          <li>D10 truy vấn lặp (cây phòng ban, danh sách người dùng); D12 phạm vi phòng ban nhận ID của công ty khác.</li>
+        </ul></td>
+        <td><code>V19</code> <code>employee_code_counters</code> (bộ đếm mã NV theo công ty, khoá dòng, không cấp lại mã đã dùng) + cột <code>old_*</code>, <code>processed_at</code> ở <code>profile_edit_requests</code>.
+          Đổi phòng cha chặn vòng (<code>error.department.parent_cycle</code>) và tính lại cấp cả nhánh; import phòng ban gắn cha sau khi đủ phòng (thứ tự dòng tuỳ ý), chặn vòng, không xoá phòng còn NV.
+          Excel: cột chữ định dạng Text, ô số "000…" giữ số 0, SĐT 9 số / CCCD 10–11 số tự bù số 0. Import để trống mật khẩu → mật khẩu ngẫu nhiên; mới:
+          đặt lại mật khẩu từng người và <b>Xuất mật khẩu tạm</b> (file Excel) ở tab Người dùng. Duyệt sửa hồ sơ theo phạm vi <code>EMPLOYEE_UPDATE</code>, không tự duyệt,
+          đơn đã duyệt hiện giá trị trước → sau, nhật ký <code>PROFILE_EDIT_*</code>. Phân ca lọc theo phạm vi <code>SHIFT_VIEW</code>. Đếm NV theo phòng 1 câu GROUP BY,
+          danh sách người dùng nạp phạm vi theo lô. Phạm vi vai trò / người dùng chỉ nhận phòng của công ty.
+          <code>DataIntegrityTest</code> 9 ca; 166 test backend. Đánh giá: 71/81 đã sửa, 6 một phần, 3 để sau, 1 còn mở (O5 tile bản đồ).</td>
+        <td><span class="st done">Xong 10/10</span></td></tr>
+      <tr><td><b>P</b> · Test frontend</td><td>App Flutter chưa có test nào.</td>
+        <td>14 test (<code>frontend/test/</code>): quyền vào màn, ẩn màn cá nhân khi impersonate, menu nhóm (mỗi màn một lần, đủ màn, nhóm rỗng ẩn, thu gọn + nhớ trạng thái),
+          mọi mã lỗi backend có bản dịch vi + en. CI <code>frontend-build</code> chạy <code>flutter test</code>; CI backend chạy <code>tools/ci/check_error_keys.py</code> (296 mã lỗi).</td>
+        <td><span class="st done">Xong 10/10</span></td></tr>
+      <tr><td><b>Q</b> · Diễn tập vận hành + UAT</td><td>Sao lưu / khôi phục DB theo runbook trên bản sao; kịch bản nghiệm thu cho từng vai trò.</td>
+        <td><code>tools/ops/backup_restore_drill.sh</code> (chỉ đọc DB nguồn, khôi phục vào DB mới <code>*_restore_test</code>, so số dòng từng bảng + lịch sử Flyway).
+          Diễn tập trên MySQL 8 thử: 50 bảng + Flyway V1–V19 khớp, app khởi động trên bản khôi phục, đăng nhập và tạo NV bình thường (runbook mục 5).
+          Kịch bản UAT <code>docs/uat-kich-ban.md</code>: 37 mục theo 6 nhóm (tài khoản, hồ sơ, ca &amp; công, phép, lương, báo cáo), mức Chặn / Thường, bảng ký nghiệm thu.</td>
+        <td><span class="st done">Xong 10/10</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Còn lại / cần chủ dự án chốt</b>
+    <ul class="clean">
+      <li>D12: thời hạn lưu dữ liệu để viết job dọn — phiên đăng nhập hết hạn, nhật ký thao tác, file Excel tạm trên S3 (đề xuất: <b>phiên 30 ngày sau hết hạn, nhật ký giữ ≥ 2 năm, file tạm 30 ngày</b>). Chưa viết job tự xoá khi chưa chốt.</li>
+      <li>L17: bậc lương đổi giữa kỳ chưa chia tỷ lệ (mỗi bậc một công thức) — lương HĐ đổi giữa kỳ đã chia theo công chuẩn; đề xuất để sau go-live.</li>
+      <li>D10: báo cáo vẫn tải cả kỳ vào bộ nhớ (đủ cho vài trăm NV); phân trang báo cáo để sau.</li>
     </ul></div>
 
   <div class="note warn"><b>Việc cần làm ngoài code</b>

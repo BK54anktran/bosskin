@@ -25,8 +25,9 @@ GUIDE = [
     ("Cột có (*)", "Bắt buộc. Cột \"Tên …\" cạnh cột mã chỉ để đọc, hệ thống bỏ qua khi nhập."),
     ("Ngày", "Dạng dd/MM/yyyy, ví dụ 01/11/2026. Giờ dạng HH:mm, ví dụ 08:00."),
     ("Giới tính / trạng thái", "Giới tính: MALE, FEMALE, OTHER. Trạng thái NV: ACTIVE, INACTIVE, ON_LEAVE."),
-    ("Tài khoản nhân viên", "Mỗi dòng Nhân viên có Email sẽ tạo tài khoản đăng nhập bằng email đó, mật khẩu ban đầu Bosskin@123, "
-                            "bắt đổi ở lần đăng nhập đầu. Phát tài khoản ngay sau khi nhập để không ai đăng nhập thay."),
+    ("Tài khoản nhân viên", "Mỗi dòng Nhân viên có Email sẽ tạo tài khoản đăng nhập bằng email đó với mật khẩu ngẫu nhiên. "
+                            "Nhập xong: Phân quyền → Người dùng → Xuất mật khẩu tạm để lấy file mật khẩu phát cho từng người; "
+                            "mỗi người phải đổi mật khẩu ở lần đăng nhập đầu."),
     ("Lương hợp đồng", "Mức lương thoả thuận của từng người (để trống thì dùng mức của bậc lương)."),
     ("Số dư phép", "Phép còn lại lúc chuyển sang BossKin: ghi Số ngày phép = số ngày còn được nghỉ, Ngày cấp = ngày bắt đầu dùng BossKin, "
                    "Hiệu lực đến = hạn dùng (vd. 31/12/2026). Loại phép phải có ở sheet Loại nghỉ phép hoặc đã có trong hệ thống."),

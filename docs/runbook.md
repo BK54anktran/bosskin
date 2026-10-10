@@ -68,7 +68,15 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
   mysqldump --single-transaction --routines --set-gtid-purged=OFF \
     -h <rds-endpoint> -u <user> -p bosskin | gzip > bosskin-$(date +%F).sql.gz
   ```
-  Khôi phục thử mỗi tháng một lần vào DB tạm (`gunzip -c … | mysql -h … bosskin_restore_test`) để chắc bản sao lưu dùng được.
+  Khôi phục thử mỗi tháng một lần vào DB tạm để chắc bản sao lưu dùng được — dùng script diễn tập:
+  ```bash
+  DB_HOST=<rds-endpoint> DB_USER=<user> DB_PASS=… SRC_DB=bosskin tools/ops/backup_restore_drill.sh
+  ```
+  Script chỉ đọc DB nguồn, sao lưu ra `.sql.gz`, khôi phục vào DB **mới** `bosskin_restore_test` (đã có thì dừng, không xoá),
+  so số dòng từng bảng + lịch sử Flyway, mã thoát ≠ 0 nếu lệch. Sau đó chạy thử app trỏ `DB_URL` vào DB tạm
+  (Flyway phải báo "up to date", đăng nhập được) rồi xoá DB tạm bằng tay.
+  Diễn tập 10/10/2026 (MySQL 8 thử, 50 bảng + lịch sử Flyway V1–V19): khớp 100 %, app khởi động trên bản khôi phục, đăng nhập và
+  tạo NV mới (mã nối tiếp đúng) bình thường.
 - Không bao giờ chạy `flyway clean` hay xoá bảng trên prod (`spring.flyway.clean-disabled` luôn bật ở prod).
 
 ## 6. Theo dõi và tra lỗi
@@ -181,3 +189,14 @@ rồi `flutter build apk --release --dart-define=API_HOST=...`.
 - Dữ liệu có sẵn khi migrate: 01/07/2024 (11 triệu / 4,4 triệu, 7 bậc, mức tham chiếu 2.340.000), 01/01/2026 (15,5 / 6,2 triệu, 5 bậc,
   lương tối thiểu vùng NĐ 293/2025), 01/07/2026 (mức tham chiếu 2.530.000). Đối chiếu văn bản gốc trước khi chạy lương thật.
 - Không có chính sách nào hiệu lực cho kỳ → tạo lương báo `error.tax_policy.not_found`.
+
+## 14. Mật khẩu tài khoản nhân viên
+
+- Tài khoản tạo từ Excel (nhập NV / nhập dữ liệu ban đầu) để trống cột mật khẩu → mật khẩu **ngẫu nhiên**, bắt đổi ở lần đăng nhập đầu
+  (không còn mật khẩu mặc định chung).
+- Phát tài khoản: Phân quyền → Người dùng → **Xuất mật khẩu tạm** (`POST /api/v1/users/initial-passwords`, quyền `USER_MANAGE`, theo phạm vi):
+  cấp mật khẩu tạm mới cho mọi tài khoản đang bật và còn chờ đổi mật khẩu lần đầu, trả file Excel. Mật khẩu tạm cấp trước đó hết hiệu lực.
+  Nhật ký `USER_ISSUE_INITIAL_PASSWORDS`.
+- Quên mật khẩu: biểu tượng chìa khoá cạnh người dùng (`POST /api/v1/users/{id}/reset-password`) → mật khẩu tạm 10 ký tự hiện một lần,
+  thu hồi mọi phiên, bắt đổi khi đăng nhập. Không tự đặt lại cho chính mình (dùng Đổi mật khẩu ở Hồ sơ). Nhật ký `USER_RESET_PASSWORD`.
+- File mật khẩu tạm là dữ liệu nhạy cảm: phát xong thì xoá.

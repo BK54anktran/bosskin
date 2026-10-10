@@ -54,4 +54,24 @@ public class ProfileEditRequest extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by")
     private User processedBy;
+
+    @Column(name = "processed_at")
+    private java.time.LocalDateTime processedAt;
+
+    // D11: giá trị trên hồ sơ ngay trước khi duyệt (V19)
+    @Column(name = "old_full_name", length = 100)
+    private String oldFullName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "old_gender")
+    private Employee.Gender oldGender;
+
+    @Column(name = "old_date_of_birth")
+    private LocalDate oldDateOfBirth;
+
+    @Column(name = "old_phone", length = 15)
+    private String oldPhone;
+
+    @Column(name = "old_personal_email", length = 100)
+    private String oldPersonalEmail;
 }

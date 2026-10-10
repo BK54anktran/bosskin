@@ -17,9 +17,16 @@ Mỗi file có sheet **Hướng dẫn** (định dạng ngày, giá trị hợp 
 Lệnh `MERGE` (mặc định) thêm hoặc cập nhật theo mã nên nhập lại cùng file không tạo trùng, kể cả số dư phép
 (một quỹ phép = mã NV + loại phép + ngày cấp).
 
-**Tài khoản nhân viên:** mỗi dòng có email được tạo tài khoản đăng nhập bằng email đó, mật khẩu ban đầu
-`Bosskin@123`, bắt đổi ở lần đăng nhập đầu. Mật khẩu này giống nhau cho mọi người, nên phát tài khoản và yêu cầu
-đăng nhập ngay sau khi nhập; ai chưa đăng nhập thì đặt lại mật khẩu cho họ ở tab Người dùng.
+**Tài khoản nhân viên:** mỗi dòng có email được tạo tài khoản đăng nhập bằng email đó với **mật khẩu ngẫu nhiên**
+(mỗi người một mật khẩu, không ai biết trước). Nhập xong vào **Phân quyền → Người dùng → Xuất mật khẩu tạm**: hệ thống
+cấp mật khẩu tạm mới cho mọi tài khoản chưa đổi mật khẩu lần đầu và tải về file Excel (mã NV, họ tên, phòng ban, email,
+mật khẩu tạm) để phát cho từng người; mỗi người phải đổi mật khẩu ở lần đăng nhập đầu. Xuất lần nữa thì mật khẩu tạm
+cũ hết hiệu lực. Ai quên mật khẩu sau này: biểu tượng chìa khoá cạnh tên ở tab Người dùng (đặt lại từng người).
+File mật khẩu tạm là dữ liệu nhạy cảm: phát xong thì xoá, không gửi qua nhóm chat chung.
+
+**SĐT, CCCD, số tài khoản:** cột chữ trong file xuất đã định dạng Text nên gõ số 0 đầu vẫn giữ. Nếu dán từ file khác
+mà Excel đã đổi thành số, SĐT 9 chữ số và CCCD 10–11 chữ số được tự bù số 0 khi nhập; số tài khoản ngân hàng không đoán
+được, hãy để dạng Text.
 
 **Số dư phép:** ghi số ngày còn được nghỉ (không phải số được cấp cả năm), ngày cấp = ngày bắt đầu dùng BossKin,
 hiệu lực đến = hạn dùng. Có thể sửa sau bằng cách sửa số trong file rồi nhập lại (không được nhỏ hơn số đã dùng).

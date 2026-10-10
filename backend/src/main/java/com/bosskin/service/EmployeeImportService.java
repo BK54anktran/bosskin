@@ -31,16 +31,20 @@ public class EmployeeImportService {
     private final UserRepository        userRepo;
     private final RoleRepository        roleRepo;
     private final PasswordEncoder       passwordEncoder;
+    private final EmployeeCodeService   employeeCodeService;
     private final DeptScopeService      deptScopeService;
     private final JobHistoryService     jobHistoryService;
     private final com.bosskin.repository.LaborContractRepository laborContractRepo;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final String DEFAULT_PASSWORD = "Bosskin@123";
-
-    /** Mật khẩu ban đầu của dòng import: rỗng → mặc định; tự đặt thì phải đạt chính sách. */
+    /**
+     * Mật khẩu ban đầu của dòng import: tự đặt thì phải đạt chính sách; để trống thì sinh ngẫu nhiên
+     * (D9 — trước đây mọi tài khoản dùng chung một mật khẩu cố định). Quản trị lấy mật khẩu tạm để phát
+     * cho NV ở màn Phân quyền → "Xuất mật khẩu tạm" hoặc đặt lại từng người; NV phải đổi ở lần đăng nhập đầu.
+     */
     private static String importPassword(EmployeeDTO.ImportRow row) {
-        if (row.getDefaultPassword() == null || row.getDefaultPassword().isBlank()) return DEFAULT_PASSWORD;
+        if (row.getDefaultPassword() == null || row.getDefaultPassword().isBlank())
+            return com.bosskin.core.PasswordPolicy.generate(12);
         String pwd = row.getDefaultPassword().trim();
         if (!com.bosskin.core.PasswordPolicy.isStrong(pwd))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -647,8 +651,7 @@ public class EmployeeImportService {
     }
 
     private String generateCode(Long companyId) {
-        long count = employeeRepo.countByCompanyId(companyId) + 1;
-        return "EMP" + String.format("%04d", count);
+        return employeeCodeService.next(companyId);
     }
 
     private Employee.Gender parseGender(String v) {

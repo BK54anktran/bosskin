@@ -93,6 +93,19 @@ public class Api {
         }
     }
 
+    /** Như {@link #download} nhưng gọi POST (vd. xuất mật khẩu tạm). */
+    public byte[] downloadPost(String token, String url) {
+        try {
+            MockHttpServletRequestBuilder req = request(HttpMethod.POST, url);
+            if (token != null) req.header("Authorization", "Bearer " + token);
+            MockHttpServletResponse r = mvc.perform(req).andReturn().getResponse();
+            if (r.getStatus() != 200) throw new IllegalStateException("POST " + url + " → " + r.getStatus() + " " + r.getContentAsString());
+            return r.getContentAsByteArray();
+        } catch (Exception e) {
+            throw new IllegalStateException("DOWNLOAD " + url + " lỗi: " + e.getMessage(), e);
+        }
+    }
+
     /** Gửi file multipart (field "file") — dùng cho /preview-import, /import. */
     public Res upload(String token, String url, String filename, byte[] bytes) {
         try {

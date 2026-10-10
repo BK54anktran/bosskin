@@ -35,9 +35,9 @@ public class WorkShiftService {
 
     @Transactional(readOnly = true)
     public List<ShiftDTO.ShiftResponse> listShifts(Long companyId) {
-        return shiftRepo.findAll()
+        // A20: truy vấn theo công ty thay vì tải ca của mọi công ty rồi lọc
+        return shiftRepo.findByCompanyIdAndActiveTrue(companyId)
             .stream()
-            .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
             .map(this::toResponse)
             .toList();
     }
@@ -57,12 +57,9 @@ public class WorkShiftService {
             deptRepo.findByIdAndCompanyId(deptId, companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         }
-        return shiftRepo.findAll()
+        return shiftRepo.findByCompanyIdAndActiveTrue(companyId)
             .stream()
-            .filter(s -> s.isActive()
-                && s.getCompany() != null
-                && companyId.equals(s.getCompany().getId())
-                && s.getDepartments().stream().anyMatch(d -> deptIds.contains(d.getId())))
+            .filter(s -> s.getDepartments().stream().anyMatch(d -> deptIds.contains(d.getId())))
             .map(this::toResponse)
             .toList();
     }
@@ -80,11 +77,8 @@ public class WorkShiftService {
 
     @Transactional
     public ShiftDTO.ShiftResponse createShift(Long companyId, ShiftDTO.ShiftRequest req) {
-        boolean codeExists = shiftRepo.findAll().stream().anyMatch(s ->
-            s.isActive()
-                && s.getCompany() != null
-                && companyId.equals(s.getCompany().getId())
-                && s.getCode() != null
+        boolean codeExists = shiftRepo.findByCompanyIdAndActiveTrue(companyId).stream().anyMatch(s ->
+            s.getCode() != null
                 && s.getCode().equalsIgnoreCase(req.getCode()));
         if (codeExists) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shift.code_duplicate");
@@ -114,11 +108,8 @@ public class WorkShiftService {
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shift.not_found"));
 
-        boolean codeExists = shiftRepo.findAll().stream().anyMatch(s ->
-            s.isActive()
-                && s.getCompany() != null
-                && companyId.equals(s.getCompany().getId())
-                && !s.getId().equals(id)
+        boolean codeExists = shiftRepo.findByCompanyIdAndActiveTrue(companyId).stream().anyMatch(s ->
+            !s.getId().equals(id)
                 && s.getCode() != null
                 && s.getCode().equalsIgnoreCase(req.getCode()));
         if (codeExists) {
@@ -171,8 +162,26 @@ public class WorkShiftService {
     // ── Assignments ─────────────────────────────────────────────────────
 
     public List<ShiftDTO.AssignResponse> listAssignments(Long companyId, LocalDate from, LocalDate to) {
+        return listAssignments(companyId, from, to, Set.of(), null);
+    }
+
+    /**
+     * A20: lọc theo phạm vi SHIFT_VIEW của người xem (rỗng = toàn công ty; "chỉ bản thân" =
+     * phân ca của chính mình), giống danh sách nhân viên ở lưới phân ca.
+     */
+    public List<ShiftDTO.AssignResponse> listAssignments(Long companyId, LocalDate from, LocalDate to,
+                                                         Set<Long> scope, Long selfEmployeeId) {
         return assignRepo.findByCompanyAndDateRange(companyId, from, to)
-            .stream().map(this::toAssignResponse).toList();
+            .stream()
+            .filter(sa -> scope.isEmpty() || inShiftScope(sa.getEmployee(), scope, selfEmployeeId))
+            .map(this::toAssignResponse).toList();
+    }
+
+    public static boolean inShiftScope(Employee e, Set<Long> scope, Long selfEmployeeId) {
+        if (scope.isEmpty()) return true;
+        if (e == null) return false;
+        if (scope.contains(DeptScopeService.SCOPE_SELF_ONLY) && e.getId().equals(selfEmployeeId)) return true;
+        return e.getDepartment() != null && scope.contains(e.getDepartment().getId());
     }
 
     public List<ShiftDTO.AssignResponse> listAssignmentsByEmployee(Long employeeId, Long companyId,

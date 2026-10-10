@@ -354,11 +354,12 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V18** (`V18__employee_documents.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V19** (`V19__data_integrity.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
-V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự
-→ Migration tiếp theo phải là **V19**
+V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
+V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
+→ Migration tiếp theo phải là **V20**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -504,6 +505,30 @@ V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem 
 - FE: `widgets/document_widgets.dart` (`DocumentTile`, `DocumentUploadDialog`, `downloadDocument`), `employee/employee_documents_dialog.dart`,
   màn `/documents` (`screens/documents/`), `profile/my_documents_card.dart`; `pickDocumentFile()` (web: PDF / ảnh / Word, mobile: ảnh).
   Test: `DocumentTest` (`Api.uploadWith`, `Api.rawGet`).
+
+## Dọn mục còn mở trước UAT (O–Q, 10/10/2026)
+- Mã NV: `EmployeeCodeService.next(companyId)` (bảng `employee_code_counters`, V19; `SELECT … FOR UPDATE`, cần transaction của người gọi —
+  `Propagation.MANDATORY`), dạng `EMP00001`, bỏ qua mã đã dùng kể cả NV đã xoá. Không dùng `count + 1` nữa. Cột tên `last_seq`
+  (`last_value` là từ khoá MySQL 8).
+- Phòng ban: đổi cha chặn chọn con / cháu (`error.department.parent_cycle`), `recomputeLevels(companyId)` sau mỗi lần đổi cha; import gắn cha ở
+  bước sau (thứ tự dòng tuỳ ý), chặn vòng (`error.import.department_cycle|mã`), không xoá phòng còn NV (`error.import.department_has_employees|mã|số`).
+  Đếm NV theo phòng: `EmployeeRepository.countByDepartment` (GROUP BY), không dùng `d.getEmployees().size()` trong danh sách.
+- Excel (`util/ExcelText`): cột chữ xuất định dạng Text ("@", cả default column style), đọc ô số theo định dạng "000…" giữ số 0;
+  `EmployeeDTO.ImportRow.setPhone/setIdentityCard` tự bù số 0 (SĐT 9 số, CCCD 10–11 số, CMND 8 số).
+- Mật khẩu: `PasswordPolicy.generate(n)` (dùng chung với system admin). Import để trống mật khẩu → ngẫu nhiên. `POST /api/v1/users/{id}/reset-password`
+  (USER_MANAGE + phạm vi, không cho chính mình `error.user.cannot_reset_self`) trả `{password}`; `POST /api/v1/users/initial-passwords` trả file Excel
+  mật khẩu tạm cho tài khoản còn `must_change_password` (`error.user.no_pending_accounts`). Nhật ký `USER_RESET_PASSWORD`, `USER_ISSUE_INITIAL_PASSWORDS`.
+  FE: chìa khoá trên thẻ người dùng + nút "Xuất mật khẩu tạm" ở tab Người dùng (`roles_screen.dart`).
+- Yêu cầu sửa hồ sơ: lọc / đếm / duyệt theo phạm vi `EMPLOYEE_UPDATE`, không tự duyệt (`error.profile.cannot_process_own`), lưu `old_*` + `processed_at`;
+  đơn đã duyệt trả `current*` = giá trị trước khi duyệt. Nhật ký `PROFILE_EDIT_APPROVE` / `PROFILE_EDIT_REJECT`.
+- Phân ca: `GET /shifts/assignments` lọc theo phạm vi SHIFT_VIEW (`WorkShiftService.inShiftScope`), `/assignments/employee/{id}` ngoài phạm vi 403.
+  Ca lấy `findByCompanyIdAndActiveTrue`, không `findAll()`.
+- Phạm vi phòng ban gửi lên (vai trò, người dùng): `DeptScopeService.requireValidScopeIds` — chỉ phòng của công ty hoặc -1/-2/-3.
+  Danh sách người dùng: `UserRepository.findForListing` + `UserPermDeptScopeRepository.findScopesMaps` (theo lô).
+- Chưa làm (chờ chốt): job dọn phiên / nhật ký / file tạm (D12), chia tỷ lệ bậc lương giữa kỳ (L17), phân trang báo cáo (D10).
+- Test FE: `frontend/test/` (`flutter test`, CI frontend-build) — `AuthService.debugSetUser`, `debugLookupServerKey` chỉ cho test.
+  Mã lỗi backend mới phải có bản dịch vi + en: `tools/ci/check_error_keys.py` (CI backend) và `error_translations_test.dart`.
+- Diễn tập sao lưu / khôi phục: `tools/ops/backup_restore_drill.sh` (runbook mục 5). Kịch bản nghiệm thu: `docs/uat-kich-ban.md`.
 
 ## Màn hình Flutter
 | Screen | Path |

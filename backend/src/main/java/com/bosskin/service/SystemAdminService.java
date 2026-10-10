@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,9 +24,6 @@ import java.util.regex.Pattern;
 public class SystemAdminService {
 
     private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$");
-    private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String LOWER = "abcdefghijkmnpqrstuvwxyz", UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ",
-        DIGIT = "23456789", SYMBOL = "@#$%&*+-=?";
 
     private final SystemAdminRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -87,14 +83,8 @@ public class SystemAdminService {
 
     /** 16 ký tự, đủ chữ thường/hoa/số/ký hiệu, bỏ ký tự dễ nhầm (l, 1, O, 0). */
     static String generatePassword() {
-        String all = LOWER + UPPER + DIGIT + SYMBOL;
-        char[] c = new char[16];
-        c[0] = pick(LOWER); c[1] = pick(UPPER); c[2] = pick(DIGIT); c[3] = pick(SYMBOL);
-        for (int i = 4; i < c.length; i++) c[i] = pick(all);
-        for (int i = c.length - 1; i > 0; i--) { int j = RANDOM.nextInt(i + 1); char t = c[i]; c[i] = c[j]; c[j] = t; }
-        return new String(c);
+        return com.bosskin.core.PasswordPolicy.generate(16);
     }
-    private static char pick(String s) { return s.charAt(RANDOM.nextInt(s.length())); }
 
     private SystemAdmin get(Long id) {
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.sysadmin.not_found"));

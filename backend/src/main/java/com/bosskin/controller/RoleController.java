@@ -98,6 +98,7 @@ public class RoleController {
         if (rawScopes != null) {
             Map<String, List<Long>> scopes = new java.util.HashMap<>();
             rawScopes.forEach((k, v) -> scopes.put(k, v.stream().map(Integer::longValue).toList()));
+            deptScopeService.requireValidScopeIds(user.getCompany().getId(), scopes);
             rolePermDeptScopeRepo.replaceAll(
                 role.getId(),
                 permissionConsistencyService.filterScopesByPermissionCodes(scopes, normalizedCodes)
@@ -157,6 +158,7 @@ public class RoleController {
         if (rawScopes != null) {
             Map<String, List<Long>> scopes = new java.util.HashMap<>();
             rawScopes.forEach((k, v) -> scopes.put(k, v.stream().map(Integer::longValue).toList()));
+            deptScopeService.requireValidScopeIds(user.getCompany().getId(), scopes);
             Set<String> allowedCodes = normalizedCodes != null
                 ? normalizedCodes
                 : role.getPermissions().stream().map(Permission::getCode).collect(java.util.stream.Collectors.toSet());

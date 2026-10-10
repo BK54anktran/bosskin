@@ -4,6 +4,12 @@ import 'package:flutter/foundation.dart';
 import '../localization/language_service.dart';
 
 const _viMessages = <String, String>{
+  'error.department.parent_cycle': 'Không chọn được phòng con / cấp dưới của chính phòng này làm phòng cha',
+  'error.import.department_cycle': 'Phòng ban "{0}" tạo thành vòng lặp phòng cha – phòng con',
+  'error.import.department_has_employees': 'Không xoá được phòng ban "{0}": còn {1} nhân viên',
+  'error.user.cannot_reset_self': 'Không tự đặt lại mật khẩu của mình ở đây — dùng Đổi mật khẩu trong Hồ sơ',
+  'error.user.no_pending_accounts': 'Không có tài khoản nào đang chờ đổi mật khẩu lần đầu',
+  'error.profile.cannot_process_own': 'Không tự duyệt yêu cầu sửa hồ sơ của chính mình',
   'warning.employee.already_exists': 'Nhân viên đã tồn tại — bỏ qua',
   'error.permission.denied': 'Không có quyền thực hiện thao tác này',
   'error.department.must_be_child_in_scope': 'Chỉ được tạo phòng ban con trong phạm vi được phép',
@@ -322,6 +328,12 @@ const _viMessages = <String, String>{
 };
 
 const _enMessages = <String, String>{
+  'error.department.parent_cycle': 'A sub-department of this department cannot be its parent',
+  'error.import.department_cycle': 'Department "{0}" creates a parent–child loop',
+  'error.import.department_has_employees': 'Cannot delete department "{0}": it still has {1} employees',
+  'error.user.cannot_reset_self': 'You cannot reset your own password here — use Change password in Profile',
+  'error.user.no_pending_accounts': 'No accounts are waiting for a first password change',
+  'error.profile.cannot_process_own': 'You cannot process your own profile edit request',
   'warning.employee.already_exists': 'Employee already exists — skipped',
   'error.permission.denied': 'You do not have permission to perform this action',
   'error.department.must_be_child_in_scope': 'You can only create sub-departments within your permitted scope',
@@ -672,6 +684,10 @@ String? _lookupKey(String key, bool en) {
     k = k.substring(0, dot);
   }
 }
+
+/// Chỉ cho test: tra bản dịch đúng như khi hiển thị (kể cả lùi về tiền tố ngắn hơn).
+@visibleForTesting
+String? debugLookupServerKey(String key, {required bool english}) => _lookupKey(key, english);
 
 /// Dịch một mã lỗi backend đơn lẻ (vd. lý do trong danh sách xung đột); không có bản dịch thì trả nguyên.
 String serverKeyMsg(String key) => _translateKey(key, LanguageService.instance.isEnglish) ?? key;

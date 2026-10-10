@@ -5371,4 +5371,42 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get navImportExport => 'Import / Export';
+
+  @override
+  String get userResetPasswordTitle => 'Đặt lại mật khẩu';
+
+  @override
+  String userResetPasswordConfirm(String name) {
+    return 'Cấp mật khẩu tạm mới cho $name? Mật khẩu hiện tại hết hiệu lực, các phiên đăng nhập bị đăng xuất.';
+  }
+
+  @override
+  String get userResetPasswordDoneTitle => 'Mật khẩu tạm';
+
+  @override
+  String userResetPasswordDoneHint(String name) {
+    return 'Gửi mật khẩu này cho $name. Mật khẩu chỉ hiện một lần; người dùng phải đổi khi đăng nhập.';
+  }
+
+  @override
+  String get userInitialPasswordsButton => 'Xuất mật khẩu tạm';
+
+  @override
+  String get userInitialPasswordsTitle => 'Xuất mật khẩu tạm';
+
+  @override
+  String get userInitialPasswordsConfirm =>
+      'Cấp mật khẩu tạm mới cho mọi tài khoản trong phạm vi của bạn còn chưa đổi mật khẩu lần đầu (vd. vừa nhập từ Excel) và tải về file Excel để phát cho nhân viên. Mật khẩu tạm cấp trước đó sẽ hết hiệu lực.';
+
+  @override
+  String get auditActUserResetPassword => 'Đặt lại mật khẩu tài khoản';
+
+  @override
+  String get auditActUserIssueInitialPasswords => 'Xuất mật khẩu tạm';
+
+  @override
+  String get auditActProfileEditApprove => 'Duyệt yêu cầu sửa hồ sơ';
+
+  @override
+  String get auditActProfileEditReject => 'Từ chối yêu cầu sửa hồ sơ';
 }

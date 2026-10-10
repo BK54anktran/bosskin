@@ -1843,4 +1843,17 @@
   ,"navGroupPayReports": "Lương & báo cáo"
   ,"navGroupSystem": "Cài đặt & hệ thống"
   ,"navImportExport": "Import / Export"
+  ,"userResetPasswordTitle": "Đặt lại mật khẩu"
+  ,"userResetPasswordConfirm": "Cấp mật khẩu tạm mới cho {name}? Mật khẩu hiện tại hết hiệu lực, các phiên đăng nhập bị đăng xuất."
+  ,"@userResetPasswordConfirm": {"placeholders": {"name": {"type": "String"}}}
+  ,"userResetPasswordDoneTitle": "Mật khẩu tạm"
+  ,"userResetPasswordDoneHint": "Gửi mật khẩu này cho {name}. Mật khẩu chỉ hiện một lần; người dùng phải đổi khi đăng nhập."
+  ,"@userResetPasswordDoneHint": {"placeholders": {"name": {"type": "String"}}}
+  ,"userInitialPasswordsButton": "Xuất mật khẩu tạm"
+  ,"userInitialPasswordsTitle": "Xuất mật khẩu tạm"
+  ,"userInitialPasswordsConfirm": "Cấp mật khẩu tạm mới cho mọi tài khoản trong phạm vi của bạn còn chưa đổi mật khẩu lần đầu (vd. vừa nhập từ Excel) và tải về file Excel để phát cho nhân viên. Mật khẩu tạm cấp trước đó sẽ hết hiệu lực."
+  ,"auditActUserResetPassword": "Đặt lại mật khẩu tài khoản"
+  ,"auditActUserIssueInitialPasswords": "Xuất mật khẩu tạm"
+  ,"auditActProfileEditApprove": "Duyệt yêu cầu sửa hồ sơ"
+  ,"auditActProfileEditReject": "Từ chối yêu cầu sửa hồ sơ"
 }

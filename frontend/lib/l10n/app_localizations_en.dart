@@ -5381,4 +5381,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navImportExport => 'Import / Export';
+
+  @override
+  String get userResetPasswordTitle => 'Reset password';
+
+  @override
+  String userResetPasswordConfirm(String name) {
+    return 'Issue a new temporary password for $name? The current password stops working and open sessions are signed out.';
+  }
+
+  @override
+  String get userResetPasswordDoneTitle => 'Temporary password';
+
+  @override
+  String userResetPasswordDoneHint(String name) {
+    return 'Send this password to $name. It is shown only once; they must change it at sign-in.';
+  }
+
+  @override
+  String get userInitialPasswordsButton => 'Export temporary passwords';
+
+  @override
+  String get userInitialPasswordsTitle => 'Export temporary passwords';
+
+  @override
+  String get userInitialPasswordsConfirm =>
+      'Issue new temporary passwords for every account in your scope that has not changed its first password yet (e.g. just imported from Excel), and download an Excel file to hand out. Previously issued temporary passwords stop working.';
+
+  @override
+  String get auditActUserResetPassword => 'Account password reset';
+
+  @override
+  String get auditActUserIssueInitialPasswords =>
+      'Temporary passwords exported';
+
+  @override
+  String get auditActProfileEditApprove => 'Profile edit request approved';
+
+  @override
+  String get auditActProfileEditReject => 'Profile edit request rejected';
 }

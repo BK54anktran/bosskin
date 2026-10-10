@@ -137,6 +137,10 @@ public class UniversalExcelService {
                 : (col.getHeader() != null ? col.getHeader() : ""));
             cell.setCellStyle(col.isImportable() ? headerStyle : roHeaderStyle);
             sheet.setColumnWidth(c + 1, 22 * 256);
+            // D9: ô gõ thêm ở cột chữ giữ định dạng Text (không mất số 0 đầu)
+            if (col.isImportable() && col.getColType() == ExcelColumn.ColType.TEXT) {
+                sheet.setDefaultColumnStyle(c + 1, dataStyle);
+            }
         }
 
         // Load data với filters
@@ -522,10 +526,7 @@ public class UniversalExcelService {
             ? ev.evaluateInCell(cell).getCellType() : cell.getCellType();
         return switch (type) {
             case STRING  -> cell.getStringCellValue().trim();
-            case NUMERIC -> {
-                double d = cell.getNumericCellValue();
-                yield d == Math.floor(d) ? String.valueOf((long) d) : String.valueOf(d);
-            }
+            case NUMERIC -> com.bosskin.util.ExcelText.numeric(cell);
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
             default      -> "";
         };
@@ -623,6 +624,8 @@ public class UniversalExcelService {
 
     private static CellStyle buildDataStyle(XSSFWorkbook wb) {
         CellStyle style = wb.createCellStyle();
+        // Chỉ dùng cho ô chữ (ô số có style riêng) — định dạng Text giữ số 0 đầu (D9)
+        style.setDataFormat(wb.createDataFormat().getFormat(com.bosskin.util.ExcelText.TEXT_FORMAT));
         style.setBorderRight(BorderStyle.HAIR);
         style.setBorderBottom(BorderStyle.HAIR);
         return style;

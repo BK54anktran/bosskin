@@ -41,18 +41,92 @@ public class UserController {
     private final com.bosskin.service.GrantGuard grantGuard;
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
     private final com.bosskin.audit.AuditService audit;
+    private final com.bosskin.util.ExcelI18n excelI18n;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listUsers(@AuthenticationPrincipal User caller) {
         requirePermission(caller, "USER_MANAGE");
         Set<Long> manageScope = deptScopeService.resolvedScopes(caller.getId(), "USER_MANAGE");
         Long selfEmployeeId = caller.getEmployee() != null ? caller.getEmployee().getId() : null;
-        List<User> users = userRepository.findByCompanyId(caller.getCompany().getId());
-        List<Map<String, Object>> result = users.stream()
+        List<User> users = userRepository.findForListing(caller.getCompany().getId()).stream()
             .filter(u -> canManageTarget(caller, u, manageScope, selfEmployeeId))
-            .map(this::toUserMap)
+            .toList();
+        Map<Long, Map<String, Set<Long>>> scopes = deptScopeRepo.findScopesMaps(users.stream().map(User::getId).toList());
+        List<Map<String, Object>> result = users.stream()
+            .map(u -> toUserMap(u, scopes.getOrDefault(u.getId(), Map.of())))
             .toList();
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * D9 — quản trị đặt lại mật khẩu cho một tài khoản: sinh mật khẩu tạm (chỉ trả về một lần),
+     * bắt đổi ở lần đăng nhập tới, thu hồi mọi phiên đang mở.
+     */
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@PathVariable Long id, @AuthenticationPrincipal User caller) {
+        requirePermission(caller, "USER_MANAGE");
+        User user = findUserInCompanyAndScope(id, caller);
+        if (user.getId().equals(caller.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.cannot_reset_self");
+        }
+        String pw = issueTemporaryPassword(user);
+        audit.log("USER_RESET_PASSWORD").entity("USER", user.getId()).summary(user.getEmail()).save();
+        return ResponseEntity.ok(Map.of("password", pw));
+    }
+
+    /**
+     * D9 — cấp mật khẩu tạm mới cho mọi tài khoản trong phạm vi còn đang chờ đổi mật khẩu lần đầu
+     * (vd. vừa nhập từ Excel), trả về file Excel để phát cho nhân viên. Mật khẩu tạm cấp trước đó hết hiệu lực.
+     */
+    @PostMapping("/initial-passwords")
+    public ResponseEntity<byte[]> issueInitialPasswords(@AuthenticationPrincipal User caller, Locale locale) throws java.io.IOException {
+        requirePermission(caller, "USER_MANAGE");
+        Set<Long> manageScope = deptScopeService.resolvedScopes(caller.getId(), "USER_MANAGE");
+        Long selfEmployeeId = caller.getEmployee() != null ? caller.getEmployee().getId() : null;
+        List<User> targets = userRepository.findForListing(caller.getCompany().getId()).stream()
+            .filter(u -> u.isEnabled() && u.isMustChangePassword() && !u.getId().equals(caller.getId()))
+            .filter(u -> canManageTarget(caller, u, manageScope, selfEmployeeId))
+            .sorted(Comparator.comparing((User u) -> u.getEmployee() == null ? "" : u.getEmployee().getEmployeeCode()))
+            .toList();
+        if (targets.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.no_pending_accounts");
+
+        String[] cols = {"employeeCode", "fullName", "department", "email", "password"};
+        try (org.apache.poi.ss.usermodel.Workbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()) {
+            var sh = wb.createSheet(excelI18n.resolve("excel.initialPasswords.sheet", locale));
+            var head = wb.createCellStyle();
+            var bold = wb.createFont(); bold.setBold(true); head.setFont(bold);
+            var h = sh.createRow(0);
+            for (int i = 0; i < cols.length; i++) {
+                var c = h.createCell(i);
+                c.setCellValue(excelI18n.resolve("excel.initialPasswords.col." + cols[i], locale));
+                c.setCellStyle(head);
+            }
+            int r = 1;
+            for (User u : targets) {
+                String pw = issueTemporaryPassword(u);
+                Employee e = u.getEmployee();
+                var row = sh.createRow(r++);
+                String[] v = {e == null ? "" : e.getEmployeeCode(), e == null ? "" : e.getFullName(),
+                    e == null || e.getDepartment() == null ? "" : e.getDepartment().getName(), u.getEmail(), pw};
+                for (int i = 0; i < v.length; i++) row.createCell(i).setCellValue(v[i] == null ? "" : v[i]);
+            }
+            for (int i = 0; i < cols.length; i++) sh.autoSizeColumn(i);
+            sh.createFreezePane(0, 1);
+            wb.write(out);
+            audit.log("USER_ISSUE_INITIAL_PASSWORDS").entity("COMPANY", caller.getCompany().getId())
+                .summary(String.valueOf(targets.size())).save();
+            return com.bosskin.util.ExcelUtils.buildFileResponse("initial-passwords", out.toByteArray());
+        }
+    }
+
+    private String issueTemporaryPassword(User user) {
+        String pw = com.bosskin.core.PasswordPolicy.generate(10);
+        user.setPassword(passwordEncoder.encode(pw));
+        user.setMustChangePassword(true);
+        userRepository.save(user);
+        userSessionRepository.revokeAllByUserId(user.getId());
+        return pw;
     }
 
     @PostMapping
@@ -192,6 +266,7 @@ public class UserController {
         Map<String, List<Long>> converted = new java.util.HashMap<>();
         body.forEach((perm, ids) -> converted.put(perm,
             ids.stream().map(Integer::longValue).collect(Collectors.toList())));
+        deptScopeService.requireValidScopeIds(caller.getCompany().getId(), converted);
         var beforeScopes = deptScopeRepo.findScopesMap(id);
         deptScopeRepo.replaceAll(
             id,
@@ -281,6 +356,10 @@ public class UserController {
     }
 
     private Map<String, Object> toUserMap(User user) {
+        return toUserMap(user, deptScopeRepo.findScopesMap(user.getId()));
+    }
+
+    private Map<String, Object> toUserMap(User user, Map<String, Set<Long>> deptScopes) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", user.getId());
         map.put("email", user.getEmail());
@@ -306,7 +385,7 @@ public class UserController {
             .map(Permission::getCode)
             .collect(Collectors.toList());
         map.put("directPermissions", directPerms);
-        map.put("deptScopes", deptScopeRepo.findScopesMap(user.getId()));
+        map.put("deptScopes", deptScopes);
         return map;
     }
 

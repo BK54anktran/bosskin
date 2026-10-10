@@ -29,6 +29,7 @@ public class ProfileService {
     private final UserSessionRepository userSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final DeptScopeService deptScopeService;
+    private final com.bosskin.audit.AuditService audit;
 
     public ProfileDTO.ProfileResponse getMyProfile(User user) {
         return employeeRepository.findByUserIdFetch(user.getId())
@@ -95,8 +96,10 @@ public class ProfileService {
             }
         }
         Set<Long> finalSelectedDeptScope = selectedDeptScope;
+        Set<Long> scope = updateScope(user);
         return editRequestRepository.findByCompanyId(user.getCompany().getId(), status)
                 .stream()
+                .filter(r -> inScope(user, scope, r.getEmployee()))
                 .filter(r -> finalSelectedDeptScope == null
                     || (r.getEmployee() != null
                         && r.getEmployee().getDepartment() != null
@@ -107,8 +110,11 @@ public class ProfileService {
 
     public ProfileDTO.PendingCount getPendingCount(User user) {
         requirePermission(user, "EMPLOYEE_UPDATE");
-        long count = editRequestRepository.countByEmployee_Company_IdAndStatus(
-                user.getCompany().getId(), ProfileEditRequest.Status.PENDING);
+        Set<Long> scope = updateScope(user);
+        long count = scope.isEmpty()
+            ? editRequestRepository.countByEmployee_Company_IdAndStatus(user.getCompany().getId(), ProfileEditRequest.Status.PENDING)
+            : editRequestRepository.findByCompanyId(user.getCompany().getId(), ProfileEditRequest.Status.PENDING).stream()
+                .filter(r -> inScope(user, scope, r.getEmployee())).count();
         return ProfileDTO.PendingCount.builder().count(count).build();
     }
 
@@ -137,8 +143,15 @@ public class ProfileService {
         requirePermission(admin, "EMPLOYEE_UPDATE");
         ProfileEditRequest req = getRequestOrThrow(requestId, admin.getCompany().getId());
         requirePending(req);
+        requireCanProcess(admin, req);
 
         Employee emp = req.getEmployee();
+        // D11: giữ giá trị cũ để xem lại / đối chiếu sau khi duyệt
+        req.setOldFullName(emp.getFullName());
+        req.setOldGender(emp.getGender());
+        req.setOldDateOfBirth(emp.getDateOfBirth());
+        req.setOldPhone(emp.getPhone());
+        req.setOldPersonalEmail(emp.getPersonalEmail());
         if (req.getFullName()     != null) emp.setFullName(req.getFullName());
         if (req.getGender()       != null) emp.setGender(req.getGender());
         if (req.getDateOfBirth()  != null) emp.setDateOfBirth(req.getDateOfBirth());
@@ -149,6 +162,10 @@ public class ProfileService {
 
         req.setStatus(ProfileEditRequest.Status.APPROVED);
         req.setProcessedBy(admin);
+        req.setProcessedAt(java.time.LocalDateTime.now());
+        audit.log("PROFILE_EDIT_APPROVE").entity("EMPLOYEE", emp.getId()).summary(emp.getEmployeeCode())
+            .detail(com.bosskin.audit.AuditService.map(
+                "before", changedFields(req, true), "after", changedFields(req, false))).save();
         return toEditRequestResponse(editRequestRepository.save(req));
     }
 
@@ -158,9 +175,13 @@ public class ProfileService {
         requirePermission(admin, "EMPLOYEE_UPDATE");
         ProfileEditRequest req = getRequestOrThrow(requestId, admin.getCompany().getId());
         requirePending(req);
+        requireCanProcess(admin, req);
         req.setStatus(ProfileEditRequest.Status.REJECTED);
         req.setProcessedBy(admin);
+        req.setProcessedAt(java.time.LocalDateTime.now());
         req.setAdminNote(body.getAdminNote());
+        audit.log("PROFILE_EDIT_REJECT").entity("EMPLOYEE", req.getEmployee().getId())
+            .summary(req.getEmployee().getEmployeeCode()).save();
         return toEditRequestResponse(editRequestRepository.save(req));
     }
 
@@ -205,6 +226,39 @@ public class ProfileService {
                         "error.request.not_found"));
     }
 
+    private Set<Long> updateScope(User user) {
+        return deptScopeService.resolvedScopes(user.getId(), "EMPLOYEE_UPDATE");
+    }
+
+    /** D11: phạm vi phòng ban của quyền EMPLOYEE_UPDATE (rỗng = toàn công ty). */
+    private static boolean inScope(User user, Set<Long> scope, Employee e) {
+        if (scope.isEmpty()) return true;
+        if (e == null) return false;
+        if (scope.contains(DeptScopeService.SCOPE_SELF_ONLY)
+                && user.getEmployee() != null && user.getEmployee().getId().equals(e.getId())) return true;
+        return e.getDepartment() != null && scope.contains(e.getDepartment().getId());
+    }
+
+    /** D11: chỉ duyệt đơn trong phạm vi, và không tự duyệt đơn sửa hồ sơ của chính mình. */
+    private void requireCanProcess(User admin, ProfileEditRequest req) {
+        Employee e = req.getEmployee();
+        if (admin.getEmployee() != null && e != null && admin.getEmployee().getId().equals(e.getId()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.profile.cannot_process_own");
+        if (!inScope(admin, updateScope(admin), e))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
+    }
+
+    /** Trường được yêu cầu sửa: giá trị cũ (before) hoặc mới (after) — cho nhật ký thao tác. */
+    private static java.util.Map<String, Object> changedFields(ProfileEditRequest r, boolean before) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (r.getFullName() != null)      m.put("fullName", before ? r.getOldFullName() : r.getFullName());
+        if (r.getGender() != null)        m.put("gender", before ? r.getOldGender() : r.getGender());
+        if (r.getDateOfBirth() != null)   m.put("dateOfBirth", String.valueOf(before ? r.getOldDateOfBirth() : r.getDateOfBirth()));
+        if (r.getPhone() != null)         m.put("phone", before ? r.getOldPhone() : r.getPhone());
+        if (r.getPersonalEmail() != null) m.put("personalEmail", before ? r.getOldPersonalEmail() : r.getPersonalEmail());
+        return m;
+    }
+
     private void requirePending(ProfileEditRequest req) {
         if (req.getStatus() != ProfileEditRequest.Status.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -239,6 +293,7 @@ public class ProfileService {
 
     private ProfileDTO.EditRequestResponse toEditRequestResponse(ProfileEditRequest r) {
         Employee emp = r.getEmployee();
+        boolean snap = r.getStatus() == ProfileEditRequest.Status.APPROVED && r.getProcessedAt() != null;
         return ProfileDTO.EditRequestResponse.builder()
                 .id(r.getId())
                 .employeeId(emp.getId())
@@ -246,11 +301,12 @@ public class ProfileService {
                 .employeeName(emp.getFullName())
                 .departmentId(emp.getDepartment().getId())
                 .departmentName(emp.getDepartment().getName())
-                .currentFullName(emp.getFullName())
-                .currentGender(emp.getGender())
-                .currentDateOfBirth(emp.getDateOfBirth())
-                .currentPhone(emp.getPhone())
-                .currentPersonalEmail(emp.getPersonalEmail())
+                // D11: đơn đã duyệt hiện giá trị lúc trước khi duyệt, không phải giá trị đang có
+                .currentFullName(snap ? r.getOldFullName() : emp.getFullName())
+                .currentGender(snap ? r.getOldGender() : emp.getGender())
+                .currentDateOfBirth(snap ? r.getOldDateOfBirth() : emp.getDateOfBirth())
+                .currentPhone(snap ? r.getOldPhone() : emp.getPhone())
+                .currentPersonalEmail(snap ? r.getOldPersonalEmail() : emp.getPersonalEmail())
                 .requestedFullName(r.getFullName())
                 .requestedGender(r.getGender())
                 .requestedDateOfBirth(r.getDateOfBirth())
