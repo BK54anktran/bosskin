@@ -408,8 +408,8 @@
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Trên điện thoại</span>
-      <h2>Đưa BossKin ra màn hình chính</h2>
-      <p class="lead">Không cần tải từ cửa hàng ứng dụng. Thêm lối tắt một lần, lần sau bấm biểu tượng BossKin là vào thẳng chấm công.</p>
+      <h2>Cài BossKin lên điện thoại</h2>
+      <p class="lead">Không cần tìm trên cửa hàng ứng dụng. Android tải file cài trực tiếp; iPhone thêm lối tắt ra màn hình chính — lần sau bấm biểu tượng BossKin là vào thẳng chấm công.</p>
     </div>
     <div class="install">
       <div class="os">
@@ -421,8 +421,10 @@
       <div class="os">
         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
         <h3>Android</h3>
-        <p>Mở bằng Chrome, bấm dấu ba chấm rồi chọn “Thêm vào màn hình chính”.</p>
-        <button class="btn btn-primary" type="button" data-howto="android">Cài trên Android</button>
+        <p class="js-apk-on">Tải file cài BossKin về máy và cài như một ứng dụng: có thông báo nhắc ca, chấm công nhanh ngay trên thông báo.</p>
+        <p class="js-apk-off" hidden>Mở bằng Chrome, bấm dấu ba chấm rồi chọn “Thêm vào màn hình chính”.</p>
+        <button class="btn btn-primary js-apk-on" type="button" data-howto="apk">Tải cho Android</button>
+        <button class="btn btn-primary js-apk-off" type="button" data-howto="android" hidden>Cài trên Android</button>
       </div>
     </div>
   </div>
@@ -441,6 +443,24 @@
     <div class="acts">
       <button class="btn btn-plain" type="button" data-close>Đóng</button>
       <a class="btn btn-primary js-app" href="/login">Mở BossKin</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="howto" id="howto-apk" aria-labelledby="howto-apk-h">
+  <div class="body">
+    <h3 id="howto-apk-h">Cài BossKin trên Android</h3>
+    <p class="sub">Làm trên chính chiếc điện thoại muốn cài. File khoảng 70 MB — nên dùng Wi-Fi.</p>
+    <ol>
+      <li>Bấm <b>Tải file cài</b> bên dưới, chờ tải xong rồi bấm <b>Mở</b>.</li>
+      <li>Điện thoại hỏi quyền cài từ trình duyệt: bấm <b>Cài đặt</b> → bật <b>Cho phép từ nguồn này</b> → quay lại.</li>
+      <li>Bấm <b>Cài đặt</b>, xong thì bấm <b>Mở</b>.</li>
+      <li>Đăng nhập bằng tài khoản được cấp và <b>cho phép thông báo</b> khi được hỏi.</li>
+    </ol>
+    <p class="sub" style="margin-bottom:16px">Không muốn cài file? <a href="#" data-howto="android" data-close>Thêm lối tắt bằng trình duyệt</a> cũng dùng được.</p>
+    <div class="acts">
+      <button class="btn btn-plain" type="button" data-close>Đóng</button>
+      <a class="btn btn-primary js-apk" href="#" download>Tải file cài</a>
     </div>
   </div>
 </dialog>
@@ -572,9 +592,14 @@
     document.querySelectorAll('nav.links a').forEach(function (a) { a.addEventListener('click', function () { top.classList.remove('open'); tg.setAttribute('aria-expanded', 'false'); tg.textContent = '☰'; }); });
     document.querySelectorAll('.js-app').forEach(function (a) { if (cfg.appUrl) a.href = cfg.appUrl; else a.hidden = true; });
     document.querySelectorAll('.js-app-row').forEach(function (r) { r.hidden = !cfg.appUrl; });
+    // Có apkUrl → nút Android tải file cài; không có → hướng dẫn thêm lối tắt trình duyệt
+    document.querySelectorAll('.js-apk').forEach(function (a) { if (cfg.apkUrl) a.href = cfg.apkUrl; });
+    document.querySelectorAll('.js-apk-on').forEach(function (e) { e.hidden = !cfg.apkUrl; });
+    document.querySelectorAll('.js-apk-off').forEach(function (e) { e.hidden = !!cfg.apkUrl; });
     // Hộp hướng dẫn cài lối tắt lên màn hình chính (iPhone / Android)
     document.querySelectorAll('[data-howto]').forEach(function (b) {
-      b.addEventListener('click', function () {
+      b.addEventListener('click', function (e) {
+        if (b.tagName === 'A') e.preventDefault();
         var d = document.getElementById('howto-' + b.getAttribute('data-howto'));
         if (d && d.showModal) d.showModal(); else if (cfg.appUrl) location.href = cfg.appUrl;
       });

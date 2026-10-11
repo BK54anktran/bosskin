@@ -2,6 +2,9 @@
 window.BOSSKIN = {
   // Trang đăng nhập app web. '' = ẩn nút "Đăng nhập" (khi app chưa lên mạng). 8099 = chạy thử trên máy dev.
   appUrl: location.port === '8099' ? 'http://localhost:3000/login' : 'https://app.bosskin.io.vn/login',
+  // File cài cho Android (nút "Tải cho Android" ở mục Cài đặt). '' = nút Android chỉ hướng dẫn thêm lối tắt trình duyệt.
+  // File do máy dev build + ký khoá phát hành rồi đưa lên release "app-latest" (landing/README.md).
+  apkUrl: 'https://github.com/BK54anktran/bosskin/releases/download/app-latest/bosskin.apk',
   // Nơi nhận form dùng thử, theo thứ tự ưu tiên:
   //  1. apiUrl — backend BossKin (vd 'https://api.ten-mien.vn'), xem ở /admin → Yêu cầu dùng thử;
   //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase (khi backend chưa lên mạng);

@@ -34,6 +34,16 @@ Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 
 
 Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
 
+## File cài Android trên trang (nút "Tải cho Android", 11/10/2026)
+
+- Nút ở mục **Cài đặt** tải `apkUrl` trong `site-config.js` = file `bosskin.apk` của release GitHub **`app-latest`**. `apkUrl` trống → nút
+  chuyển sang hướng dẫn thêm lối tắt trình duyệt. iPhone luôn là hướng dẫn "Thêm vào MH chính" (Apple không cho trang web tự cài).
+- **Khoá ký phát hành** nằm trên máy dev, KHÔNG có trong repo: `frontend/android/app/release.jks` + `frontend/android/key.properties`
+  (mật khẩu). Mất hai file này thì mọi người dùng phải gỡ app cài lại mới cập nhật được → sao lưu ra nơi an toàn.
+  CI (`frontend-build.yml`) chưa có khoá này (secrets `ANDROID_KEYSTORE_*` trống) nên APK của CI ký debug — không phát cho người dùng.
+- Ra bản mới: tăng `version` trong `frontend/pubspec.yaml` → `flutter build apk --release --dart-define=API_HOST=https://api.bosskin.io.vn`
+  → chép `build/app/outputs/flutter-apk/app-release.apk` thành `bosskin.apk` → GitHub → Releases → `app-latest` → xoá file cũ, tải file mới lên.
+
 ## Host trên Vibe Host (chạy song song Netlify, 11/10/2026)
 
 Website Docker từ thư mục `landing/` (`landing/Dockerfile` + `nginx.conf`): Nginx phục vụ trang giới thiệu, trang trợ giúp được lấy từ
