@@ -11,6 +11,7 @@ import com.bosskin.repository.UserSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -201,7 +202,12 @@ public class ProfileService {
         return toNotificationSettingsResponse(u);
     }
 
-    /** Gửi một thông báo thử tới thiết bị của chính người gọi (token đọc lại từ DB, không nhận token từ client). */
+    /**
+     * Gửi một thông báo thử tới thiết bị của chính người gọi (token đọc lại từ DB, không nhận token từ client).
+     * Chạy ngoài transaction chỉ-đọc của lớp: FCM báo token chết thì {@code FcmService} phải gỡ token (ghi DB),
+     * và không giữ kết nối DB trong lúc gọi mạng.
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void sendTestNotification(User user, ProfileDTO.NotificationTestRequest req) {
         User u = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
