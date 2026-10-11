@@ -1,19 +1,16 @@
 # Backend BossKin — image chạy production (Vibe Host / VPS / bất kỳ nền tảng Docker).
 # Cấu hình hoàn toàn qua biến môi trường (danh sách: docs/runbook.md mục 2, docs/he-thong/trien-khai.md).
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-# Một bước duy nhất, không chạy dependency:go-offline: nền tảng không giữ cache lớp giữa các lượt build nên bước đó
-# chỉ tải thừa (mọi plugin của mọi phase, ~3 phút) và làm build vượt giới hạn chờ khi mạng chậm.
-# Tải đứt giữa chừng → thử lại đúng một lần (phần đã tải nằm sẵn trong ~/.m2 của lớp này).
-RUN mvn -B clean package -DskipTests -q || (echo "build lỗi, thử lại một lần" && mvn -B clean package -DskipTests -q)
-
+#
+# KHÔNG chạy Maven ở đây: file chạy được GitHub Actions đóng gói sẵn (.github/workflows/api-jar.yml → release "api-latest")
+# và tải về lúc build image. Lý do: Vibe Host chỉ chờ bước build ~5 phút, build Maven từ đầu thường vượt mốc đó (fetch failed).
+# Quy trình: push main → chờ workflow "API jar" xanh → triển khai lại. Muốn build từ mã nguồn tại chỗ: Dockerfile.build.
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+ARG JAR_URL=https://github.com/BK54anktran/bosskin/releases/download/api-latest/bosskin-api.jar
+ADD ${JAR_URL} /app/app.jar
 # Chạy bằng user thường; thư mục dữ liệu cho tài liệu nhân sự (DOCUMENTS_STORAGE=local) và cache ô bản đồ
-RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/documents /data/map-tiles && chown -R app:app /data
-COPY --from=build /app/target/*.jar app.jar
+RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/documents /data/map-tiles && chown -R app:app /data \
+ && chmod 644 /app/app.jar
 COPY docker/entrypoint.sh /app/entrypoint.sh
 USER app
 ENV PORT=8080 \

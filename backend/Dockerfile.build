@@ -1,0 +1,29 @@
+# Backend BossKin — bản build TỪ MÃ NGUỒN tại chỗ (VPS / máy dev): docker build -f Dockerfile.build -t bosskin-api backend/
+# Bản mặc định (Dockerfile) tải file chạy đã đóng gói sẵn từ GitHub; dùng file này khi không muốn phụ thuộc release đó.
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+# Một bước duy nhất, không chạy dependency:go-offline: nền tảng không giữ cache lớp giữa các lượt build nên bước đó
+# chỉ tải thừa (mọi plugin của mọi phase, ~3 phút) và làm build vượt giới hạn chờ khi mạng chậm.
+# Tải đứt giữa chừng → thử lại đúng một lần (phần đã tải nằm sẵn trong ~/.m2 của lớp này).
+RUN mvn -B clean package -DskipTests -q || (echo "build lỗi, thử lại một lần" && mvn -B clean package -DskipTests -q)
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+# Chạy bằng user thường; thư mục dữ liệu cho tài liệu nhân sự (DOCUMENTS_STORAGE=local) và cache ô bản đồ
+RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/documents /data/map-tiles && chown -R app:app /data
+COPY --from=build /app/target/*.jar app.jar
+COPY docker/entrypoint.sh /app/entrypoint.sh
+USER app
+ENV PORT=8080 \
+    SPRING_PROFILES_ACTIVE=prod \
+    TZ=Asia/Ho_Chi_Minh \
+    DOCUMENTS_LOCAL_DIR=/data/documents \
+    MAP_TILE_CACHE_DIR=/data/map-tiles \
+    JAVA_OPTS="-XX:MaxRAMPercentage=75"
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:${PORT}/actuator/health >/dev/null || exit 1
+# Biến kết nối CSDL: xem docker/entrypoint.sh (CSDL nền tảng cấp qua MYSQL_*, hoặc DB_URL dạng jdbc:mysql:// / mysql://)
+ENTRYPOINT ["sh", "/app/entrypoint.sh"]

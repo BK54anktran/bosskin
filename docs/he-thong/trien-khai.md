@@ -63,6 +63,7 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 `appUrl` trong `landing/site-config.js`.
 
 Lưu ý khi tạo trên Vibe Host:
+- **Cập nhật API:** push `main` → chờ workflow **API jar** (`.github/workflows/api-jar.yml`, ~3 phút) cập nhật file `bosskin-api.jar` ở release `api-latest` → bấm triển khai lại. `backend/Dockerfile` chỉ tải file đó về (không chạy Maven): Vibe Host chờ bước build ~5 phút, build Maven từ đầu thường vượt mốc và báo `fetch failed` (11/10/2026, sau khi thêm biến S3). Build từ mã nguồn tại chỗ: `backend/Dockerfile.build`.
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
 - **CSDL: không tạo tay.** Khi tạo website API, Vibe Host quét thấy app cần MySQL, tự tạo CSDL `<tên website>-db` (MySQL 8.0, "primary") và tiêm `DB_URL` (dạng `mysql://…`), `DB_PASSWORD`, `MYSQL_*`… — app dùng luôn (`backend/docker/entrypoint.sh` thêm `jdbc:`). Đừng tạo CSDL riêng rồi đặt `DB_URL` tay: nền tảng vẫn tạo cái của nó thành hai CSDL, và xoá cái "primary" khi website đang chạy làm nó kẹt "Đang triển khai", hỏng mọi lượt deploy sau (11/10/2026 — phải xoá website tạo lại).
 - Khoá tuỳ chọn trong `backend/.env.example` để dạng chú thích: nền tảng quét file này và coi khoá trống là bắt buộc.

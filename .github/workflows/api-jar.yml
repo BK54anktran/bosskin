@@ -1,0 +1,51 @@
+name: API jar
+
+# Đóng gói backend thành bosskin-api.jar và đăng lên release "api-latest".
+# backend/Dockerfile (mặc định JAR_SOURCE=release) tải file này về thay vì chạy Maven trên máy build của nền tảng host:
+# Vibe Host chỉ chờ bước build ~5 phút, build Maven từ đầu (tải toàn bộ thư viện) thường vượt mốc đó.
+# Quy trình: push main → chờ workflow này xanh (~3 phút) → triển khai lại website API.
+# Test chạy ở test.yml; workflow này không chạy test để file có sớm (deploy vẫn do người bấm).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/api-jar.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: api-jar
+  cancel-in-progress: true
+
+jobs:
+  jar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Package
+        working-directory: backend
+        run: |
+          mvn -B -q clean package -DskipTests
+          cp "$(ls target/*.jar | grep -v original | head -1)" "$RUNNER_TEMP/bosskin-api.jar"
+          ls -la "$RUNNER_TEMP/bosskin-api.jar"
+
+      - name: Publish to release api-latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view api-latest >/dev/null 2>&1 || gh release create api-latest \
+            --title "API jar (bản build mới nhất của main)" --prerelease \
+            --notes "File do workflow api-jar.yml tự cập nhật; backend/Dockerfile tải về khi build image."
+          gh release upload api-latest "$RUNNER_TEMP/bosskin-api.jar" --clobber
+          gh release edit api-latest --notes "Commit: ${GITHUB_SHA}  ·  Build: $(date -u +%Y-%m-%dT%H:%M:%SZ)  ·  Run: ${GITHUB_RUN_NUMBER}"
