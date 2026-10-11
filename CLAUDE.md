@@ -53,7 +53,8 @@
 ## Stack
 - **Frontend**: Flutter (Dart) — Riverpod + GoRouter + Dio
 - **Backend**: Spring Boot 3.3 + Java 17 — JPA + JWT + Flyway + MySQL 8.0
-- **Infra**: Docker Compose (`docker-compose.yml` ở root)
+- **Infra**: `docker-compose.yml` ở root (api + web cho Vibe Host / VPS, CSDL ngoài); AWS dạng file ở `infra/aws/`.
+  Bản web đọc địa chỉ API lúc chạy: biến `API_HOST` của container Nginx → `env.js` → `window.BOSSKIN_API_HOST` (`core/config/runtime_host*.dart`).
 
 ## Cấu trúc thư mục
 ```

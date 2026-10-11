@@ -1,17 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'runtime_host.dart';
+
 /// Địa chỉ backend.
 ///
 /// - Bản build: truyền lúc build, ví dụ
 ///   `flutter build web --dart-define=API_HOST=https://api.ten-mien.vn`
-/// - Không truyền: mặc định `http://localhost:8080` (chạy local).
+/// - Bản web chạy bằng Docker: không cần build lại, đặt biến môi trường `API_HOST` cho container Nginx
+///   (sinh `env.js` → `window.BOSSKIN_API_HOST`).
+/// - Không có cả hai: mặc định `http://localhost:8080` (chạy local).
 /// - Ô "đổi server" ở màn đăng nhập chỉ có ở bản debug/profile (để test trên điện thoại
 ///   qua IP LAN); bản release luôn dùng API_HOST, bỏ qua giá trị đã lưu (F7).
 class ServerConfig {
   static const _key = 'server_host';
   static const _envHost = String.fromEnvironment('API_HOST');
-  static const _defaultHost = _envHost != '' ? _envHost : 'http://localhost:8080';
+
+  /// Thứ tự: API_HOST lúc build → `window.BOSSKIN_API_HOST` lúc chạy (bản web, env.js) → localhost.
+  static String get _defaultHost =>
+      _envHost != '' ? _envHost : (runtimeApiHost() ?? 'http://localhost:8080');
 
   /// Cho phép người dùng đổi địa chỉ server (chỉ bản không phải release).
   static bool get canOverride => !kReleaseMode;

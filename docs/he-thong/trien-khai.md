@@ -37,12 +37,13 @@ Bản có migration mới → **snapshot RDS trước khi deploy** (runbook mụ
 
 ## Vibe Host (Mắt Bão)
 
-Phương án thay cho AWS (11/10/2026). Hai ứng dụng Docker + MySQL 8 do Vibe Host cấp:
+Phương án thay cho AWS (11/10/2026). Hai ứng dụng Docker + MySQL 8 do Vibe Host cấp — tạo **hai website** riêng, hoặc một **cụm**
+từ `docker-compose.yml` ở gốc repo (api + web, ổ `bosskin-data` cho `/data`, giới hạn 1 GB cho api):
 
 | Ứng dụng | Thư mục build | Cổng | Ghi chú |
 |---|---|---|---|
 | API | `backend/` (`backend/Dockerfile`) | 8080 | Profile `prod`, health `GET /actuator/health`, chạy user thường, dữ liệu file ở `/data` |
-| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 | Build arg **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`) |
+| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 | Biến môi trường **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`), đọc lúc chạy qua `env.js` — không cần build lại khi đổi. Build arg cùng tên vẫn dùng được (gắn cứng) |
 
 Biến môi trường của API (bí mật đặt ở mục biến môi trường của Vibe Host, không commit):
 
@@ -57,11 +58,22 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 | `AWS_S3_ENDPOINT`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION` | Kho tương thích S3 (MinIO / object storage) cho ảnh đại diện, file Excel lịch sử. Không có thì tải ảnh lên báo lỗi |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có (thông báo đẩy) |
 
+Lưu ý khi tạo trên Vibe Host:
+- **RAM của API ≥ 1 GB** (mặc định 512 MB chỉ còn ~384 MB heap, dễ hết bộ nhớ khi nhập Excel / tính lương).
+- **Khai `/data` là thư mục dữ liệu bền** của website API ngay sau khi tạo.
+- **Repo riêng tư:** cổng agent của Vibe Host chỉ nhận repo Git công khai — hỏi Vibe Host cách nối repo riêng tư (deploy key / token),
+  không chuyển repo sang công khai.
+
 Sau khi chạy: `curl https://<api>/actuator/health` → `UP`; đăng nhập `/admin` bằng tài khoản bootstrap; tạo công ty; trỏ `appUrl` trong
 `landing/site-config.js` tới bản web để hiện nút Đăng nhập. Sao lưu DB: dùng tính năng sao lưu của Vibe Host nếu có, và tải bản dump định kỳ
 về nơi khác (runbook mục 5).
 
 ## Vận hành hằng ngày
+
+Bảng dưới viết cho AWS; trên Vibe Host: sức khoẻ = healthcheck của container + `/actuator/health`, log xem ở trang Vibe Host
+(hoặc công cụ đọc log của cổng agent), sao lưu = bản sao lưu CSDL của Vibe Host + dump định kỳ về nơi khác, không có cảnh báo SNS
+(dùng UptimeRobot hoặc tương tự gọi `/actuator/health`).
+
 
 | Việc | Ở đâu |
 |---|---|

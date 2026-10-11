@@ -1,0 +1,40 @@
+# BossKin trên một cụm Docker (Vibe Host / VPS). CSDL MySQL 8 do nền tảng cấp — đặt DB_URL / DB_USERNAME / DB_PASSWORD.
+# Biến bí mật đặt ở môi trường của nền tảng hoặc file .env cạnh file này (không commit). Danh sách: docs/he-thong/trien-khai.md.
+services:
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      BOOTSTRAP_SYSADMIN_EMAIL: ${BOOTSTRAP_SYSADMIN_EMAIL:-}
+      BOOTSTRAP_SYSADMIN_PASSWORD: ${BOOTSTRAP_SYSADMIN_PASSWORD:-}
+      DOCUMENTS_STORAGE: ${DOCUMENTS_STORAGE:-local}
+      AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT:-}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY:-}
+      AWS_REGION: ${AWS_REGION:-ap-southeast-1}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75}
+    volumes:
+      - bosskin-data:/data          # tài liệu nhân sự + cache ô bản đồ — phải là ổ bền
+    ports:
+      - "8080:8080"
+    mem_limit: 1g                   # Spring Boot cần ≥ 1 GB; 512 MB dễ hết bộ nhớ
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      API_HOST: ${API_HOST}         # địa chỉ công khai của api, vd https://api.ten-mien.vn (ghi vào env.js lúc khởi động)
+    ports:
+      - "8081:8080"
+    depends_on:
+      - api
+
+volumes:
+  bosskin-data:
