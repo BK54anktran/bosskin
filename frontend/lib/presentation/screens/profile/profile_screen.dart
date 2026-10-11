@@ -140,6 +140,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     setState(() => _notifTesting = true);
     try {
+      if (!await NotificationService.instance.ensurePermission()) {
+        if (mounted) _showSnack(s.notificationTestPermissionDenied);
+        return;
+      }
       if (await NotificationService.instance.deviceToken() == null) {
         if (mounted) _showSnack(s.notificationTestNoDevice);
         return;

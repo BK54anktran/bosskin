@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bản release rút gọn tài nguyên: giữ biểu tượng mà flutter_local_notifications gọi theo tên lúc chạy. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_launcher,@mipmap/ic_launcher" />

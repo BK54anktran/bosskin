@@ -31,6 +31,8 @@ import java.time.temporal.ChronoUnit;
 public class FcmService {
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
+    /** Kênh thông báo ưu tiên cao app tạo sẵn (notification_service.dart: _channelId) — không ghi thì Android xếp vào kênh mặc định, không hiện nổi. */
+    private static final String ANDROID_CHANNEL = "shift_reminders";
 
     private final FcmNotificationLogRepository logRepository;
     private final UserRepository userRepository;
@@ -52,7 +54,8 @@ public class FcmService {
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
-                    .setNotification(AndroidNotification.builder().setTitle(title).setBody(body).build())
+                    .setNotification(AndroidNotification.builder().setTitle(title).setBody(body)
+                        .setChannelId(ANDROID_CHANNEL).build())
                     .build())
                 .setApnsConfig(ApnsConfig.builder()
                     .setAps(Aps.builder()
@@ -84,7 +87,8 @@ public class FcmService {
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
-                    .setNotification(AndroidNotification.builder().setTitle(title).setBody(body).build())
+                    .setNotification(AndroidNotification.builder().setTitle(title).setBody(body)
+                        .setChannelId(ANDROID_CHANNEL).build())
                     .build())
                 .setApnsConfig(ApnsConfig.builder()
                     .setAps(Aps.builder()

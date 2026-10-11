@@ -2993,7 +2993,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationTestSent =>
-      'Test notification sent — check your phone\'s notification bar';
+      'Test notification sent — check your phone\'s notification bar, or the bell icon in the app';
 
   @override
   String get notificationTestNeedEnable =>
@@ -3006,6 +3006,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationTestHint =>
       'Sends a notification to this phone so you can check it arrives.';
+
+  @override
+  String get notificationTestPermissionDenied =>
+      'Notifications are turned off for this app — enable them in your phone\'s Settings → Apps → BossKin → Notifications';
 
   @override
   String get errorAttendanceLocationRequired =>

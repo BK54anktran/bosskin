@@ -270,27 +270,33 @@ Future<void> _showShiftNotification(RemoteMessage message) async {
       ? (type == _typeCheckIn ? _actionCheckIn : _actionCheckOut)
       : null;
 
-  await _local.show(
-    message.hashCode,
-    title,
-    body,
-    NotificationDetails(
-      android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        importance: Importance.high,
-        priority: Priority.high,
-        largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
-        actions: actions,
-      ),
-      iOS: const DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      ),
-    ),
-    payload: payload,
-  );
+  NotificationDetails details({required bool withLargeIcon}) => NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          importance: Importance.high,
+          priority: Priority.high,
+          largeIcon: withLargeIcon ? const DrawableResourceAndroidBitmap('ic_launcher') : null,
+          actions: actions,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
+  final id = message.hashCode & 0x7fffffff;
+  try {
+    await _local.show(id, title, body, details(withLargeIcon: true), payload: payload);
+  } catch (e) {
+    // Ảnh lớn không đọc được (bản release rút gọn tài nguyên…) → vẫn phải hiện thông báo
+    debugPrint('Hiện thông báo kèm ảnh lỗi: $e');
+    try {
+      await _local.show(id, title, body, details(withLargeIcon: false), payload: payload);
+    } catch (e2) {
+      debugPrint('Hiện thông báo lỗi: $e2');
+    }
+  }
 }
 
 List<AndroidNotificationAction> _actionsFor(String? type) {
@@ -420,6 +426,25 @@ class NotificationService {
   }
 
   bool _firebaseReady = false;
+
+  /// Ứng dụng có được phép hiện thông báo không; chưa thì hỏi quyền (Android 13+ / iOS).
+  /// false = người dùng đã từ chối → phải bật trong cài đặt của điện thoại.
+  Future<bool> ensurePermission() async {
+    if (!_firebaseReady) return false;
+    try {
+      final android = _local.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android != null) {
+        if (await android.areNotificationsEnabled() ?? true) return true;
+        return await android.requestNotificationsPermission() ?? false;
+      }
+      final st = await _fcm.requestPermission(alert: true, badge: true, sound: true);
+      return st.authorizationStatus == AuthorizationStatus.authorized ||
+          st.authorizationStatus == AuthorizationStatus.provisional;
+    } catch (_) {
+      return true; // không hỏi được thì cứ thử gửi
+    }
+  }
 
   /// FCM token của thiết bị này (null trên web / khi Firebase chưa sẵn sàng).
   Future<String?> deviceToken() async {

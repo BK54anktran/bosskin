@@ -2996,7 +2996,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get notificationTestSent =>
-      'Đã gửi thông báo thử — kiểm tra thanh thông báo của điện thoại';
+      'Đã gửi thông báo thử — xem thanh thông báo của điện thoại, hoặc biểu tượng chuông trong ứng dụng';
 
   @override
   String get notificationTestNeedEnable =>
@@ -3009,6 +3009,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get notificationTestHint =>
       'Gửi một thông báo tới chính điện thoại này để kiểm tra đã nhận được chưa.';
+
+  @override
+  String get notificationTestPermissionDenied =>
+      'Ứng dụng đang bị tắt quyền thông báo — vào Cài đặt của điện thoại → Ứng dụng → BossKin → Thông báo để bật';
 
   @override
   String get errorAttendanceLocationRequired =>

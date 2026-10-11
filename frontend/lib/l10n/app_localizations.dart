@@ -5814,7 +5814,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationTestSent.
   ///
   /// In vi, this message translates to:
-  /// **'Đã gửi thông báo thử — kiểm tra thanh thông báo của điện thoại'**
+  /// **'Đã gửi thông báo thử — xem thanh thông báo của điện thoại, hoặc biểu tượng chuông trong ứng dụng'**
   String get notificationTestSent;
 
   /// No description provided for @notificationTestNeedEnable.
@@ -5834,6 +5834,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Gửi một thông báo tới chính điện thoại này để kiểm tra đã nhận được chưa.'**
   String get notificationTestHint;
+
+  /// No description provided for @notificationTestPermissionDenied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ứng dụng đang bị tắt quyền thông báo — vào Cài đặt của điện thoại → Ứng dụng → BossKin → Thông báo để bật'**
+  String get notificationTestPermissionDenied;
 
   /// No description provided for @errorAttendanceLocationRequired.
   ///
