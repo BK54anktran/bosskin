@@ -5793,6 +5793,48 @@ abstract class AppLocalizations {
   /// **'Đã lưu cài đặt thông báo'**
   String get notificationSaveSuccess;
 
+  /// No description provided for @notificationTestButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi thông báo thử'**
+  String get notificationTestButton;
+
+  /// No description provided for @notificationTestTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'BossKin — thông báo thử'**
+  String get notificationTestTitle;
+
+  /// No description provided for @notificationTestBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị này đã nhận được thông báo từ BossKin.'**
+  String get notificationTestBody;
+
+  /// No description provided for @notificationTestSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi thông báo thử — kiểm tra thanh thông báo của điện thoại'**
+  String get notificationTestSent;
+
+  /// No description provided for @notificationTestNeedEnable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật ít nhất một loại thông báo ở trên rồi mới gửi thử được'**
+  String get notificationTestNeedEnable;
+
+  /// No description provided for @notificationTestNoDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị này chưa lấy được mã nhận thông báo — kiểm tra quyền thông báo của ứng dụng và kết nối mạng'**
+  String get notificationTestNoDevice;
+
+  /// No description provided for @notificationTestHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi một thông báo tới chính điện thoại này để kiểm tra đã nhận được chưa.'**
+  String get notificationTestHint;
+
   /// No description provided for @errorAttendanceLocationRequired.
   ///
   /// In vi, this message translates to:

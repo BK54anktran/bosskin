@@ -234,6 +234,11 @@ class ProfileService {
     });
   }
 
+  /// Gửi một thông báo thử tới thiết bị đang gắn với tài khoản (token backend đã lưu).
+  Future<void> sendTestNotification({required String title, required String body}) async {
+    await _dio.post('/profile/notification-settings/test', data: {'title': title, 'body': body});
+  }
+
   Future<NotificationSettings> getNotificationSettings() async {
     final res = await _dio.get('/profile/notification-settings');
     return NotificationSettings.fromJson(res.data as Map<String, dynamic>);

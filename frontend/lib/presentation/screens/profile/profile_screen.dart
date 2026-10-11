@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -50,6 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _checkInOutEnabled = false;
   int _checkInOutMinutes = 5;
   bool _notifSaving = false;
+  bool _notifTesting = false;
 
   static const _reminderOptions     = [15, 30, 60, 90, 120];
   static const _checkInOutOptions   = [5, 10, 15, 30];
@@ -124,6 +126,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _error = '${s.profileLoadError}: ${serverMsg(e)}');
     } finally {
       setState(() => _loading = false);
+    }
+  }
+
+  /// Gửi thông báo thử tới chính thiết bị này: gắn lại token của máy (theo cài đặt đang chọn) rồi nhờ backend gửi.
+  Future<void> _sendTestNotification() async {
+    final s = AppLocalizations.of(context);
+    final shiftMinutes      = _notifEnabled     ? _reminderMinutes   : null;
+    final checkInOutMinutes = _checkInOutEnabled ? _checkInOutMinutes : null;
+    if (shiftMinutes == null && checkInOutMinutes == null) {
+      _showSnack(s.notificationTestNeedEnable);
+      return;
+    }
+    setState(() => _notifTesting = true);
+    try {
+      if (await NotificationService.instance.deviceToken() == null) {
+        if (mounted) _showSnack(s.notificationTestNoDevice);
+        return;
+      }
+      await NotificationService.instance.registerToken(
+        shiftReminderMinutes: shiftMinutes,
+        checkInOutNotifMinutes: checkInOutMinutes,
+      );
+      await ProfileService.instance.sendTestNotification(
+        title: s.notificationTestTitle,
+        body: s.notificationTestBody,
+      );
+      if (mounted) _showSnack(s.notificationTestSent, success: true);
+    } catch (e) {
+      if (mounted) _showSnack('${s.errorPrefix}: ${serverMsg(e)}');
+    } finally {
+      if (mounted) setState(() => _notifTesting = false);
     }
   }
 
@@ -579,6 +612,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onCheckInOutToggle: (val) => setState(() => _checkInOutEnabled = val),
                 onCheckInOutMinutesChanged: (val) => setState(() => _checkInOutMinutes = val),
                 onSave: _saveNotificationSettings,
+                testing: _notifTesting,
+                // Web không nhận thông báo đẩy → chỉ hiện nút thử trên app điện thoại
+                onTest: kIsWeb ? null : _sendTestNotification,
               ),
               const SizedBox(height: 16),
               const MyDependentsCard(),
@@ -610,6 +646,8 @@ class _NotificationSettingsCard extends StatelessWidget {
   final ValueChanged<bool> onCheckInOutToggle;
   final ValueChanged<int> onCheckInOutMinutesChanged;
   final VoidCallback onSave;
+  final bool testing;
+  final VoidCallback? onTest;
 
   const _NotificationSettingsCard({
     required this.enabled,
@@ -624,6 +662,8 @@ class _NotificationSettingsCard extends StatelessWidget {
     required this.onCheckInOutToggle,
     required this.onCheckInOutMinutesChanged,
     required this.onSave,
+    this.testing = false,
+    this.onTest,
   });
 
   @override
@@ -692,19 +732,42 @@ class _NotificationSettingsCard extends StatelessWidget {
               ),
             ],
 
+            if (onTest != null) ...[
+              const SizedBox(height: 16),
+              Text(s.notificationTestHint,
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            ],
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
-              child: FilledButton.icon(
-                onPressed: saving ? null : onSave,
-                icon: saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.notifications_outlined, size: 18),
-                label: Text(s.save),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
+                children: [
+                  if (onTest != null)
+                    OutlinedButton.icon(
+                      onPressed: saving || testing ? null : onTest,
+                      icon: testing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.send_outlined, size: 18),
+                      label: Text(s.notificationTestButton),
+                    ),
+                  FilledButton.icon(
+                    onPressed: saving || testing ? null : onSave,
+                    icon: saving
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.notifications_outlined, size: 18),
+                    label: Text(s.save),
+                  ),
+                ],
               ),
             ),
           ],

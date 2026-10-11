@@ -15,7 +15,9 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,6 +67,41 @@ public class FcmService {
         } catch (FirebaseMessagingException e) {
             log.info("FCM gửi thông báo thất bại: {}", e.getMessage());
             dropIfDead(fcmToken, e);
+        }
+    }
+
+    /**
+     * Thông báo thử do người dùng bấm ở Hồ sơ → Cài đặt thông báo. Khác {@link #sendSimple}: báo lỗi rõ cho người gọi
+     * (máy chủ chưa cấu hình Firebase, tài khoản chưa gắn thiết bị, FCM từ chối) thay vì im lặng.
+     */
+    public void sendTest(String fcmToken, String title, String body) {
+        if (FirebaseApp.getApps().isEmpty())
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "error.notification.not_configured");
+        if (fcmToken == null || fcmToken.isBlank())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.notification.no_device");
+        try {
+            FirebaseMessaging.getInstance().send(Message.builder()
+                .setToken(fcmToken)
+                .setAndroidConfig(AndroidConfig.builder()
+                    .setPriority(AndroidConfig.Priority.HIGH)
+                    .setNotification(AndroidNotification.builder().setTitle(title).setBody(body).build())
+                    .build())
+                .setApnsConfig(ApnsConfig.builder()
+                    .setAps(Aps.builder()
+                        .setAlert(ApsAlert.builder().setTitle(title).setBody(body).build())
+                        .setSound("default")
+                        .build())
+                    .build())
+                .putData("type", "TEST")
+                .putData("title", title)
+                .putData("body", body)
+                .build());
+        } catch (FirebaseMessagingException e) {
+            log.info("FCM gửi thông báo thử thất bại: {}", e.getMessage());
+            dropIfDead(fcmToken, e);
+            MessagingErrorCode code = e.getMessagingErrorCode();
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                "error.notification.send_failed|" + (code != null ? code.name() : "UNKNOWN"));
         }
     }
 

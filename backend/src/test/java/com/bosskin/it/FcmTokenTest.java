@@ -54,4 +54,24 @@ class FcmTokenTest extends IntegrationTest {
 
         assertThat(tokenInDb(a)).isNull();
     }
+
+    @Test
+    @DisplayName("Gửi thông báo thử khi máy chủ chưa cấu hình Firebase → 503 kèm mã lỗi rõ ràng")
+    void testNotification_firebaseNotConfigured() {
+        var c = fixture.standardCompany();
+        var a = c.emp(6);
+        enable(c.tokenOf(a));
+
+        var res = api.post(c.tokenOf(a), "/api/v1/profile/notification-settings/test",
+            Map.of("title", "BossKin", "body", "Thông báo thử"));
+
+        assertThat(res.status()).isEqualTo(503);
+        assertThat(res.raw()).contains("error.notification.not_configured");
+    }
+
+    @Test
+    @DisplayName("Gửi thông báo thử phải đăng nhập")
+    void testNotification_requiresLogin() {
+        assertThat(api.post(null, "/api/v1/profile/notification-settings/test", Map.of()).status()).isIn(401, 403);
+    }
 }

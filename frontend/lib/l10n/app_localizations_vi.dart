@@ -2985,6 +2985,32 @@ class AppLocalizationsVi extends AppLocalizations {
   String get notificationSaveSuccess => 'Đã lưu cài đặt thông báo';
 
   @override
+  String get notificationTestButton => 'Gửi thông báo thử';
+
+  @override
+  String get notificationTestTitle => 'BossKin — thông báo thử';
+
+  @override
+  String get notificationTestBody =>
+      'Thiết bị này đã nhận được thông báo từ BossKin.';
+
+  @override
+  String get notificationTestSent =>
+      'Đã gửi thông báo thử — kiểm tra thanh thông báo của điện thoại';
+
+  @override
+  String get notificationTestNeedEnable =>
+      'Bật ít nhất một loại thông báo ở trên rồi mới gửi thử được';
+
+  @override
+  String get notificationTestNoDevice =>
+      'Thiết bị này chưa lấy được mã nhận thông báo — kiểm tra quyền thông báo của ứng dụng và kết nối mạng';
+
+  @override
+  String get notificationTestHint =>
+      'Gửi một thông báo tới chính điện thoại này để kiểm tra đã nhận được chưa.';
+
+  @override
   String get errorAttendanceLocationRequired =>
       'Công ty yêu cầu GPS để check-in — vui lòng mở app';
 

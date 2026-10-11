@@ -2982,6 +2982,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationSaveSuccess => 'Notification settings saved';
 
   @override
+  String get notificationTestButton => 'Send test notification';
+
+  @override
+  String get notificationTestTitle => 'BossKin — test notification';
+
+  @override
+  String get notificationTestBody =>
+      'This device received a notification from BossKin.';
+
+  @override
+  String get notificationTestSent =>
+      'Test notification sent — check your phone\'s notification bar';
+
+  @override
+  String get notificationTestNeedEnable =>
+      'Turn on at least one notification type above before sending a test';
+
+  @override
+  String get notificationTestNoDevice =>
+      'This device has no notification token yet — check the app\'s notification permission and your connection';
+
+  @override
+  String get notificationTestHint =>
+      'Sends a notification to this phone so you can check it arrives.';
+
+  @override
   String get errorAttendanceLocationRequired =>
       'Company requires GPS for check-in — please open the app';
 

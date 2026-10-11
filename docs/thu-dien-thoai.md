@@ -40,6 +40,7 @@ Mục tiêu: đi hết checklist trên **ít nhất 1 máy Android** mà không 
 | 21 | Ngôn ngữ | Đổi sang English | Toàn bộ chữ đổi sang tiếng Anh, thông báo lỗi cũng tiếng Anh | |
 | 22 | Xoay màn hình / màn nhỏ | Xoay ngang; thử trên máy màn 5–6 inch | Không tràn chữ, không nút bị che | |
 | 23 | Pin / chạy nền | Để app nền 1 ngày | Không hao pin bất thường (Cài đặt → Pin) | |
+| 24 | Gửi thông báo thử | Hồ sơ → Cài đặt thông báo → bật một loại → **Gửi thông báo thử** | Vài giây sau nhận thông báo "BossKin — thông báo thử" (cả khi app đang mở và khi đã về màn hình chính); tắt hết các loại thì app nhắc bật trước | |
 
 ## Lỗi chặn là gì
 

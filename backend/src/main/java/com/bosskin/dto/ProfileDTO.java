@@ -137,6 +137,13 @@ public class ProfileDTO {
         private Integer checkInOutNotifMinutes;  // null = tắt thông báo check-in/out
     }
 
+    /** Gửi thông báo thử tới thiết bị đang gắn với tài khoản. Tiêu đề / nội dung do app gửi lên (đã dịch theo ngôn ngữ người dùng). */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class NotificationTestRequest {
+        @Size(max = 100) private String title;
+        @Size(max = 300) private String body;
+    }
+
     /** Trả về trạng thái cài đặt thông báo hiện tại */
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class NotificationSettingsResponse {

@@ -157,7 +157,7 @@ def parse_controllers():
                 rows.append((method_of(m.group(1), m.group(2)), path, ', '.join(dict.fromkeys(perms)) or '—',
                              name.group(1) if name else ''))
         if rows:
-            res.append((cls.group(1), os.path.relpath(f, ROOT), base, rows))
+            res.append((cls.group(1), os.path.relpath(f, ROOT).replace(os.sep, '/'), base, rows))
     return res
 
 

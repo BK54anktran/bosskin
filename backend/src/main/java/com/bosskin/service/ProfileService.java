@@ -30,6 +30,7 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final DeptScopeService deptScopeService;
     private final com.bosskin.audit.AuditService audit;
+    private final FcmService fcmService;
 
     public ProfileDTO.ProfileResponse getMyProfile(User user) {
         return employeeRepository.findByUserIdFetch(user.getId())
@@ -198,6 +199,15 @@ public class ProfileService {
         u.setCheckInOutNotifMinutes(req.getCheckInOutNotifMinutes());
         userRepository.save(u);
         return toNotificationSettingsResponse(u);
+    }
+
+    /** Gửi một thông báo thử tới thiết bị của chính người gọi (token đọc lại từ DB, không nhận token từ client). */
+    public void sendTestNotification(User user, ProfileDTO.NotificationTestRequest req) {
+        User u = userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
+        String title = req != null && req.getTitle() != null && !req.getTitle().isBlank() ? req.getTitle().trim() : "BossKin";
+        String body  = req != null && req.getBody()  != null && !req.getBody().isBlank()  ? req.getBody().trim()  : "Test";
+        fcmService.sendTest(u.getFcmToken(), title, body);
     }
 
     public ProfileDTO.NotificationSettingsResponse getNotificationSettings(User user) {

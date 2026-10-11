@@ -104,4 +104,13 @@ public class ProfileController {
             @RequestBody ProfileDTO.NotificationSettingsRequest req) {
         return ResponseEntity.ok(profileService.updateNotificationSettings(user, req));
     }
+
+    /** Gửi thông báo thử tới thiết bị của chính mình (nút "Gửi thông báo thử" ở Hồ sơ) */
+    @PostMapping("/notification-settings/test")
+    public ResponseEntity<Void> sendTestNotification(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody(required = false) ProfileDTO.NotificationTestRequest req) {
+        profileService.sendTestNotification(user, req);
+        return ResponseEntity.noContent().build();
+    }
 }

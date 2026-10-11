@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-40 controller, 305 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+40 controller, 306 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -28,7 +28,7 @@
 | [MapTileController](#maptilecontroller) | `/api/v1/map-tiles` | 1 |
 | [PayrollController](#payrollcontroller) | `/api/v1/payrolls , /api/v1/payroll` | 10 |
 | [PositionController](#positioncontroller) | `/api/v1/positions` | 4 |
-| [ProfileController](#profilecontroller) | `/api/v1/profile` | 11 |
+| [ProfileController](#profilecontroller) | `/api/v1/profile` | 12 |
 | [PublicDocumentFileController](#publicdocumentfilecontroller) | `/` | 1 |
 | [ReportController](#reportcontroller) | `/api/v1/reports` | 11 |
 | [RoleController](#rolecontroller) | `/api/v1/roles` | 7 |
@@ -393,6 +393,7 @@
 | PUT | `/api/v1/profile/edit-requests/{id}/reject` | — | `rejectRequest` |
 | GET | `/api/v1/profile/notification-settings` | — | `getNotificationSettings` |
 | PATCH | `/api/v1/profile/notification-settings` | — | `updateNotificationSettings` |
+| POST | `/api/v1/profile/notification-settings/test` | — | `sendTestNotification` |
 
 ## PublicDocumentFileController
 
