@@ -5,6 +5,8 @@ name: Frontend build
 # - Web: build release, API_HOST lấy từ biến repo vars.API_HOST (Settings → Variables; production: https://api.bosskin.io.vn).
 # - APK: có secrets ANDROID_KEYSTORE_BASE64 (+ ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD)
 #   thì ký bằng khoá thật; chưa có thì APK ký khoá debug (chỉ để thử nội bộ). Xem docs/runbook.md mục 10.
+# - Nhánh main + có khoá thật: APK được đăng thành bosskin.apk ở release "app-latest" — trang giới thiệu (nút "Tải cho Android")
+#   tải file này. Khoá gốc: frontend/android/app/release.jks + key.properties trên máy dev (không commit), xem landing/README.md.
 # - Số phiên bản: tên theo pubspec, số build = số lần chạy workflow (versionCode luôn tăng).
 on:
   push:
@@ -13,6 +15,9 @@ on:
       - 'tools/ci/**'
       - '.github/workflows/frontend-build.yml'
   workflow_dispatch:
+
+permissions:
+  contents: write   # đăng APK lên release app-latest
 
 jobs:
   build:
@@ -91,3 +96,19 @@ jobs:
           name: bosskin-apk-${{ github.run_number }}
           path: frontend/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+      - name: Đăng APK đã ký lên release app-latest (chỉ nhánh main)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f android/key.properties ]; then
+            echo "::warning::APK ký khoá debug — không đăng lên release."
+            exit 0
+          fi
+          cp build/app/outputs/flutter-apk/app-release.apk "$RUNNER_TEMP/bosskin.apk"
+          VER=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+          NOTES="File cài BossKin cho Android (bosskin.apk), ký bằng khoá phát hành. Phiên bản $VER · build ${GITHUB_RUN_NUMBER} · commit ${GITHUB_SHA::7} · $(date -u +%Y-%m-%d)"
+          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --title "BossKin cho Android (bản mới nhất)" --notes "$NOTES"
+          gh release upload app-latest "$RUNNER_TEMP/bosskin.apk" --clobber
+          gh release edit app-latest --notes "$NOTES"

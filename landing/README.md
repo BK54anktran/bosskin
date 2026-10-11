@@ -40,9 +40,9 @@ Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, 
   chuyển sang hướng dẫn thêm lối tắt trình duyệt. iPhone luôn là hướng dẫn "Thêm vào MH chính" (Apple không cho trang web tự cài).
 - **Khoá ký phát hành** nằm trên máy dev, KHÔNG có trong repo: `frontend/android/app/release.jks` + `frontend/android/key.properties`
   (mật khẩu). Mất hai file này thì mọi người dùng phải gỡ app cài lại mới cập nhật được → sao lưu ra nơi an toàn.
-  CI (`frontend-build.yml`) chưa có khoá này (secrets `ANDROID_KEYSTORE_*` trống) nên APK của CI ký debug — không phát cho người dùng.
-- Ra bản mới: tăng `version` trong `frontend/pubspec.yaml` → `flutter build apk --release --dart-define=API_HOST=https://api.bosskin.io.vn`
-  → chép `build/app/outputs/flutter-apk/app-release.apk` thành `bosskin.apk` → GitHub → Releases → `app-latest` → xoá file cũ, tải file mới lên.
+  Bản sao của khoá nằm ở GitHub Secrets `ANDROID_KEYSTORE_BASE64` / `_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` (đưa lên bằng API, 11/10/2026).
+- Ra bản mới: tăng `version` trong `frontend/pubspec.yaml` rồi push `main` — workflow **Frontend build** build, ký và thay `bosskin.apk` ở release `app-latest`
+  (số build = số lần chạy workflow nên Android luôn coi là bản mới hơn). Build tay trên máy dev vẫn được: `flutter build apk --release --dart-define=API_HOST=https://api.bosskin.io.vn`.
 
 ## Host trên Vibe Host (chạy song song Netlify, 11/10/2026)
 
