@@ -1,7 +1,7 @@
-# Ảnh / video đăng mạng xã hội (công khai qua Netlify)
+# Ảnh / video đăng mạng xã hội (công khai ở bosskin.io.vn/social/)
 
 Metricool chỉ nhận media bằng link công khai, nên bộ ảnh đăng Facebook/TikTok để ở đây:
-`https://bosskin.netlify.app/social/<tên file>`.
+`https://bosskin.io.vn/social/<tên file>`.
 
 | File | Nội dung |
 |---|---|

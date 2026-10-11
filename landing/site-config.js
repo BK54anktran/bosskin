@@ -1,7 +1,7 @@
 /* Cấu hình trang giới thiệu + trang trợ giúp (/help/ đọc ../site-config.js) — sửa ở đây khi triển khai (xem landing/README.md) */
 window.BOSSKIN = {
   // Trang đăng nhập app web. '' = ẩn nút "Đăng nhập" (khi app chưa lên mạng). 8099 = chạy thử trên máy dev.
-  appUrl: location.port === '8099' ? 'http://localhost:3000/login' : 'https://bosskin.n1.tinhgon.xyz/login',
+  appUrl: location.port === '8099' ? 'http://localhost:3000/login' : 'https://app.bosskin.io.vn/login',
   // Nơi nhận form dùng thử, theo thứ tự ưu tiên:
   //  1. apiUrl — backend BossKin (vd 'https://api.ten-mien.vn'), xem ở /admin → Yêu cầu dùng thử;
   //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase (khi backend chưa lên mạng);

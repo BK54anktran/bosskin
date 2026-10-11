@@ -98,7 +98,7 @@ def cta_frame(t):
     if ab > 0:
         bw, bh = 760, 116; l = Image.new('RGBA', (bw, bh), (0, 0, 0, 0)); d = ImageDraw.Draw(l)
         d.rounded_rectangle((0, 0, bw - 1, bh - 1), 58, fill=M.ACCENT + (255,))
-        d.text((bw // 2, bh // 2), 'bosskin.netlify.app', font=M.font(46, 'Bold', False), fill=(255, 255, 255, 255), anchor='mm')
+        d.text((bw // 2, bh // 2), 'bosskin.io.vn', font=M.font(46, 'Bold', False), fill=(255, 255, 255, 255), anchor='mm')
         M.paste_alpha(fr, l, (W // 2 - bw // 2, 1060 + (1 - ab) * 30), ab)
         M.rise(fr, M.tl('Đăng ký dùng thử · Zalo 0865 854 002', 36, (200, 212, 235), 'Medium', False), W // 2, 1210, t, 0.75, anchor='c')
     if t > CTA - 0.5: fr = Image.blend(fr, Image.new('RGB', (W, H), (0, 0, 0)), M.ease((t - (CTA - 0.5)) / 0.5))

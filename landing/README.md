@@ -78,5 +78,5 @@ Bản dọc 9:16 cho Reels / TikTok / Shorts (cùng giọng, nhạc, cảnh; kh�
 - Một scheduled task của Claude chạy mỗi sáng: chọn chủ đề (tính năng BossKin hoặc tin/quy định nhân sự – lương Việt Nam có nguồn),
   dựng bài, upload, rồi hẹn giờ đăng qua Metricool (brand BossKin: Trang Facebook + TikTok `bosskin_hrm`). Không cần bật máy tính.
 - Chạy hoàn toàn trên cloud: `video/tts_edge.py "<lời>" vo.mp3` lồng tiếng chỉ bằng thư viện chuẩn Python (không cần pip edge-tts).
-  Bộ dựng đóng gói sẵn ở `https://bosskin.netlify.app/social/kit.tar.gz` (giải nén ra đúng cấu trúc repo). Sửa script/ảnh thì đóng gói lại:
+  Bộ dựng đóng gói sẵn ở `https://bosskin.io.vn/social/kit.tar.gz` (giải nén ra đúng cấu trúc repo). Sửa script/ảnh thì đóng gói lại:
   `tar czf landing/social/kit.tar.gz landing/video/{make_post.py,make_reel_vertical.py,make_reel.py,script_reel.json,tts_edge.py,shots} frontend/assets/images/bosskin_icons/round_512x512.png`

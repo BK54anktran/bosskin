@@ -14,7 +14,7 @@ import make_reel as M          # đọc sys.argv, tính độ dài cảnh theo g
 W, H = M.W, M.H = 1080, 1920
 M.LW, M.LH = 1000, 562        # laptop tràn nhẹ hai mép, màn hình vẫn trọn trong khung
 LX = 80
-SITE = 'bosskin.netlify.app'
+SITE = 'bosskin.io.vn'
 
 def make_bg():
     y, x = np.mgrid[0:H, 0:W].astype(np.float32)

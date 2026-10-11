@@ -661,7 +661,7 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
   `service/trial/TrialRequestStore` (`SupabaseTrialRequestStore` khi có `SUPABASE_URL` + `SUPABASE_SECRET_KEY`, ngược lại `JpaTrialRequestStore` — MySQL V12).
   Bảng Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `trial_requests`
   (SQL: `landing/supabase/001_trial_requests.sql`; anon chỉ INSERT, trigger chống spam). Đổi bảng → sửa file SQL đó + migration Supabase.
-- Host: Netlify (`netlify.toml` ở gốc: base `landing`, không build). `apiUrl` trống → form gửi Netlify Forms (`dung-thu`, ô bẫy `website`);
+- Host chính: Vibe Host `https://bosskin.io.vn` (`landing/Dockerfile`, trợ giúp ở `/help/`, ảnh mạng xã hội ở `/social/`); app `https://app.bosskin.io.vn`, API `https://api.bosskin.io.vn` (`docs/he-thong/trien-khai.md`). Netlify (`netlify.toml`) còn chạy song song tới khi gỡ. `apiUrl` trống → form gửi Netlify Forms (`dung-thu`, ô bẫy `website`);
   có `apiUrl` → API BossKin. `appUrl` trống → ẩn nút Đăng nhập.
 - Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).
 

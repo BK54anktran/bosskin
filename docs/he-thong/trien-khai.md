@@ -58,6 +58,10 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 | `AWS_S3_ENDPOINT`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION` | Kho tương thích S3 (MinIO / object storage) cho ảnh đại diện, file Excel lịch sử. Không có thì tải ảnh lên báo lỗi |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có (thông báo đẩy) |
 
+Đang chạy (11/10/2026): API `https://api.bosskin.io.vn`, bản web `https://app.bosskin.io.vn`, trang giới thiệu + trợ giúp `https://bosskin.io.vn`
+(website `landing/`, xem `landing/README.md`). Tên miền gắn ở trang quản lý Vibe Host; đổi tên miền → sửa `API_HOST` (web), `CORS_ALLOWED_ORIGINS` (API),
+`appUrl` trong `landing/site-config.js`.
+
 Lưu ý khi tạo trên Vibe Host:
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
 - **CSDL: không tạo tay.** Khi tạo website API, Vibe Host quét thấy app cần MySQL, tự tạo CSDL `<tên website>-db` (MySQL 8.0, "primary") và tiêm `DB_URL` (dạng `mysql://…`), `DB_PASSWORD`, `MYSQL_*`… — app dùng luôn (`backend/docker/entrypoint.sh` thêm `jdbc:`). Đừng tạo CSDL riêng rồi đặt `DB_URL` tay: nền tảng vẫn tạo cái của nó thành hai CSDL, và xoá cái "primary" khi website đang chạy làm nó kẹt "Đang triển khai", hỏng mọi lượt deploy sau (11/10/2026 — phải xoá website tạo lại).
