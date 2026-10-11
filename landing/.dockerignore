@@ -1,6 +1,5 @@
 video/
 supabase/
-social/
 help/
-README.md
+**/README.md
 .dockerignore
