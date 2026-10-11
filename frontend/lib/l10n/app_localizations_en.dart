@@ -3005,11 +3005,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationTestHint =>
-      'Sends a notification to this phone so you can check it arrives.';
+      'Sends a notification to this device so you can check it arrives.';
 
   @override
   String get notificationTestPermissionDenied =>
       'Notifications are turned off for this app — enable them in your phone\'s Settings → Apps → BossKin → Notifications';
+
+  @override
+  String get notificationPermissionDeniedWeb =>
+      'Your browser is blocking BossKin notifications — click the lock icon next to the address → Notifications → Allow, then try again';
 
   @override
   String get errorAttendanceLocationRequired =>

@@ -11,6 +11,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/localization/language_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../core/navigation/navigator_keys.dart';
+import '../../core/config/runtime_host.dart';
 import 'profile_service.dart';
 
 const _channelId         = 'shift_reminders';
@@ -427,10 +428,26 @@ class NotificationService {
 
   bool _firebaseReady = false;
 
+  /// Khoá Web Push (VAPID) — chỉ bản web, lấy từ env.js.
+  String? _webVapidKey;
+
+  /// Thiết bị / trình duyệt này nhận được thông báo đẩy (Firebase đã sẵn sàng; bản web cần đủ cấu hình FIREBASE_WEB_*).
+  bool get available => _firebaseReady;
+
   /// Ứng dụng có được phép hiện thông báo không; chưa thì hỏi quyền (Android 13+ / iOS).
   /// false = người dùng đã từ chối → phải bật trong cài đặt của điện thoại.
   Future<bool> ensurePermission() async {
     if (!_firebaseReady) return false;
+    if (kIsWeb) {
+      // Trình duyệt: chỉ hỏi được khi người dùng vừa bấm nút; đã chặn thì phải mở lại trong cài đặt trang
+      try {
+        final st = await _fcm.requestPermission(alert: true, badge: true, sound: true);
+        return st.authorizationStatus == AuthorizationStatus.authorized ||
+            st.authorizationStatus == AuthorizationStatus.provisional;
+      } catch (_) {
+        return false;
+      }
+    }
     try {
       final android = _local.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
@@ -446,10 +463,18 @@ class NotificationService {
     }
   }
 
-  /// FCM token của thiết bị này (null trên web / khi Firebase chưa sẵn sàng).
+  /// FCM token của thiết bị này (null khi Firebase chưa sẵn sàng, hoặc bản web chưa được cấp quyền thông báo).
   Future<String?> deviceToken() async {
     if (!_firebaseReady) return null;
     try {
+      if (kIsWeb) {
+        final st = await _fcm.getNotificationSettings();
+        if (st.authorizationStatus != AuthorizationStatus.authorized &&
+            st.authorizationStatus != AuthorizationStatus.provisional) {
+          return null;
+        }
+        return await _fcm.getToken(vapidKey: _webVapidKey);
+      }
       return await _fcm.getToken();
     } catch (_) {
       return null;
@@ -477,7 +502,10 @@ class NotificationService {
   }
 
   Future<void> initialize() async {
-    if (kIsWeb) return;
+    if (kIsWeb) {
+      await _initializeWeb();
+      return;
+    }
 
     try {
       await Firebase.initializeApp();
@@ -547,6 +575,41 @@ class NotificationService {
 
     final initial = await _fcm.getInitialMessage();
     if (initial != null) _handleFcmTap(initial);
+  }
+
+  /// Bản web: Firebase khởi tạo bằng cấu hình trong env.js; nhận tin khi trang đang mở thì tự hiện thông báo
+  /// (trang đóng / chạy nền do web/firebase-messaging-sw.js lo). Không xin quyền ở đây — trình duyệt chỉ cho xin
+  /// khi người dùng bấm nút (Lưu cài đặt thông báo / Gửi thông báo thử).
+  Future<void> _initializeWeb() async {
+    final cfg = runtimeFirebaseConfig();
+    if (cfg == null) return;
+    try {
+      await Firebase.initializeApp(
+        options: FirebaseOptions(
+          apiKey: cfg['apiKey']!,
+          appId: cfg['appId']!,
+          messagingSenderId: cfg['messagingSenderId']!,
+          projectId: cfg['projectId']!,
+        ),
+      );
+      if (!await _fcm.isSupported()) return;
+      _webVapidKey = cfg['vapidKey'];
+      _firebaseReady = true;
+    } catch (_) {
+      return;
+    }
+
+    _fcm.onTokenRefresh.listen((t) {
+      if (onTokenRefreshWhileSignedIn?.call() ?? false) syncDeviceToken(token: t);
+    });
+    await _loadInbox();
+    FirebaseMessaging.onMessage.listen((msg) {
+      final title = msg.data['title'] as String? ?? msg.notification?.title;
+      final body  = msg.data['body']  as String? ?? msg.notification?.body;
+      if (title == null) return;
+      showWebNotification(title, body ?? '');
+      _addToInbox(title, body ?? '', msg.data['type'] as String?);
+    });
   }
 
   Future<void> registerToken({

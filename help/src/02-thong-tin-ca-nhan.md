@@ -34,9 +34,11 @@ Khi được duyệt hoặc từ chối, bạn nhận thông báo. Yêu cầu b�
 
 Bật / tắt rồi bấm **Lưu**.
 
-Trên app điện thoại có thêm nút **Gửi thông báo thử**: bật ít nhất một loại thông báo rồi bấm, vài giây sau điện thoại
+Nút **Gửi thông báo thử**: bật ít nhất một loại thông báo rồi bấm, vài giây sau điện thoại
 nhận một thông báo "BossKin — thông báo thử". Không thấy thông báo thì kiểm tra quyền thông báo của ứng dụng trong cài đặt
-điện thoại; nếu app báo "Máy chủ chưa bật thông báo đẩy" thì báo quản trị hệ thống. Bản web không có nút này.
+điện thoại; nếu app báo "Máy chủ chưa bật thông báo đẩy" thì báo quản trị hệ thống. Bản web cũng nhận được thông báo: lần đầu bấm **Lưu** hoặc **Gửi thông báo thử**, trình duyệt hỏi quyền — chọn **Cho phép**.
+Trên iPhone phải thêm BossKin ra màn hình chính rồi mở từ biểu tượng đó mới nhận được. Mỗi tài khoản chỉ nhận thông báo trên một thiết bị
+— thiết bị bật sau cùng.
 
 ![Cài đặt thông báo và Tài liệu của tôi](img:profile-more)
 

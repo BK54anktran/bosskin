@@ -141,7 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _notifTesting = true);
     try {
       if (!await NotificationService.instance.ensurePermission()) {
-        if (mounted) _showSnack(s.notificationTestPermissionDenied);
+        if (mounted) _showSnack(kIsWeb ? s.notificationPermissionDeniedWeb : s.notificationTestPermissionDenied);
         return;
       }
       if (await NotificationService.instance.deviceToken() == null) {
@@ -173,6 +173,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (shiftMinutes == null && checkInOutMinutes == null) {
         await NotificationService.instance.disableNotifications();
       } else {
+        // Bản web: trình duyệt chỉ cho xin quyền thông báo ngay sau một lần bấm nút
+        if (kIsWeb && NotificationService.instance.available &&
+            !await NotificationService.instance.ensurePermission()) {
+          if (mounted) _showSnack(s.notificationPermissionDeniedWeb);
+          return;
+        }
         await NotificationService.instance.registerToken(
           shiftReminderMinutes: shiftMinutes,
           checkInOutNotifMinutes: checkInOutMinutes,
@@ -617,8 +623,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onCheckInOutMinutesChanged: (val) => setState(() => _checkInOutMinutes = val),
                 onSave: _saveNotificationSettings,
                 testing: _notifTesting,
-                // Web không nhận thông báo đẩy → chỉ hiện nút thử trên app điện thoại
-                onTest: kIsWeb ? null : _sendTestNotification,
+                // Chỉ hiện nút thử khi thiết bị / trình duyệt này nhận được thông báo đẩy
+                onTest: NotificationService.instance.available ? _sendTestNotification : null,
               ),
               const SizedBox(height: 16),
               const MyDependentsCard(),

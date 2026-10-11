@@ -62,6 +62,11 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 (website `landing/`, xem `landing/README.md`). Tên miền gắn ở trang quản lý Vibe Host; đổi tên miền → sửa `API_HOST` (web), `CORS_ALLOWED_ORIGINS` (API),
 `appUrl` trong `landing/site-config.js`.
 
+Thông báo đẩy trên **bản web** (FCM Web Push): đặt cho website Web 5 biến `FIREBASE_WEB_API_KEY`, `FIREBASE_WEB_APP_ID`, `FIREBASE_WEB_SENDER_ID`,
+`FIREBASE_WEB_PROJECT_ID`, `FIREBASE_WEB_VAPID_KEY` (Firebase Console → Project settings: mục Your apps → Web app; tab Cloud Messaging → Web Push
+certificates). Đủ cả 5 mới bật; `docker/40-env.sh` ghi vào `env.js`, cả trang lẫn `firebase-messaging-sw.js` đọc từ đó. Đây là cấu hình công khai,
+không phải bí mật. iPhone chỉ nhận khi đã thêm BossKin ra màn hình chính (iOS 16.4+). Mỗi tài khoản vẫn chỉ gắn một thiết bị nhận thông báo.
+
 Lưu ý khi tạo trên Vibe Host:
 - **Cập nhật API:** push `main` → chờ workflow **API jar** (`.github/workflows/api-jar.yml`, ~3 phút) cập nhật file `bosskin-api.jar` ở release `api-latest` → bấm triển khai lại. `backend/Dockerfile` chỉ tải file đó về (không chạy Maven): Vibe Host chờ bước build ~5 phút, build Maven từ đầu thường vượt mốc và báo `fetch failed` (11/10/2026, sau khi thêm biến S3). Build từ mã nguồn tại chỗ: `backend/Dockerfile.build`.
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.

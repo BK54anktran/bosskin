@@ -3008,11 +3008,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get notificationTestHint =>
-      'Gửi một thông báo tới chính điện thoại này để kiểm tra đã nhận được chưa.';
+      'Gửi một thông báo tới chính thiết bị này để kiểm tra đã nhận được chưa.';
 
   @override
   String get notificationTestPermissionDenied =>
       'Ứng dụng đang bị tắt quyền thông báo — vào Cài đặt của điện thoại → Ứng dụng → BossKin → Thông báo để bật';
+
+  @override
+  String get notificationPermissionDeniedWeb =>
+      'Trình duyệt đang chặn thông báo của BossKin — bấm biểu tượng ổ khoá cạnh địa chỉ trang → Thông báo → Cho phép, rồi thử lại';
 
   @override
   String get errorAttendanceLocationRequired =>
