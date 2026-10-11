@@ -167,10 +167,11 @@
   footer.site { background: var(--navy); color: rgba(255,255,255,.72); font-size: 15px; }
   footer.site a { color: rgba(255,255,255,.72); text-decoration: none; }
   footer.site a:hover { color: #fff; }
+  footer.site a.btn-primary { color: #fff; }   /* chữ trắng trên nền xanh: tương phản 5,2:1 (WCAG AA) */
   .foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 40px; padding-block: 56px 40px; }
   footer.site .foot-brand .brand { color: #fff; margin-bottom: 14px; }
   .foot-brand p { margin: 0 0 18px; line-height: 1.65; max-width: 340px; }
-  .foot-col h4 { margin: 4px 0 14px; color: #fff; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; }
+  .foot-col .foot-h { margin: 4px 0 14px; color: #fff; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
   .foot-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
   .foot-contact li { display: flex; gap: 10px; align-items: flex-start; }
   .foot-contact .ic { flex: none; width: 20px; opacity: .7; }
@@ -445,7 +446,7 @@
       <a class="btn btn-primary" href="#lien-he">Đăng ký dùng thử</a>
     </div>
     <div class="foot-col">
-      <h4>Sản phẩm</h4>
+      <h2 class="foot-h">Sản phẩm</h2>
       <ul>
         <li><a href="#video">Video giới thiệu</a></li>
         <li><a href="#tinh-nang">Tính năng</a></li>
@@ -454,7 +455,7 @@
       </ul>
     </div>
     <div class="foot-col">
-      <h4>Hướng dẫn</h4>
+      <h2 class="foot-h">Hướng dẫn</h2>
       <ul>
         <li><a href="help/bat-dau.html">Bắt đầu sử dụng</a></li>
         <li><a href="help/thong-tin-ca-nhan.html">Cho nhân viên</a></li>
@@ -465,11 +466,11 @@
       </ul>
     </div>
     <div class="foot-col">
-      <h4>Liên hệ</h4>
+      <h2 class="foot-h">Liên hệ</h2>
       <ul class="foot-contact">
-        <li class="js-phone" hidden><span class="ic">☎</span><a></a></li>
-        <li class="js-zalo" hidden><span class="ic">💬</span><a target="_blank" rel="noopener"></a></li>
-        <li class="js-mail" hidden><span class="ic">✉</span><a></a></li>
+        <li class="js-phone" hidden><span class="ic">☎</span><a href="#lien-he"></a></li>
+        <li class="js-zalo" hidden><span class="ic">💬</span><a href="#lien-he" target="_blank" rel="noopener"></a></li>
+        <li class="js-mail" hidden><span class="ic">✉</span><a href="#lien-he"></a></li>
         <li class="js-nocontact"><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
         <li class="js-app-row"><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li>
       </ul>

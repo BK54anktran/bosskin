@@ -42,6 +42,8 @@ def render_body(md):
         return (f'\n<figure><a href="{src}" class="zoom"><img src="{src}" alt="{html.escape(cap)}" loading="lazy" '
                 f'width="1440" height="900"></a><figcaption>{cap}</figcaption></figure>\n')
     md = re.sub(r'!\[([^\]]*)\]\(img:([\w-]+)\)', fig, md)
+    # Ảnh đầu trang thường là phần tử lớn nhất màn đầu (LCP): tải ngay, ưu tiên cao
+    md = md.replace('loading="lazy"', 'fetchpriority="high"', 1)
     out = markdown.markdown(md, extensions=['tables', 'attr_list', 'toc', 'sane_lists'],
                             extension_configs={'toc': {'slugify': slug, 'permalink': False}})
     out = re.sub(r'<blockquote>\s*<p><strong>(Lưu ý|Mẹo|Quan trọng):</strong>',
@@ -87,7 +89,9 @@ def page(title, body, pages, current, desc, aside=''):
 <meta name="description" content="{html.escape(desc)}">
 <link rel="icon" href="img/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>{CSS}</style>
 </head>
 <body{' class="home"' if current == 'index' else ''}>
@@ -125,17 +129,17 @@ FOOTER = """<footer class="site">
       </div>
       <a class="foot-cta" href="../#lien-he">Đăng ký dùng thử</a>
     </div>
-    <div class="foot-col"><h4>Sản phẩm</h4><ul>
+    <div class="foot-col"><h2 class="foot-h">Sản phẩm</h2><ul>
       <li><a href="../#video">Video giới thiệu</a></li><li><a href="../#tinh-nang">Tính năng</a></li>
       <li><a href="../#vai-tro">Dành cho ai</a></li><li><a href="../#hoi-dap">Hỏi đáp</a></li></ul></div>
-    <div class="foot-col"><h4>Hướng dẫn</h4><ul>
+    <div class="foot-col"><h2 class="foot-h">Hướng dẫn</h2><ul>
       <li><a href="bat-dau.html">Bắt đầu sử dụng</a></li><li><a href="thong-tin-ca-nhan.html">Cho nhân viên</a></li>
       <li><a href="duyet-cho-nhom.html">Cho quản lý</a></li><li><a href="nhan-vien.html">Cho nhân sự</a></li>
       <li><a href="bang-luong.html">Cho kế toán</a></li><li><a href="cau-hoi.html">Câu hỏi thường gặp</a></li></ul></div>
-    <div class="foot-col"><h4>Liên hệ</h4><ul class="foot-contact">
-      <li class="js-phone" hidden><span class="ic">☎</span><a></a></li>
-      <li class="js-zalo" hidden><span class="ic">💬</span><a target="_blank" rel="noopener"></a></li>
-      <li class="js-mail" hidden><span class="ic">✉</span><a></a></li>
+    <div class="foot-col"><h2 class="foot-h">Liên hệ</h2><ul class="foot-contact">
+      <li class="js-phone" hidden><span class="ic">☎</span><a href="../#lien-he"></a></li>
+      <li class="js-zalo" hidden><span class="ic">💬</span><a href="../#lien-he" target="_blank" rel="noopener"></a></li>
+      <li class="js-mail" hidden><span class="ic">✉</span><a href="../#lien-he"></a></li>
       <li class="js-nocontact"><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="../#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
       <li class="js-app-row" hidden><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li></ul></div>
   </div>

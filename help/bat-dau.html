@@ -7,7 +7,9 @@
 <meta name="description" content="Đăng nhập, đổi mật khẩu lần đầu, làm quen màn hình chính, menu, ngôn ngữ và thông báo.">
 <link rel="icon" href="img/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>:root{color-scheme:light;--ink:#0f172a;--ink-2:#334155;--muted:#56657a;--line:#e2e8f0;--accent:#1d4ed8;--accent-bg:rgba(37,99,235,.08);--bg:#fff;--bg-soft:#f4f7fc;--card:#fff;--warn:#b45309;--warn-bg:#fff7ed;--blue:#2563eb}
 [hidden]{display:none!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eefb;--ink-2:#c5d0e6;--muted:#a3b0c8;--line:#24324f;--accent:#8ab4ff;--accent-bg:rgba(138,180,255,.12);--bg:#0a1224;--bg-soft:#0f1a33;--card:#121f3d;--warn:#fbbf24;--warn-bg:rgba(251,191,36,.08);color-scheme:dark}}
@@ -97,7 +99,7 @@ footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hov
 .foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.2fr;gap:40px;max-width:1180px;margin:0 auto;padding:56px 20px 40px}
 .foot-brand .brand{margin-bottom:14px;color:#fff!important}.foot-brand p{margin:0 0 18px;line-height:1.65;max-width:340px}
 .foot-cta{display:inline-block;padding:10px 18px;border-radius:999px;background:#2563eb;color:#fff!important;font-weight:700}.foot-cta:hover{background:#1d4ed8}
-.foot-col h4{margin:4px 0 14px;color:#fff;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.foot-col .foot-h{margin:4px 0 14px;padding:0;border:0;color:#fff;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .foot-col ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.foot-col li{margin:0}
 .foot-contact li{display:flex;gap:10px;align-items:flex-start}.foot-contact .ic{flex:none;width:20px;opacity:.7}
 .foot-bottom{border-top:1px solid rgba(255,255,255,.1)}
@@ -160,7 +162,7 @@ footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hov
 <li>Nhập <strong>Mật khẩu</strong>. Bấm biểu tượng con mắt để xem lại mật khẩu vừa gõ.</li>
 <li>Bấm <strong>Đăng nhập</strong>. Để trống ô <strong>Ghi nhớ đăng nhập</strong> nếu dùng máy chung — đóng trình duyệt là phải đăng nhập lại.</li>
 </ol>
-<figure><a href="img/login.webp" class="zoom"><img src="img/login.webp" alt="Màn đăng nhập: email, mật khẩu, nút Đăng nhập" loading="lazy" width="1440" height="900"></a><figcaption>Màn đăng nhập: email, mật khẩu, nút Đăng nhập</figcaption></figure>
+<figure><a href="img/login.webp" class="zoom"><img src="img/login.webp" alt="Màn đăng nhập: email, mật khẩu, nút Đăng nhập" fetchpriority="high" width="1440" height="900"></a><figcaption>Màn đăng nhập: email, mật khẩu, nút Đăng nhập</figcaption></figure>
 
 <blockquote class="note "><p><strong>Lưu ý:</strong> Nhập sai mật khẩu nhiều lần liên tiếp, tài khoản bị khoá tạm vài phút để chống dò mật khẩu.</p>
 </blockquote>
@@ -255,17 +257,17 @@ thông báo đẩy hiện cả khi ứng dụng đang đóng (bật trong <stron
       </div>
       <a class="foot-cta" href="../#lien-he">Đăng ký dùng thử</a>
     </div>
-    <div class="foot-col"><h4>Sản phẩm</h4><ul>
+    <div class="foot-col"><h2 class="foot-h">Sản phẩm</h2><ul>
       <li><a href="../#video">Video giới thiệu</a></li><li><a href="../#tinh-nang">Tính năng</a></li>
       <li><a href="../#vai-tro">Dành cho ai</a></li><li><a href="../#hoi-dap">Hỏi đáp</a></li></ul></div>
-    <div class="foot-col"><h4>Hướng dẫn</h4><ul>
+    <div class="foot-col"><h2 class="foot-h">Hướng dẫn</h2><ul>
       <li><a href="bat-dau.html">Bắt đầu sử dụng</a></li><li><a href="thong-tin-ca-nhan.html">Cho nhân viên</a></li>
       <li><a href="duyet-cho-nhom.html">Cho quản lý</a></li><li><a href="nhan-vien.html">Cho nhân sự</a></li>
       <li><a href="bang-luong.html">Cho kế toán</a></li><li><a href="cau-hoi.html">Câu hỏi thường gặp</a></li></ul></div>
-    <div class="foot-col"><h4>Liên hệ</h4><ul class="foot-contact">
-      <li class="js-phone" hidden><span class="ic">☎</span><a></a></li>
-      <li class="js-zalo" hidden><span class="ic">💬</span><a target="_blank" rel="noopener"></a></li>
-      <li class="js-mail" hidden><span class="ic">✉</span><a></a></li>
+    <div class="foot-col"><h2 class="foot-h">Liên hệ</h2><ul class="foot-contact">
+      <li class="js-phone" hidden><span class="ic">☎</span><a href="../#lien-he"></a></li>
+      <li class="js-zalo" hidden><span class="ic">💬</span><a href="../#lien-he" target="_blank" rel="noopener"></a></li>
+      <li class="js-mail" hidden><span class="ic">✉</span><a href="../#lien-he"></a></li>
       <li class="js-nocontact"><span class="ic">✎</span><span>Để lại thông tin ở mục <a href="../#lien-he" style="text-decoration:underline">Dùng thử</a> để được liên hệ hướng dẫn.</span></li>
       <li class="js-app-row" hidden><span class="ic">➜</span><a class="js-app" href="/login">Đăng nhập BossKin</a></li></ul></div>
   </div>
