@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * Nơi lưu yêu cầu dùng thử. Mặc định bảng MySQL {@code trial_requests} (V12); khi đặt
  * {@code SUPABASE_URL} + {@code SUPABASE_SECRET_KEY} thì đọc/ghi bảng {@code trial_requests} trên Supabase
- * (trang giới thiệu trên Netlify ghi thẳng vào đó) — xem {@code TrialRequestStoreConfig}.
+ * (trang giới thiệu ghi thẳng vào đó) — xem {@code TrialRequestStoreConfig}.
  */
 public interface TrialRequestStore {
     String name();

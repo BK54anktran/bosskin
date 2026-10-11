@@ -53,7 +53,7 @@ server:
 app:
   trial-request:
     max-per-ip-hour: ${TRIAL_MAX_PER_IP_HOUR:5}   # form dùng thử ở trang giới thiệu (V12)
-  # Đặt cả hai → yêu cầu dùng thử đọc/ghi bảng trial_requests trên Supabase (trang Netlify ghi thẳng vào đó).
+  # Đặt cả hai → yêu cầu dùng thử đọc/ghi bảng trial_requests trên Supabase (trang giới thiệu ghi thẳng vào đó).
   # Khoá bí mật (sb_secret_… hoặc service_role) chỉ để ở biến môi trường, không commit.
   supabase:
     url: ${SUPABASE_URL:}

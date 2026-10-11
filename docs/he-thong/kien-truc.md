@@ -7,7 +7,7 @@ flowchart LR
   subgraph Người dùng
     W[Web Flutter<br/>app.&lt;tên-miền&gt;] 
     A[App Android Flutter]
-    L[Trang giới thiệu<br/>Netlify]
+    L[Trang giới thiệu<br/>bosskin.io.vn]
   end
   W & A -->|HTTPS JSON, JWT| B[Spring Boot 3.3<br/>Elastic Beanstalk]
   L -->|form dùng thử| S[(Supabase<br/>trial_requests)]

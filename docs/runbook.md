@@ -22,7 +22,7 @@ cách deploy, health check hay migration thì sửa file này trong cùng commit
 | `JWT_SECRET` | ✔ | ≥ 32 byte ngẫu nhiên: `openssl rand -base64 48`. Thiếu → app không khởi động |
 | `CORS_ALLOWED_ORIGINS` | ✔ (bản web) | `https://app.<tên-miền>,https://<tên-miền trang giới thiệu>` (nhiều giá trị cách dấu phẩy; trang giới thiệu gửi form dùng thử vào API) |
 | `TRIAL_MAX_PER_IP_HOUR` | Không | Số yêu cầu dùng thử tối đa mỗi IP mỗi giờ, mặc định 5 |
-| `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | Không | Đặt cả hai → yêu cầu dùng thử đọc/ghi bảng `trial_requests` trên Supabase (nguồn chung với trang Netlify). Khoá bí mật lấy ở Supabase → Project Settings → API Keys (`sb_secret_…`), chỉ để ở biến môi trường |
+| `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | Không | Đặt cả hai → yêu cầu dùng thử đọc/ghi bảng `trial_requests` trên Supabase (nguồn chung với trang giới thiệu). Khoá bí mật lấy ở Supabase → Project Settings → API Keys (`sb_secret_…`), chỉ để ở biến môi trường |
 | `BOOTSTRAP_SYSADMIN_EMAIL`, `BOOTSTRAP_SYSADMIN_PASSWORD` | Lần đầu | Chỉ dùng khi DB chưa có system admin. Xoá sau khi đăng nhập được |
 | `BOOTSTRAP_ADD_SYSADMIN_EMAIL`, `BOOTSTRAP_ADD_SYSADMIN_PASSWORD` | Không | Thêm một system admin lúc khởi động nếu email chưa có (không sửa tài khoản đang có). Dùng khi không vào được /admin; xoá sau khi đăng nhập được |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có | Nội dung JSON hoặc base64. Không đặt → tắt push |
@@ -168,7 +168,7 @@ rồi `flutter build apk --release --dart-define=API_HOST=...`.
 
 ## 12. Trang giới thiệu và yêu cầu dùng thử
 
-- Nguồn dữ liệu chung: Supabase project `bosskin`, bảng `trial_requests` (`landing/supabase/*.sql`). Trang Netlify ghi thẳng vào đó
+- Nguồn dữ liệu chung: Supabase project `bosskin`, bảng `trial_requests` (`landing/supabase/*.sql`). Trang giới thiệu ghi thẳng vào đó
   (khoá công khai, chỉ được thêm); app BossKin đọc/xử lý ở `/admin` → tab "Yêu cầu dùng thử" qua `SUPABASE_URL` + `SUPABASE_SECRET_KEY`.
   Thiếu hai biến này thì backend dùng bảng MySQL `trial_requests` (V12) như trước.
 - Chống spam: trigger trên Supabase (chuẩn hoá số điện thoại, trùng số 10 phút bỏ qua, ≤ 5 lượt/IP/giờ); API của BossKin còn giới hạn theo IP
