@@ -44,3 +44,16 @@
   to = "/404"
   status = 404
   force = true
+
+# File chỉ dùng cho bản Docker (Vibe Host)
+[[redirects]]
+  from = "/Dockerfile"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/nginx.conf"
+  to = "/404"
+  status = 404
+  force = true

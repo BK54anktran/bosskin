@@ -34,6 +34,12 @@ Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 
 
 Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
 
+## Host trên Vibe Host (chạy song song Netlify, 11/10/2026)
+
+Website Docker từ thư mục `landing/` (`landing/Dockerfile` + `nginx.conf`): Nginx phục vụ trang giới thiệu, trang trợ giúp được lấy từ
+`help/` trên nhánh `main` của GitHub lúc build và đặt ở `/help/`. Không chép `video/`, `supabase/`, `social/`, `README.md` (`.dockerignore`).
+Sửa `help/` → triển khai lại website này để cập nhật. Form dùng thử vẫn ghi Supabase; Netlify Forms không dùng được ở đây.
+
 ## Video đầy đủ `assets/bosskin-gioi-thieu.mp4` (~90 giây, 1080p, giọng Hoài My, phụ đề in sẵn; trang dẫn link phụ)
 Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi trường thử riêng, **không** chạy vào DB dev/prod):
 
