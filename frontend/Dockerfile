@@ -23,4 +23,4 @@ COPY docker/40-env.sh /docker-entrypoint.d/40-env.sh
 RUN chmod +x /docker-entrypoint.d/40-env.sh
 COPY --from=build /app/build/web /usr/share/nginx/html
 ENV API_HOST=
-EXPOSE 8080
+EXPOSE 8080 3000

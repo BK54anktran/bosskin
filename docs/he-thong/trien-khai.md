@@ -43,7 +43,7 @@ từ `docker-compose.yml` ở gốc repo (api + web, ổ `bosskin-data` cho `/da
 | Ứng dụng | Thư mục build | Cổng | Ghi chú |
 |---|---|---|---|
 | API | `backend/` (`backend/Dockerfile`) | 8080 | Profile `prod`, health `GET /actuator/health`, chạy user thường, dữ liệu file ở `/data` |
-| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 | Biến môi trường **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`), đọc lúc chạy qua `env.js` — không cần build lại khi đổi. Build arg cùng tên vẫn dùng được (gắn cứng) |
+| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 (và 3000 — cổng Vibe Host tự chọn) | Biến môi trường **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`), đọc lúc chạy qua `env.js` — không cần build lại khi đổi. Build arg cùng tên vẫn dùng được (gắn cứng) |
 
 Biến môi trường của API (bí mật đặt ở mục biến môi trường của Vibe Host, không commit):
 
