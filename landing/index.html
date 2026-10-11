@@ -187,6 +187,26 @@
   .zalo-txt { font-size: 10.5px; font-weight: 800; letter-spacing: -.01em; }
   @media (max-width: 900px) { .foot-grid { grid-template-columns: 1fr 1fr; gap: 32px; } .foot-brand { grid-column: 1 / -1; } }
   @media (max-width: 520px) { .foot-grid { gap: 28px 20px; padding-block: 44px 28px; } .foot-col:last-child { grid-column: 1 / -1; } }
+
+  /* ── cài lên điện thoại (lối tắt màn hình chính) ── */
+  .install { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .install .os { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .install .os .ic { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--blue); }
+  .install .os h3 { font-size: 20px; margin: 0; }
+  .install .os p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  .install .os .btn { margin-top: 6px; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+  @media (max-width: 760px) { .install { grid-template-columns: 1fr; } }
+  dialog.howto { border: 1px solid var(--line); border-radius: var(--radius); padding: 0; max-width: min(520px, calc(100vw - 32px)); width: 100%;
+                 background: var(--card); color: var(--ink); box-shadow: 0 24px 60px rgba(2, 8, 23, .35); }
+  dialog.howto::backdrop { background: rgba(2, 8, 23, .6); }
+  dialog.howto .body { padding: 24px 24px 22px; }
+  dialog.howto h3 { font-size: 21px; margin: 0 0 4px; }
+  dialog.howto .sub { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
+  dialog.howto ol { margin: 0 0 18px; padding-left: 22px; display: grid; gap: 10px; font-size: 16px; }
+  dialog.howto ol b { white-space: nowrap; }
+  dialog.howto .acts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  dialog.howto .acts .btn { padding: 11px 20px; font-size: 15.5px; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+  dialog.howto .btn-plain { background: transparent; color: var(--accent); border: 1px solid var(--line) !important; }
 </style>
 </head>
 <body>
@@ -195,7 +215,7 @@
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
     <nav class="links">
-      <a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
+      <a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#cai-dat">Cài đặt</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
     </nav>
     <div class="actions"><a class="btn btn-ghost js-app" href="/login">Đăng nhập</a></div>
     <button class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
@@ -384,6 +404,64 @@
   </div>
 </section>
 
+<section id="cai-dat" class="js-app-row" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Trên điện thoại</span>
+      <h2>Đưa BossKin ra màn hình chính</h2>
+      <p class="lead">Không cần tải từ cửa hàng ứng dụng. Thêm lối tắt một lần, lần sau bấm biểu tượng BossKin là vào thẳng chấm công.</p>
+    </div>
+    <div class="install">
+      <div class="os">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M10.5 5h3"/></svg></div>
+        <h3>iPhone / iPad</h3>
+        <p>Mở bằng Safari, bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”.</p>
+        <button class="btn btn-primary" type="button" data-howto="ios">Cài trên iPhone</button>
+      </div>
+      <div class="os">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
+        <h3>Android</h3>
+        <p>Mở bằng Chrome, bấm dấu ba chấm rồi chọn “Thêm vào màn hình chính”.</p>
+        <button class="btn btn-primary" type="button" data-howto="android">Cài trên Android</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<dialog class="howto" id="howto-ios" aria-labelledby="howto-ios-h">
+  <div class="body">
+    <h3 id="howto-ios-h">Cài BossKin trên iPhone / iPad</h3>
+    <p class="sub">Làm trên chính chiếc điện thoại muốn cài.</p>
+    <ol>
+      <li>Bấm <b>Mở BossKin</b> bên dưới — trang đăng nhập mở trong <b>Safari</b>.</li>
+      <li>Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên lên) ở thanh dưới cùng.</li>
+      <li>Kéo xuống, chọn <b>Thêm vào MH chính</b>, rồi bấm <b>Thêm</b>.</li>
+      <li>Biểu tượng BossKin xuất hiện trên màn hình chính — mở từ đó và đăng nhập.</li>
+    </ol>
+    <div class="acts">
+      <button class="btn btn-plain" type="button" data-close>Đóng</button>
+      <a class="btn btn-primary js-app" href="/login">Mở BossKin</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="howto" id="howto-android" aria-labelledby="howto-android-h">
+  <div class="body">
+    <h3 id="howto-android-h">Cài BossKin trên Android</h3>
+    <p class="sub">Làm trên chính chiếc điện thoại muốn cài.</p>
+    <ol>
+      <li>Bấm <b>Mở BossKin</b> bên dưới — trang đăng nhập mở trong <b>Chrome</b>.</li>
+      <li>Bấm dấu <b>ba chấm ⋮</b> ở góc trên bên phải.</li>
+      <li>Chọn <b>Thêm vào màn hình chính</b> (hoặc <b>Cài đặt ứng dụng</b>), rồi bấm <b>Thêm</b>.</li>
+      <li>Biểu tượng BossKin xuất hiện trên màn hình chính — mở từ đó và đăng nhập.</li>
+    </ol>
+    <div class="acts">
+      <button class="btn btn-plain" type="button" data-close>Đóng</button>
+      <a class="btn btn-primary js-app" href="/login">Mở BossKin</a>
+    </div>
+  </div>
+</dialog>
+
 <section id="hoi-dap" style="background:var(--bg-soft)">
   <div class="wrap">
     <div class="section-head"><span class="eyebrow">Hỏi đáp</span><h2>Câu hỏi thường gặp</h2></div>
@@ -494,6 +572,16 @@
     document.querySelectorAll('nav.links a').forEach(function (a) { a.addEventListener('click', function () { top.classList.remove('open'); tg.setAttribute('aria-expanded', 'false'); tg.textContent = '☰'; }); });
     document.querySelectorAll('.js-app').forEach(function (a) { if (cfg.appUrl) a.href = cfg.appUrl; else a.hidden = true; });
     document.querySelectorAll('.js-app-row').forEach(function (r) { r.hidden = !cfg.appUrl; });
+    // Hộp hướng dẫn cài lối tắt lên màn hình chính (iPhone / Android)
+    document.querySelectorAll('[data-howto]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = document.getElementById('howto-' + b.getAttribute('data-howto'));
+        if (d && d.showModal) d.showModal(); else if (cfg.appUrl) location.href = cfg.appUrl;
+      });
+    });
+    document.querySelectorAll('dialog.howto').forEach(function (d) {
+      d.addEventListener('click', function (e) { if (e.target === d || e.target.hasAttribute('data-close')) d.close(); });
+    });
     var direct = document.getElementById('direct');
     var lines = [];
     if (cfg.contactPhone) lines.push('Điện thoại / Zalo: <b>' + cfg.contactPhone + '</b>');
