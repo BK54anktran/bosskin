@@ -1,8 +1,8 @@
+import '../../core/config/secure_storage.dart';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/server_config.dart';
@@ -17,12 +17,7 @@ class ApiService {
 
   late final Dio _dio;
 
-  final _storage = const FlutterSecureStorage(
-    webOptions: WebOptions(
-      dbName: 'bosskin',
-      publicKey: 'bosskin_key',
-    ),
-  );
+  final _storage = appSecureStorage;
 
   ApiService._() {
     _dio = Dio(

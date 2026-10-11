@@ -1,9 +1,9 @@
+import '../../core/config/secure_storage.dart';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/config/server_config.dart';
@@ -121,12 +121,7 @@ class AuthService extends ChangeNotifier {
 
   AuthService._();
 
-  final _storage = const FlutterSecureStorage(
-    webOptions: WebOptions(
-      dbName: 'bosskin',
-      publicKey: 'bosskin_key',
-    ),
-  );
+  final _storage = appSecureStorage;
 
   final _dio = Dio(
     BaseOptions(

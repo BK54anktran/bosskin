@@ -1,7 +1,7 @@
+import '../../core/config/secure_storage.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -11,12 +11,7 @@ class DeviceService {
 
   DeviceService._();
 
-  final _storage = const FlutterSecureStorage(
-    webOptions: WebOptions(
-      dbName: 'bosskin',
-      publicKey: 'bosskin_key',
-    ),
-  );
+  final _storage = appSecureStorage;
 
   String? _deviceId;
 
