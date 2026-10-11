@@ -12,6 +12,7 @@ WORKDIR /app
 # Chạy bằng user thường; thư mục dữ liệu cho tài liệu nhân sự (DOCUMENTS_STORAGE=local) và cache ô bản đồ
 RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/documents /data/map-tiles && chown -R app:app /data
 COPY --from=build /app/target/*.jar app.jar
+COPY docker/entrypoint.sh /app/entrypoint.sh
 USER app
 ENV PORT=8080 \
     SPRING_PROFILES_ACTIVE=prod \
@@ -22,5 +23,5 @@ ENV PORT=8080 \
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
   CMD wget -qO- http://127.0.0.1:${PORT}/actuator/health >/dev/null || exit 1
-# DB_URL nhận cả dạng mysql://… (có nền tảng chỉ chấp nhận scheme://) — tự thêm tiền tố jdbc:
-ENTRYPOINT ["sh", "-c", "case \"$DB_URL\" in mysql://*) export DB_URL=\"jdbc:$DB_URL\";; esac; exec java $JAVA_OPTS -jar app.jar"]
+# Biến kết nối CSDL: xem docker/entrypoint.sh (CSDL nền tảng cấp qua MYSQL_*, hoặc DB_URL dạng jdbc:mysql:// / mysql://)
+ENTRYPOINT ["sh", "/app/entrypoint.sh"]
