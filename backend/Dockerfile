@@ -3,10 +3,11 @@
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
-# Mạng máy build hay đứt giữa chừng khi tải thư viện (Maven Central) → thử lại tối đa 4 lần, phần đã tải được giữ lại
-RUN for i in 1 2 3 4; do mvn -B dependency:go-offline -q && exit 0; echo "tải thư viện lỗi, thử lại lần $i"; sleep 5; done; exit 1
 COPY src ./src
-RUN for i in 1 2 3; do mvn -B clean package -DskipTests -q && exit 0; echo "build lỗi, thử lại lần $i"; sleep 5; done; exit 1
+# Một bước duy nhất, không chạy dependency:go-offline: nền tảng không giữ cache lớp giữa các lượt build nên bước đó
+# chỉ tải thừa (mọi plugin của mọi phase, ~3 phút) và làm build vượt giới hạn chờ khi mạng chậm.
+# Tải đứt giữa chừng → thử lại đúng một lần (phần đã tải nằm sẵn trong ~/.m2 của lớp này).
+RUN mvn -B clean package -DskipTests -q || (echo "build lỗi, thử lại một lần" && mvn -B clean package -DskipTests -q)
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
