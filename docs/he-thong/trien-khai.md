@@ -60,7 +60,7 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 
 Lưu ý khi tạo trên Vibe Host:
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
-- **CSDL:** tạo tay một MySQL 8 rồi đặt `DB_URL` / `DB_USERNAME` / `DB_PASSWORD`. Vibe Host còn tự tạo thêm CSDL `<tên website>-db` ("primary") khi quét thấy app cần MySQL và tiêm `MYSQL_*`; `backend/docker/entrypoint.sh` ưu tiên `DB_URL`, chỉ dùng `MYSQL_*` khi không có `DB_URL`. CSDL tự tạo đó từng kẹt "Đang triển khai" làm hỏng cả lượt deploy (11/10/2026) — gặp thì báo hỗ trợ Vibe Host.
+- **CSDL: không tạo tay.** Khi tạo website API, Vibe Host quét thấy app cần MySQL, tự tạo CSDL `<tên website>-db` (MySQL 8.0, "primary") và tiêm `DB_URL` (dạng `mysql://…`), `DB_PASSWORD`, `MYSQL_*`… — app dùng luôn (`backend/docker/entrypoint.sh` thêm `jdbc:`). Đừng tạo CSDL riêng rồi đặt `DB_URL` tay: nền tảng vẫn tạo cái của nó thành hai CSDL, và xoá cái "primary" khi website đang chạy làm nó kẹt "Đang triển khai", hỏng mọi lượt deploy sau (11/10/2026 — phải xoá website tạo lại).
 - Khoá tuỳ chọn trong `backend/.env.example` để dạng chú thích: nền tảng quét file này và coi khoá trống là bắt buộc.
 - **RAM của API ≥ 1 GB** (mặc định 512 MB chỉ còn ~384 MB heap, dễ hết bộ nhớ khi nhập Excel / tính lương).
 - **Khai `/data` là thư mục dữ liệu bền** của website API ngay sau khi tạo.

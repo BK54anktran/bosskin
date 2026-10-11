@@ -6,6 +6,8 @@
 set -e
 if [ -n "$DB_URL" ]; then
   case "$DB_URL" in mysql://*) export DB_URL="jdbc:$DB_URL" ;; esac
+  # Vibe Host tiêm DB_URL + MYSQL_USER nhưng không có DB_USERNAME
+  [ -n "$DB_USERNAME" ] || [ -z "$MYSQL_USER" ] || export DB_USERNAME="$MYSQL_USER"
 elif [ -n "$MYSQL_HOST" ] && [ -n "$MYSQL_DATABASE" ]; then
   export DB_URL="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:-3306}/${MYSQL_DATABASE}?sslMode=PREFERRED&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8"
   export DB_USERNAME="$MYSQL_USER"
