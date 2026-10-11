@@ -1,7 +1,15 @@
 # Bản web BossKin — build Flutter web rồi phục vụ bằng Nginx.
 # Địa chỉ backend: đặt biến môi trường API_HOST cho container lúc chạy (ghi vào env.js, không cần build lại);
 # hoặc truyền --build-arg API_HOST=... để gắn cứng lúc build.
-FROM ghcr.io/cirruslabs/flutter:3.47.6 AS build
+# Flutter lấy thẳng từ kho chính thức theo đúng bản CI ghim (frontend-build.yml) — không phụ thuộc image dựng sẵn của bên thứ ba.
+FROM debian:bookworm-slim AS build
+ARG FLUTTER_VERSION=3.47.6
+RUN apt-get update && apt-get install -y --no-install-recommends git curl unzip xz-utils ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
+ && git clone --depth 1 -b $FLUTTER_VERSION https://github.com/flutter/flutter.git /flutter \
+ && git config --global --add safe.directory /flutter
+ENV PATH=/flutter/bin:$PATH
+RUN flutter config --no-analytics && flutter precache --web
 ARG API_HOST=
 WORKDIR /app
 COPY pubspec.yaml pubspec.lock* ./
