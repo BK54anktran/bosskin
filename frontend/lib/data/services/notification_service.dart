@@ -290,11 +290,11 @@ Future<void> _showShiftNotification(RemoteMessage message) async {
     await _local.show(id, title, body, details(withLargeIcon: true), payload: payload);
   } catch (e) {
     // Ảnh lớn không đọc được (bản release rút gọn tài nguyên…) → vẫn phải hiện thông báo
-    debugPrint('Hiện thông báo kèm ảnh lỗi: $e');
+    debugPrint('local notification with large icon failed: $e');
     try {
       await _local.show(id, title, body, details(withLargeIcon: false), payload: payload);
     } catch (e2) {
-      debugPrint('Hiện thông báo lỗi: $e2');
+      debugPrint('local notification failed: $e2');
     }
   }
 }
