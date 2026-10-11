@@ -35,6 +35,32 @@ Frontend chỉ cần `--dart-define=API_HOST=https://api.<tên-miền>` lúc bui
 Migration: thêm `V<n>__mo_ta.sql`, không sửa file đã chạy. Flyway tự chạy khi app khởi động (`validate-on-migrate`, cấm `clean` ở prod).
 Bản có migration mới → **snapshot RDS trước khi deploy** (runbook mục 3–4: rollback = sửa tiến hoặc khôi phục snapshot).
 
+## Vibe Host (Mắt Bão)
+
+Phương án thay cho AWS (11/10/2026). Hai ứng dụng Docker + MySQL 8 do Vibe Host cấp:
+
+| Ứng dụng | Thư mục build | Cổng | Ghi chú |
+|---|---|---|---|
+| API | `backend/` (`backend/Dockerfile`) | 8080 | Profile `prod`, health `GET /actuator/health`, chạy user thường, dữ liệu file ở `/data` |
+| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 | Build arg **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`) |
+
+Biến môi trường của API (bí mật đặt ở mục biến môi trường của Vibe Host, không commit):
+
+| Biến | Giá trị |
+|---|---|
+| `DB_URL` | `jdbc:mysql://<host>:<port>/<db>?sslMode=PREFERRED&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8` — DB phải là **MySQL 8**, **trống** (Flyway tự tạo 50 bảng lần đầu) |
+| `DB_USERNAME`, `DB_PASSWORD` | Tài khoản DB do Vibe Host cấp |
+| `JWT_SECRET` | ≥ 32 byte ngẫu nhiên (`openssl rand -base64 48`); thiếu thì app không khởi động |
+| `CORS_ALLOWED_ORIGINS` | Địa chỉ bản web + trang giới thiệu, cách dấu phẩy |
+| `BOOTSTRAP_SYSADMIN_EMAIL`, `BOOTSTRAP_SYSADMIN_PASSWORD` | Lần đầu (mật khẩu ≥ 12 ký tự); xoá sau khi đăng nhập `/admin` và cài 2FA |
+| `DOCUMENTS_STORAGE` | `local` nếu không có kho S3 — cần gắn **ổ lưu trữ bền** vào `/data`, nếu không file mất khi deploy lại |
+| `AWS_S3_ENDPOINT`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_REGION` | Kho tương thích S3 (MinIO / object storage) cho ảnh đại diện, file Excel lịch sử. Không có thì tải ảnh lên báo lỗi |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có (thông báo đẩy) |
+
+Sau khi chạy: `curl https://<api>/actuator/health` → `UP`; đăng nhập `/admin` bằng tài khoản bootstrap; tạo công ty; trỏ `appUrl` trong
+`landing/site-config.js` tới bản web để hiện nút Đăng nhập. Sao lưu DB: dùng tính năng sao lưu của Vibe Host nếu có, và tải bản dump định kỳ
+về nơi khác (runbook mục 5).
+
 ## Vận hành hằng ngày
 
 | Việc | Ở đâu |
