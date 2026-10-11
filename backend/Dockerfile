@@ -22,4 +22,5 @@ ENV PORT=8080 \
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
   CMD wget -qO- http://127.0.0.1:${PORT}/actuator/health >/dev/null || exit 1
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
+# DB_URL nhận cả dạng mysql://… (có nền tảng chỉ chấp nhận scheme://) — tự thêm tiền tố jdbc:
+ENTRYPOINT ["sh", "-c", "case \"$DB_URL\" in mysql://*) export DB_URL=\"jdbc:$DB_URL\";; esac; exec java $JAVA_OPTS -jar app.jar"]

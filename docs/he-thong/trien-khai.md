@@ -59,6 +59,8 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Nên có (thông báo đẩy) |
 
 Lưu ý khi tạo trên Vibe Host:
+- **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
+- Khoá tuỳ chọn trong `backend/.env.example` để dạng chú thích: nền tảng quét file này và coi khoá trống là bắt buộc.
 - **RAM của API ≥ 1 GB** (mặc định 512 MB chỉ còn ~384 MB heap, dễ hết bộ nhớ khi nhập Excel / tính lương).
 - **Khai `/data` là thư mục dữ liệu bền** của website API ngay sau khi tạo.
 - **Repo riêng tư:** cổng agent của Vibe Host chỉ nhận repo Git công khai — hỏi Vibe Host cách nối repo riêng tư (deploy key / token),
