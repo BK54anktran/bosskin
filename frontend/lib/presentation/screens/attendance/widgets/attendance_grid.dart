@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../attendance_shared.dart';
 
-/// Frozen-column attendance grid.
+/// Lưới chấm công có cột đầu cố định.
 ///
-/// One [SingleChildScrollView] per row (horizontal, NeverScrollable) + one
-/// scrollable header. All share the same [hScrollController] so Flutter keeps
-/// them in sync without any listener/setState overhead on vertical scroll.
-class AttendanceGrid extends StatelessWidget {
+/// Bên trái: ô chọn + cột cố định (cuộn dọc). Bên phải: tiêu đề cột và phần dữ liệu cuộn ngang **bằng cách vuốt ngay
+/// trên bảng** (điện thoại) hoặc thanh cuộn / Shift + lăn chuột (máy tính). Hai nửa cuộn dọc cùng nhau, tiêu đề cuộn
+/// ngang theo phần dữ liệu.
+class AttendanceGrid extends StatefulWidget {
   final String fixedColumnHeader;
   final double fixedColumnWidth;
   final List<String> columnHeaders;
@@ -25,7 +25,11 @@ class AttendanceGrid extends StatelessWidget {
   final Widget Function(int index, double width, Color bg, bool selected) fixedCellBuilder;
   final List<Widget> Function(int index, List<double> widths, Color bg, bool selected) dataCellsBuilder;
   final Widget Function(int index, double height, Color bg)? checkboxCellBuilder;
+
+  /// Cuộn ngang của phần dữ liệu (tiêu đề đi theo).
   final ScrollController hScrollController;
+
+  /// Cuộn dọc của phần dữ liệu (cột cố định đi theo).
   final ScrollController vScrollController;
 
   const AttendanceGrid({
@@ -53,93 +57,195 @@ class AttendanceGrid extends StatelessWidget {
 
   static bool _defaultFalse(int _) => false;
 
+  @override
+  State<AttendanceGrid> createState() => _AttendanceGridState();
+}
+
+class _AttendanceGridState extends State<AttendanceGrid> {
+  final _hHead = ScrollController();
+  final _vFixed = ScrollController();
+  bool _syncingV = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.hScrollController.addListener(_syncHead);
+    widget.vScrollController.addListener(_syncFixedFromBody);
+    _vFixed.addListener(_syncBodyFromFixed);
+  }
+
+  @override
+  void didUpdateWidget(AttendanceGrid old) {
+    super.didUpdateWidget(old);
+    if (old.hScrollController != widget.hScrollController) {
+      old.hScrollController.removeListener(_syncHead);
+      widget.hScrollController.addListener(_syncHead);
+    }
+    if (old.vScrollController != widget.vScrollController) {
+      old.vScrollController.removeListener(_syncFixedFromBody);
+      widget.vScrollController.addListener(_syncFixedFromBody);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.hScrollController.removeListener(_syncHead);
+    widget.vScrollController.removeListener(_syncFixedFromBody);
+    _hHead.dispose();
+    _vFixed.dispose();
+    super.dispose();
+  }
+
+  void _syncHead() => _follow(widget.hScrollController, _hHead);
+
+  void _syncFixedFromBody() {
+    if (_syncingV) return;
+    _syncingV = true;
+    _follow(widget.vScrollController, _vFixed);
+    _syncingV = false;
+  }
+
+  void _syncBodyFromFixed() {
+    if (_syncingV) return;
+    _syncingV = true;
+    _follow(_vFixed, widget.vScrollController);
+    _syncingV = false;
+  }
+
+  /// Đưa [to] về cùng vị trí với [from] (bỏ qua khi một bên chưa gắn vào cây).
+  void _follow(ScrollController from, ScrollController to) {
+    if (!from.hasClients || !to.hasClients) return;
+    final target = from.position.pixels.clamp(0.0, to.position.maxScrollExtent);
+    if ((to.position.pixels - target).abs() > 0.5) to.jumpTo(target);
+  }
+
   Color _rowBg(int i) {
-    if (isSelected(i)) return AppTheme.primary.withValues(alpha: 0.08);
-    if (isWeekend(i)) return AppTheme.tint(AppTheme.warning);
-    if (isToday(i)) return AppTheme.tint(AppTheme.primary);
+    if (widget.isSelected(i)) return AppTheme.primary.withValues(alpha: 0.08);
+    if (widget.isWeekend(i)) return AppTheme.tint(AppTheme.warning);
+    if (widget.isToday(i)) return AppTheme.tint(AppTheme.primary);
     return AppTheme.background;
   }
 
   @override
   Widget build(BuildContext context) {
-    final scrollWidth = columnWidths.fold(0.0, (s, w) => s + w);
+    final w = widget;
+    final scrollWidth = w.columnWidths.fold(0.0, (s, x) => s + x);
+    final fixedWidth = w.fixedColumnWidth + (w.selectionMode ? w.checkboxWidth : 0);
 
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Header ────────────────────────────────────────────────────────────
-        Row(children: [
-          if (selectionMode)
-            _CheckboxHeader(
-              width: checkboxWidth,
-              value: allSelected,
-              onChanged: onToggleSelectAll,
-            ),
-          _HeadCell(
-            label: fixedColumnHeader,
-            width: fixedColumnWidth,
-            isFirst: !selectionMode,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              controller: hScrollController,
-              scrollDirection: Axis.horizontal,
-              physics: const ClampingScrollPhysics(),
-              child: SizedBox(
-                width: scrollWidth,
-                child: Row(
-                  children: List.generate(
-                    columnHeaders.length,
-                    (i) => _HeadCell(label: columnHeaders[i], width: columnWidths[i]),
-                  ),
+        // ── Nửa trái: ô chọn + cột cố định ────────────────────────────────────
+        SizedBox(
+          width: fixedWidth,
+          child: Column(children: [
+            Row(children: [
+              if (w.selectionMode)
+                _CheckboxHeader(
+                  width: w.checkboxWidth,
+                  value: w.allSelected,
+                  onChanged: w.onToggleSelectAll,
+                ),
+              _HeadCell(
+                label: w.fixedColumnHeader,
+                width: w.fixedColumnWidth,
+                isFirst: !w.selectionMode,
+              ),
+            ]),
+            Expanded(
+              // Không hiện thanh cuộn ở nửa trái (thanh cuộn dọc nằm bên phần dữ liệu)
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                child: ListView.builder(
+                  controller: _vFixed,
+                  physics: const ClampingScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: w.rowCount,
+                  itemBuilder: (_, i) {
+                    final height = w.rowHeightAt(i);
+                    final selected = w.isSelected(i);
+                    final bg = _rowBg(i);
+                    return SizedBox(
+                      height: height,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (w.selectionMode)
+                            w.checkboxCellBuilder != null
+                                ? w.checkboxCellBuilder!(i, height, bg)
+                                : _DefaultCheckboxCell(
+                                    width: w.checkboxWidth,
+                                    height: height,
+                                    bg: bg,
+                                    checked: selected,
+                                    onTap: () => w.onToggleSelect?.call(i),
+                                  ),
+                          w.fixedCellBuilder(i, w.fixedColumnWidth, bg, selected),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          ),
-        ]),
-        // ── Rows ──────────────────────────────────────────────────────────────
+          ]),
+        ),
+        // ── Nửa phải: tiêu đề + dữ liệu, cuộn ngang ──────────────────────────
         Expanded(
-          child: ListView.builder(
-            controller: vScrollController,
-            physics: const ClampingScrollPhysics(),
-            itemCount: rowCount,
-            itemBuilder: (_, i) {
-              final height = rowHeightAt(i);
-              final selected = isSelected(i);
-              final bg = _rowBg(i);
-              return SizedBox(
-                height: height,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (selectionMode)
-                      checkboxCellBuilder != null
-                          ? checkboxCellBuilder!(i, height, bg)
-                          : _DefaultCheckboxCell(
-                              width: checkboxWidth,
-                              height: height,
-                              bg: bg,
-                              checked: selected,
-                              onTap: () => onToggleSelect?.call(i),
-                            ),
-                    fixedCellBuilder(i, fixedColumnWidth, bg, selected),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        controller: hScrollController,
-                        scrollDirection: Axis.horizontal,
-                        physics: const NeverScrollableScrollPhysics(),
-                        child: SizedBox(
-                          width: scrollWidth,
-                          child: Row(
-                            children: dataCellsBuilder(i, columnWidths, bg, selected),
-                          ),
-                        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: attHeadHeight,
+                child: SingleChildScrollView(
+                  controller: _hHead,
+                  scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: SizedBox(
+                    width: scrollWidth,
+                    child: Row(
+                      children: List.generate(
+                        w.columnHeaders.length,
+                        (i) => _HeadCell(label: w.columnHeaders[i], width: w.columnWidths[i]),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: Scrollbar(
+                  controller: w.hScrollController,
+                  scrollbarOrientation: ScrollbarOrientation.bottom,
+                  // Chỉ nhận thông báo cuộn của chính khung cuộn ngang (không phải danh sách dọc bên trong)
+                  notificationPredicate: (n) => n.depth == 0,
+                  child: SingleChildScrollView(
+                    controller: w.hScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const ClampingScrollPhysics(),
+                    child: SizedBox(
+                      width: scrollWidth,
+                      child: ListView.builder(
+                        controller: w.vScrollController,
+                        physics: const ClampingScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: w.rowCount,
+                        itemBuilder: (_, i) {
+                          final selected = w.isSelected(i);
+                          final bg = _rowBg(i);
+                          return SizedBox(
+                            height: w.rowHeightAt(i),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: w.dataCellsBuilder(i, w.columnWidths, bg, selected),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
