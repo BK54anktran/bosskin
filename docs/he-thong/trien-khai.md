@@ -60,7 +60,8 @@ Biến môi trường của API (bí mật đặt ở mục biến môi trườn
 
 Đang chạy (11/10/2026): API `https://api.bosskin.io.vn`, bản web `https://app.bosskin.io.vn`, trang giới thiệu + trợ giúp `https://bosskin.io.vn`
 (website `landing/`, xem `landing/README.md`). Tên miền gắn ở trang quản lý Vibe Host; đổi tên miền → sửa `API_HOST` (web), `CORS_ALLOWED_ORIGINS` (API),
-`appUrl` trong `landing/site-config.js`.
+`appUrl` trong `landing/site-config.js`; tên miền trang giới thiệu còn ở `SITE` (`help/tools/build_help.py`, sinh canonical + `sitemap.xml`),
+canonical / `og:url` của `landing/index.html` và `landing/robots.txt`. Sơ đồ trang gửi ở Google Search Console (xem `landing/README.md`).
 
 Thông báo đẩy trên **bản web** (FCM Web Push): đặt cho website Web 5 biến `FIREBASE_WEB_API_KEY`, `FIREBASE_WEB_APP_ID`, `FIREBASE_WEB_SENDER_ID`,
 `FIREBASE_WEB_PROJECT_ID`, `FIREBASE_WEB_VAPID_KEY` (Firebase Console → Project settings: mục Your apps → Web app; tab Cloud Messaging → Web Push

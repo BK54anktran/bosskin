@@ -1,0 +1,25 @@
+name: Site checks
+
+# Trang giới thiệu + trợ giúp: sitemap.xml / robots.txt / canonical khớp nhau (sinh lại: python3 help/tools/build_help.py)
+on:
+  push:
+    paths:
+      - 'landing/**'
+      - 'help/**'
+      - 'tools/ci/check_sitemap.py'
+      - '.github/workflows/site-check.yml'
+  pull_request:
+    paths:
+      - 'landing/**'
+      - 'help/**'
+      - 'tools/ci/check_sitemap.py'
+      - '.github/workflows/site-check.yml'
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: sitemap.xml + robots.txt + canonical
+        run: python3 tools/ci/check_sitemap.py

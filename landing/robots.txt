@@ -1,0 +1,5 @@
+# Trang giới thiệu + trợ giúp (bosskin.io.vn) công khai toàn bộ. Ứng dụng (app.) và API (api.) là tên miền riêng.
+User-agent: *
+Allow: /
+
+Sitemap: https://bosskin.io.vn/sitemap.xml

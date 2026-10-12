@@ -674,5 +674,7 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
   → `help/*.html` (commit cả HTML). Host cùng trang giới thiệu ở `/help/`: Netlify build chép `help/*.html` + `help/img` vào `landing/help/`
   (`netlify.toml`, thư mục đó không commit); trang giới thiệu có link "Trợ giúp" ở menu và chân trang. Ảnh chụp bằng `help/tools/capture.py` trên môi trường thử riêng có dữ liệu "Nội thất An Phát"
   (`landing/video/seed_demo.py` + `help/tools/seed_help_extra.py`). Hướng dẫn: `help/README.md`.
+- SEO: `build_help.py` gắn canonical cho trang trợ giúp và sinh `landing/sitemap.xml` (không sửa tay); `landing/robots.txt` trỏ tới sitemap;
+  kiểm `tools/ci/check_sitemap.py` (CI `site-check.yml`). Thêm trang công khai mới ở `landing/` → thêm vào `write_sitemap` + canonical.
 - Đổi màn hình / luồng → sửa trang trợ giúp tương ứng (biến lương, tên nút, bước) và chụp lại chương đó trong cùng đợt.
 

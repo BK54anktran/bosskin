@@ -27,7 +27,9 @@ help/
 
    Số `NN` quyết định thứ tự; tên trang (`slug`) là phần sau, dùng để liên kết (`[xem](nghi-phep-ca-nhan.html#muc)`).
    Ảnh: `![Chú thích](img:<id>)`. Hộp lưu ý: `> **Lưu ý:** …` (hoặc `Mẹo:`, `Quan trọng:`).
-2. `python3 help/tools/build_help.py` (cần `pip install markdown`) — sinh lại toàn bộ HTML + chỉ mục tìm kiếm.
+2. `python3 help/tools/build_help.py` (cần `pip install markdown`) — sinh lại toàn bộ HTML + chỉ mục tìm kiếm, gắn `<link rel="canonical">`
+   (`https://bosskin.io.vn/help/<slug>.html`, trang chủ trợ giúp `/help/`) và sinh lại `landing/sitemap.xml` (`<lastmod>` = commit gần nhất
+   của file nguồn, file đang sửa = hôm nay). Commit cả `landing/sitemap.xml`; CI `site-check.yml` chạy `tools/ci/check_sitemap.py`.
 3. Mở `help/index.html` kiểm tra.
 
 Khi đổi giao diện / luồng của một màn, sửa trang trợ giúp tương ứng và chụp lại ảnh trong cùng commit.

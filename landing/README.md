@@ -44,6 +44,16 @@ Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, 
 - Ra bản mới: tăng `version` trong `frontend/pubspec.yaml` rồi push `main` — workflow **Frontend build** build, ký và thay `bosskin.apk` ở release `app-latest`
   (số build = số lần chạy workflow nên Android luôn coi là bản mới hơn). Build tay trên máy dev vẫn được: `flutter build apk --release --dart-define=API_HOST=https://api.bosskin.io.vn`.
 
+## SEO: sitemap.xml, robots.txt, Google Search Console (12/10/2026)
+
+- `sitemap.xml` **sinh tự động** bởi `python3 help/tools/build_help.py` (trang chủ + `/help/` + 22 trang trợ giúp, URL đúng bằng canonical
+  của từng trang) — không sửa tay. `robots.txt` viết tay: cho phép toàn trang + dòng `Sitemap:`. `404.html` có `noindex`.
+  Ứng dụng (`app.`) và API (`api.`) là tên miền riêng, không nằm trong sitemap này. Kiểm: `python3 tools/ci/check_sitemap.py` (CI `site-check.yml`).
+- Nginx trả `sitemap.xml` kiểu `application/xml`; Netlify tự trả đúng kiểu.
+- Sau khi deploy: `curl -sI https://bosskin.io.vn/sitemap.xml` (200, `application/xml`), `curl -s https://bosskin.io.vn/robots.txt`.
+  Search Console (thuộc tính `bosskin.io.vn`) → Lập chỉ mục → Sơ đồ trang web → gửi `https://bosskin.io.vn/sitemap.xml`;
+  Kiểm tra URL → Yêu cầu lập chỉ mục cho `/` và `/help/`. Google tự quyết định có lập chỉ mục và khi nào; xem báo cáo Trang để biết lý do bị loại.
+
 ## Host trên Vibe Host (chạy song song Netlify, 11/10/2026)
 
 Website Docker từ thư mục `landing/` (`landing/Dockerfile` + `nginx.conf`): Nginx phục vụ trang giới thiệu, trang trợ giúp được lấy từ
