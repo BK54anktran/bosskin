@@ -135,7 +135,11 @@ public class WorkShiftService {
         for (ShiftAssignment a : assignRepo.findByShift_IdAndWorkDateGreaterThanEqual(saved.getId(), LocalDate.now())) {
             if (a.isDeleted() || a.isApproved()
                 || hasAttendanceData(a.getEmployee().getId(), a.getWorkDate(), a.getId())) continue;
+            java.time.LocalTime oldStart = a.effectiveStartTime(), oldEnd = a.effectiveEndTime();
             applySnapshot(a, saved);
+            // Giờ ca đổi → nhắc lại theo giờ mới (dấu "đã nhắc" là của giờ cũ)
+            if (!java.util.Objects.equals(oldStart, a.effectiveStartTime())
+                || !java.util.Objects.equals(oldEnd, a.effectiveEndTime())) a.resetReminders();
             assignRepo.save(a);
         }
         return toResponse(saved);

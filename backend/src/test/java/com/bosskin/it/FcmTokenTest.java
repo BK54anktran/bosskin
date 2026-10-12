@@ -16,6 +16,7 @@ class FcmTokenTest extends IntegrationTest {
 
     @Autowired UserRepository userRepository;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
+    @Autowired com.bosskin.repository.ShiftAssignmentRepository assignRepo;
 
     private static final String DEVICE = "fcm-device-token-shared-phone-0001";
 
@@ -70,6 +71,23 @@ class FcmTokenTest extends IntegrationTest {
         assertThat(res.path("deviceRegistered").asBoolean()).isFalse();
         assertThat(res.path("shiftReminderMinutes").asInt()).isEqualTo(30);
         assertThat(res.path("checkInOutNotifMinutes").asInt()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("Đã nhắc ca rồi sửa giờ ca mẫu → được nhắc lại theo giờ mới")
+    void editingShiftTime_resetsReminderMarks() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        long saId = c.assign(e, "HC", java.time.LocalDate.now().plusDays(3));
+        jdbc.update("UPDATE shift_assignments SET reminder_sent_at = NOW(), check_in_notif_sent_at = NOW() WHERE id = ?", saId);
+
+        api.put(c.adminToken, "/api/v1/shifts/" + c.shifts.get("HC"), Map.of(
+            "code", "HC", "name", "Hành chính", "startTime", "09:00", "endTime", "18:00",
+            "breakStart", "12:00", "breakEnd", "13:00")).expectOk();
+
+        var sa = assignRepo.findById(saId).orElseThrow();
+        assertThat(sa.getReminderSentAt()).isNull();
+        assertThat(sa.getCheckInNotifSentAt()).isNull();
     }
 
     @Test

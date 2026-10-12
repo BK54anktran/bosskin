@@ -110,10 +110,13 @@ public class ShiftSwapService {
 
         dropEmptyAttendance(mine);
         if (theirs != null) dropEmptyAttendance(theirs);
+        // Ca sang người khác → người nhận ca cũng được nhắc (dấu "đã nhắc" là của người cũ)
         mine.setEmployee(r.getTargetEmployee());
+        mine.resetReminders();
         assignRepo.save(mine);
         if (theirs != null) {
             theirs.setEmployee(r.getRequester());
+            theirs.resetReminders();
             assignRepo.save(theirs);
         }
         r.setStatus(ShiftSwapRequest.Status.APPROVED);
