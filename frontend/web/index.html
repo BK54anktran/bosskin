@@ -34,22 +34,6 @@
 </head>
 <body>
   <script src="env.js"></script>
-  <script>
-    // Trang đang mở thì trình duyệt không tự hiện thông báo đẩy → app gọi hàm này (core/config/runtime_host_web.dart)
-    window.bosskinNotify = function (title, body) {
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
-      var opts = { body: body || '', icon: 'icons/Icon-192.png', badge: 'icons/Icon-192.png' };
-      var plain = function () { try { new Notification(title, opts); } catch (e) {} };
-      if (!('serviceWorker' in navigator)) return plain();
-      // Dùng service worker đang có (của Firebase Messaging — Flutter mới không còn đăng ký service worker gốc,
-      // nên navigator.serviceWorker.ready có thể không bao giờ xong). Android Chrome bắt buộc hiện qua service worker.
-      navigator.serviceWorker.getRegistrations().then(function (regs) {
-        var reg = regs.filter(function (r) { return r.active; })[0];
-        if (reg) return reg.showNotification(title, opts);
-        plain();
-      }).catch(plain);
-    };
-  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

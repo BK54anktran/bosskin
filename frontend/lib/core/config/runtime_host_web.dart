@@ -30,10 +30,3 @@ Map<String, String>? runtimeFirebaseConfig() {
     return null;
   }
 }
-
-/// Trang đang mở thì FCM không tự hiện thông báo → nhờ service worker hiện (hàm `bosskinNotify` trong index.html).
-void showWebNotification(String title, String body) {
-  try {
-    globalContext.callMethod('bosskinNotify'.toJS, title.toJS, body.toJS);
-  } catch (_) {}
-}

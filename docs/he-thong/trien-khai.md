@@ -66,6 +66,9 @@ Thông báo đẩy trên **bản web** (FCM Web Push): đặt cho website Web 5 
 `FIREBASE_WEB_PROJECT_ID`, `FIREBASE_WEB_VAPID_KEY` (Firebase Console → Project settings: mục Your apps → Web app; tab Cloud Messaging → Web Push
 certificates). Đủ cả 5 mới bật; `docker/40-env.sh` ghi vào `env.js`, cả trang lẫn `firebase-messaging-sw.js` đọc từ đó. Đây là cấu hình công khai,
 không phải bí mật. iPhone chỉ nhận khi đã thêm BossKin ra màn hình chính (iOS 16.4+). Mỗi tài khoản vẫn chỉ gắn một thiết bị nhận thông báo.
+Thông báo luôn do `firebase-messaging-sw.js` hiện ngay trong sự kiện `push` (cả khi trang đang mở); trang chỉ ghi vào hộp thông báo. Đừng chuyển
+việc hiện thông báo về phía trang: Safari coi lần đẩy không hiện thông báo trong sự kiện `push` là đẩy im lặng, đủ 3 lần thì huỷ đăng ký
+(máy chủ vẫn ghi `SUCCESS` ở `fcm_notification_logs` nhưng máy không nhận nữa cho tới khi lưu lại cài đặt thông báo).
 
 Lưu ý khi tạo trên Vibe Host:
 - **Cập nhật API:** push `main` → chờ workflow **API jar** (`.github/workflows/api-jar.yml`, ~3 phút) cập nhật file `bosskin-api.jar` ở release `api-latest` → bấm triển khai lại. `backend/Dockerfile` chỉ tải file đó về (không chạy Maven): Vibe Host chờ bước build ~5 phút, build Maven từ đầu thường vượt mốc và báo `fetch failed` (11/10/2026, sau khi thêm biến S3). Build từ mã nguồn tại chỗ: `backend/Dockerfile.build`.

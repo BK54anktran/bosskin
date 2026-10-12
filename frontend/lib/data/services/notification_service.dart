@@ -577,8 +577,8 @@ class NotificationService {
     if (initial != null) _handleFcmTap(initial);
   }
 
-  /// Bản web: Firebase khởi tạo bằng cấu hình trong env.js; nhận tin khi trang đang mở thì tự hiện thông báo
-  /// (trang đóng / chạy nền do web/firebase-messaging-sw.js lo). Không xin quyền ở đây — trình duyệt chỉ cho xin
+  /// Bản web: Firebase khởi tạo bằng cấu hình trong env.js; thông báo do web/firebase-messaging-sw.js hiện (cả khi
+  /// trang đang mở — xem lý do trong file đó), ở đây chỉ ghi vào hộp thông báo. Không xin quyền ở đây — trình duyệt chỉ cho xin
   /// khi người dùng bấm nút (Lưu cài đặt thông báo / Gửi thông báo thử).
   Future<void> _initializeWeb() async {
     final cfg = runtimeFirebaseConfig();
@@ -607,7 +607,6 @@ class NotificationService {
       final title = msg.data['title'] as String? ?? msg.notification?.title;
       final body  = msg.data['body']  as String? ?? msg.notification?.body;
       if (title == null) return;
-      showWebNotification(title, body ?? '');
       _addToInbox(title, body ?? '', msg.data['type'] as String?);
     });
   }
