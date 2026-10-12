@@ -246,12 +246,15 @@ class ProfileService {
 }
 
 class NotificationSettings {
+  /// Đang bật ít nhất một loại nhắc (không phụ thuộc thiết bị).
   final bool enabled;
+  final bool deviceRegistered;
   final int? shiftReminderMinutes;
   final int? checkInOutNotifMinutes;
 
   const NotificationSettings({
     required this.enabled,
+    this.deviceRegistered = false,
     this.shiftReminderMinutes,
     this.checkInOutNotifMinutes,
   });
@@ -259,6 +262,7 @@ class NotificationSettings {
   factory NotificationSettings.fromJson(Map<String, dynamic> j) =>
       NotificationSettings(
         enabled: j['enabled'] as bool? ?? false,
+        deviceRegistered: j['deviceRegistered'] as bool? ?? false,
         shiftReminderMinutes: (j['shiftReminderMinutes'] as num?)?.toInt(),
         checkInOutNotifMinutes: (j['checkInOutNotifMinutes'] as num?)?.toInt(),
       );

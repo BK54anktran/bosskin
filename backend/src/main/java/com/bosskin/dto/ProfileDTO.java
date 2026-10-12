@@ -147,7 +147,10 @@ public class ProfileDTO {
     /** Trả về trạng thái cài đặt thông báo hiện tại */
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class NotificationSettingsResponse {
+        /** Đang bật ít nhất một loại nhắc (theo cài đặt, không phụ thuộc thiết bị). */
         private boolean enabled;
+        /** Tài khoản đang gắn một thiết bị nhận thông báo (token có thể bị gỡ khi đăng xuất / máy dùng chung / FCM báo hết hạn). */
+        private boolean deviceRegistered;
         private Integer shiftReminderMinutes;
         private Integer checkInOutNotifMinutes;
     }

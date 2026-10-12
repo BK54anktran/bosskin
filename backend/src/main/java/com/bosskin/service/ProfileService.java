@@ -222,7 +222,8 @@ public class ProfileService {
 
     private ProfileDTO.NotificationSettingsResponse toNotificationSettingsResponse(User u) {
         return ProfileDTO.NotificationSettingsResponse.builder()
-                .enabled(u.getFcmToken() != null && u.getShiftReminderMinutes() != null)
+                .enabled(u.getShiftReminderMinutes() != null || u.getCheckInOutNotifMinutes() != null)
+                .deviceRegistered(u.getFcmToken() != null)
                 .shiftReminderMinutes(u.getShiftReminderMinutes())
                 .checkInOutNotifMinutes(u.getCheckInOutNotifMinutes())
                 .build();

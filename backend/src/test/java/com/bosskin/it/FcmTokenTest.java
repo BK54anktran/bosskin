@@ -57,6 +57,22 @@ class FcmTokenTest extends IntegrationTest {
     }
 
     @Test
+    @DisplayName("Token bị gỡ (máy dùng chung / đăng xuất / FCM báo hết hạn) thì cài đặt nhắc ca vẫn giữ là bật")
+    void tokenCleared_keepsReminderSettings() {
+        var c = fixture.standardCompany();
+        var a = c.emp(6);
+        var b = c.emp(7);
+        enable(c.tokenOf(a));
+        enable(c.tokenOf(b)); // gỡ token khỏi a
+
+        var res = api.get(c.tokenOf(a), "/api/v1/profile/notification-settings").expectOk().body();
+        assertThat(res.path("enabled").asBoolean()).isTrue();
+        assertThat(res.path("deviceRegistered").asBoolean()).isFalse();
+        assertThat(res.path("shiftReminderMinutes").asInt()).isEqualTo(30);
+        assertThat(res.path("checkInOutNotifMinutes").asInt()).isEqualTo(5);
+    }
+
+    @Test
     @DisplayName("Gửi thông báo thử khi máy chủ chưa cấu hình Firebase → 503 kèm mã lỗi rõ ràng")
     void testNotification_firebaseNotConfigured() {
         var c = fixture.standardCompany();

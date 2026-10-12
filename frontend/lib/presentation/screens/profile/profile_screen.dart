@@ -117,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _selectedDob = p.dateOfBirth != null
             ? DateTime.tryParse(p.dateOfBirth!)
             : null;
-        _notifEnabled        = n.enabled;
+        _notifEnabled        = n.shiftReminderMinutes != null;
         _reminderMinutes     = n.shiftReminderMinutes ?? 30;
         _checkInOutEnabled   = n.checkInOutNotifMinutes != null;
         _checkInOutMinutes   = n.checkInOutNotifMinutes ?? 5;
