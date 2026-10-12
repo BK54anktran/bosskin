@@ -1,8 +1,8 @@
 # Trang trợ giúp BossKin
 
 Hướng dẫn sử dụng cho người dùng cuối (web desktop), chia theo vai trò, mỗi chức năng có các bước kèm ảnh chụp màn hình đánh dấu.
-Là HTML tĩnh, đăng cùng trang giới thiệu ở `/help/`: lệnh build trong `netlify.toml` chép `help/*.html` và `help/img/` vào
-`landing/help/` mỗi lần deploy (push `main` có đổi `landing/` hoặc `help/`). Muốn host riêng thì đưa các file đó lên host tĩnh bất kỳ.
+Là HTML tĩnh, đăng cùng trang giới thiệu ở `/help/`: image Docker của website (`landing/Dockerfile`, Vibe Host) lấy `help/*.html` và `help/img/`
+từ nhánh `main` lúc build — sửa xong, push `main` rồi triển khai lại website trên Vibe Host. Muốn host riêng thì đưa các file đó lên host tĩnh bất kỳ.
 
 ```
 help/

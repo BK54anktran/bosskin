@@ -52,5 +52,3 @@ marketing/
 /help/tools/.raw/
 **/__pycache__/
 
-# Trang trợ giúp chép vào landing lúc Netlify build
-/landing/help/

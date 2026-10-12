@@ -48,7 +48,7 @@ flowchart LR
     W["Flutter Web<br/>(HR, quản lý)"]
     A["Flutter Android<br/>(nhân viên check-in)"]
     SA["System Admin<br/>/admin/*"]
-    LP["Trang giới thiệu<br/>(Netlify, landing/)"]
+    LP["Trang giới thiệu<br/>(Vibe Host, landing/)"]
   end
   subgraph AWS["AWS Elastic Beanstalk"]
     LB["ALB / EB"]
@@ -162,9 +162,9 @@ flowchart LR
   FB --> ART["Artifact Actions<br/>web + APK"]
   ART --> SRV["Host tĩnh (web)"]
   ART --> USERS["Nhân viên (APK)"]
-  LPG["landing/"] --> NET["Netlify"]
+  LPG["landing/"] --> NET["Vibe Host (Docker)"]
   </pre></div>
-  <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Netlify. Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
+  <p class="cap">Hình 3. Pipeline sau Bước 2 (08/10/2026): push chỉ chạy test; deploy chạy tay, test xanh mới đóng gói; gói có <code>.ebextensions</code> (health check, PORT). Frontend build trên GitHub Actions (Flutter 3.47.6, APK ký bằng khoá trong Secrets — Bước B). Trang giới thiệu host trên Vibe Host (Docker + Nginx; Netlify đã gỡ 12/10/2026). Chưa có staging (Mốc 5). Thao tác vận hành: <code>docs/runbook.md</code>.</p>
 
   <h2 id="api">Danh sách API (40 controller)</h2>
   <div class="tbl-wrap"><table>

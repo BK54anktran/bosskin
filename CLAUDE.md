@@ -661,8 +661,8 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
   `service/trial/TrialRequestStore` (`SupabaseTrialRequestStore` khi có `SUPABASE_URL` + `SUPABASE_SECRET_KEY`, ngược lại `JpaTrialRequestStore` — MySQL V12).
   Bảng Supabase `bosskin` (`apcppqwwnoyliwlhqtyx`), bảng `trial_requests`
   (SQL: `landing/supabase/001_trial_requests.sql`; anon chỉ INSERT, trigger chống spam). Đổi bảng → sửa file SQL đó + migration Supabase.
-- Host chính: Vibe Host `https://bosskin.io.vn` (`landing/Dockerfile`, trợ giúp ở `/help/`, ảnh mạng xã hội ở `/social/`); app `https://app.bosskin.io.vn`, API `https://api.bosskin.io.vn` (`docs/he-thong/trien-khai.md`). Netlify (`netlify.toml`) còn chạy song song tới khi gỡ. `apiUrl` trống → form gửi Netlify Forms (`dung-thu`, ô bẫy `website`);
-  có `apiUrl` → API BossKin. `appUrl` trống → ẩn nút Đăng nhập.
+- Host chính: Vibe Host `https://bosskin.io.vn` (`landing/Dockerfile`, trợ giúp ở `/help/`, ảnh mạng xã hội ở `/social/`; host duy nhất — Netlify đã gỡ 12/10/2026); app `https://app.bosskin.io.vn`, API `https://api.bosskin.io.vn` (`docs/he-thong/trien-khai.md`). Form dùng thử: có `apiUrl` → API BossKin, không thì Supabase
+  (`supabaseUrl` + `supabaseKey`); thiếu cả hai → form báo lỗi. Ô bẫy bot `website`. `appUrl` trống → ẩn nút Đăng nhập.
 - Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).
 
 ## Tài liệu hệ thống & trang trợ giúp (10/2026)
@@ -671,8 +671,7 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
   (DB thử đã migrate hết, không dùng DB dev). `--check` (không cần DB) báo `api.md` lệch controller / `csdl.md` cũ hơn migration mới nhất.
   Mục "Kiểm tra đồng bộ" ở `quyen.md` phải ✔ (mã quyền trong code đều có trong bảng `permissions` và ngược lại).
 - `help/`: trang trợ giúp tĩnh cho người dùng (22 trang theo vai trò, ~90 ảnh). Nội dung `help/src/NN-<slug>.md` → `python3 help/tools/build_help.py`
-  → `help/*.html` (commit cả HTML). Host cùng trang giới thiệu ở `/help/`: Netlify build chép `help/*.html` + `help/img` vào `landing/help/`
-  (`netlify.toml`, thư mục đó không commit); trang giới thiệu có link "Trợ giúp" ở menu và chân trang. Ảnh chụp bằng `help/tools/capture.py` trên môi trường thử riêng có dữ liệu "Nội thất An Phát"
+  → `help/*.html` (commit cả HTML). Host cùng trang giới thiệu ở `/help/`: image Docker (`landing/Dockerfile`) lấy `help/*.html` + `help/img` từ `main` lúc build; trang giới thiệu có link "Trợ giúp" ở menu và chân trang. Ảnh chụp bằng `help/tools/capture.py` trên môi trường thử riêng có dữ liệu "Nội thất An Phát"
   (`landing/video/seed_demo.py` + `help/tools/seed_help_extra.py`). Hướng dẫn: `help/README.md`.
 - SEO: `build_help.py` gắn canonical cho trang trợ giúp và sinh `landing/sitemap.xml` (không sửa tay); `landing/robots.txt` trỏ tới sitemap;
   kiểm `tools/ci/check_sitemap.py` (CI `site-check.yml`). Thêm trang công khai mới ở `landing/` → thêm vào `write_sitemap` + canonical.
