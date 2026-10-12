@@ -43,7 +43,7 @@ từ `docker-compose.yml` ở gốc repo (api + web, ổ `bosskin-data` cho `/da
 | Ứng dụng | Thư mục build | Cổng | Ghi chú |
 |---|---|---|---|
 | API | `backend/` (`backend/Dockerfile`) | 8080 | Profile `prod`, health `GET /actuator/health`, chạy user thường, dữ liệu file ở `/data` |
-| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 (và 3000 — cổng Vibe Host tự chọn) | Biến môi trường **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`), đọc lúc chạy qua `env.js` — không cần build lại khi đổi. Build arg cùng tên vẫn dùng được (gắn cứng) |
+| Web | `frontend/` (`frontend/Dockerfile`, Nginx) | 8080 (và 3000 — cổng Vibe Host tự chọn) | Biến môi trường **`API_HOST`** = địa chỉ công khai của API (vd `https://api.<tên-miền>`), đọc lúc chạy qua `env.js` — không cần build lại khi đổi. Image tải gói web CI build sẵn (release `web-latest`); build từ mã nguồn: `frontend/Dockerfile.build` |
 
 Biến môi trường của API (bí mật đặt ở mục biến môi trường của Vibe Host, không commit):
 
@@ -72,6 +72,7 @@ việc hiện thông báo về phía trang: Safari coi lần đẩy không hiệ
 
 Lưu ý khi tạo trên Vibe Host:
 - **Cập nhật API:** push `main` → chờ workflow **API jar** (`.github/workflows/api-jar.yml`, ~3 phút) cập nhật file `bosskin-api.jar` ở release `api-latest` → bấm triển khai lại. `backend/Dockerfile` chỉ tải file đó về (không chạy Maven): Vibe Host chờ bước build ~5 phút, build Maven từ đầu thường vượt mốc và báo `fetch failed` (11/10/2026, sau khi thêm biến S3). Build từ mã nguồn tại chỗ: `backend/Dockerfile.build`.
+- **Cập nhật bản web:** cùng cách — push `main` → chờ workflow **Frontend build** chạy xong bước "Đăng gói web lên release web-latest" (file `bosskin-web.tar.gz`, có trước bước build APK) → bấm triển khai lại website Web. `frontend/Dockerfile` chỉ tải gói đó về và chạy Nginx: cài Flutter + build web trên máy build của Vibe Host vượt mốc ~5 phút (`fetch failed` 3 lần liên tiếp, 12/10/2026).
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
 - **CSDL: không tạo tay.** Khi tạo website API, Vibe Host quét thấy app cần MySQL, tự tạo CSDL `<tên website>-db` (MySQL 8.0, "primary") và tiêm `DB_URL` (dạng `mysql://…`), `DB_PASSWORD`, `MYSQL_*`… — app dùng luôn (`backend/docker/entrypoint.sh` thêm `jdbc:`). Đừng tạo CSDL riêng rồi đặt `DB_URL` tay: nền tảng vẫn tạo cái của nó thành hai CSDL, và xoá cái "primary" khi website đang chạy làm nó kẹt "Đang triển khai", hỏng mọi lượt deploy sau (11/10/2026 — phải xoá website tạo lại).
 - Khoá tuỳ chọn trong `backend/.env.example` để dạng chú thích: nền tảng quét file này và coi khoá trống là bắt buộc.

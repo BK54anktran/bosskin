@@ -3,6 +3,7 @@ name: Frontend build
 # Bước B: tự build bản web và APK Android cho mỗi push đụng frontend (và chạy tay được).
 # - Kiểm tra: flutter analyze (lỗi mới chặn; cảnh báo cũ chưa chặn), chuỗi tiếng Việt viết cứng, flutter test.
 # - Web: build release, API_HOST lấy từ biến repo vars.API_HOST (Settings → Variables; production: https://api.bosskin.io.vn).
+#   Nhánh main: gói web được đăng thành bosskin-web.tar.gz ở release "web-latest" — frontend/Dockerfile tải file này.
 # - APK: có secrets ANDROID_KEYSTORE_BASE64 (+ ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD)
 #   thì ký bằng khoá thật; chưa có thì APK ký khoá debug (chỉ để thử nội bộ). Xem docs/runbook.md mục 10.
 # - Nhánh main + có khoá thật: APK được đăng thành bosskin.apk ở release "app-latest" — trang giới thiệu (nút "Tải cho Android")
@@ -60,6 +61,21 @@ jobs:
 
       - name: Build web
         run: flutter build web --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
+
+      # frontend/Dockerfile tải gói này về thay vì build Flutter trên máy build của nền tảng host (Vibe Host chỉ chờ ~5 phút).
+      # Đăng ngay sau khi build web, không chờ APK, để triển khai lại bản web được sớm.
+      - name: Đăng gói web lên release web-latest (chỉ nhánh main)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tar -czf "$RUNNER_TEMP/bosskin-web.tar.gz" -C build/web .
+          ls -la "$RUNNER_TEMP/bosskin-web.tar.gz"
+          gh release view web-latest >/dev/null 2>&1 || gh release create web-latest \
+            --title "Gói web (bản build mới nhất của main)" --prerelease \
+            --notes "File do workflow frontend-build.yml tự cập nhật; frontend/Dockerfile tải về khi build image."
+          gh release upload web-latest "$RUNNER_TEMP/bosskin-web.tar.gz" --clobber
+          gh release edit web-latest --notes "Commit: ${GITHUB_SHA}  ·  Build: $(date -u +%Y-%m-%dT%H:%M:%SZ)  ·  Run: ${GITHUB_RUN_NUMBER}"
 
       - name: Android signing (nếu có khoá)
         env:
