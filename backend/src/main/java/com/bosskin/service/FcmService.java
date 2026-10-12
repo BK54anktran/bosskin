@@ -130,12 +130,10 @@ public class FcmService {
         try {
             Message message = Message.builder()
                 .setToken(fcmToken)
+                // Android: chỉ gửi dạng data (không kèm AndroidNotification). App tự hiện thông báo có nút Check-in / Check-out
+                // (notification_service.dart); kèm notification thì khi app chạy nền hệ thống hiện thêm một cái không nút → 2 thông báo.
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
-                    .setNotification(AndroidNotification.builder()
-                        .setTitle(title)
-                        .setBody(body)
-                        .build())
                     .build())
                 .setApnsConfig(ApnsConfig.builder()
                     .setAps(Aps.builder()
