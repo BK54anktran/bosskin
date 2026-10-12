@@ -77,6 +77,10 @@
   .hero h1 em { font-style: normal; color: #9cc8ff; }
   .hero p { color: #c8d6f2; font-size: 19px; margin: 22px 0 30px; max-width: 54ch; }
   .hero .ctas { display: flex; flex-wrap: wrap; gap: 14px; }
+  .hero-install { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
+  .hero-install button { font: inherit; font-weight: 700; color: #fff; cursor: pointer; padding: 8px 18px; border-radius: 999px;
+                         background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.34); }
+  .hero-install button:hover { background: rgba(255,255,255,.2); }
   .hero .facts { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 34px; font-size: 15px; color: #c8d6f2; }
   .hero .facts span::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 8px; }
   .shots { position: relative; min-width: 0; }
@@ -215,7 +219,7 @@
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
     <nav class="links">
-      <a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#cai-dat">Cài đặt</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
+      <a href="#cai-dat">Cài đặt</a><a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
     </nav>
     <div class="actions"><a class="btn btn-ghost js-app" href="/login">Đăng nhập</a></div>
     <button class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
@@ -232,6 +236,12 @@
       <div class="ctas">
         <a class="btn btn-primary" href="#lien-he">Đăng ký dùng thử</a>
         <a class="btn btn-ghost" href="#video">▶ Xem video 1 phút</a>
+      </div>
+      <div class="hero-install js-app-row">
+        <span>Cài lên điện thoại:</span>
+        <button class="js-apk-on" type="button" data-howto="apk">Android</button>
+        <button class="js-apk-off" type="button" data-howto="android" hidden>Android</button>
+        <button type="button" data-howto="ios">iPhone</button>
       </div>
       <div class="facts"><span>Không cần máy chấm công</span><span>Chạy trên Android và trình duyệt web</span><span>Tiếng Việt và tiếng Anh</span></div>
     </div>
@@ -250,6 +260,32 @@
     <div><b>8 báo cáo</b><span>xuất Excel trong vài giây</span></div>
   </div>
 </div>
+
+<section id="cai-dat" class="js-app-row" style="background:var(--bg-soft);padding-block:64px">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Trên điện thoại</span>
+      <h2>Cài BossKin lên điện thoại</h2>
+      <p class="lead">Không cần tìm trên cửa hàng ứng dụng. Android tải file cài trực tiếp; iPhone thêm lối tắt ra màn hình chính — lần sau bấm biểu tượng BossKin là vào thẳng chấm công.</p>
+    </div>
+    <div class="install">
+      <div class="os">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M10.5 5h3"/></svg></div>
+        <h3>iPhone / iPad</h3>
+        <p>Mở bằng Safari, bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”.</p>
+        <button class="btn btn-primary" type="button" data-howto="ios">Cài trên iPhone</button>
+      </div>
+      <div class="os">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
+        <h3>Android</h3>
+        <p class="js-apk-on">Tải file cài BossKin về máy và cài như một ứng dụng: có thông báo nhắc ca, chấm công nhanh ngay trên thông báo.</p>
+        <p class="js-apk-off" hidden>Mở bằng Chrome, bấm dấu ba chấm rồi chọn “Thêm vào màn hình chính”.</p>
+        <button class="btn btn-primary js-apk-on" type="button" data-howto="apk">Tải cho Android</button>
+        <button class="btn btn-primary js-apk-off" type="button" data-howto="android" hidden>Cài trên Android</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="video">
   <div class="wrap">
@@ -404,31 +440,6 @@
   </div>
 </section>
 
-<section id="cai-dat" class="js-app-row" style="padding-top:0">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Trên điện thoại</span>
-      <h2>Cài BossKin lên điện thoại</h2>
-      <p class="lead">Không cần tìm trên cửa hàng ứng dụng. Android tải file cài trực tiếp; iPhone thêm lối tắt ra màn hình chính — lần sau bấm biểu tượng BossKin là vào thẳng chấm công.</p>
-    </div>
-    <div class="install">
-      <div class="os">
-        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M10.5 5h3"/></svg></div>
-        <h3>iPhone / iPad</h3>
-        <p>Mở bằng Safari, bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”.</p>
-        <button class="btn btn-primary" type="button" data-howto="ios">Cài trên iPhone</button>
-      </div>
-      <div class="os">
-        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
-        <h3>Android</h3>
-        <p class="js-apk-on">Tải file cài BossKin về máy và cài như một ứng dụng: có thông báo nhắc ca, chấm công nhanh ngay trên thông báo.</p>
-        <p class="js-apk-off" hidden>Mở bằng Chrome, bấm dấu ba chấm rồi chọn “Thêm vào màn hình chính”.</p>
-        <button class="btn btn-primary js-apk-on" type="button" data-howto="apk">Tải cho Android</button>
-        <button class="btn btn-primary js-apk-off" type="button" data-howto="android" hidden>Cài trên Android</button>
-      </div>
-    </div>
-  </div>
-</section>
 
 <dialog class="howto" id="howto-ios" aria-labelledby="howto-ios-h">
   <div class="body">
