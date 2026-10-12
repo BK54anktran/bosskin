@@ -115,6 +115,13 @@ public class ShiftAssignment {
         this.deleted = deleted;
     }
 
+    /** Dòng phân ca được dùng lại cho ca / giờ khác (xếp lại sau khi xoá, đổi ca hàng loạt) → nhắc lại theo giờ mới. */
+    public void resetReminders() {
+        reminderSentAt = null;
+        checkInNotifSentAt = null;
+        checkOutNotifSentAt = null;
+    }
+
     // ── Giờ hiệu lực của phân ca (A11) ───────────────────────────────────────
     // Ưu tiên: giờ tuỳ chỉnh → ảnh chụp ca lúc phân (snapshot) → ca mẫu hiện tại.
     // Dùng snapshot để sửa ca mẫu không làm đổi hồi tố công các ngày đã phân.

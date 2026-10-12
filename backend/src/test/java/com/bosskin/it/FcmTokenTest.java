@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FcmTokenTest extends IntegrationTest {
 
     @Autowired UserRepository userRepository;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     private static final String DEVICE = "fcm-device-token-shared-phone-0001";
 
@@ -67,6 +68,29 @@ class FcmTokenTest extends IntegrationTest {
 
         assertThat(res.status()).isEqualTo(503);
         assertThat(res.raw()).contains("error.notification.not_configured");
+    }
+
+    @Test
+    @DisplayName("Xoá phân ca rồi xếp lại giờ khác (dùng lại dòng cũ) → xoá dấu đã nhắc để nhắc lại theo giờ mới")
+    void reassignAfterDelete_resetsReminderFlags() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        long id = api.post(c.adminToken, "/api/v1/shifts/assignments", Map.of(
+            "employeeId", e.id(), "workDate", "2026-11-03",
+            "customStartTime", "08:00", "customEndTime", "12:00")).expectOk().body().get("id").asLong();
+        jdbc.update("UPDATE shift_assignments SET reminder_sent_at = NOW(), check_in_notif_sent_at = NOW(), "
+            + "check_out_notif_sent_at = NOW() WHERE id = ?", id);
+
+        assertThat(api.delete(c.adminToken, "/api/v1/shifts/assignments/" + id).status()).isIn(200, 204);
+        long again = api.post(c.adminToken, "/api/v1/shifts/assignments", Map.of(
+            "employeeId", e.id(), "workDate", "2026-11-03",
+            "customStartTime", "13:00", "customEndTime", "17:00")).expectOk().body().get("id").asLong();
+
+        assertThat(again).as("dùng lại dòng phân ca cũ").isEqualTo(id);
+        Long stillMarked = jdbc.queryForObject("SELECT COUNT(*) FROM shift_assignments WHERE id = ? AND "
+            + "(reminder_sent_at IS NOT NULL OR check_in_notif_sent_at IS NOT NULL OR check_out_notif_sent_at IS NOT NULL)",
+            Long.class, id);
+        assertThat(stillMarked).isZero();
     }
 
     @Test

@@ -228,6 +228,7 @@ public class WorkShiftService {
             archived.setCustomBreakStart(req.getCustomBreakStart());
             archived.setCustomBreakEnd(req.getCustomBreakEnd());
             archived.setCreatedBy(createdBy);
+            archived.resetReminders();
             return toAssignResponse(assignRepo.save(archived));
         }
 
@@ -399,6 +400,7 @@ public class WorkShiftService {
             only.setCustomStartTime(null); only.setCustomEndTime(null);
             only.setCustomBreakStart(null); only.setCustomBreakEnd(null);
             applySnapshot(only, shift);
+            only.resetReminders();
             only.setNote(note);
             assignRepo.save(only);
             return true;
