@@ -1,4 +1,4 @@
-# Trang giới thiệu + trang trợ giúp (/help/) bằng Nginx — cho Vibe Host / nền tảng Docker (Netlify dùng netlify.toml, không dùng file này).
+# Trang giới thiệu + trang trợ giúp (/help/) bằng Nginx — cho Vibe Host / nền tảng Docker.
 # Ngữ cảnh build là thư mục landing/ nên trang trợ giúp (help/ ở gốc repo) được lấy từ GitHub lúc build.
 FROM alpine/git:latest AS help
 ARG REPO=https://github.com/BK54anktran/bosskin.git

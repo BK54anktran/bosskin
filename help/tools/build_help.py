@@ -9,18 +9,27 @@ Mỗi file src có phần đầu:
     summary: Một câu mô tả
     ---
 Nội dung Markdown; ảnh chụp viết  ![Chú thích](img:id)  → <figure> có phóng to; khối  > **Lưu ý:** …  thành hộp lưu ý.
+Mỗi trang có <link rel="canonical">; cuối cùng sinh luôn landing/sitemap.xml (trang chủ + /help/ + từng trang trợ giúp).
     python3 help/tools/build_help.py
 """
+import datetime
 import html
 import json
 import os
 import re
+import subprocess
+from xml.sax.saxutils import escape
 
 import markdown
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..'))
 SRC = os.path.join(ROOT, 'src')
+REPO = os.path.abspath(os.path.join(ROOT, '..'))
+LANDING = os.path.join(REPO, 'landing')
+# Tên miền chính (Vibe Host). Đổi tên miền → sửa ở đây, landing/index.html (canonical, og:url) và landing/robots.txt.
+SITE = 'https://bosskin.io.vn'
+HELP_URL = SITE + '/help/'
 GROUPS = ['Bắt đầu', 'Nhân viên', 'Quản lý', 'Nhân sự', 'Kế toán', 'Quản trị', 'Hỗ trợ']
 GROUP_ICON = {'Bắt đầu': '🚀', 'Nhân viên': '🙋', 'Quản lý': '🧭', 'Nhân sự': '🗂️', 'Kế toán': '💰', 'Quản trị': '⚙️', 'Hỗ trợ': '💬'}
 
@@ -79,6 +88,10 @@ def nav(pages, current):
     return '\n'.join(parts)
 
 
+def canonical(slug):
+    return HELP_URL if slug == 'index' else f'{HELP_URL}{slug}.html'
+
+
 def page(title, body, pages, current, desc, aside=''):
     return f'''<!doctype html>
 <html lang="vi">
@@ -87,6 +100,7 @@ def page(title, body, pages, current, desc, aside=''):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title) + ' · ' if title else ''}Trợ giúp BossKin</title>
 <meta name="description" content="{html.escape(desc)}">
+<link rel="canonical" href="{canonical(current)}">
 <link rel="icon" href="img/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
@@ -194,8 +208,38 @@ Chọn nhóm theo vai trò của bạn hoặc gõ vào ô tìm kiếm phía trê
 <div class="grid">{''.join(cards)}</div>
 <p class="foot">Ảnh minh hoạ dùng dữ liệu của công ty hư cấu "Nội thất An Phát". Tên, số liệu không phải người thật.
 Giao diện có thể khác đôi chút tuỳ quyền của tài khoản: bạn chỉ thấy các mục mình được cấp quyền.</p>'''
-    open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8').write(page('', home, pages, 'index', 'Hướng dẫn sử dụng BossKin'))
-    print(len(pages), 'trang,', len(SEARCH), 'mục tìm kiếm')
+    open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8').write(page('', home, pages, 'index', HOME_DESC))
+    n = write_sitemap(pages)
+    print(len(pages), 'trang,', len(SEARCH), 'mục tìm kiếm,', n, 'URL trong landing/sitemap.xml')
+
+
+HOME_DESC = ('Hướng dẫn sử dụng BossKin từng bước kèm ảnh chụp màn hình: chấm công, ca làm, nghỉ phép, '
+             'hồ sơ nhân sự, hợp đồng, bảng lương và quản trị — theo vai trò nhân viên, quản lý, nhân sự, kế toán.')
+# Phần dựng chung của mọi trang trợ giúp: đổi một file này là HTML mọi trang đổi theo
+TEMPLATE_FILES = [os.path.join(HERE, f) for f in ('build_help.py', 'help.css', 'help.js')]
+
+
+def lastmod(*paths):
+    """Ngày sửa nội dung = commit gần nhất đụng tới các file nguồn; file đang sửa chưa commit → hôm nay."""
+    def run(*args):
+        return subprocess.run(['git', '-C', REPO, *args], capture_output=True, text=True).stdout.strip()
+    if run('status', '--porcelain', '--', *paths):
+        return datetime.date.today().isoformat()
+    return run('log', '-1', '--format=%cs', '--', *paths) or datetime.date.today().isoformat()
+
+
+def write_sitemap(pages):
+    """landing/sitemap.xml theo giao thức sitemaps.org: chỉ URL canonical, công khai (trang chủ + trợ giúp).
+    Trang đăng nhập / ứng dụng ở app.bosskin.io.vn, API ở api.bosskin.io.vn: tên miền khác, không thuộc sitemap này."""
+    src = lambda p: os.path.join(SRC, p['order'])
+    entries = [(SITE + '/', lastmod(os.path.join(LANDING, 'index.html'))),
+               (HELP_URL, lastmod(*[src(p) for p in pages], *TEMPLATE_FILES))]
+    entries += [(canonical(p['slug']), lastmod(src(p), *TEMPLATE_FILES)) for p in pages]
+    body = ''.join(f'  <url>\n    <loc>{escape(u)}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n' for u, d in entries)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + body + '</urlset>\n')
+    open(os.path.join(LANDING, 'sitemap.xml'), 'w', encoding='utf-8', newline='\n').write(xml)
+    return len(entries)
 
 
 if __name__ == '__main__':

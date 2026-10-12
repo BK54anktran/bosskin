@@ -5,10 +5,9 @@ window.BOSSKIN = {
   // File cài cho Android (nút "Tải cho Android" ở mục Cài đặt). '' = nút Android chỉ hướng dẫn thêm lối tắt trình duyệt.
   // File do máy dev build + ký khoá phát hành rồi đưa lên release "app-latest" (landing/README.md).
   apkUrl: 'https://github.com/BK54anktran/bosskin/releases/download/app-latest/bosskin.apk',
-  // Nơi nhận form dùng thử, theo thứ tự ưu tiên:
+  // Nơi nhận form dùng thử (phải có một trong hai), theo thứ tự ưu tiên:
   //  1. apiUrl — backend BossKin (vd 'https://api.ten-mien.vn'), xem ở /admin → Yêu cầu dùng thử;
-  //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase (khi backend chưa lên mạng);
-  //  3. không có cả hai — Netlify Forms (khi host trên Netlify).
+  //  2. supabaseUrl + supabaseKey — bảng trial_requests trên Supabase.
   apiUrl: '',                 // đang dùng Supabase làm nơi lưu chung (app BossKin đọc từ đó)
   supabaseUrl: 'https://apcppqwwnoyliwlhqtyx.supabase.co',
   supabaseKey: 'sb_publishable_lmZvVB_ao3EZrwiKl4174A_1dCrGFWV',   // khoá công khai: chỉ được THÊM dòng (RLS)

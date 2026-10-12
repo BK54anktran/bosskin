@@ -10,7 +10,7 @@ Sửa `window.BOSSKIN` trong `site-config.js` (dùng chung cho trang giới thi�
 |---|---|
 | `appUrl` | Link nút "Đăng nhập" tới app web. Để trống thì ẩn nút (khi app chưa lên mạng) |
 | `apiUrl` | Backend BossKin nhận form dùng thử (vd `https://api.ten-mien.vn`, phải có trong `CORS_ALLOWED_ORIGINS`). Ưu tiên cao nhất |
-| `supabaseUrl`, `supabaseKey` | Khi chưa có `apiUrl`: form ghi vào bảng `trial_requests` trên Supabase (khoá publishable, RLS chỉ cho THÊM). Không có cả hai → **Netlify Forms** |
+| `supabaseUrl`, `supabaseKey` | Khi chưa có `apiUrl`: form ghi vào bảng `trial_requests` trên Supabase (khoá publishable, RLS chỉ cho THÊM). Phải có `apiUrl` hoặc Supabase, không thì form báo lỗi |
 | `contactEmail` | Email liên hệ hiện ở mục dùng thử (tuỳ chọn) |
 | `contactPhone` | Số điện thoại / Zalo hiện ở mục dùng thử và chân trang (để trống thì ẩn) |
 | `facebookUrl`, `tiktokUrl`, `youtubeUrl` | Link trang mạng xã hội, hiện thành biểu tượng ở chân trang (để trống thì ẩn) |
@@ -25,13 +25,6 @@ Số liệu trên trang lấy từ hệ thống thật: duyệt công 300 NV × 
   hoặc Supabase Dashboard → **Table Editor → trial_requests**.
 - `apiUrl` để trống: mọi nơi (kể cả `localhost:8099`) đều ghi vào Supabase — một nguồn duy nhất.
 
-## Host trên Netlify
-`netlify.toml` ở gốc repo đã cấu hình sẵn (thư mục `landing/`, không build, chỉ deploy khi `landing/` đổi, header bảo mật, cache ảnh/video).
-1. app.netlify.com → **Add new site → Import an existing project → GitHub** → chọn repo `bosskin`, nhánh `main`. Để nguyên cấu hình (đọc từ `netlify.toml`) → **Deploy**.
-2. **Site configuration → Forms → Enable form detection**, rồi **Deploys → Trigger deploy** một lần để Netlify nhận form `dung-thu`.
-3. **Forms → dung-thu → Form notifications → Add notification → Email** để nhận email mỗi khi có yêu cầu (gói miễn phí 100 lượt/tháng).
-4. (Tuỳ chọn) **Domain management** → gắn tên miền riêng; Netlify tự cấp HTTPS.
-
 Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, thêm tên miền trang vào `CORS_ALLOWED_ORIGINS` — form chuyển sang lưu vào BossKin.
 
 ## File cài Android trên trang (nút "Tải cho Android", 11/10/2026)
@@ -44,11 +37,21 @@ Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, 
 - Ra bản mới: tăng `version` trong `frontend/pubspec.yaml` rồi push `main` — workflow **Frontend build** build, ký và thay `bosskin.apk` ở release `app-latest`
   (số build = số lần chạy workflow nên Android luôn coi là bản mới hơn). Build tay trên máy dev vẫn được: `flutter build apk --release --dart-define=API_HOST=https://api.bosskin.io.vn`.
 
-## Host trên Vibe Host (chạy song song Netlify, 11/10/2026)
+## SEO: sitemap.xml, robots.txt, Google Search Console (12/10/2026)
+
+- `sitemap.xml` **sinh tự động** bởi `python3 help/tools/build_help.py` (trang chủ + `/help/` + 22 trang trợ giúp, URL đúng bằng canonical
+  của từng trang) — không sửa tay. `robots.txt` viết tay: cho phép toàn trang + dòng `Sitemap:`. `404.html` có `noindex`.
+  Ứng dụng (`app.`) và API (`api.`) là tên miền riêng, không nằm trong sitemap này. Kiểm: `python3 tools/ci/check_sitemap.py` (CI `site-check.yml`).
+- Nginx trả `sitemap.xml` kiểu `application/xml`.
+- Sau khi deploy: `curl -sI https://bosskin.io.vn/sitemap.xml` (200, `application/xml`), `curl -s https://bosskin.io.vn/robots.txt`.
+  Search Console (thuộc tính `bosskin.io.vn`) → Lập chỉ mục → Sơ đồ trang web → gửi `https://bosskin.io.vn/sitemap.xml`;
+  Kiểm tra URL → Yêu cầu lập chỉ mục cho `/` và `/help/`. Google tự quyết định có lập chỉ mục và khi nào; xem báo cáo Trang để biết lý do bị loại.
+
+## Host trên Vibe Host (host duy nhất từ 12/10/2026, đã gỡ Netlify)
 
 Website Docker từ thư mục `landing/` (`landing/Dockerfile` + `nginx.conf`): Nginx phục vụ trang giới thiệu, trang trợ giúp được lấy từ
 `help/` trên nhánh `main` của GitHub lúc build và đặt ở `/help/`. Không chép `video/`, `supabase/`, `social/`, `README.md` (`.dockerignore`).
-Sửa `help/` → triển khai lại website này để cập nhật. Form dùng thử vẫn ghi Supabase; Netlify Forms không dùng được ở đây.
+Sửa `help/` → triển khai lại website này để cập nhật. Form dùng thử ghi Supabase.
 
 ## Video đầy đủ `assets/bosskin-gioi-thieu.mp4` (~90 giây, 1080p, giọng Hoài My, phụ đề in sẵn; trang dẫn link phụ)
 Dựng lại toàn bộ bằng các script trong `video/` (chạy trên môi trường thử riêng, **không** chạy vào DB dev/prod):

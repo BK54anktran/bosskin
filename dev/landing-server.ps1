@@ -8,7 +8,7 @@ $types = @{ '.html'='text/html; charset=utf-8'; '.css'='text/css'; '.js'='text/j
   '.png'='image/png'; '.jpg'='image/jpeg'; '.webp'='image/webp'; '.svg'='image/svg+xml'; '.ico'='image/x-icon'
   '.mp4'='video/mp4'; '.vtt'='text/vtt'; '.md'='text/plain; charset=utf-8' }
 $rootFull = [IO.Path]::GetFullPath($Root)
-# /help/ lấy thẳng từ help\ (như lệnh build Netlify chép help\*.html + help\img vào landing\help\); src\, tools\ không phục vụ
+# /help/ lấy thẳng từ help\ (như image Docker chép help\*.html + help\img vào /help/); src\, tools\ không phục vụ
 $helpFull = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $rootFull) 'help'))
 $http = New-Object Net.HttpListener
 $http.Prefixes.Add("http://localhost:$Port/")
@@ -23,7 +23,7 @@ while ($http.IsListening) {
     $base = $rootFull
     if ($rel -like 'help/*') {
       $rel = $rel.Substring(5); $base = $helpFull
-      if ($rel -match '^[\w-]+$') { $rel += '.html' }   # /help/ten-trang như Netlify (bỏ đuôi .html)
+      if ($rel -match '^[\w-]+$') { $rel += '.html' }   # /help/ten-trang (bỏ đuôi .html) — chỉ máy dev; bản chính (nginx) chỉ nhận .html
       if ($rel -notmatch '^[\w-]+\.html$' -and $rel -notlike 'img/*') { $rel = '__khong_co__' }
     }
     $path = [IO.Path]::GetFullPath((Join-Path $base $rel))
