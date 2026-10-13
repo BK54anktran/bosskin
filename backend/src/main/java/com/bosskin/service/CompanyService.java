@@ -1,7 +1,9 @@
 package com.bosskin.service;
 
 import com.bosskin.dto.CompanyResponse;
+import com.bosskin.core.CompanyIdentity;
 import com.bosskin.dto.CreateCompanyRequest;
+import com.bosskin.dto.UpdateCompanyRequest;
 import com.bosskin.entity.Company;
 import com.bosskin.entity.Permission;
 import com.bosskin.entity.Role;
@@ -52,18 +54,29 @@ public class CompanyService {
     @Transactional
     public CompanyResponse create(CreateCompanyRequest req) {
         com.bosskin.core.PasswordPolicy.require(req.getAdminPassword());
-        if (companyRepository.existsByCode(req.getCode().toUpperCase())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.company.code_duplicate");
+        // V22: mã công ty = tiền tố mã NV, đuôi email bắt buộc cho mọi tài khoản của công ty
+        String code = CompanyIdentity.normalizeCode(req.getCode());
+        requireCodeAvailable(code);
+        String domain = CompanyIdentity.normalizeDomain(req.getDomain());
+        if (domain == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.domain_required");
         }
-        if (userRepository.existsByEmail(req.getAdminEmail())) {
+        if (companyRepository.existsByDomainIgnoreCase(domain)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.company.domain_duplicate|" + domain);
+        }
+        String adminEmail = req.getAdminEmail().trim();
+        if (!CompanyIdentity.emailMatches(domain, adminEmail)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.email.domain_mismatch|" + domain);
+        }
+        if (userRepository.existsByEmail(adminEmail)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.email.in_use");
         }
 
         // 1. Tạo công ty
         Company company = new Company();
         company.setName(req.getName());
-        company.setCode(req.getCode().toUpperCase());
-        company.setDomain(req.getDomain());
+        company.setCode(code);
+        company.setDomain(domain);
         company.setAddress(req.getAddress());
         company.setPhone(req.getPhone());
         company.setEmail(req.getCompanyEmail());
@@ -97,7 +110,7 @@ public class CompanyService {
 
         // 3. Tạo user admin đầu tiên
         User admin = User.builder()
-            .email(req.getAdminEmail())
+            .email(adminEmail)
             .password(passwordEncoder.encode(req.getAdminPassword()))
             .mustChangePassword(true)
             .company(company)
@@ -113,10 +126,34 @@ public class CompanyService {
     }
 
     @Transactional
-    public CompanyResponse update(Long id, CreateCompanyRequest req) {
+    public CompanyResponse update(Long id, UpdateCompanyRequest req) {
         Company company = getOrThrow(id);
-        if (req.getName()         != null) company.setName(req.getName());
-        if (req.getDomain()       != null) company.setDomain(req.getDomain());
+        // V22: mã công ty là tiền tố mã NV → không đổi được (kể cả đổi sang mã của công ty khác)
+        if (req.getCode() != null && !req.getCode().isBlank()
+                && !req.getCode().trim().equalsIgnoreCase(company.getCode())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.code_immutable");
+        }
+        if (req.getName() != null) {
+            if (req.getName().isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.name_required");
+            company.setName(req.getName().trim());
+        }
+        if (req.getDomain() != null) {
+            String domain = CompanyIdentity.normalizeDomain(req.getDomain());
+            if (domain == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.company.domain_required");
+            }
+            if (!domain.equalsIgnoreCase(company.getDomain())) {
+                if (companyRepository.existsByDomainIgnoreCaseAndIdNot(domain, id)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "error.company.domain_duplicate|" + domain);
+                }
+                long outside = userRepository.countEmailOutsideDomain(id, domain);
+                if (outside > 0) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "error.company.domain_accounts_mismatch|" + domain + "|" + outside);
+                }
+                company.setDomain(domain);
+            }
+        }
         if (req.getAddress()      != null) company.setAddress(req.getAddress());
         if (req.getPhone()        != null) company.setPhone(req.getPhone());
         if (req.getCompanyEmail() != null) company.setEmail(req.getCompanyEmail());
@@ -128,6 +165,19 @@ public class CompanyService {
         Company company = getOrThrow(id);
         company.setActive(!company.isActive());
         companyRepository.save(company);
+    }
+
+    /** Mã mới không trùng và không là tiền tố (hoặc nhận mã khác làm tiền tố) của mã công ty đã có. */
+    private void requireCodeAvailable(String code) {
+        for (String other : companyRepository.findAllCodes()) {
+            String o = other.toUpperCase(java.util.Locale.ROOT);
+            if (o.equals(code)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.company.code_duplicate");
+            }
+            if (o.startsWith(code) || code.startsWith(o)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.company.code_prefix_conflict|" + other);
+            }
+        }
     }
 
     private Company getOrThrow(Long id) {

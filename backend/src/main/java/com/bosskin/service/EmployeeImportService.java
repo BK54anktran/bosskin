@@ -167,6 +167,8 @@ public class EmployeeImportService {
     public List<EmployeeDTO.ImportDiff> previewImport(Long companyId, Long userId,
                                                       List<EmployeeDTO.ImportRow> rows) {
         Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "EMPLOYEE_VIEW");
+        Company company = companyRepo.findById(companyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
         Map<String, Department> deptByCode = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(Department::getCode, d -> d));
         Map<String, Employee> existing = employeeRepo.findByCompanyId(companyId)
@@ -198,6 +200,8 @@ public class EmployeeImportService {
                     warnings.add("error.import.email_missing|" + name);
                 if (isBlank(row.getJoinDate()))
                     warnings.add("error.import.join_date_missing");
+                String identity = identityProblem(company, code, row.getEmail());
+                if (identity != null) warnings.add(identity);
                 result.add(EmployeeDTO.ImportDiff.builder()
                     .action("CREATE").employeeCode(code).fullName(name)
                     .email(row.getEmail()).departmentCode(deptCode)
@@ -276,6 +280,8 @@ public class EmployeeImportService {
                         "error.import.email_missing|" + row.getFullName());
 
                 String email = row.getEmail().trim();
+                String identity = identityProblem(company, code, email);
+                if (identity != null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, identity);
                 if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, companyId))
                     throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "error.import.email_in_use|" + email);
@@ -400,9 +406,20 @@ public class EmployeeImportService {
         };
     }
 
+    /** V22: mã NV nhập tay phải bắt đầu bằng mã công ty, email phải theo đuôi công ty. null = hợp lệ. */
+    private static String identityProblem(Company company, String code, String email) {
+        if (!isBlank(code) && !com.bosskin.core.CompanyIdentity.codeMatches(company.getCode(), code))
+            return "error.employee.code_prefix|" + company.getCode() + "|" + code;
+        if (!isBlank(email) && !com.bosskin.core.CompanyIdentity.emailMatches(company.getDomain(), email.trim()))
+            return "error.email.domain_mismatch|" + company.getDomain();
+        return null;
+    }
+
     private String createProblem(Long companyId, String code, EmployeeDTO.ImportRow row) {
         if (isBlank(row.getEmail())) return "error.import.email_missing|" + row.getFullName();
         String email = row.getEmail().trim();
+        String identity = companyRepo.findById(companyId).map(c -> identityProblem(c, code, email)).orElse(null);
+        if (identity != null) return identity;
         if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, companyId))
             return "error.import.email_in_use|" + email;
         if (!isBlank(row.getDepartmentCode())
@@ -532,6 +549,8 @@ public class EmployeeImportService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "error.import.email_missing|" + row.getFullName());
         String email = row.getEmail().trim();
+        String identity = identityProblem(company, code, email);
+        if (identity != null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, identity);
         if (userRepo.existsByEmail(email) || employeeRepo.existsByEmailAndCompanyId(email, company.getId()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "error.import.email_in_use|" + email);
@@ -727,7 +746,7 @@ public class EmployeeImportService {
         row.setTaxCode(SensitiveData.incoming(emp.getTaxCode(), row.getTaxCode()));
         row.setSocialInsuranceNo(SensitiveData.incoming(emp.getSocialInsuranceNo(), row.getSocialInsuranceNo()));
     }
-    private boolean isBlank(String v) { return v == null || v.isBlank(); }
+    private static boolean isBlank(String v) { return v == null || v.isBlank(); }
 
     /** Lấy code từ entity có lazy proxy — trả "" nếu đã bị soft-delete. */
     /** Chuẩn hóa trạng thái về ACTIVE/INACTIVE/ON_LEAVE để so sánh nhất quán. */

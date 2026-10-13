@@ -149,6 +149,8 @@ public class EmployeeService {
         }
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found"));
+        // V22: email đăng nhập phải theo đuôi công ty
+        com.bosskin.core.CompanyIdentity.requireEmail(company, req.getEmail());
         Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         Position pos = null;
@@ -277,7 +279,9 @@ public class EmployeeService {
 
         for (Employee employee : employees) {
             String email = employee.getEmail();
-            if (email == null || email.isBlank()) {
+            // V22: email không theo đuôi công ty (NV tạo trước khi có quy tắc) → không tạo / đổi tài khoản
+            if (email == null || email.isBlank()
+                    || !com.bosskin.core.CompanyIdentity.emailMatches(company.getDomain(), email)) {
                 skippedCount++;
                 continue;
             }

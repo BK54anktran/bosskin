@@ -21,6 +21,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findFirstByCompanyId(Long companyId);
     List<User> findByCompanyId(Long companyId);
 
+    /** V22: số tài khoản của công ty không theo đuôi email {@code @domain} (chặn đổi đuôi). */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.company.id = :companyId AND LOWER(u.email) NOT LIKE CONCAT('%@', :domain)")
+    long countEmailOutsideDomain(@Param("companyId") Long companyId, @Param("domain") String domain);
+
     /** D10: danh sách người dùng — nạp sẵn nhân viên, phòng ban, vai trò, quyền trực tiếp trong một câu. */
     @org.springframework.data.jpa.repository.Query("""
         SELECT DISTINCT u FROM User u

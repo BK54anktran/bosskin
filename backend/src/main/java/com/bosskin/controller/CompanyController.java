@@ -55,7 +55,7 @@ public class CompanyController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<CompanyResponse> update(@PathVariable Long id,
-                                                   @Valid @RequestBody CreateCompanyRequest req) {
+                                                   @RequestBody com.bosskin.dto.UpdateCompanyRequest req) {
         CompanyResponse updated = companyService.update(id, req);
         audit.log("COMPANY_UPDATE").company(id).entity("COMPANY", id).summary(updated.getName()).save();
         return ResponseEntity.ok(updated);

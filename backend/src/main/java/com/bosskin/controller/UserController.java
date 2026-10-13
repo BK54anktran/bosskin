@@ -42,6 +42,7 @@ public class UserController {
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
     private final com.bosskin.audit.AuditService audit;
     private final com.bosskin.util.ExcelI18n excelI18n;
+    private final com.bosskin.repository.CompanyRepository companyRepository;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listUsers(@AuthenticationPrincipal User caller) {
@@ -154,6 +155,10 @@ public class UserController {
         if (email == null || password == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.email_password_required");
         }
+        // V22: tài khoản mới phải theo đuôi email công ty
+        // (công ty của principal là proxy lazy ngoài phiên JPA → nạp lại theo id)
+        com.bosskin.core.CompanyIdentity.requireEmail(companyRepository.findById(caller.getCompany().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.company.not_found")), email);
         if (userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.email.in_use");
         }
