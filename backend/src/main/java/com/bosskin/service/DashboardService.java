@@ -83,11 +83,13 @@ public class DashboardService {
             .filter(a -> calcSvc.isActuallyPresent(a) && calcSvc.isLate(a))
             .count();
 
-        // Vắng = NV có ca hôm nay nhưng chưa có mặt và không nghỉ phép. NV không có ca (T7/CN, NV mới
-        // chưa xếp ca) không tính là vắng — trước đây lấy tổng NV trừ có mặt trừ nghỉ.
+        // Vắng = NV có ca hôm nay ĐÃ KẾT THÚC nhưng chưa có mặt và không nghỉ phép. NV không có ca (T7/CN, NV mới
+        // chưa xếp ca) không tính là vắng — trước đây lấy tổng NV trừ có mặt trừ nghỉ. Ca chưa tới giờ / đang
+        // diễn ra mà chưa check-in thì chưa tính vắng (13/10/2026).
         java.util.Set<Long> scheduled = shiftAssignmentRepository.findByCompanyAndDate(companyId, today).stream()
             .filter(sa -> departmentId == null || (sa.getEmployee().getDepartment() != null
                 && departmentId.equals(sa.getEmployee().getDepartment().getId())))
+            .filter(sa -> calcSvc.shiftEnded(today, calcSvc.resolveShiftTimes(sa)))
             .map(sa -> sa.getEmployee().getId())
             .collect(Collectors.toSet());
         java.util.Set<Long> presentIds = todayAttendances.stream()

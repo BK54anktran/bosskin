@@ -9,7 +9,7 @@ summary: Số liệu hôm nay, cảnh báo, phân tích; các báo cáo nhân s�
 
 Mở **Tổng quan**. Lọc theo phòng ban ở góc phải; chọn ngày ở nút *Hôm nay*.
 
-- Tab **Tổng quan** — tuyển mới, nghỉ việc, tỷ lệ đi làm, lương kỳ gần nhất, số có mặt / nghỉ phép / vắng, danh sách chấm công hôm nay.
+- Tab **Tổng quan** — tuyển mới, nghỉ việc, tỷ lệ đi làm, lương kỳ gần nhất, số có mặt / nghỉ phép / vắng, danh sách chấm công hôm nay. *Vắng* chỉ tính ca **đã kết thúc** mà chưa check-in; ca chưa tới giờ hoặc đang diễn ra thì chưa tính.
 - **Cảnh báo & Rủi ro** — hợp đồng cần gia hạn, tài liệu sắp hết hạn, các bất thường cần xử lý.
 - Tab **Chấm công** — đi muộn, về sớm, tăng ca theo ngày.
 - Tab **Phân tích** — biểu đồ xu hướng theo tháng.

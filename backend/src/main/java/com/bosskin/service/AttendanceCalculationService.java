@@ -10,6 +10,9 @@ import com.bosskin.entity.LeaveRequest;
 import com.bosskin.entity.ShiftAssignment;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,12 @@ import java.util.Set;
 public class AttendanceCalculationService {
 
     private static final Set<Integer> ALLOWED_ROUNDING = Set.of(1, 5, 15, 30, 60);
+
+    private final Clock clock;
+
+    public AttendanceCalculationService(Clock clock) {
+        this.clock = clock;
+    }
 
     // ── Public records ────────────────────────────────────────────────────────
 
@@ -279,7 +288,8 @@ public class AttendanceCalculationService {
      * - Chua approved:
      *   + Co check-in + co ca + di tre qua tolerance -> LATE
      *   + Co check-in -> PRESENT
-     *   + Khong check-in + co ca -> ABSENT
+     *   + Khong check-in + co ca da ket thuc -> ABSENT
+     *   + Khong check-in + ca chua ket thuc (chua toi gio / dang trong ca) -> null (chua tinh vang)
      *   + Khong co ca -> null
      */
     public Attendance.Status deriveDisplayStatus(
@@ -296,7 +306,9 @@ public class AttendanceCalculationService {
         boolean hasCheckIn = effectiveCheckIn != null
             || (att.getOverrideCheckIn() != null)
             || (att.getCheckIn() != null);
-        if (!hasCheckIn) return assignment != null ? Attendance.Status.ABSENT : null;
+        if (!hasCheckIn) {
+            return assignment != null && shiftEnded(att.getDate(), shift) ? Attendance.Status.ABSENT : null;
+        }
         if (shift.start() != null && shift.end() != null && flagCheckIn != null) {
             var flags = WorkFlagCalculator.calculate(
                 shift.start(), shift.end(), flagCheckIn, flagCheckOut,
@@ -305,6 +317,19 @@ public class AttendanceCalculationService {
             if (flags.contains(WorkFlagCalculator.Flag.LATE_IN)) return Attendance.Status.LATE;
         }
         return Attendance.Status.PRESENT;
+    }
+
+    /** Ca đã kết thúc chưa (ca qua đêm kết thúc hôm sau; không rõ giờ kết thúc → hết ngày). */
+    public boolean shiftEnded(LocalDate date, ShiftTimes shift) {
+        if (date == null) return true;
+        LocalDateTime end;
+        if (shift.end() == null) {
+            end = date.plusDays(1).atStartOfDay();
+        } else {
+            boolean overnight = shift.start() != null && !shift.end().isAfter(shift.start());
+            end = (overnight ? date.plusDays(1) : date).atTime(shift.end());
+        }
+        return !LocalDateTime.now(clock).isBefore(end);
     }
 
     // ── Row data (composite — dung cac ham tren, giu nguyen cho controller) ───
