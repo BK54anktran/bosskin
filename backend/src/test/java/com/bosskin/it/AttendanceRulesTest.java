@@ -103,4 +103,39 @@ class AttendanceRulesTest extends IntegrationTest {
         var mine = api.get(c.tokenOf(c.emp(6)), "/api/v1/attendance-requests/page").expectOk().body();
         assertThat(mine.path("totalElements").asInt()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("A7 · Xoá phân ca: đơn chờ duyệt / đơn đang áp dụng chặn; đơn đã tắt áp dụng, bị từ chối thì xoá được")
+    void deleteAssignment_onlyEffectiveRequestsBlock() {
+        var c = fixture.standardCompany();
+        var e = c.emp(6);
+        String approver = c.tokenOf(c.emp(1));
+
+        // Đơn chờ duyệt → báo rõ phải xử lý đơn trước
+        long sa1 = c.assign(e, "HC", MON);
+        long r1 = createRequest(c.tokenOf(e), Map.of("requestDate", MON.toString(), "requestType", "CHECK_OUT",
+            "requestedCheckOut", "17:00", "shiftAssignmentId", sa1));
+        var pending = api.delete(c.adminToken, "/api/v1/shifts/assignments/" + sa1);
+        assertThat(pending.status()).isEqualTo(409);
+        assertThat(pending.raw()).contains("error.shiftAssignment.has_pending_request");
+
+        // Đã duyệt, đang áp dụng → vẫn là dữ liệu chấm công
+        api.put(approver, "/api/v1/attendance-requests/" + r1 + "/approve", Map.of()).expectOk();
+        var applied = api.delete(c.adminToken, "/api/v1/shifts/assignments/" + sa1);
+        assertThat(applied.status()).isEqualTo(409);
+        assertThat(applied.raw()).contains("error.shiftAssignment.has_attendance");
+
+        // Tắt áp dụng (ô gạch ngang trên bảng công) → không còn tác dụng, xoá được
+        api.put(approver, "/api/v1/attendance-requests/" + r1 + "/applied", Map.of("applied", false)).expectOk();
+        assertThat(api.delete(c.adminToken, "/api/v1/shifts/assignments/" + sa1).status()).isEqualTo(204);
+
+        // Đơn bị từ chối → xoá được (cả đường xoá theo NV + ngày)
+        LocalDate tue = MON.plusDays(1);
+        long sa2 = c.assign(e, "HC", tue);
+        long r2 = createRequest(c.tokenOf(e), Map.of("requestDate", tue.toString(), "requestType", "CHECK_IN",
+            "requestedCheckIn", "08:00", "shiftAssignmentId", sa2));
+        api.put(approver, "/api/v1/attendance-requests/" + r2 + "/reject", Map.of()).expectOk();
+        assertThat(api.delete(c.adminToken, "/api/v1/shifts/assignments?employeeId=" + e.id() + "&workDate=" + tue)
+            .status()).isEqualTo(204);
+    }
 }

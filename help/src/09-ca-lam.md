@@ -33,7 +33,7 @@ Tab **Phân công ca** là lưới: dòng là nhân viên, cột là ngày trong
 
 ![Điền nhanh ca](img:shift-quickfill)
 
-Ngày đã có dữ liệu chấm công không xoá ca được. **Xuất / Nhập Excel** dùng bảng ngang (nhân viên × ngày, ô là mã ca), có xem trước
+Ngày đã có dữ liệu chấm công (đã check-in/out, đã duyệt công, hoặc có đơn sửa giờ đã duyệt đang áp dụng) không xoá ca được. Còn đơn sửa giờ **chờ duyệt** thì duyệt hoặc từ chối đơn trước; đơn đã bị từ chối, đã huỷ hoặc đã tắt áp dụng (giờ bị gạch ngang trên bảng công) không cản việc xoá ca. **Xuất / Nhập Excel** dùng bảng ngang (nhân viên × ngày, ô là mã ca), có xem trước
 trước khi nhập.
 
 ## Mẫu xoay ca

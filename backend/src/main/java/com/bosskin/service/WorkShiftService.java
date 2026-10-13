@@ -457,7 +457,7 @@ public class WorkShiftService {
 
     /**
      * A7: không xoá phân ca khi đã có dữ liệu chấm công (check-in/out, đã duyệt, hoặc đơn
-     * chấm công) — trước đây xoá cứng làm mất bằng chứng chấm công.
+     * chấm công còn hiệu lực) — trước đây xoá cứng làm mất bằng chứng chấm công.
      */
     /** Phân ca đã có dữ liệu chấm công (check-in/out, override, đã duyệt) — không được đổi/xoá. */
     public boolean assignmentHasAttendance(ShiftAssignment a) {
@@ -465,19 +465,37 @@ public class WorkShiftService {
     }
 
     private void requireNoAttendanceData(Long employeeId, LocalDate workDate, Long assignmentId) {
-        if (hasAttendanceData(employeeId, workDate, assignmentId)) {
+        if (hasPunchOrApproval(employeeId, workDate, assignmentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_attendance");
+        }
+        List<AttendanceRequest> requests = attendanceRequestRepository.findByShiftAssignment_Id(assignmentId);
+        if (requests.stream().anyMatch(r -> r.getStatus() == AttendanceRequest.Status.PENDING)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_pending_request");
+        }
+        if (requests.stream().anyMatch(WorkShiftService::isEffective)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shiftAssignment.has_attendance");
         }
     }
 
-    /** Phân ca đã có check-in/out, đã duyệt, hoặc có đơn chấm công. */
+    /**
+     * Phân ca đã có check-in/out, đã duyệt, hoặc có đơn chấm công còn hiệu lực (chờ duyệt / đã duyệt đang áp dụng).
+     * Đơn bị từ chối, đã huỷ hoặc đã tắt áp dụng không tính: không ảnh hưởng công nên không giữ phân ca lại.
+     */
     public boolean hasAttendanceData(Long employeeId, LocalDate workDate, Long assignmentId) {
-        boolean hasAttendance = attendanceRepository.findByEmployeeIdAndDateAndShift(employeeId, workDate, assignmentId)
+        return hasPunchOrApproval(employeeId, workDate, assignmentId)
+            || attendanceRequestRepository.findByShiftAssignment_Id(assignmentId).stream()
+                .anyMatch(r -> r.getStatus() == AttendanceRequest.Status.PENDING || isEffective(r));
+    }
+
+    private boolean hasPunchOrApproval(Long employeeId, LocalDate workDate, Long assignmentId) {
+        return attendanceRepository.findByEmployeeIdAndDateAndShift(employeeId, workDate, assignmentId)
             .filter(att -> att.isApproved() || att.getCheckIn() != null || att.getCheckOut() != null
                 || att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null)
             .isPresent();
-        boolean hasRequests = !attendanceRequestRepository.findByShiftAssignment_Id(assignmentId).isEmpty();
-        return hasAttendance || hasRequests;
+    }
+
+    private static boolean isEffective(AttendanceRequest r) {
+        return r.getStatus() == AttendanceRequest.Status.APPROVED && r.isApplied();
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────
