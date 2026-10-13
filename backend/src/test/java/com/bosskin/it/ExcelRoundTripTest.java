@@ -551,7 +551,7 @@ class ExcelRoundTripTest extends IntegrationTest {
         assertThat(actions(prev)).containsExactly("MERGE", "MERGE");
         doImport(c, "/api/v1/excel/import", filled);
         assertThat(one("SELECT d.code FROM employees e JOIN departments d ON d.id = e.department_id "
-            + "WHERE e.company_id = ? AND e.email = 'chung.mau@test.local' AND e.deleted = 0", c.id)).isEqualTo("CH01");
+            + "WHERE e.company_id = ? AND e.email = ? AND e.deleted = 0", c.id, c.email("chung.mau"))).isEqualTo("CH01");
         // Chỉ chọn một module
         byte[] one = api.download(c.adminToken, "/api/v1/excel/template?types=department", "en");
         try (var wb = new XSSFWorkbook(new ByteArrayInputStream(one))) {
