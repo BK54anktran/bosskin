@@ -51,6 +51,7 @@ public class EmployeeService {
     private final DeptScopeService deptScopeService;
     private final JobHistoryService jobHistoryService;
     private final com.bosskin.repository.LaborContractRepository laborContractRepository;
+    private final WorkShiftService workShiftService;
 
     public PageResponse<EmployeeDTO.Response> findAll(
         Long companyId, Long userId, int page, int size, String search,
@@ -375,6 +376,58 @@ public class EmployeeService {
         employeeRepository.save(e);
     }
 
+    /**
+     * Nghỉ việc (13/10/2026): đánh dấu Đã nghỉ với ngày làm cuối, KHÔNG xoá — hồ sơ vẫn xem được (lọc "Đã nghỉ"),
+     * cho đi làm lại được. Gỡ khỏi vai trò quản lý trực tiếp, khoá tài khoản + thu hồi phiên, gỡ phân ca sau ngày nghỉ
+     * chưa có công. Ngày nghỉ không được trước ngày vào làm hay sau hôm nay.
+     */
+    @Transactional
+    public EmployeeDTO.Response resign(Long id, Long companyId, Long userId, LocalDate leaveDate) {
+        Employee e = getOrThrow(id, companyId);
+        requireViewScope(userId, e.getDepartment().getId());
+        LocalDate last = leaveDate != null ? leaveDate : LocalDate.now();
+        if (last.isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.employee.leave_date_future");
+        }
+        if (e.getJoinDate() != null && last.isBefore(e.getJoinDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.employee.leave_before_join");
+        }
+        e.setStatus(Employee.Status.INACTIVE);
+        e.setLeaveDate(last);
+        employeeRepository.save(e);
+        employeeRepository.clearManager(e.getId());
+        lockAccount(e.getId());
+        workShiftService.removeAssignmentsAfter(companyId, e.getId(), last);
+        return toResponse(e);
+    }
+
+    /** Cho nhân viên đã nghỉ đi làm lại: Đang làm, bỏ ngày nghỉ, mở lại tài khoản (quản lý trực tiếp không tự gán lại). */
+    @Transactional
+    public EmployeeDTO.Response reinstate(Long id, Long companyId, Long userId) {
+        Employee e = getOrThrow(id, companyId);
+        requireViewScope(userId, e.getDepartment().getId());
+        if (e.getStatus() != Employee.Status.INACTIVE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.employee.not_resigned");
+        }
+        e.setStatus(Employee.Status.ACTIVE);
+        e.setLeaveDate(null);
+        employeeRepository.save(e);
+        userRepository.findByEmployeeId(e.getId()).ifPresent(u -> {
+            u.setEnabled(true);
+            userRepository.save(u);
+        });
+        return toResponse(e);
+    }
+
+    private void lockAccount(Long employeeId) {
+        userRepository.findByEmployeeId(employeeId).ifPresent(u -> {
+            u.setEnabled(false);
+            userRepository.save(u);
+            userSessionRepository.revokeAllByUserId(u.getId());
+        });
+    }
+
+    /** Xoá hẳn (ẩn khỏi mọi danh sách) — chỉ dành cho hồ sơ tạo nhầm; nghỉ việc dùng {@link #resign}. */
     @Transactional
     public void delete(Long id, Long companyId, Long userId) {
         Employee e = getOrThrow(id, companyId);
@@ -389,11 +442,7 @@ public class EmployeeService {
         employeeRepository.clearManager(e.getId());
 
         // D4: nhân viên đã xoá không được đăng nhập tiếp — khoá tài khoản và thu hồi phiên
-        userRepository.findByEmployeeId(e.getId()).ifPresent(u -> {
-            u.setEnabled(false);
-            userRepository.save(u);
-            userSessionRepository.revokeAllByUserId(u.getId());
-        });
+        lockAccount(e.getId());
     }
 
     private void requireViewScope(Long userId, Long deptId) {

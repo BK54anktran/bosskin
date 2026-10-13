@@ -8,6 +8,7 @@ import '../../../data/models/department_model.dart';
 import '../../../data/models/employee.dart';
 import '../../../data/repositories/employee_repository.dart';
 import '../../../data/services/department_service.dart';
+import '../../widgets/date_field.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
@@ -128,19 +129,74 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     if (saved == true) _load(reset: true);
   }
 
-  Future<void> _delete(Employee emp) async {
+  /// Nghỉ việc: chọn ngày làm việc cuối; hồ sơ không bị xoá (xem lại ở lọc "Nghỉ việc", cho đi làm lại được).
+  Future<void> _resign(Employee emp) async {
+    final s = AppLocalizations.of(context);
+    final today = DateTime.now();
+    DateTime lastDay = DateTime(today.year, today.month, today.day);
+    final ok = await showInstantDialog<bool>(
+      context,
+      (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(s.employeeDeleteTitle),
+          content: SizedBox(
+            width: 380,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(s.employeeDeletePrompt(emp.fullName)),
+                const SizedBox(height: 16),
+                DateField(
+                  label: s.employeeResignLastDay,
+                  value: lastDay,
+                  firstDate: emp.joinDate.isAfter(today) ? today : emp.joinDate,
+                  lastDate: today,
+                  onChanged: (d) {
+                    if (d != null) setDialogState(() => lastDay = d);
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(s.cancel)),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.confirm),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _repo.resign(emp.id, lastDay);
+      _load(reset: true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(serverMsg(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _reinstate(Employee emp) async {
     final s = AppLocalizations.of(context);
     final ok = await showInstantDialog<bool>(
       context,
       (ctx) => AlertDialog(
-        title: Text(s.employeeDeleteTitle),
-        content: Text(s.employeeDeletePrompt(emp.fullName)),
+        title: Text(s.employeeReinstateTitle),
+        content: Text(s.employeeReinstatePrompt(emp.fullName)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(s.cancel)),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(s.confirm),
           ),
@@ -149,7 +205,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     );
     if (ok != true) return;
     try {
-      await _repo.delete(emp.id);
+      await _repo.reinstate(emp.id);
       _load(reset: true);
     } catch (e) {
       if (mounted) {
@@ -454,7 +510,9 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
               itemBuilder: (_, i) => _EmployeeCard(
                 employee: _employees[i],
                 onEdit: () => _openForm(emp: _employees[i]),
-                onDelete: () => _delete(_employees[i]),
+                onDelete: () => _employees[i].status == EmployeeStatus.inactive
+                    ? _reinstate(_employees[i])
+                    : _resign(_employees[i]),
                 onSalaryHistory: () => _openSalaryHistory(_employees[i]),
                 onJobHistory: () => _openJobHistory(_employees[i]),
                 onDependents: () => _openDependents(_employees[i]),
@@ -502,6 +560,7 @@ class _EmployeeCard extends StatelessWidget {
     final s = AppLocalizations.of(context);
     final e = employee;
     final isActive = e.status == EmployeeStatus.active;
+    final resigned = e.status == EmployeeStatus.inactive;
 
     final user = AuthService.instance.currentUser;
     final canSalary = user != null && (user.isSystemAdmin || user.can('PAYROLL_CREATE'));
@@ -552,9 +611,11 @@ class _EmployeeCard extends StatelessWidget {
           ),
         if (canDelete)
           Tooltip(
-            message: s.employeeDeleteTitle,
+            message: resigned ? s.employeeReinstateTitle : s.employeeDeleteTitle,
             child: IconButton(
-              icon: const Icon(Icons.person_off_outlined, size: 20, color: Colors.red),
+              icon: resigned
+                  ? const Icon(Icons.person_add_alt_1_outlined, size: 20, color: AppTheme.primary)
+                  : const Icon(Icons.person_off_outlined, size: 20, color: Colors.red),
               onPressed: onDelete,
             ),
           ),
@@ -610,11 +671,17 @@ class _EmployeeCard extends StatelessWidget {
         if (canDelete)
           PopupMenuItem(
             value: 'delete',
-            child: Row(children: [
-              const Icon(Icons.person_off_outlined, size: 18, color: Colors.red),
-              const SizedBox(width: 10),
-              Text(s.employeeDeleteTitle, style: const TextStyle(color: Colors.red)),
-            ]),
+            child: Row(children: resigned
+                ? [
+                    const Icon(Icons.person_add_alt_1_outlined, size: 18, color: AppTheme.primary),
+                    const SizedBox(width: 10),
+                    Text(s.employeeReinstateTitle),
+                  ]
+                : [
+                    const Icon(Icons.person_off_outlined, size: 18, color: Colors.red),
+                    const SizedBox(width: 10),
+                    Text(s.employeeDeleteTitle, style: const TextStyle(color: Colors.red)),
+                  ]),
           ),
       ],
       onSelected: (v) {

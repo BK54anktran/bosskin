@@ -2,7 +2,7 @@
 
 # Cơ sở dữ liệu
 
-MySQL 8, utf8mb4. Lược đồ tại migration **V20 – restore referenced grades positions**, 50 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
+MySQL 8, utf8mb4. Lược đồ tại migration **V21 – unhide resigned employees**, 50 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
 
 Ký hiệu: 🔑 khoá chính · ↗ khoá ngoại (bảng.cột, hành vi khi xoá) · `∅` không có mặc định.
 

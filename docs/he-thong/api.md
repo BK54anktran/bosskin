@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-40 controller, 306 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+40 controller, 308 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -19,7 +19,7 @@
 | [DepartmentController](#departmentcontroller) | `/api/v1/departments` | 10 |
 | [DependentController](#dependentcontroller) | `/api/v1/dependents` | 5 |
 | [DocumentController](#documentcontroller) | `/` | 18 |
-| [EmployeeController](#employeecontroller) | `/api/v1/employees` | 9 |
+| [EmployeeController](#employeecontroller) | `/api/v1/employees` | 11 |
 | [EmployeeLocationController](#employeelocationcontroller) | `/api/v1/employees/{employeeId}/locations` | 4 |
 | [FormulaVariableController](#formulavariablecontroller) | `/api/v1/formula-variables` | 9 |
 | [HolidayTemplateController](#holidaytemplatecontroller) | `/admin/holidays` | 5 |
@@ -260,6 +260,8 @@
 | POST | `/api/v1/employees` | EMPLOYEE_CREATE | `create` |
 | PUT | `/api/v1/employees/{id}` | EMPLOYEE_UPDATE | `update` |
 | DELETE | `/api/v1/employees/{id}/device` | EMPLOYEE_UPDATE | `unbindDevice` |
+| POST | `/api/v1/employees/{id}/resign` | EMPLOYEE_DELETE | `resign` |
+| POST | `/api/v1/employees/{id}/reinstate` | EMPLOYEE_DELETE | `reinstate` |
 | DELETE | `/api/v1/employees/{id}` | EMPLOYEE_DELETE | `delete` |
 
 ## EmployeeLocationController

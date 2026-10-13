@@ -1401,6 +1401,36 @@ abstract class AppLocalizations {
   /// **'Đánh dấu \"{name}\" là không còn làm việc?'**
   String employeeDeletePrompt(Object name);
 
+  /// No description provided for @employeeResignLastDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày làm việc cuối'**
+  String get employeeResignLastDay;
+
+  /// No description provided for @employeeReinstateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đi làm lại'**
+  String get employeeReinstateTitle;
+
+  /// No description provided for @employeeReinstatePrompt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho \"{name}\" đi làm lại? Trạng thái đổi thành Đang làm và tài khoản đăng nhập được mở lại.'**
+  String employeeReinstatePrompt(Object name);
+
+  /// No description provided for @auditActEmployeeResign.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho nhân viên nghỉ việc'**
+  String get auditActEmployeeResign;
+
+  /// No description provided for @auditActEmployeeReinstate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho nhân viên đi làm lại'**
+  String get auditActEmployeeReinstate;
+
   /// No description provided for @employeeStatusActive.
   ///
   /// In vi, this message translates to:

@@ -86,6 +86,16 @@ class EmployeeRepository {
 
   Future<void> delete(int id) => _api.delete('/employees/$id');
 
+  /// Nghỉ việc (không xoá hồ sơ): [leaveDate] = ngày làm việc cuối.
+  Future<void> resign(int id, DateTime leaveDate) => _api.post<void>(
+        '/employees/$id/resign',
+        (_) {},
+        {'leaveDate': leaveDate.toIso8601String().substring(0, 10)},
+      );
+
+  /// Cho nhân viên đã nghỉ đi làm lại.
+  Future<void> reinstate(int id) => _api.post<void>('/employees/$id/reinstate', (_) {}, const {});
+
   Future<Map<String, dynamic>> syncMissingUsers(String initialPassword) async {
     return _api.post(
       '/users/sync-from-employees',

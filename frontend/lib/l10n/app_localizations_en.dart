@@ -682,6 +682,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get employeeResignLastDay => 'Last working day';
+
+  @override
+  String get employeeReinstateTitle => 'Reinstate';
+
+  @override
+  String employeeReinstatePrompt(Object name) {
+    return 'Reinstate \"$name\"? Status changes to Active and the login account is unlocked.';
+  }
+
+  @override
+  String get auditActEmployeeResign => 'Employee resigned';
+
+  @override
+  String get auditActEmployeeReinstate => 'Employee reinstated';
+
+  @override
   String get employeeStatusActive => 'Active';
 
   @override

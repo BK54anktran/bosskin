@@ -684,6 +684,23 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get employeeResignLastDay => 'Ngày làm việc cuối';
+
+  @override
+  String get employeeReinstateTitle => 'Đi làm lại';
+
+  @override
+  String employeeReinstatePrompt(Object name) {
+    return 'Cho \"$name\" đi làm lại? Trạng thái đổi thành Đang làm và tài khoản đăng nhập được mở lại.';
+  }
+
+  @override
+  String get auditActEmployeeResign => 'Cho nhân viên nghỉ việc';
+
+  @override
+  String get auditActEmployeeReinstate => 'Cho nhân viên đi làm lại';
+
+  @override
   String get employeeStatusActive => 'Đang làm';
 
   @override

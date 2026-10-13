@@ -171,6 +171,26 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Nghỉ việc: không xoá hồ sơ (xem lại ở lọc "Đã nghỉ", cho đi làm lại được). */
+    @PostMapping("/{id}/resign")
+    public ResponseEntity<EmployeeDTO.Response> resign(@PathVariable Long id, @AuthenticationPrincipal User user,
+                                                       @RequestBody(required = false) EmployeeDTO.ResignRequest body) {
+        requirePermission(user, "EMPLOYEE_DELETE");
+        var res = employeeService.resign(id, user.getCompany().getId(), user.getId(),
+            body != null ? body.getLeaveDate() : null);
+        audit.log("EMPLOYEE_RESIGN").entity("EMPLOYEE", id).summary(res.getFullName())
+            .detail(Map.of("leaveDate", String.valueOf(res.getLeaveDate()))).save();
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/{id}/reinstate")
+    public ResponseEntity<EmployeeDTO.Response> reinstate(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        requirePermission(user, "EMPLOYEE_DELETE");
+        var res = employeeService.reinstate(id, user.getCompany().getId(), user.getId());
+        audit.log("EMPLOYEE_REINSTATE").entity("EMPLOYEE", id).summary(res.getFullName()).save();
+        return ResponseEntity.ok(res);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal User user) {
         requirePermission(user, "EMPLOYEE_DELETE");

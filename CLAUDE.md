@@ -358,12 +358,13 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V20** (`V20__restore_referenced_grades_positions.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V21** (`V21__unhide_resigned_employees.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
-V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ)
-→ Migration tiếp theo phải là **V21**
+V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ),
+V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản)
+→ Migration tiếp theo phải là **V22**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -436,6 +437,9 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 kh�
 - `JobHistoryService`: dòng hiện hành = mới nhất ≤ hôm nay, `sync()` chép vào `employees`; `@Scheduled` 00:05 VN `applyDue()` áp mốc tới ngày.
   Tạo NV ghi HIRE; sửa form / import đổi 1 trong 4 trường → `recordIfChanged` ghi mốc hôm nay. Chỉ xoá mốc chưa tới ngày
   (`error.job_history.past_readonly`). Quản lý: cùng công ty, không tự quản lý, không vòng (`error.employee.manager_*`). Nhật ký `JOB_HISTORY_*`.
+- Nghỉ việc **không xoá** NV (13/10/2026): `POST /api/v1/employees/{id}/resign` {leaveDate ≤ hôm nay, ≥ ngày vào làm} → INACTIVE,
+  khoá tài khoản, `clearManager`, gỡ phân ca sau ngày nghỉ chưa có công (`WorkShiftService.removeAssignmentsAfter`); `/reinstate` mở lại.
+  Nhật ký `EMPLOYEE_RESIGN` / `EMPLOYEE_REINSTATE`. `DELETE /employees/{id}` vẫn là xoá mềm (ẩn hẳn), FE không gọi nữa.
 - `EmployeeDTO.UpdateRequest.managerId` có cờ "đã gửi": không gửi = giữ, gửi null = bỏ quản lý. Lưu ý PUT nhân viên không gửi
   `positionId` / `salaryGradeId` thì hai trường đó bị xoá (hành vi cũ).
 - Lương: `effectiveOn(emp, period.to())` → phòng ban + bậc (mốc chưa có bậc → bậc hiện tại); phiếu lưu phòng ban; Excel / báo cáo / lọc phòng ban

@@ -444,6 +444,21 @@ public class WorkShiftService {
         return count;
     }
 
+    /**
+     * Nghỉ việc: gỡ phân ca sau ngày làm cuối mà chưa có dữ liệu chấm công (kỳ đã khoá thì giữ nguyên).
+     * Trả số ca đã gỡ.
+     */
+    @Transactional
+    public int removeAssignmentsAfter(Long companyId, Long employeeId, LocalDate lastDay) {
+        int removed = 0;
+        for (ShiftAssignment a : assignRepo.findByEmployeeAndDateRange(employeeId, lastDay.plusDays(1), lastDay.plusYears(2))) {
+            if (assignmentHasAttendance(a) || periodLockService.isLocked(companyId, a.getWorkDate())) continue;
+            assignRepo.softDeleteById(a.getId());
+            removed++;
+        }
+        return removed;
+    }
+
     @Transactional
     public void deleteAssignment(Long employeeId, LocalDate workDate, Long companyId) {
         employeeRepo.findByIdAndCompanyId(employeeId, companyId)

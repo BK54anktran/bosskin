@@ -16,7 +16,8 @@ Mở **Nhân viên**. Tìm theo tên, email, mã NV; lọc theo phòng ban và t
 | 📁 | Tài liệu nhân sự của người đó |
 | 💵 | Lịch sử lương |
 | ✏️ | Sửa hồ sơ |
-| 🚫 (đỏ) | Xoá nhân viên (khoá tài khoản, đăng xuất mọi máy; dữ liệu cũ vẫn giữ để tra cứu) |
+| 🚫 (đỏ) | **Nghỉ việc**: chọn ngày làm việc cuối (không sau hôm nay). Trạng thái thành *Nghỉ việc*, tài khoản bị khoá và đăng xuất mọi máy, cấp dưới không còn quản lý trực tiếp này, ca đã xếp sau ngày nghỉ (chưa có công) được gỡ. Hồ sơ **không bị xoá**: lọc trạng thái *Nghỉ việc* để xem lại |
+| 👤+ (người đã nghỉ) | **Đi làm lại**: trạng thái về *Đang làm*, bỏ ngày nghỉ, mở lại tài khoản (quản lý trực tiếp chọn lại trong hồ sơ nếu cần) |
 
 ![Danh sách nhân viên](img:employees)
 

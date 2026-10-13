@@ -22,7 +22,7 @@ flowchart LR
 
 | Module | Bảng chính | Quy tắc đáng nhớ |
 |---|---|---|
-| Nhân viên | `employees`, `employee_code_counters`, `employee_job_histories` | Mã NV cấp từ bộ đếm theo tiền tố, không tái dùng sau khi xoá. Chuyển phòng / chức vụ / lương / quản lý qua quá trình công tác, mốc tương lai áp lúc 00:05 ngày hiệu lực |
+| Nhân viên | `employees`, `employee_code_counters`, `employee_job_histories` | Mã NV cấp từ bộ đếm theo tiền tố, không tái dùng sau khi xoá. Chuyển phòng / chức vụ / lương / quản lý qua quá trình công tác, mốc tương lai áp lúc 00:05 ngày hiệu lực. Nghỉ việc (`POST /employees/{id}/resign`, ngày làm cuối ≤ hôm nay và ≥ ngày vào làm) **không xoá**: INACTIVE + `leave_date`, khoá tài khoản, gỡ quản lý trực tiếp của cấp dưới, gỡ phân ca sau ngày nghỉ chưa có công; `/reinstate` cho đi làm lại. `DELETE /employees/{id}` (xoá mềm, ẩn khỏi mọi danh sách) chỉ cho hồ sơ tạo nhầm, FE không còn nút gọi |
 | Phòng ban, chức vụ | `departments`, `positions` | Cây phòng ban chặn vòng lặp, `level` tính lại khi đổi cha; nhập Excel 2 lượt (tạo rồi gắn cha) |
 | Hồ sơ tự phục vụ | `profile_edit_requests`, `employee_dependents`, `employee_documents` | Nhân viên gửi yêu cầu sửa; người duyệt thấy giá trị cũ → mới (lưu lúc duyệt) |
 | Hợp đồng | `labor_contracts`, `contract_appendices`, `contract_allowances` | Thời hạn kiểm theo loại HĐ; mỗi NV tối đa một HĐ hiệu lực; phụ lục tăng lương có ngày hiệu lực → lương tính theo phần ngày trong kỳ |

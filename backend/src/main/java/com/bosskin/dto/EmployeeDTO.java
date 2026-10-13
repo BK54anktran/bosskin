@@ -144,6 +144,12 @@ public class EmployeeDTO {
         private LocalDate insuranceJoinDate;
     }
 
+    /** Nghỉ việc: ngày làm cuối (trống = hôm nay). */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ResignRequest {
+        private LocalDate leaveDate;
+    }
+
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class UpdateRequest {
         @Size(max = 100)
