@@ -73,4 +73,4 @@ thông báo đẩy hiện cả khi ứng dụng đang đóng (bật trong **Thô
 ## Quên mật khẩu
 
 BossKin không tự gửi email đặt lại mật khẩu. Hãy báo **người quản trị / nhân sự** của công ty: họ bấm **Đặt lại mật khẩu** cạnh tên bạn
-ở **Phân quyền → Người dùng** và đưa bạn mật khẩu tạm. Đăng nhập bằng mật khẩu đó rồi đặt mật khẩu mới như ở mục trên.
+(biểu tượng chìa khoá) ở màn **Nhân viên** hoặc **Phân quyền → Người dùng** và đưa bạn mật khẩu tạm. Đăng nhập bằng mật khẩu đó rồi đặt mật khẩu mới như ở mục trên.

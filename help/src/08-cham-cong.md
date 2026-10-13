@@ -62,5 +62,16 @@ Khi kỳ đã khoá: không sửa / xoá / duyệt công, không phân ca, khôn
 
 ## Xuất / nhập Excel
 
-**Xuất Excel** tải bảng công đang xem. **Nhập Excel** cho phép nhập giờ chấm từ máy chấm công cũ: luôn có bước **xem trước** từng dòng
-(tạo mới / cập nhật / lỗi) trước khi xác nhận.
+**Xuất Excel** tải bảng công đang xem (theo tháng của cả phòng, theo tháng của một nhân viên, hoặc theo ngày). **Nhập Excel** cho phép
+sửa giờ hàng loạt hoặc nhập giờ chấm từ máy chấm công cũ: luôn có bước **xem trước** từng dòng (tạo mới / cập nhật / lỗi) trước khi xác nhận.
+
+Cách sửa nhanh nhất là **xuất → sửa → nhập lại chính file đó**:
+
+1. Xuất bảng công đang xem.
+2. Sửa các ô có dấu `*`: *Check-in*, *Check-out*, *Giờ giải lao*, *Tăng ca ngày / đêm* (dạng `HH:mm`), *Trạng thái duyệt* (`true` / `false`);
+   ghi `x` ở cột *Xóa* để xoá công ngày đó. Các cột khác chỉ để tham khảo.
+3. Nhập lại file. Xem trước chỉ liệt kê **những ô bạn đã sửa** (giá trị cũ → mới); dòng không sửa được bỏ qua, nhập lại nguyên file
+   không thay đổi gì.
+
+> **Mẹo:** File xuất bằng giao diện tiếng Anh vẫn nhập lại được khi đang dùng tiếng Việt và ngược lại. Ngày đã sửa mà đang duyệt sẽ được
+> tính lại khi duyệt; kỳ công đã khoá thì không nhập được.

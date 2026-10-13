@@ -31,7 +31,7 @@ hoặc quản lý từ chối.
 
 ## Quên mật khẩu / mất điện thoại có ứng dụng xác thực
 
-Báo quản trị công ty: **Đặt lại mật khẩu** hoặc **gỡ 2FA** ở *Phân quyền → Người dùng*. Nếu còn mã dự phòng 2FA, dùng một mã để đăng nhập.
+Báo quản trị công ty: **Đặt lại mật khẩu** (chìa khoá ở màn *Nhân viên* hoặc *Phân quyền → Người dùng*) hoặc **gỡ 2FA** ở *Phân quyền → Người dùng*. Nếu còn mã dự phòng 2FA, dùng một mã để đăng nhập.
 
 ## Đổi sang tiếng Anh
 
