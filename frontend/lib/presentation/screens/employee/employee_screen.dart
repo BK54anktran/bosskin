@@ -13,6 +13,7 @@ import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
 import '../../widgets/permission_guard.dart';
+import '../../widgets/reset_password_flow.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/payroll.dart';
 import '../../../data/repositories/salary_history_repository.dart';
@@ -559,14 +560,16 @@ class _EmployeeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final e = employee;
-    final isActive = e.status == EmployeeStatus.active;
     final resigned = e.status == EmployeeStatus.inactive;
 
     final user = AuthService.instance.currentUser;
     final canSalary = user != null && (user.isSystemAdmin || user.can('PAYROLL_CREATE'));
     final canDocuments = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DOCUMENT_VIEW'));
     final canEdit = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_UPDATE'));
-    final canDelete = isActive && user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DELETE'));
+    // Người đang làm: nút Nghỉ việc; người đã nghỉ: nút Đi làm lại (cùng quyền EMPLOYEE_DELETE)
+    final canDelete = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DELETE'));
+    // Đặt lại mật khẩu: người đã nghỉ bị khoá tài khoản nên không cần
+    final canResetPassword = !resigned && user != null && (user.isSystemAdmin || user.can('USER_MANAGE'));
 
     final desktopActions = Row(
       mainAxisSize: MainAxisSize.min,
@@ -599,6 +602,15 @@ class _EmployeeCard extends StatelessWidget {
             child: IconButton(
               icon: const Icon(Icons.payments_outlined, size: 20),
               onPressed: onSalaryHistory,
+            ),
+          ),
+        if (canResetPassword)
+          Tooltip(
+            message: s.userResetPasswordTitle,
+            child: IconButton(
+              icon: const Icon(Icons.key_outlined, size: 20),
+              onPressed: () => resetPasswordFlow(context,
+                  name: e.fullName, endpoint: '/users/by-employee/${e.id}/reset-password'),
             ),
           ),
         if (canEdit)
@@ -659,6 +671,15 @@ class _EmployeeCard extends StatelessWidget {
               Text(s.salaryHistory),
             ]),
           ),
+        if (canResetPassword)
+          PopupMenuItem(
+            value: 'password',
+            child: Row(children: [
+              const Icon(Icons.key_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(s.userResetPasswordTitle),
+            ]),
+          ),
         if (canEdit)
           PopupMenuItem(
             value: 'edit',
@@ -690,6 +711,9 @@ class _EmployeeCard extends StatelessWidget {
         if (v == 'documents') onDocuments();
         if (v == 'salary') onSalaryHistory();
         if (v == 'edit') onEdit();
+        if (v == 'password') {
+          resetPasswordFlow(context, name: e.fullName, endpoint: '/users/by-employee/${e.id}/reset-password');
+        }
         if (v == 'delete') onDelete();
       },
     );

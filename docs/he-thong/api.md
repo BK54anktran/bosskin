@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-40 controller, 308 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+40 controller, 309 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -43,7 +43,7 @@
 | [TwoFactorController](#twofactorcontroller) | `/` | 6 |
 | [UniversalExcelController](#universalexcelcontroller) | `/api/v1/excel` | 7 |
 | [UploadController](#uploadcontroller) | `/api/v1/upload` | 2 |
-| [UserController](#usercontroller) | `/api/v1/users` | 10 |
+| [UserController](#usercontroller) | `/api/v1/users` | 11 |
 | [WorkCalendarController](#workcalendarcontroller) | `/` | 14 |
 | [WorkShiftController](#workshiftcontroller) | `/api/v1/shifts` | 18 |
 
@@ -580,6 +580,7 @@
 |---|---|---|---|
 | GET | `/api/v1/users` | USER_MANAGE | `listUsers` |
 | POST | `/api/v1/users/{id}/reset-password` | USER_MANAGE | `resetPassword` |
+| POST | `/api/v1/users/by-employee/{employeeId}/reset-password` | USER_MANAGE | `resetPasswordByEmployee` |
 | POST | `/api/v1/users/initial-passwords` | USER_MANAGE | `issueInitialPasswords` |
 | POST | `/api/v1/users` | USER_MANAGE | `createUser` |
 | POST | `/api/v1/users/sync-from-employees` | USER_MANAGE | `syncFromEmployees` |

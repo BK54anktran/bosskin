@@ -15,6 +15,7 @@ Mở **Nhân viên**. Tìm theo tên, email, mã NV; lọc theo phòng ban và t
 | 👪 | Người phụ thuộc (giảm trừ gia cảnh) |
 | 📁 | Tài liệu nhân sự của người đó |
 | 💵 | Lịch sử lương |
+| 🔑 | Đặt lại mật khẩu (cần quyền quản lý người dùng): hệ thống sinh mật khẩu tạm, hiện **một lần** để bạn gửi cho nhân viên; lần đăng nhập tới nhân viên phải đổi mật khẩu mới. Dùng khi nhân viên quên mật khẩu |
 | ✏️ | Sửa hồ sơ |
 | 🚫 (đỏ) | **Nghỉ việc**: chọn ngày làm việc cuối (không sau hôm nay). Trạng thái thành *Nghỉ việc*, tài khoản bị khoá và đăng xuất mọi máy, cấp dưới không còn quản lý trực tiếp này, ca đã xếp sau ngày nghỉ (chưa có công) được gỡ. Hồ sơ **không bị xoá**: lọc trạng thái *Nghỉ việc* để xem lại |
 | 👤+ (người đã nghỉ) | **Đi làm lại**: trạng thái về *Đang làm*, bỏ ngày nghỉ, mở lại tài khoản (quản lý trực tiếp chọn lại trong hồ sơ nếu cần) |

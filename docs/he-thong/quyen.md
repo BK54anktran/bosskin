@@ -126,7 +126,7 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `USER_MANAGE` | Quản lý tài khoản người dùng |  | 11 | employee_screen, permission_labels, roles_screen |
+| `USER_MANAGE` | Quản lý tài khoản người dùng |  | 12 | employee_screen, permission_labels, roles_screen |
 
 ## Kiểm tra đồng bộ
 

@@ -65,7 +65,20 @@ public class UserController {
     @PostMapping("/{id}/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@PathVariable Long id, @AuthenticationPrincipal User caller) {
         requirePermission(caller, "USER_MANAGE");
-        User user = findUserInCompanyAndScope(id, caller);
+        return resetPasswordOf(findUserInCompanyAndScope(id, caller), caller);
+    }
+
+    /** Như /{id}/reset-password nhưng tìm tài khoản theo nhân viên (nút 🔑 ở màn Nhân viên). */
+    @PostMapping("/by-employee/{employeeId}/reset-password")
+    public ResponseEntity<Map<String, String>> resetPasswordByEmployee(@PathVariable Long employeeId,
+                                                                       @AuthenticationPrincipal User caller) {
+        requirePermission(caller, "USER_MANAGE");
+        User user = userRepository.findByEmployeeId(employeeId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.employee.no_account"));
+        return resetPasswordOf(findUserInCompanyAndScope(user.getId(), caller), caller);
+    }
+
+    private ResponseEntity<Map<String, String>> resetPasswordOf(User user, User caller) {
         if (user.getId().equals(caller.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.cannot_reset_self");
         }

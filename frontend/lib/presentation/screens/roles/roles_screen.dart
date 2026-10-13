@@ -2,7 +2,6 @@ import 'package:bosskin/l10n/app_localizations.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/file_saver_utils.dart';
 import '../../../core/utils/error_utils.dart';
@@ -19,6 +18,7 @@ import '../../../data/services/auth_service.dart';
 import '../../../data/services/department_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/permission_guard.dart';
+import '../../widgets/reset_password_flow.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
@@ -1106,52 +1106,8 @@ class _UsersTabState extends State<_UsersTab> {
   }
 
   /// D9 — đặt lại mật khẩu cho một tài khoản: hiện mật khẩu tạm một lần, NV phải đổi khi đăng nhập.
-  Future<void> _resetPassword(AppUser user) async {
-    final s = AppLocalizations.of(context);
-    final name = user.fullName ?? user.email;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.userResetPasswordTitle),
-        content: Text(s.userResetPasswordConfirm(name)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.cancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.confirm)),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    try {
-      final r = await ApiService.instance.dio.post('/users/${user.id}/reset-password');
-      final pw = (r.data as Map)['password']?.toString() ?? '';
-      if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(s.userResetPasswordDoneTitle),
-          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(s.userResetPasswordDoneHint(name)),
-            const SizedBox(height: 12),
-            SelectableText(pw, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, fontFamily: 'monospace')),
-          ]),
-          actions: [
-            TextButton.icon(
-              icon: const Icon(Icons.copy, size: 16),
-              label: Text(s.sysAdminCopyPassword),
-              onPressed: () => Clipboard.setData(ClipboardData(text: pw)),
-            ),
-            FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(s.close)),
-          ],
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error),
-        );
-      }
-    }
-  }
+  Future<void> _resetPassword(AppUser user) => resetPasswordFlow(context,
+      name: user.fullName ?? user.email, endpoint: '/users/${user.id}/reset-password');
 
   /// D9 — cấp mật khẩu tạm mới cho các tài khoản chưa đổi mật khẩu lần đầu, tải về file Excel để phát cho NV.
   Future<void> _issueInitialPasswords() async {
