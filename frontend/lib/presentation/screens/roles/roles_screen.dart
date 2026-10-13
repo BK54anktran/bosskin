@@ -278,17 +278,17 @@ class _RolesTabState extends State<_RolesTab> {
     final s = AppLocalizations.of(context);
     final ok = await _showInstantDialog<bool>(
       context,
-      (_) => AlertDialog(
+      (ctx) => AlertDialog(
         title: Text(s.deleteRoleTitle),
         content: Text(s.deleteRolePrompt(role.name)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: Text(s.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: Text(s.delete),
           ),
         ],

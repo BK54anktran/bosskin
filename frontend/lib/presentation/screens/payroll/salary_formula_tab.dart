@@ -983,20 +983,20 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
     final s = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
-      builder: (_) => SafeArea(
+      builder: (sheetCtx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.edit_outlined),
               title: Text(s.payEditNamed(name)),
-              onTap: () { Navigator.pop(context); _openPrivateVarDialog(name, expr); },
+              onTap: () { Navigator.pop(sheetCtx); _openPrivateVarDialog(name, expr); },
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: AppTheme.error),
               title: Text(s.payDeleteNamed(name), style: const TextStyle(color: AppTheme.error)),
               onTap: () async {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(

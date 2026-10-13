@@ -132,16 +132,16 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     final s = AppLocalizations.of(context);
     final ok = await showInstantDialog<bool>(
       context,
-      (_) => AlertDialog(
+      (ctx) => AlertDialog(
         title: Text(s.employeeDeleteTitle),
         content: Text(s.employeeDeletePrompt(emp.fullName)),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(ctx, false),
               child: Text(s.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: Text(s.confirm),
           ),
         ],
