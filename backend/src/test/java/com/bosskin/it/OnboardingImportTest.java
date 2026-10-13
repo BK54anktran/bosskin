@@ -101,15 +101,15 @@ class OnboardingImportTest extends IntegrationTest {
         return r.getHeader("X-Import-Summary");
     }
 
-    private List<SheetData> onboardingSheets() {
+    private List<SheetData> onboardingSheets(Fixture.TestCompany c) {
         return List.of(
             // Thứ tự sheet trong file cố ý ngược: hệ thống vẫn phải nhập phòng ban trước nhân viên
             new SheetData("department", List.of(row("Mã phòng ban (*)", "XUONG2", "Tên phòng ban (*)", "Xưởng 2"))),
-            new SheetData("employee", List.of(row("Mã NV (*)", "NV901", "Họ và tên (*)", "Phạm Văn Lực",
-                "Email (*)", "luc901@onboard.test", "Phòng ban (*)", "XUONG2", "Ngày vào làm", "01/11/2026"))),
-            new SheetData("leave_grant", List.of(row("Mã NV (*)", "NV901", "Mã loại phép (*)", "PN",
+            new SheetData("employee", List.of(row("Mã NV (*)", c.code + "901", "Họ và tên (*)", "Phạm Văn Lực",
+                "Email (*)", c.email("luc901"), "Phòng ban (*)", "XUONG2", "Ngày vào làm", "01/11/2026"))),
+            new SheetData("leave_grant", List.of(row("Mã NV (*)", c.code + "901", "Mã loại phép (*)", "PN",
                 "Số ngày phép", "5", "Ngày cấp (*)", "01/11/2026", "Hiệu lực đến", "31/12/2026"))),
-            new SheetData("shift_assignment", List.of(row("Mã NV (*)", "NV901", "Ngày (*)", "02/11/2026",
+            new SheetData("shift_assignment", List.of(row("Mã NV (*)", c.code + "901", "Ngày (*)", "02/11/2026",
                 "Mã ca (*)", "HC")))
         );
     }
@@ -124,11 +124,11 @@ class OnboardingImportTest extends IntegrationTest {
     void one_file_onboarding_is_ordered_and_idempotent() throws Exception {
         clock.set(NOW);
         var c = fixture.standardCompany();
-        byte[] file = buildFile(c, onboardingSheets());
+        byte[] file = buildFile(c, onboardingSheets(c));
 
         assertThat(importSummary(c, file)).isEqualTo("{\"ok\":4,\"error\":0,\"skip\":0}");
-        String emp = "SELECT e.id FROM employees e WHERE e.employee_code = 'NV901' AND e.company_id = ?";
-        long empId = jdbc.queryForObject(emp, Long.class, c.id);
+        String emp = "SELECT e.id FROM employees e WHERE e.employee_code = ? AND e.company_id = ?";
+        long empId = jdbc.queryForObject(emp, Long.class, c.code + "901", c.id);
         String grants = "SELECT COUNT(*) FROM leave_grants WHERE employee_id = ?";
         String assigns = "SELECT COUNT(*) FROM shift_assignments WHERE employee_id = ? AND deleted = false";
         assertThat(count(grants, empId)).isEqualTo(1);
@@ -141,8 +141,8 @@ class OnboardingImportTest extends IntegrationTest {
         assertThat(count(assigns, empId)).isEqualTo(1);
 
         // Sửa số ngày phép 5 → 7: cập nhật đúng quỹ đó
-        List<SheetData> changed = new ArrayList<>(onboardingSheets());
-        changed.set(2, new SheetData("leave_grant", List.of(row("Mã NV (*)", "NV901", "Mã loại phép (*)", "PN",
+        List<SheetData> changed = new ArrayList<>(onboardingSheets(c));
+        changed.set(2, new SheetData("leave_grant", List.of(row("Mã NV (*)", c.code + "901", "Mã loại phép (*)", "PN",
             "Số ngày phép", "7", "Ngày cấp (*)", "01/11/2026", "Hiệu lực đến", "31/12/2026"))));
         byte[] file2 = buildFile(c, changed);
         assertThat(preview(c, file2, "leave_grant").get(0).path("summary").asText())
@@ -154,17 +154,22 @@ class OnboardingImportTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("Xem trước nhân viên mới báo ngay email đã có tài khoản và phòng ban chưa có")
+    @DisplayName("Xem trước nhân viên mới báo ngay email đã có tài khoản, phòng ban chưa có, mã NV / đuôi email sai công ty")
     void preview_reports_email_in_use_and_missing_department() throws Exception {
         clock.set(NOW);
         var c = fixture.standardCompany();
         byte[] file = buildFile(c, List.of(new SheetData("employee", List.of(
-            row("Mã NV (*)", "NV902", "Họ và tên (*)", "Trùng Email", "Email (*)", c.emp(0).email(), "Phòng ban (*)", "KT"),
-            row("Mã NV (*)", "NV903", "Họ và tên (*)", "Sai Phòng", "Email (*)", "nv903@onboard.test", "Phòng ban (*)", "KHONGCO"),
-            row("Mã NV (*)", "NV904", "Họ và tên (*)", "Hợp Lệ", "Email (*)", "nv904@onboard.test", "Phòng ban (*)", "KT")))));
+            row("Mã NV (*)", c.code + "902", "Họ và tên (*)", "Trùng Email", "Email (*)", c.emp(0).email(), "Phòng ban (*)", "KT"),
+            row("Mã NV (*)", c.code + "903", "Họ và tên (*)", "Sai Phòng", "Email (*)", c.email("nv903"), "Phòng ban (*)", "KHONGCO"),
+            row("Mã NV (*)", c.code + "904", "Họ và tên (*)", "Hợp Lệ", "Email (*)", c.email("nv904"), "Phòng ban (*)", "KT"),
+            // V22: mã NV phải bắt đầu bằng mã công ty, email phải theo đuôi công ty
+            row("Mã NV (*)", "NV905", "Họ và tên (*)", "Sai Mã", "Email (*)", c.email("nv905"), "Phòng ban (*)", "KT"),
+            row("Mã NV (*)", c.code + "906", "Họ và tên (*)", "Sai Đuôi", "Email (*)", "nv906@khac.test", "Phòng ban (*)", "KT")))));
         List<JsonNode> rows = preview(c, file, "employee");
         assertThat(rows.get(0).path("error").asText()).isEqualTo("error.import.email_in_use|" + c.emp(0).email());
         assertThat(rows.get(1).path("error").asText()).startsWith("error.import.department_missing|KHONGCO");
         assertThat(rows.get(2).path("error").isNull()).isTrue();
+        assertThat(rows.get(3).path("error").asText()).isEqualTo("error.employee.code_prefix|" + c.code + "|NV905");
+        assertThat(rows.get(4).path("error").asText()).isEqualTo("error.email.domain_mismatch|" + c.code.toLowerCase() + ".test");
     }
 }

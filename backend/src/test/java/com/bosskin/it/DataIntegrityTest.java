@@ -41,13 +41,13 @@ class DataIntegrityTest extends IntegrationTest {
         c.createDepartment("PB", "Phòng B", null);
         var a = c.createEmployee("Nguyễn A", "PB");
         var b = c.createEmployee("Nguyễn B", "PB");
-        assertThat(a.code()).isEqualTo("EMP00001");
-        assertThat(b.code()).isEqualTo("EMP00002");
+        assertThat(a.code()).isEqualTo(c.code + "00001");
+        assertThat(b.code()).isEqualTo(c.code + "00002");
 
-        // Xoá A rồi tạo người mới: count + 1 trước đây ra lại EMP00002 (trùng B)
+        // Xoá A rồi tạo người mới: count + 1 trước đây ra lại mã 00002 (trùng B)
         api.delete(c.adminToken, "/api/v1/employees/" + a.id()).expectOk();
         var d = c.createEmployee("Nguyễn D", "PB");
-        assertThat(d.code()).isEqualTo("EMP00003");
+        assertThat(d.code()).isEqualTo(c.code + "00003");
 
         // 6 yêu cầu tạo cùng lúc → 6 mã khác nhau
         List<Callable<String>> jobs = new ArrayList<>();
@@ -68,8 +68,8 @@ class DataIntegrityTest extends IntegrationTest {
         List<String> codes = new ArrayList<>();
         for (Future<String> f : pool.invokeAll(jobs)) codes.add(f.get());
         pool.shutdown();
-        assertThat(codes).doesNotHaveDuplicates().allMatch(s -> s.matches("EMP\\d{5}"));
-        assertThat(codes).doesNotContain("EMP00001", "EMP00002", "EMP00003");
+        assertThat(codes).doesNotHaveDuplicates().allMatch(s -> s.matches(c.code + "\\d{5}"));
+        assertThat(codes).doesNotContain(c.code + "00001", c.code + "00002", c.code + "00003");
     }
 
     // ── D8 ──────────────────────────────────────────────────────────────────
@@ -137,7 +137,7 @@ class DataIntegrityTest extends IntegrationTest {
                 "excel.col.employee.phone", "excel.col.employee.gender", "excel.col.employee.joinDate",
                 "excel.col.employee.departmentCode");
             Row r = s1.createRow(1);
-            r.createCell(0).setCellValue("NV900");
+            r.createCell(0).setCellValue(c.code + "900");
             r.createCell(1).setCellValue("Trần Nhập");
             r.createCell(2).setCellValue(email);
             r.createCell(3).setCellValue(912345678d);          // gõ 0912345678 nhưng Excel lưu số
@@ -147,7 +147,7 @@ class DataIntegrityTest extends IntegrationTest {
             Sheet s2 = wb.createSheet("2");
             header(s2, "excel.col.employee.code", "excel.col.employee.fullName", "excel.col.employee.identityCard");
             Row p = s2.createRow(1);
-            p.createCell(0).setCellValue("NV900");
+            p.createCell(0).setCellValue(c.code + "900");
             p.createCell(1).setCellValue("Trần Nhập");
             p.createCell(2).setCellValue(1203004567d);         // CCCD 001203004567 bị Excel lưu thành số
             wb.write(out);

@@ -38,6 +38,10 @@ class AuthUser {
   final UserType type;
   final int? companyId;
   final String? companyName;
+
+  /// V22: mã công ty (tiền tố mã NV) và đuôi email bắt buộc của tài khoản trong công ty.
+  final String? companyCode;
+  final String? companyDomain;
   final int? employeeId;
   final Set<String> permissions;
 
@@ -52,6 +56,8 @@ class AuthUser {
     required this.type,
     this.companyId,
     this.companyName,
+    this.companyCode,
+    this.companyDomain,
     this.employeeId,
     this.permissions = const {},
     this.deptScopes = const {},
@@ -71,6 +77,8 @@ class AuthUser {
         'type': type.name,
         'companyId': companyId,
         'companyName': companyName,
+        'companyCode': companyCode,
+        'companyDomain': companyDomain,
         'employeeId': employeeId,
         'permissions': permissions.toList(),
         'deptScopes': deptScopes.map(
@@ -87,6 +95,8 @@ class AuthUser {
             m['type'] == 'system' ? UserType.system : UserType.company,
         companyId: m['companyId'] as int?,
         companyName: m['companyName'] as String?,
+        companyCode: m['companyCode'] as String?,
+        companyDomain: m['companyDomain'] as String?,
         employeeId: m['employeeId'] as int?,
         permissions: (m['permissions'] as List?)
                 ?.map((e) => e.toString())
@@ -437,6 +447,8 @@ class AuthService extends ChangeNotifier {
       companyId: userMap['companyId'] as int?,
       companyName:
           userMap['companyName'] as String?,
+      companyCode: userMap['companyCode'] as String?,
+      companyDomain: userMap['companyDomain'] as String?,
       employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
@@ -478,6 +490,8 @@ class AuthService extends ChangeNotifier {
         type: _currentUser!.type,
         companyId: _currentUser!.companyId,
         companyName: _currentUser!.companyName,
+        companyCode: _currentUser!.companyCode,
+        companyDomain: _currentUser!.companyDomain,
         employeeId: _currentUser!.employeeId,
         permissions: _currentUser!.permissions,
         deptScopes: _currentUser!.deptScopes,
@@ -507,6 +521,8 @@ class AuthService extends ChangeNotifier {
       type: _currentUser!.type,
       companyId: _currentUser!.companyId,
       companyName: _currentUser!.companyName,
+      companyCode: _currentUser!.companyCode,
+      companyDomain: _currentUser!.companyDomain,
       employeeId: _currentUser!.employeeId,
       permissions: _currentUser!.permissions,
       deptScopes: _currentUser!.deptScopes,
@@ -589,6 +605,8 @@ class AuthService extends ChangeNotifier {
         companyId: userMap['companyId'] as int?,
         companyName:
             userMap['companyName'] as String?,
+        companyCode: userMap['companyCode'] as String?,
+        companyDomain: userMap['companyDomain'] as String?,
         employeeId:
             userMap['employeeId'] as int?,
         permissions: perms,
@@ -714,6 +732,8 @@ class AuthService extends ChangeNotifier {
       type: UserType.company,
       companyId: userMap['companyId'] as int?,
       companyName: userMap['companyName'] as String?,
+      companyCode: userMap['companyCode'] as String?,
+      companyDomain: userMap['companyDomain'] as String?,
       employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
@@ -746,6 +766,8 @@ class AuthService extends ChangeNotifier {
       type: _currentUser!.type,
       companyId: _currentUser!.companyId,
       companyName: _currentUser!.companyName,
+      companyCode: _currentUser!.companyCode,
+      companyDomain: _currentUser!.companyDomain,
       employeeId: _currentUser!.employeeId,
       permissions: newPermissions,
       deptScopes:

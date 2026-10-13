@@ -100,6 +100,8 @@ public class CompanyController {
                         .type("COMPANY")
                         .companyId(id)
                         .companyName(company.getName())
+                        .companyCode(company.getCode())
+                        .companyDomain(company.getDomain())
                         .permissions(allPermissions)
                         .build())
                 .build());

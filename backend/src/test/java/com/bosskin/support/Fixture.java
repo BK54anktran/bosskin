@@ -83,6 +83,9 @@ public class Fixture {
 
         public String tokenOf(Emp e) { return api.token(e.email(), PASSWORD); }
 
+        /** Email theo đuôi công ty test ({@code <mã>.test}) — V22 bắt buộc cho mọi tài khoản. */
+        public String email(String local) { return local + "@" + code.toLowerCase() + ".test"; }
+
         public long createDepartment(String code, String name, Long parentId) {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("code", code);
@@ -213,6 +216,7 @@ public class Fixture {
         CreateCompanyRequest req = new CreateCompanyRequest();
         req.setName("Công ty test " + code);
         req.setCode(code);
+        req.setDomain(code.toLowerCase() + ".test");
         req.setAdminEmail(adminEmail);
         req.setAdminPassword(PASSWORD);
         req.setAdminFullName("Admin " + code);

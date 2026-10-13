@@ -42,6 +42,9 @@ public class AuthDTO {
         private String      type;          // COMPANY | SYSTEM
         private Long        companyId;
         private String      companyName;
+        /** V22: mã công ty (tiền tố mã NV) và đuôi email bắt buộc của tài khoản trong công ty. */
+        private String      companyCode;
+        private String      companyDomain;
         private String      fullName;
         private String      avatar;
         private Long        employeeId;

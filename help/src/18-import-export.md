@@ -26,7 +26,9 @@ Công ty mới chưa có dữ liệu để xuất ra làm mẫu: bấm **Tải f
 - Mỗi loại dữ liệu một sheet, **chỉ có dòng tiêu đề** đúng các cột nhập được.
 - Sheet cuối **Hướng dẫn** liệt kê từng cột: bắt buộc hay không, **ví dụ** và ghi chú (định dạng ngày `dd/MM/yyyy`, giờ `HH:mm`,
   mã tham chiếu lấy ở đâu…). File mở sẵn ở sheet này.
-- Điền từ dòng 2, ghi `MERGE` ở cột **Lệnh** cho mỗi dòng cần nhập. Nhân viên mới để trống **Mã NV**, hệ thống tự cấp.
+- Điền từ dòng 2, ghi `MERGE` ở cột **Lệnh** cho mỗi dòng cần nhập. Nhân viên mới để trống **Mã NV**, hệ thống tự cấp
+  theo mã công ty; nếu tự điền thì mã phải bắt đầu bằng mã công ty (công ty `TH` → `TH0123`), email phải đúng đuôi email công ty —
+  sai thì bản xem trước báo lỗi ở dòng đó.
 - Điền được cả phòng ban lẫn nhân viên thuộc phòng ban đó trong **cùng một file**: bản xem trước hiểu phòng ban sẽ được tạo trước.
 
 Màn **Hợp đồng** và **Cài đặt công ty → Lịch làm việc** (ngày lễ) cũng có nút **Tải file mẫu** riêng cạnh **Nhập Excel**.

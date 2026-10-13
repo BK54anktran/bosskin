@@ -20,8 +20,8 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `CALENDAR_VIEW` | Xem ngày lễ và lịch làm việc |  | 14 | company_settings_screen, nav_access, permission_labels, work_calendar_tab |
-| `CALENDAR_MANAGE` | Sửa ngày lễ và lịch làm việc | `CALENDAR_VIEW` | 9 | permission_labels, work_calendar_tab |
+| `CALENDAR_VIEW` | Xem ngày lễ và lịch làm việc |  | 15 | company_settings_screen, nav_access, permission_labels, work_calendar_tab |
+| `CALENDAR_MANAGE` | Sửa ngày lễ và lịch làm việc | `CALENDAR_VIEW` | 10 | permission_labels, work_calendar_tab |
 
 ## COMPANY
 
@@ -41,8 +41,8 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `CONTRACT_VIEW` | Xem hợp đồng lao động |  | 14 | contract_dialogs, employee_documents_dialog, nav_access, permission_labels |
-| `CONTRACT_EDIT` | Tạo / sửa hợp đồng lao động và phụ lục | `CONTRACT_VIEW` | 9 | contract_dialogs, contracts_screen, permission_labels |
+| `CONTRACT_VIEW` | Xem hợp đồng lao động |  | 15 | contract_dialogs, employee_documents_dialog, nav_access, permission_labels |
+| `CONTRACT_EDIT` | Tạo / sửa hợp đồng lao động và phụ lục | `CONTRACT_VIEW` | 10 | contract_dialogs, contracts_screen, permission_labels |
 | `CONTRACT_DELETE` | Xoá hợp đồng lao động | `CONTRACT_VIEW` | 1 | audit_log_screen, contract_dialogs, permission_labels |
 
 ## DASHBOARD
@@ -76,7 +76,7 @@
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
 | `EXCEL_EXPORT` | Xuất Excel tổng hợp (theo quyền từng module) |  | 5 | nav_access, permission_labels |
-| `EXCEL_IMPORT` | Nhập Excel tổng hợp (theo quyền từng module) |  | 6 | nav_access, permission_labels |
+| `EXCEL_IMPORT` | Nhập Excel tổng hợp (theo quyền từng module) |  | 7 | excel_import_export_screen, nav_access, permission_labels |
 
 ## LEAVE
 

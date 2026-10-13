@@ -10156,6 +10156,66 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Lần đầu nhập dữ liệu? Tải file mẫu, điền theo sheet Hướng dẫn rồi chọn file ở dưới.'**
   String get excelTemplateIntro;
+
+  /// No description provided for @editCompany.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa công ty'**
+  String get editCompany;
+
+  /// No description provided for @companyCodeRule.
+  ///
+  /// In vi, this message translates to:
+  /// **'2–12 ký tự chữ hoa / số, bắt đầu bằng chữ. Là tiền tố mã nhân viên (VD: TH → TH00001), không đổi được sau khi tạo.'**
+  String get companyCodeRule;
+
+  /// No description provided for @companyCodeInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã công ty 2–12 ký tự chữ hoa / số, bắt đầu bằng chữ'**
+  String get companyCodeInvalid;
+
+  /// No description provided for @companyCodeLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã công ty là tiền tố mã nhân viên nên không đổi được'**
+  String get companyCodeLocked;
+
+  /// No description provided for @emailDomain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đuôi email'**
+  String get emailDomain;
+
+  /// No description provided for @emailDomainExample.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: th.com'**
+  String get emailDomainExample;
+
+  /// No description provided for @emailDomainInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đuôi email không hợp lệ (VD: th.com)'**
+  String get emailDomainInvalid;
+
+  /// No description provided for @emailDomainChangeRule.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi tài khoản trong công ty phải dùng đuôi này. Chỉ đổi được khi không còn tài khoản dùng đuôi cũ.'**
+  String get emailDomainChangeRule;
+
+  /// No description provided for @emailDomainMismatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email phải có đuôi @{domain}'**
+  String emailDomainMismatch(String domain);
+
+  /// No description provided for @emailDomainHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email đăng nhập, đuôi @{domain}'**
+  String emailDomainHint(String domain);
 }
 
 class _AppLocalizationsDelegate

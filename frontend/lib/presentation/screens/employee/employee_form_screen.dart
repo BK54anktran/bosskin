@@ -2,6 +2,8 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/company_identity_utils.dart';
+import '../../../data/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/department_model.dart';
 import '../../../data/models/employee.dart';
@@ -66,6 +68,11 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   bool _saving = false;
 
   bool get _isEdit => widget.employee != null;
+
+  String? get _companyDomain {
+    final d = AuthService.instance.currentUser?.companyDomain;
+    return d == null || d.isEmpty ? null : d;
+  }
 
   /// Bước M: có trường đang hiển thị dạng che (thiếu quyền EMPLOYEE_SENSITIVE_VIEW).
   bool get _hasMaskedValue {
@@ -276,10 +283,19 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                 )),
                 _field(TextFormField(
                   controller: _email,
-                  decoration: InputDecoration(labelText: '${s.workEmail} *'),
+                  decoration: InputDecoration(
+                    labelText: '${s.workEmail} *',
+                    // V22: tài khoản phải theo đuôi email của công ty
+                    helperText: !_isEdit && _companyDomain != null ? s.emailDomainHint(_companyDomain!) : null,
+                  ),
                   enabled: !_isEdit,
-                  validator: (v) =>
-                      v == null || !v.contains('@') ? s.invalidEmail : null,
+                  validator: (v) {
+                    if (v == null || !v.contains('@')) return s.invalidEmail;
+                    if (!_isEdit && !emailMatchesDomain(_companyDomain, v)) {
+                      return s.emailDomainMismatch(_companyDomain!);
+                    }
+                    return null;
+                  },
                 )),
               ]),
               if (!_isEdit) ...[

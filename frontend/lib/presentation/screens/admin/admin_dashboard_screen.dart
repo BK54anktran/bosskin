@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/company_identity_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
@@ -248,13 +249,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     _DialogField(ctrl: nameCtrl, label: s.companyName,
                         validator: (v) => (v == null || v.trim().isEmpty) ? s.requiredField : null),
                     const SizedBox(height: 10),
+                    // V22: mã công ty là tiền tố mã NV, không đổi được sau khi tạo
                     _DialogField(ctrl: codeCtrl, label: s.companyCode, hint: s.companyCodeHint,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? s.requiredField : null),
+                        helper: s.companyCodeRule,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? s.requiredField
+                            : (!isValidCompanyCode(v) ? s.companyCodeInvalid : null)),
                     const SizedBox(height: 10),
                     Row(children: [
                       Expanded(child: _DialogField(ctrl: phoneCtrl, label: s.phoneNumber)),
                       const SizedBox(width: 10),
-                      Expanded(child: _DialogField(ctrl: domainCtrl, label: s.domain)),
+                      // V22: đuôi email bắt buộc của mọi tài khoản trong công ty
+                      Expanded(child: _DialogField(ctrl: domainCtrl, label: '${s.emailDomain} *',
+                          hint: s.emailDomainExample,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? s.requiredField
+                              : (!isValidEmailDomain(normalizeEmailDomain(v)) ? s.emailDomainInvalid : null))),
                     ]),
                     const SizedBox(height: 10),
                     _DialogField(ctrl: emailCtrl, label: s.contactEmail,
@@ -267,7 +277,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     const SizedBox(height: 10),
                     _DialogField(ctrl: adminEmailCtrl, label: s.adminEmailLabel,
                         keyboardType: TextInputType.emailAddress,
-                        validator: (v) => (v == null || !v.contains('@')) ? s.invalidEmail : null),
+                        validator: (v) {
+                          if (v == null || !v.contains('@')) return s.invalidEmail;
+                          final domain = normalizeEmailDomain(domainCtrl.text);
+                          if (domain.isNotEmpty && !emailMatchesDomain(domain, v)) {
+                            return s.emailDomainMismatch(domain);
+                          }
+                          return null;
+                        }),
                     const SizedBox(height: 10),
                     _DialogField(ctrl: adminPassCtrl, label: s.passwordLabel, obscureText: true,
                         validator: (v) => (v == null || !isStrongPassword(v)) ? s.passwordPolicyHint : null),
@@ -291,7 +308,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     'code': codeCtrl.text.trim().toUpperCase(),
                     'adminEmail': adminEmailCtrl.text.trim(),
                     'adminPassword': adminPassCtrl.text,
-                    if (domainCtrl.text.isNotEmpty) 'domain': domainCtrl.text.trim(),
+                    'domain': normalizeEmailDomain(domainCtrl.text),
                     if (phoneCtrl.text.isNotEmpty) 'phone': phoneCtrl.text.trim(),
                     if (emailCtrl.text.isNotEmpty) 'companyEmail': emailCtrl.text.trim(),
                   });
@@ -300,13 +317,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   _loadStats();
                 } catch (e) {
                   setS(() => isLoading = false);
-                  if (ctx.mounted) {
-                    String msg = s.genericError;
-                    if (e is DioException && e.response?.data != null) {
-                      msg = e.response?.data['message'] ?? msg;
-                    }
+                  if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(msg), backgroundColor: Colors.red));
+                        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
                   }
                 }
               },
@@ -314,6 +327,101 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   ? const SizedBox(width: 18, height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : Text(s.createCompany),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  /// Sửa công ty: mã chỉ xem (là tiền tố mã NV, không đổi được); đổi đuôi email bị backend chặn
+  /// khi trùng công ty khác hoặc còn tài khoản dùng đuôi cũ.
+  void _showEditCompanyDialog(Map<String, dynamic> company) {
+    final s = AppLocalizations.of(context);
+    final formKey = GlobalKey<FormState>();
+    final nameCtrl = TextEditingController(text: company['name'] as String? ?? '');
+    final codeCtrl = TextEditingController(text: company['code'] as String? ?? '');
+    final domainCtrl = TextEditingController(text: company['domain'] as String? ?? '');
+    final phoneCtrl = TextEditingController(text: company['phone'] as String? ?? '');
+    final emailCtrl = TextEditingController(text: company['email'] as String? ?? '');
+    final addressCtrl = TextEditingController(text: company['address'] as String? ?? '');
+    bool isLoading = false;
+
+    showInstantDialog(
+      context,
+      (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Row(children: [
+            const Icon(Icons.edit_outlined, size: 22),
+            const SizedBox(width: 8),
+            Text(s.editCompany, style: const TextStyle(fontSize: 18)),
+          ]),
+          content: SizedBox(
+            width: 480,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _DialogField(ctrl: nameCtrl, label: s.companyName,
+                        validator: (v) => (v == null || v.trim().isEmpty) ? s.requiredField : null),
+                    const SizedBox(height: 10),
+                    _DialogField(ctrl: codeCtrl, label: s.companyCode, readOnly: true,
+                        helper: s.companyCodeLocked),
+                    const SizedBox(height: 10),
+                    _DialogField(ctrl: domainCtrl, label: '${s.emailDomain} *', hint: s.emailDomainExample,
+                        helper: s.emailDomainChangeRule,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? s.requiredField
+                            : (!isValidEmailDomain(normalizeEmailDomain(v)) ? s.emailDomainInvalid : null)),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(child: _DialogField(ctrl: phoneCtrl, label: s.phoneNumber)),
+                      const SizedBox(width: 10),
+                      Expanded(child: _DialogField(ctrl: emailCtrl, label: s.contactEmail,
+                          keyboardType: TextInputType.emailAddress)),
+                    ]),
+                    const SizedBox(height: 10),
+                    _DialogField(ctrl: addressCtrl, label: s.address),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(ctx),
+              child: Text(s.cancel),
+            ),
+            ElevatedButton(
+              onPressed: isLoading ? null : () async {
+                if (!formKey.currentState!.validate()) return;
+                setS(() => isLoading = true);
+                try {
+                  await _dio.put('/companies/${company['id']}', data: {
+                    'name': nameCtrl.text.trim(),
+                    'domain': normalizeEmailDomain(domainCtrl.text),
+                    'phone': phoneCtrl.text.trim(),
+                    'companyEmail': emailCtrl.text.trim(),
+                    'address': addressCtrl.text.trim(),
+                  });
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  _loadCompanies();
+                } catch (e) {
+                  setS(() => isLoading = false);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(serverMsg(e)), backgroundColor: AppTheme.error));
+                  }
+                }
+              },
+              child: isLoading
+                  ? const SizedBox(width: 18, height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text(s.save),
             ),
           ],
         ),
@@ -857,6 +965,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               company: _companies[i],
               onToggleActive: _toggleActive,
               onToggleRequire2fa: _toggleRequire2fa,
+              onEdit: _showEditCompanyDialog,
               onImpersonate: _impersonateCompany,
             ),
           );
@@ -889,9 +998,10 @@ class _CompanyCard extends StatelessWidget {
   final Future<void> Function(int id, bool currentActive) onToggleActive;
   final Future<void> Function(int id) onImpersonate;
   final Future<void> Function(int id, bool current) onToggleRequire2fa;
+  final void Function(Map<String, dynamic> company) onEdit;
 
   const _CompanyCard({required this.company, required this.onToggleActive, required this.onImpersonate,
-      required this.onToggleRequire2fa});
+      required this.onToggleRequire2fa, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -978,6 +1088,13 @@ class _CompanyCard extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Tooltip(
+              message: s.editCompany,
+              child: IconButton(
+                onPressed: () => onEdit(company),
+                icon: Icon(Icons.edit_outlined, size: 18, color: AppTheme.textMuted),
+              ),
+            ),
+            Tooltip(
               message: require2fa ? s.twoFactorCompanyRequiredOn : s.twoFactorCompanyRequiredOff,
               child: IconButton(
                 onPressed: () => onToggleRequire2fa(company['id'] as int, require2fa),
@@ -1034,11 +1151,13 @@ class _DialogField extends StatelessWidget {
   final String? hint;
   final TextInputType? keyboardType;
   final bool obscureText;
+  final bool readOnly;
+  final String? helper;
   final String? Function(String?)? validator;
 
   const _DialogField({
     required this.ctrl, required this.label,
-    this.hint, this.keyboardType, this.obscureText = false, this.validator,
+    this.hint, this.keyboardType, this.obscureText = false, this.readOnly = false, this.helper, this.validator,
   });
 
   @override
@@ -1047,9 +1166,11 @@ class _DialogField extends StatelessWidget {
       controller: ctrl,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      readOnly: readOnly,
       validator: validator,
       decoration: InputDecoration(
-        labelText: label, hintText: hint, isDense: true,
+        labelText: label, hintText: hint, helperText: helper, helperMaxLines: 3, isDense: true,
+        filled: readOnly, fillColor: readOnly ? AppTheme.surfaceAlt : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       ),

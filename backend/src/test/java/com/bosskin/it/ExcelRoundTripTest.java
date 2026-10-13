@@ -131,9 +131,9 @@ class ExcelRoundTripTest extends IntegrationTest {
             Sheet sh = wb.getSheetAt(0);
             set(rowWhere(sh, 0, code), col(sh, 0, "Phone"), "0912345678");
             Row n = sh.createRow(sh.getLastRowNum() + 1);
-            set(n, col(sh, 0, "Employee Code"), "NEW001");
+            set(n, col(sh, 0, "Employee Code"), c.code + "N001");
             set(n, col(sh, 0, "Full Name"), "Trần Mới");
-            set(n, col(sh, 0, "Email"), "new001@excel.test");
+            set(n, col(sh, 0, "Email"), c.email("new001"));
             set(n, col(sh, 0, "Join Date"), "01/11/2026");
             set(n, col(sh, 0, "Department (*)"), "KT");
             set(n, col(sh, 0, "Salary Grade"), "NGAY300");
@@ -148,7 +148,7 @@ class ExcelRoundTripTest extends IntegrationTest {
         assertThat(one("SELECT sg.code FROM employees e JOIN salary_grades sg ON sg.id = e.salary_grade_id WHERE e.id = ?",
             c.emp(3).id())).isEqualTo("NGAY300");
         assertThat(one("SELECT d.code FROM employees e JOIN departments d ON d.id = e.department_id "
-            + "WHERE e.employee_code = 'NEW001' AND e.company_id = ? AND e.deleted = 0", c.id)).isEqualTo("KT");
+            + "WHERE e.employee_code = ? AND e.company_id = ? AND e.deleted = 0", c.code + "N001", c.id)).isEqualTo("KT");
 
         exportAndCheckUnchanged(c, "/api/v1/employees/export", "/api/v1/employees/preview-import");
     }
@@ -543,7 +543,7 @@ class ExcelRoundTripTest extends IntegrationTest {
             for (Sheet sh : wb) if (sh.getSheetName().startsWith("Nhân viên")) { e = sh; break; }
             fill(e, 1, "Lệnh", "MERGE");
             fill(e, 1, "Họ và tên", "Chung Mẫu");
-            fill(e, 1, "Email", "chung.mau@test.local");
+            fill(e, 1, "Email", c.email("chung.mau"));
             fill(e, 1, "Phòng ban", "CH01");
         });
         JsonNode prev = preview(c, "/api/v1/excel/preview-import", filled);

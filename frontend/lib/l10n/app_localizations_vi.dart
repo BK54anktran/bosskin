@@ -5471,4 +5471,42 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get excelTemplateIntro =>
       'Lần đầu nhập dữ liệu? Tải file mẫu, điền theo sheet Hướng dẫn rồi chọn file ở dưới.';
+
+  @override
+  String get editCompany => 'Sửa công ty';
+
+  @override
+  String get companyCodeRule =>
+      '2–12 ký tự chữ hoa / số, bắt đầu bằng chữ. Là tiền tố mã nhân viên (VD: TH → TH00001), không đổi được sau khi tạo.';
+
+  @override
+  String get companyCodeInvalid =>
+      'Mã công ty 2–12 ký tự chữ hoa / số, bắt đầu bằng chữ';
+
+  @override
+  String get companyCodeLocked =>
+      'Mã công ty là tiền tố mã nhân viên nên không đổi được';
+
+  @override
+  String get emailDomain => 'Đuôi email';
+
+  @override
+  String get emailDomainExample => 'VD: th.com';
+
+  @override
+  String get emailDomainInvalid => 'Đuôi email không hợp lệ (VD: th.com)';
+
+  @override
+  String get emailDomainChangeRule =>
+      'Mọi tài khoản trong công ty phải dùng đuôi này. Chỉ đổi được khi không còn tài khoản dùng đuôi cũ.';
+
+  @override
+  String emailDomainMismatch(String domain) {
+    return 'Email phải có đuôi @$domain';
+  }
+
+  @override
+  String emailDomainHint(String domain) {
+    return 'Email đăng nhập, đuôi @$domain';
+  }
 }

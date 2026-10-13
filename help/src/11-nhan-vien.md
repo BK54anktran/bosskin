@@ -40,7 +40,9 @@ Mở **Nhân viên**. Tìm theo tên, email, mã NV; lọc theo phòng ban và t
 
 ![Phần bậc lương, thông tin bổ sung, thuế & bảo hiểm](img:employee-new-2)
 
-Mã nhân viên (EMP00001…) được cấp tự động, không bao giờ trùng — kể cả sau khi xoá nhân viên. Người mới đăng nhập bằng email + mật
+Mã nhân viên được cấp tự động theo **mã công ty** (công ty mã `TH` → `TH00001`, `TH00002`…), không bao giờ trùng — kể cả sau khi
+xoá nhân viên, và không trùng với công ty khác. **Email công việc phải có đuôi email của công ty** (ví dụ `@th.com`, ô email ghi sẵn
+đuôi cần dùng); email sai đuôi không lưu được. Người mới đăng nhập bằng email + mật
 khẩu tạm và phải đổi mật khẩu ngay. Thêm nhiều người một lúc: dùng [Import / Export](import-export.html), rồi
 **Phân quyền → Người dùng → Xuất mật khẩu tạm** để lấy file mật khẩu phát cho từng người.
 

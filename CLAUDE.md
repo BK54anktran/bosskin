@@ -358,13 +358,14 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V21** (`V21__unhide_resigned_employees.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V22** (`V22__company_identity.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
 V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ),
-V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản)
-→ Migration tiếp theo phải là **V22**
+V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản),
+V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`)
+→ Migration tiếp theo phải là **V23**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -516,7 +517,7 @@ V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: I
 
 ## Dọn mục còn mở trước UAT (O–Q, 10/10/2026)
 - Mã NV: `EmployeeCodeService.next(companyId)` (bảng `employee_code_counters`, V19; `SELECT … FOR UPDATE`, cần transaction của người gọi —
-  `Propagation.MANDATORY`), dạng `EMP00001`, bỏ qua mã đã dùng kể cả NV đã xoá. Không dùng `count + 1` nữa. Cột tên `last_seq`
+  `Propagation.MANDATORY`), dạng `<mã công ty>00001` (V22, trước là `EMP00001`), bỏ qua mã đã dùng kể cả NV đã xoá. Không dùng `count + 1` nữa. Cột tên `last_seq`
   (`last_value` là từ khoá MySQL 8).
 - Phòng ban: đổi cha chặn chọn con / cháu (`error.department.parent_cycle`), `recomputeLevels(companyId)` sau mỗi lần đổi cha; import gắn cha ở
   bước sau (thứ tự dòng tuỳ ý), chặn vòng (`error.import.department_cycle|mã`), không xoá phòng còn NV (`error.import.department_has_employees|mã|số`).
@@ -537,6 +538,16 @@ V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: I
 - Test FE: `frontend/test/` (`flutter test`, CI frontend-build) — `AuthService.debugSetUser`, `debugLookupServerKey` chỉ cho test.
   Mã lỗi backend mới phải có bản dịch vi + en: `tools/ci/check_error_keys.py` (CI backend) và `error_translations_test.dart`.
 - Diễn tập sao lưu / khôi phục: `tools/ops/backup_restore_drill.sh` (runbook mục 5). Kịch bản nghiệm thu: `docs/uat-kich-ban.md`.
+
+## Định danh công ty (V22, 13/10/2026)
+- `core/CompanyIdentity`: mã công ty 2–12 ký tự `[A-Z][A-Z0-9]` = **tiền tố mã NV** (`EmployeeCodeService` cấp `<MÃ>00001`); khi tạo không trùng
+  và không là tiền tố của mã khác (`error.company.code_prefix_conflict|mã`); sửa công ty (`UpdateCompanyRequest`) không đổi mã (`error.company.code_immutable`).
+- Đuôi email `companies.domain` bắt buộc khi tạo, chuẩn hoá chữ thường bỏ "@", unique (`error.company.domain_duplicate|đuôi`); đổi đuôi khi còn tài khoản
+  đuôi cũ → `error.company.domain_accounts_mismatch|đuôi|số`. Mọi tài khoản mới (admin đầu, tạo NV, `POST /users`, import Excel) phải `…@domain`
+  (`error.email.domain_mismatch|đuôi`); mã NV nhập tay phải bắt đầu bằng mã công ty (`error.employee.code_prefix|MÃ|mã`). Đồng bộ tài khoản từ NV bỏ qua email sai đuôi.
+- Đăng nhập trả `companyCode` / `companyDomain` (FE `AuthUser`); FE kiểm bằng `core/utils/company_identity_utils.dart`. Hộp "Sửa công ty" ở /admin (mã chỉ xem).
+- Danh mục khác (phòng ban, ca, loại phép, bậc lương…) mã unique theo công ty, tra cứu luôn lọc `company_id` — không gắn tiền tố.
+- Test: `Fixture.newCompany()` đặt đuôi `<mã>.test`, dùng `c.email("x")`; `CompanyIdentityTest`.
 
 ## Màn hình Flutter
 | Screen | Path |

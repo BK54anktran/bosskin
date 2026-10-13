@@ -5482,4 +5482,42 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get excelTemplateIntro =>
       'Importing for the first time? Download the template, fill it in using the Guide sheet, then choose the file below.';
+
+  @override
+  String get editCompany => 'Edit company';
+
+  @override
+  String get companyCodeRule =>
+      '2–12 uppercase letters / digits, starting with a letter. Used as the employee code prefix (e.g. TH → TH00001); cannot be changed after creation.';
+
+  @override
+  String get companyCodeInvalid =>
+      'Company code must be 2–12 uppercase letters / digits, starting with a letter';
+
+  @override
+  String get companyCodeLocked =>
+      'The company code is the employee code prefix and cannot be changed';
+
+  @override
+  String get emailDomain => 'Email domain';
+
+  @override
+  String get emailDomainExample => 'e.g. th.com';
+
+  @override
+  String get emailDomainInvalid => 'Invalid email domain (e.g. th.com)';
+
+  @override
+  String get emailDomainChangeRule =>
+      'Every account in the company must use this domain. It can only be changed when no account still uses the old domain.';
+
+  @override
+  String emailDomainMismatch(String domain) {
+    return 'Email must end with @$domain';
+  }
+
+  @override
+  String emailDomainHint(String domain) {
+    return 'Login email, ending with @$domain';
+  }
 }

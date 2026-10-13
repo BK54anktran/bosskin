@@ -11,8 +11,16 @@ Cổng quản trị hệ thống ở địa chỉ `/admin`, tài khoản riêng,
 
 ## Công ty
 
-Tạo công ty khách hàng (kèm tài khoản admin đầu tiên), khoá / mở công ty, bắt buộc 2FA cho quản trị của công ty (nút khiên), và **đăng nhập
-thay** để hỗ trợ (nút mũi tên) — khi đang xem thay, app hiện dải cảnh báo và mọi thao tác ghi nhật ký.
+Tạo công ty khách hàng (kèm tài khoản admin đầu tiên), sửa thông tin công ty (nút bút chì), khoá / mở công ty, bắt buộc 2FA cho quản
+trị của công ty (nút khiên), và **đăng nhập thay** để hỗ trợ (nút mũi tên) — khi đang xem thay, app hiện dải cảnh báo và mọi thao tác ghi nhật ký.
+
+Khi tạo công ty:
+
+- **Mã công ty** 2–12 ký tự chữ hoa / số, bắt đầu bằng chữ (ví dụ `TH`). Mã này là **tiền tố mã nhân viên** (`TH00001`…) nên
+  không được trùng và không được là phần đầu của mã công ty khác (đã có `TH` thì không tạo `THA`). **Không đổi được** sau khi tạo —
+  hộp sửa công ty chỉ hiện mã để xem.
+- **Đuôi email** bắt buộc (ví dụ `th.com`), không trùng công ty khác. Mọi tài khoản trong công ty — admin đầu tiên, nhân viên tạo
+  bằng form hay nhập Excel, tài khoản tạo thêm — phải có email `…@th.com`. Đổi đuôi chỉ được khi không còn tài khoản nào dùng đuôi cũ.
 
 ![Danh sách công ty](img:admin-tab-2)
 
