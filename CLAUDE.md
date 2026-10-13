@@ -645,7 +645,7 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 kh�
 - Test gắn `@Tag("known-bug")` tái hiện lỗi đã biết (xem `docs/review-2026-10/danh-gia.html`), bị loại khỏi build mặc định.
   Chạy riêng: `mvn test -Pknown-bugs`. Sửa xong lỗi nào thì **bỏ tag** của test đó để nó thành test hồi quy.
 - Sửa lỗi nghiệp vụ → viết/bật test tương ứng trong cùng commit.
-- CI: `.github/workflows/test.yml` chạy cho mọi nhánh/PR; `deploy.yml` chỉ deploy khi test xanh.
+- CI: workflow chỉ chạy khi push `main` + PR (nhánh làm việc không chạy riêng), commit mới huỷ lượt cũ; `test.yml` (Backend tests) đang tắt trên GitHub — bật lại ở tab Actions; `deploy.yml` (EB, chạy tay, đang tắt) chỉ deploy khi test xanh.
 
 ## Trang giới thiệu & video (10/2026)
 - Chạy thử trên máy dev: `dev\start.cmd landing` → http://localhost:8099 (`dev/landing-server.ps1`, HttpListener có Range cho video).

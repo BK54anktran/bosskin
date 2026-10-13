@@ -3,6 +3,7 @@ name: Infra lint
 # Bước E: kiểm tra file hạ tầng CloudFormation (infra/aws) mỗi khi đổi.
 on:
   push:
+    branches: [main]
     paths:
       - 'infra/**'
       - '.github/workflows/infra-lint.yml'

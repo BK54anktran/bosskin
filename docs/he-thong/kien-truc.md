@@ -104,6 +104,6 @@ Chạy trong chính tiến trình app. Khi tăng lên nhiều máy EB, mỗi má
 
 ## Kiểm thử
 
-- Backend: JUnit + Testcontainers MySQL (`./mvnw test`), chạy ở CI `test.yml` mỗi lần push.
+- Backend: JUnit + Testcontainers MySQL (`./mvnw test`), chạy ở CI `test.yml` khi push `main` + PR.
 - Frontend: `flutter test` (`frontend/test`), build web ở CI `frontend-build.yml`.
 - Hạ tầng: `cfn-lint` ở `infra-lint.yml`. Tài liệu tự sinh: `python3 tools/docs/gen_he_thong.py --check`.

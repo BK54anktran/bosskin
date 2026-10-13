@@ -1,9 +1,10 @@
 name: Backend tests
 
-# Chạy test cho mọi push (kể cả main) và mọi pull request đụng backend.
+# Chạy test khi push main và cho pull request đụng backend (nhánh làm việc không chạy riêng, tránh trùng).
 # deploy.yml (chạy tay) cũng chạy lại test trước khi deploy.
 on:
   push:
+    branches: [main]
     paths:
       - 'backend/**'
       - 'tools/ci/check_error_keys.py'
@@ -14,6 +15,11 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/**'
+
+# Commit mới trên cùng nhánh / PR huỷ lượt test cũ đang chạy
+concurrency:
+  group: backend-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:

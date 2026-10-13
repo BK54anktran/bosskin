@@ -3,6 +3,7 @@ name: Site checks
 # Trang giới thiệu + trợ giúp: sitemap.xml / robots.txt / canonical khớp nhau (sinh lại: python3 help/tools/build_help.py)
 on:
   push:
+    branches: [main]
     paths:
       - 'landing/**'
       - 'help/**'

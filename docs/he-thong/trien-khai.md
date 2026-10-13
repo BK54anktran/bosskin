@@ -23,7 +23,7 @@ Frontend chỉ cần `--dart-define=API_HOST=https://api.<tên-miền>` lúc bui
 
 | Việc | Lệnh / workflow |
 |---|---|
-| Test backend | `cd backend && ./mvnw test` · CI `test.yml` mỗi lần push |
+| Test backend | `cd backend && ./mvnw test` · CI `test.yml` khi push `main` + PR (đang tắt trên GitHub) |
 | Đóng gói backend | `./mvnw -DskipTests package` → `target/*.jar` |
 | Deploy backend | GitHub Actions **Deploy to Elastic Beanstalk** (`deploy.yml`, chạy tay), nhãn phiên bản = mã commit |
 | Build web | `flutter build web --release --dart-define=API_HOST=…` · CI `frontend-build.yml` |
