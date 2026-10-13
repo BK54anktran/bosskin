@@ -110,6 +110,11 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
     if (widget.initialGrades.isEmpty) _loadGrades();
   }
 
+  bool get _currentGradeMissing {
+    final id = widget.employee?.salaryGradeId;
+    return id != null && !_grades.any((g) => g.id == id);
+  }
+
   Future<void> _loadGrades() async {
     try {
       final list = await _gradeRepo.getAll();
@@ -381,11 +386,21 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   // initialValue chỉ đọc ở lần dựng đầu: danh sách bậc tải xong sau đó thì phải dựng lại ô,
                   // không thì ô kẹt ở "—" dù NV có bậc (lúc hiện lúc không tuỳ tốc độ mạng)
                   key: ValueKey('grade-${_grades.length}'),
-                  initialValue: _grades.any((g) => g.id == _gradeId) ? _gradeId : null,
+                  initialValue: _grades.any((g) => g.id == _gradeId) ||
+                          (_currentGradeMissing && _gradeId == widget.employee!.salaryGradeId)
+                      ? _gradeId
+                      : null,
                   borderRadius: BorderRadius.circular(12),
                   decoration: InputDecoration(labelText: s.salaryGrade),
                   items: [
                     const DropdownMenuItem<int>(value: null, child: Text('—')),
+                    // Bậc hiện tại của NV không có trong danh sách (chưa tải xong / không có quyền xem bậc lương):
+                    // vẫn hiện theo mã + tên trả kèm nhân viên
+                    if (_currentGradeMissing)
+                      DropdownMenuItem<int>(
+                        value: widget.employee!.salaryGradeId,
+                        child: Text('${widget.employee!.salaryGradeCode ?? ''} · ${widget.employee!.salaryGradeName ?? ''}'),
+                      ),
                     ..._grades.map((g) => DropdownMenuItem<int>(
                           value: g.id,
                           child: Text('${g.code} · ${g.name}'),
