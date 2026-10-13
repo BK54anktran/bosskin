@@ -366,7 +366,7 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 kh�
 → Migration tiếp theo phải là **V21**
 
 ## Vận hành (Bước 2)
-- Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
+- Build frontend: `.github/workflows/frontend-build.yml` (chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
   secrets `ANDROID_KEYSTORE_*`; thiếu thì ký debug). Gradle 8.14.3, AGP 8.11.1, Kotlin 2.2.20; Gradle heap 4G (`gradle.properties`).
 - Runbook: `docs/runbook.md` (biến môi trường, deploy, rollback, sao lưu/khôi phục DB, sự cố). Đổi cách deploy/biến môi trường → sửa runbook.
 - Deploy EB **chạy tay** (workflow_dispatch); push `main` chỉ chạy test. Gói: jar + Procfile + `.ebextensions`.

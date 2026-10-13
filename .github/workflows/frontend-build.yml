@@ -10,7 +10,14 @@ name: Frontend build
 #   tải file này. Khoá gốc: frontend/android/app/release.jks + key.properties trên máy dev (không commit), xem landing/README.md.
 # - Số phiên bản: tên theo pubspec, số build = số lần chạy workflow (versionCode luôn tăng).
 on:
+  # Chỉ main (đăng gói web / APK) và PR (kiểm tra) — nhánh làm việc không build riêng, tránh chạy trùng
   push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'tools/ci/**'
+      - '.github/workflows/frontend-build.yml'
+  pull_request:
     paths:
       - 'frontend/**'
       - 'tools/ci/**'
@@ -19,6 +26,11 @@ on:
 
 permissions:
   contents: write   # đăng APK lên release app-latest
+
+# Commit mới trên cùng nhánh / PR huỷ lượt build cũ đang chạy (lượt mới đã gồm thay đổi cũ)
+concurrency:
+  group: frontend-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
