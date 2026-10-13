@@ -378,6 +378,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
             _section(s.salaryGrade, [
               _row([
                 _field(DropdownButtonFormField<int>(
+                  // initialValue chỉ đọc ở lần dựng đầu: danh sách bậc tải xong sau đó thì phải dựng lại ô,
+                  // không thì ô kẹt ở "—" dù NV có bậc (lúc hiện lúc không tuỳ tốc độ mạng)
+                  key: ValueKey('grade-${_grades.length}'),
                   initialValue: _grades.any((g) => g.id == _gradeId) ? _gradeId : null,
                   borderRadius: BorderRadius.circular(12),
                   decoration: InputDecoration(labelText: s.salaryGrade),
