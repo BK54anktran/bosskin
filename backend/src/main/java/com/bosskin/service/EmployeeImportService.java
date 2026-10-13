@@ -195,9 +195,9 @@ public class EmployeeImportService {
                 // CREATE
                 List<String> warnings = new ArrayList<>();
                 if (isBlank(row.getEmail()))
-                    warnings.add("Thiếu email — bắt buộc khi tạo mới");
+                    warnings.add("error.import.email_missing|" + name);
                 if (isBlank(row.getJoinDate()))
-                    warnings.add("Thiếu ngày vào làm");
+                    warnings.add("error.import.join_date_missing");
                 result.add(EmployeeDTO.ImportDiff.builder()
                     .action("CREATE").employeeCode(code).fullName(name)
                     .email(row.getEmail()).departmentCode(deptCode)

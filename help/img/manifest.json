@@ -258,7 +258,13 @@
   "caption": null,
   "marks": [
    "Chọn & Xuất",
-   "Nhập dữ liệu\nChọn file Excel (đã điền cột Lệnh) để xem trước và nhập.\nNhấn để ch"
+   "Nhập dữ liệu"
+  ]
+ },
+ "excel-template": {
+  "caption": null,
+  "marks": [
+   "Tải file mẫu"
   ]
  },
  "first-login": {

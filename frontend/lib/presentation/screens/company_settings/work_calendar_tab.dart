@@ -14,6 +14,7 @@ import '../../../data/repositories/work_calendar_repository.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/services/auth_service.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/excel_template_button.dart';
 import '../../widgets/holiday_widgets.dart';
 import '../../widgets/import_preview_dialog.dart';
 import '../../widgets/status_badge.dart';
@@ -389,6 +390,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                 icon: const Icon(Icons.download_outlined, size: 16),
                 label: Text(s.importExcel),
               ),
+            if (_canManage) const ExcelTemplateButton(path: '/holidays/template'),
           ]),
           const SizedBox(height: 4),
           Text(_customized ? s.holidayCustomizedHint : s.holidayTemplateHint,

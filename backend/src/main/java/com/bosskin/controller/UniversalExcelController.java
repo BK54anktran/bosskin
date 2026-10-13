@@ -76,6 +76,18 @@ public class UniversalExcelController {
                 ExcelModulePermissions.exportableTypes(user));
     }
 
+    /** File mẫu để nhập dữ liệu ban đầu: chỉ tiêu đề cột nhập + sheet hướng dẫn. {@code types} trống = mọi module được nhập. */
+    @GetMapping("/template")
+    public ResponseEntity<byte[]> template(
+            @RequestParam(required = false) List<String> types,
+            @AuthenticationPrincipal User user) {
+        if (!user.can("excel.import")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        return universalExcelService.template(LocaleContextHolder.getLocale(), types,
+            ExcelModulePermissions.importableTypes(user));
+    }
+
     @PostMapping("/preview-import")
     public ResponseEntity<Map<String, List<UniversalImportDiff>>> previewImport(
             @RequestParam MultipartFile file,

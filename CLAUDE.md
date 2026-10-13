@@ -583,6 +583,10 @@ V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: I
 - Nhập lại nguyên file vừa xuất phải là "không đổi" ở cả xem trước lẫn nhập thật (không ghi đè, không tạo dòng rỗng). Bảng công /
   chấm công theo ngày so với chính dòng bảng công như file xuất (`TimesheetSource`, giờ làm tròn, giờ nghỉ ca, tăng ca tính sẵn)
   và chỉ ghi ô đã đổi. Kiểm thử vòng xuất → sửa → nhập: `ExcelRoundTripTest` (thêm luồng Excel mới → thêm ca test ở đó).
+- File mẫu nhập (`util/ExcelTemplate`): `GET /api/v1/excel/template?types=`, `/contracts/template`, `/holidays/template` — sinh từ chính danh sách
+  cột nhập (chỉ tiêu đề, cột nhập được) + sheet "Hướng dẫn" CUỐI (màn nhập đọc sheet theo thứ tự). Ví dụ / ghi chú cột: `excel.example.X` /
+  `excel.note.X` theo `excel.col.X` trong excel_*.properties. FE `widgets/excel_template_button.dart`. Excel chung: dòng để trống cột Lệnh bị
+  bỏ qua; xem trước coi mã do sheet trước cùng file tạo (CREATE/MERGE) là có (`UniversalExcelService.PENDING_REFS`).
 
 ### Soft Delete
 - Tất cả entity quan trọng (Attendance, Employee, ...) dùng **soft delete** (`deleted = true`) — không `DELETE` cứng.

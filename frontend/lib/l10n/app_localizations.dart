@@ -10138,6 +10138,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Từ chối yêu cầu sửa hồ sơ'**
   String get auditActProfileEditReject;
+
+  /// No description provided for @excelDownloadTemplate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải file mẫu'**
+  String get excelDownloadTemplate;
+
+  /// No description provided for @excelDownloadTemplateHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'File Excel trống đúng các cột cần nhập, kèm sheet Hướng dẫn và ví dụ cho từng cột'**
+  String get excelDownloadTemplateHint;
+
+  /// No description provided for @excelTemplateIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần đầu nhập dữ liệu? Tải file mẫu, điền theo sheet Hướng dẫn rồi chọn file ở dưới.'**
+  String get excelTemplateIntro;
 }
 
 class _AppLocalizationsDelegate

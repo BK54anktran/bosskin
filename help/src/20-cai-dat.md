@@ -58,7 +58,7 @@ Danh sách theo năm (mũi tên đổi năm). Mặc định công ty dùng **m�
 Lần đầu bạn thêm / sửa / xoá một ngày của năm nào, mẫu năm đó được chép thành danh sách riêng của công ty.
 
 - **Thêm ngày lễ**: ngày, tên, loại (*Ngày lễ*, *Nghỉ bù*, *Làm bù*), có hưởng lương không.
-- **Xuất / Nhập Excel** để nhập lịch nghỉ Tết theo thông báo hằng năm (có xem trước).
+- **Xuất / Nhập Excel** để nhập lịch nghỉ Tết theo thông báo hằng năm (có xem trước); **Tải file mẫu** cho file trống có hướng dẫn.
 
 Ảnh hưởng: đơn nghỉ không tính ngày lễ, lưới phân ca và bảng công tô màu ngày lễ, lương có `HOLIDAY_DAYS` (lễ hưởng lương) và
 `HOLIDAY_OT_HOURS` (giờ làm ngày lễ).

@@ -80,6 +80,27 @@ public class UniversalExcelService {
         }
     }
 
+    /** File mẫu Excel chung: sheet các module nhập được (chỉ tiêu đề, cột Lệnh) + sheet hướng dẫn. */
+    public ResponseEntity<byte[]> template(java.util.Locale locale, List<String> types, Set<String> allowedTypes) {
+        if (types != null && types.stream().anyMatch(t -> !allowedTypes.contains(t))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
+        List<ExcelTemplate.SheetSpec> specs = filterDescriptors(types).stream()
+            .filter(d -> allowedTypes.contains(d.type()) && d.importable())
+            .map(d -> new ExcelTemplate.SheetSpec(excelI18n.resolve(d.sheetKey(), locale),
+                ExcelTemplate.importable(columnsOf(d)), true))
+            .toList();
+        byte[] bytes = ExcelTemplate.build(specs, List.of("excel.template.step.universal1", "excel.template.step.universal2",
+            "excel.template.step.universal3", "excel.template.step.universal4"), excelI18n, locale);
+        return ExcelUtils.buildFileResponse(ExcelTemplate.filename("excel.file.universal", excelI18n, locale), bytes);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static List<com.bosskin.util.ExcelColumn<Object>> columnsOf(ExcelEntityDescriptor<?> d) {
+        return (List) d.columns();
+    }
+
     @SuppressWarnings("unchecked")
     private <T> void writeSheet(XSSFWorkbook wb, ExcelEntityDescriptor<T> desc,
                                  Long companyId, Long userId, java.util.Locale locale,
@@ -243,6 +264,7 @@ public class UniversalExcelService {
         Map<String, List<UniversalImportDiff>> result = new LinkedHashMap<>();
         try (InputStream is = new ByteArrayInputStream(fileBytes);
              XSSFWorkbook wb = new XSSFWorkbook(is)) {
+            Map<String, Set<String>> pending = pendingCodes(wb);
 
             for (ExcelEntityDescriptor<?> desc : descriptors) {
                 if (!desc.importable()) continue;
@@ -251,7 +273,7 @@ public class UniversalExcelService {
                 requireImportAllowed(desc, allowedTypes);
                 Sheet sheet = wb.getSheet(sheetName);
                 List<UniversalImportDiff> diffs = previewSheet(sheet, desc, companyId, userId);
-                result.put(desc.type(), diffs);
+                result.put(desc.type(), resolvePending(diffs, pending));
             }
         } catch (IOException e) {
             throw new RuntimeException("error.excel.import_failed", e);
@@ -282,6 +304,67 @@ public class UniversalExcelService {
             diffs.add(new UniversalImportDiff(r.rowNum(), diffAction, id, summary, errorMsg));
         }
         return diffs;
+    }
+
+    // Xem trước chạy từng sheet trên dữ liệu hiện có, còn nhập thật đi theo @Order (phòng ban → … → nhân viên → phân ca):
+    // dòng tham chiếu mã mà sheet trước CÙNG FILE sẽ tạo (CREATE / MERGE) thì không phải lỗi — vd. file mẫu điền cả phòng ban
+    // lẫn nhân viên. Bảng: tiền tố mã lỗi → (sheet tạo mã, cột mã).
+    private static final Map<String, String[]> PENDING_REFS = Map.of(
+        "error.import.department_missing|",          new String[]{"excel.sheet.department.list", "excel.col.department.code"},
+        "error.import.parent_department_missing|",   new String[]{"excel.sheet.department.list", "excel.col.department.code"},
+        "error.import.position_department_missing|", new String[]{"excel.sheet.department.list", "excel.col.department.code"},
+        "error.import.position_missing|",            new String[]{"excel.sheet.position.list", "excel.col.position.code"},
+        "error.employee.not_found|",                 new String[]{"excel.sheet.employee.basic", "excel.col.employee.code"},
+        "error.leaveGrant.leaveType_not_found|",     new String[]{"excel.sheet.leave_type.list", "excel.col.leaveType.code"},
+        "error.assignment.invalid_shift|",           new String[]{"excel.sheet.shift.list", "excel.col.shift.code"});
+
+    /** Sheet key → mã (viết hoa) mà file sẽ tạo / cập nhật bằng CREATE hoặc MERGE. */
+    private Map<String, Set<String>> pendingCodes(XSSFWorkbook wb) {
+        Map<String, Set<String>> out = new HashMap<>();
+        for (String[] ref : PENDING_REFS.values()) {
+            if (out.containsKey(ref[0])) continue;
+            Set<String> codes = new HashSet<>();
+            out.put(ref[0], codes);
+            Sheet sh = findSheetInWb(wb, ref[0]);
+            if (sh == null || sh.getRow(0) == null) continue;
+            FormulaEvaluator ev = wb.getCreationHelper().createFormulaEvaluator();
+            int cmdCol = -1, codeCol = -1;
+            for (Cell c : sh.getRow(0)) {
+                String h = readCell(ev, c).trim();
+                if (excelI18n.allValues("excel.col.command").contains(h)) cmdCol = c.getColumnIndex();
+                if (excelI18n.allValues(ref[1]).contains(h)) codeCol = c.getColumnIndex();
+            }
+            if (cmdCol < 0 || codeCol < 0) continue;
+            for (int r = 1; r <= sh.getLastRowNum(); r++) {
+                Row row = sh.getRow(r);
+                if (row == null) continue;
+                ImportCommand cmd = ImportCommand.parse(readCell(ev, row.getCell(cmdCol)));
+                String code = readCell(ev, row.getCell(codeCol)).trim();
+                if ((cmd == ImportCommand.CREATE || cmd == ImportCommand.MERGE) && !code.isEmpty())
+                    codes.add(code.toUpperCase());
+            }
+        }
+        return out;
+    }
+
+    private static List<UniversalImportDiff> resolvePending(List<UniversalImportDiff> diffs, Map<String, Set<String>> pending) {
+        List<UniversalImportDiff> out = new ArrayList<>(diffs.size());
+        for (UniversalImportDiff d : diffs) {
+            String err = d.error();
+            UniversalImportDiff fixed = d;
+            if (err != null) {
+                for (var e : PENDING_REFS.entrySet()) {
+                    if (!err.startsWith(e.getKey())) continue;
+                    String rest = err.substring(e.getKey().length());
+                    String code = (rest.contains("|") ? rest.substring(0, rest.indexOf('|')) : rest).trim().toUpperCase();
+                    if (pending.getOrDefault(e.getValue()[0], Set.of()).contains(code))
+                        fixed = new UniversalImportDiff(d.rowNum(), d.action(), d.identifier(), null, null);
+                    break;
+                }
+            }
+            out.add(fixed);
+        }
+        return out;
     }
 
     // ─── IMPORT ──────────────────────────────────────────────────────────────

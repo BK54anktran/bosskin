@@ -1865,4 +1865,7 @@
   ,"auditActUserIssueInitialPasswords": "Temporary passwords exported"
   ,"auditActProfileEditApprove": "Profile edit request approved"
   ,"auditActProfileEditReject": "Profile edit request rejected"
+  ,"excelDownloadTemplate": "Download template"
+  ,"excelDownloadTemplateHint": "An empty Excel file with exactly the import columns, plus a Guide sheet with an example for each column"
+  ,"excelTemplateIntro": "Importing for the first time? Download the template, fill it in using the Guide sheet, then choose the file below."
 }

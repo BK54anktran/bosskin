@@ -8,6 +8,7 @@ import com.bosskin.service.WorkCalendarService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelSheet;
+import com.bosskin.util.ExcelTemplate;
 import com.bosskin.util.ExcelUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -103,6 +105,17 @@ public class WorkCalendarController {
         return ExcelUtils.exportSheets("excel.file.holiday",
             List.of(ExcelSheet.ofI18n("excel.sheet.holiday", EXPORT_COLUMNS, rows)),
             excelI18n, LocaleContextHolder.getLocale());
+    }
+
+    /** File mẫu nhập ngày lễ (chỉ tiêu đề cột nhập) + hướng dẫn. */
+    @GetMapping("/api/v1/holidays/template")
+    public ResponseEntity<byte[]> holidayTemplate(@AuthenticationPrincipal User user) {
+        requireManage(user);
+        Locale locale = LocaleContextHolder.getLocale();
+        byte[] bytes = ExcelTemplate.build(List.of(
+                new ExcelTemplate.SheetSpec(excelI18n.resolve("excel.sheet.holiday", locale), ExcelTemplate.importable(IMPORT_COLUMNS), false)),
+            List.of("excel.template.step.screen1", "excel.template.step.holiday1", "excel.template.step.screen2"), excelI18n, locale);
+        return ExcelUtils.buildFileResponse(ExcelTemplate.filename("excel.file.holiday", excelI18n, locale), bytes);
     }
 
     @PostMapping("/api/v1/holidays/preview-import")

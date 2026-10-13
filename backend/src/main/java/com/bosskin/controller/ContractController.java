@@ -6,6 +6,7 @@ import com.bosskin.service.ContractService;
 import com.bosskin.util.ExcelColumn;
 import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelSheet;
+import com.bosskin.util.ExcelTemplate;
 import com.bosskin.util.ExcelUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -126,6 +128,19 @@ public class ContractController {
             excelI18n, LocaleContextHolder.getLocale());
     }
 
+    /** File mẫu nhập hợp đồng: sheet hợp đồng + sheet phụ cấp (chỉ tiêu đề) + hướng dẫn. */
+    @GetMapping("/template")
+    public ResponseEntity<byte[]> template(@AuthenticationPrincipal User user) {
+        requireEdit(user);
+        Locale locale = LocaleContextHolder.getLocale();
+        byte[] bytes = ExcelTemplate.build(List.of(
+                new ExcelTemplate.SheetSpec(excelI18n.resolve("excel.sheet.contract", locale), ExcelTemplate.importable(IMPORT_COLUMNS), false),
+                new ExcelTemplate.SheetSpec(excelI18n.resolve("excel.sheet.contractAllowance", locale),
+                    ExcelTemplate.importable(ALLOWANCE_IMPORT_COLUMNS), false)),
+            List.of("excel.template.step.screen1", "excel.template.step.contract1", "excel.template.step.screen2"), excelI18n, locale);
+        return ExcelUtils.buildFileResponse(ExcelTemplate.filename("excel.file.contract", excelI18n, locale), bytes);
+    }
+
     @PostMapping("/preview-import")
     public ResponseEntity<List<ContractDTO.ImportDiff>> previewImport(@AuthenticationPrincipal User user,
                                                                       @RequestParam("file") MultipartFile file) {
@@ -205,10 +220,17 @@ public class ContractController {
         return ResponseEntity.ok(service.deleteAppendix(user.getCompanyId(), user, appendixId));
     }
 
-    /** Sheet phụ cấp (thứ 2) — file không có sheet này thì giữ nguyên phụ cấp (null). */
+    /** Sheet phụ cấp (thứ 2, có cột "Mã phụ cấp") — file không có sheet này thì giữ nguyên phụ cấp (null).
+     *  Sheet thứ 2 không phải phụ cấp (vd. sheet Hướng dẫn của file mẫu) → coi như không có. */
     private List<ContractDTO.AllowanceImportRow> allowanceRows(MultipartFile file) {
         try (InputStream is = file.getInputStream(); XSSFWorkbook wb = new XSSFWorkbook(is)) {
             if (wb.getNumberOfSheets() < 2) return null;
+            var header = wb.getSheetAt(1).getRow(0);
+            if (header == null) return null;
+            List<String> codeHeaders = excelI18n.allValues("excel.col.allowance.code");
+            boolean found = false;
+            for (var cell : header) if (codeHeaders.contains(cell.toString().trim())) found = true;
+            if (!found) return null;
         } catch (IOException | RuntimeException e) {
             return null;
         }

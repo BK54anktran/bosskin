@@ -9,6 +9,8 @@ import '../../../core/utils/file_saver_utils.dart';
 import '../../../data/repositories/universal_excel_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/export_options_dialog.dart';
+import '../../widgets/excel_template_button.dart';
+import '../../widgets/permission_guard.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/universal_import_preview_dialog.dart';
 
@@ -397,6 +399,14 @@ class _ImportCard extends StatelessWidget {
           Text(
             s.excelImportSubtitle,
             style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          PermissionGuard(
+            permission: 'EXCEL_IMPORT',
+            child: Wrap(spacing: 12, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
+              const ExcelTemplateButton(path: '/excel/template'),
+              Text(s.excelTemplateIntro, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            ]),
           ),
           const SizedBox(height: 16),
           if (pickedFile == null)

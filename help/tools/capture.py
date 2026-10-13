@@ -312,6 +312,8 @@ async def bao_cao(sh):
     await sh.shot('reports', [('Xuất Excel', 'button')])
     await sh.goto('/excel')
     await sh.shot('excel', [('Chọn & Xuất', 'button'), ('Nhập dữ liệu', 'button')])
+    await sh.scroll(400)
+    await sh.shot('excel-template', [('Tải file mẫu', 'button')])
     await sh.goto('/audit-logs')
     await sh.shot('audit', [('Tất cả thao tác', 'button'), ('Người thực hiện', 'textbox')])
 

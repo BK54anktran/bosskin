@@ -1870,4 +1870,7 @@
   ,"auditActUserIssueInitialPasswords": "Xuất mật khẩu tạm"
   ,"auditActProfileEditApprove": "Duyệt yêu cầu sửa hồ sơ"
   ,"auditActProfileEditReject": "Từ chối yêu cầu sửa hồ sơ"
+  ,"excelDownloadTemplate": "Tải file mẫu"
+  ,"excelDownloadTemplateHint": "File Excel trống đúng các cột cần nhập, kèm sheet Hướng dẫn và ví dụ cho từng cột"
+  ,"excelTemplateIntro": "Lần đầu nhập dữ liệu? Tải file mẫu, điền theo sheet Hướng dẫn rồi chọn file ở dưới."
 }

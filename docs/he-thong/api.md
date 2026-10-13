@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-40 controller, 309 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+40 controller, 312 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -14,7 +14,7 @@
 | [AuthController](#authcontroller) | `/` | 10 |
 | [CompanyController](#companycontroller) | `/admin/companies` | 6 |
 | [CompanySettingController](#companysettingcontroller) | `/api/v1/company-settings` | 2 |
-| [ContractController](#contractcontroller) | `/api/v1/contracts` | 14 |
+| [ContractController](#contractcontroller) | `/api/v1/contracts` | 15 |
 | [DashboardController](#dashboardcontroller) | `/api/v1/dashboard` | 5 |
 | [DepartmentController](#departmentcontroller) | `/api/v1/departments` | 10 |
 | [DependentController](#dependentcontroller) | `/api/v1/dependents` | 5 |
@@ -41,10 +41,10 @@
 | [TeamApprovalController](#teamapprovalcontroller) | `/api/v1/team-approvals` | 4 |
 | [TrialRequestController](#trialrequestcontroller) | `/` | 5 |
 | [TwoFactorController](#twofactorcontroller) | `/` | 6 |
-| [UniversalExcelController](#universalexcelcontroller) | `/api/v1/excel` | 7 |
+| [UniversalExcelController](#universalexcelcontroller) | `/api/v1/excel` | 8 |
 | [UploadController](#uploadcontroller) | `/api/v1/upload` | 2 |
 | [UserController](#usercontroller) | `/api/v1/users` | 11 |
-| [WorkCalendarController](#workcalendarcontroller) | `/` | 14 |
+| [WorkCalendarController](#workcalendarcontroller) | `/` | 15 |
 | [WorkShiftController](#workshiftcontroller) | `/api/v1/shifts` | 18 |
 
 ## AuditLogController
@@ -168,6 +168,7 @@
 | GET | `/api/v1/contracts` | CONTRACT_VIEW | `list` |
 | GET | `/api/v1/contracts/expiring` | CONTRACT_VIEW | `expiring` |
 | GET | `/api/v1/contracts/export` | CONTRACT_VIEW | `export` |
+| GET | `/api/v1/contracts/template` | CONTRACT_VIEW, CONTRACT_EDIT | `template` |
 | POST | `/api/v1/contracts/preview-import` | CONTRACT_VIEW, CONTRACT_EDIT | `previewImport` |
 | POST | `/api/v1/contracts/import` | CONTRACT_VIEW, CONTRACT_EDIT | `importExcel` |
 | GET | `/api/v1/contracts/{id}` | CONTRACT_VIEW | `get` |
@@ -558,6 +559,7 @@
 | GET | `/api/v1/excel/search` | EXCEL_EXPORT, EXCEL_IMPORT | `search` |
 | GET | `/api/v1/excel/meta` | EXCEL_EXPORT, EXCEL_IMPORT | `meta` |
 | POST | `/api/v1/excel/export` | EXCEL_EXPORT | `export` |
+| GET | `/api/v1/excel/template` | EXCEL_IMPORT | `template` |
 | POST | `/api/v1/excel/preview-import` | EXCEL_IMPORT | `previewImport` |
 | POST | `/api/v1/excel/import` | EXCEL_IMPORT | `importAll` |
 | GET | `/api/v1/excel/history/{id}/download` | EXCEL_EXPORT, EXCEL_IMPORT | `downloadHistory` |
@@ -601,6 +603,7 @@
 | PUT | `/api/v1/holidays/{id}` | CALENDAR_VIEW, CALENDAR_MANAGE | `updateHoliday` |
 | DELETE | `/api/v1/holidays/{id}` | CALENDAR_VIEW, CALENDAR_MANAGE | `deleteHoliday` |
 | GET | `/api/v1/holidays/export` | CALENDAR_VIEW | `exportHolidays` |
+| GET | `/api/v1/holidays/template` | CALENDAR_VIEW, CALENDAR_MANAGE | `holidayTemplate` |
 | POST | `/api/v1/holidays/preview-import` | CALENDAR_VIEW, CALENDAR_MANAGE | `previewImport` |
 | POST | `/api/v1/holidays/import` | CALENDAR_VIEW, CALENDAR_MANAGE | `importHolidays` |
 | GET | `/api/v1/work-calendars` | CALENDAR_VIEW | `calendars` |

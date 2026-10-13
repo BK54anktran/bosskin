@@ -50,3 +50,6 @@ Trong chi tiết hợp đồng bấm **Chấm dứt**, nhập ngày làm việc 
 
 **Xuất Excel** tạo file 2 sheet (hợp đồng + phụ cấp). Sửa rồi **Nhập Excel** → xem trước từng dòng → xác nhận. Sheet phụ cấp vắng thì phụ
 cấp hiện có được giữ nguyên.
+
+Chưa có hợp đồng nào để xuất? Bấm **Tải file mẫu**: file có sheet hợp đồng, sheet phụ cấp (chỉ tiêu đề) và sheet **Hướng dẫn** ghi rõ
+từng cột kèm ví dụ (ngày dạng `yyyy-mm-dd`, loại hợp đồng, trạng thái…).

@@ -14,6 +14,7 @@ import '../../../data/models/labor_contract.dart';
 import '../../../data/repositories/contract_repository.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/excel_template_button.dart';
 import '../../widgets/import_preview_dialog.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/permission_guard.dart';
@@ -228,6 +229,10 @@ class _ContractsScreenState extends State<ContractsScreen> {
               label: Text(s.importExcel),
               onPressed: _busy ? null : _import,
             ),
+          ),
+          const PermissionGuard(
+            permission: 'CONTRACT_EDIT',
+            child: ExcelTemplateButton(path: '/contracts/template'),
           ),
           PermissionGuard(
             permission: 'CONTRACT_EDIT',

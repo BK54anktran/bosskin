@@ -449,4 +449,114 @@ class ExcelRoundTripTest extends IntegrationTest {
         assertThat(one("SELECT name FROM work_shifts WHERE company_id = ? AND code = 'SANG' AND active = 1", c.id))
             .isEqualTo("Ca sáng sớm");
     }
+
+    // ── File mẫu (GET …/template): tiêu đề đúng cột nhập, sheet Hướng dẫn cuối, nhập nguyên file = không đổi ──
+
+    /** Điền giá trị vào dòng {@code rowIdx} theo cột có tiêu đề bắt đầu bằng {@code header}. */
+    static void fill(Sheet sh, int rowIdx, String header, String value) {
+        Row r = sh.getRow(rowIdx) != null ? sh.getRow(rowIdx) : sh.createRow(rowIdx);
+        set(r, col(sh, 0, header), value);
+    }
+
+    byte[] template(Fixture.TestCompany c, String url, String lang, int dataSheets) throws Exception {
+        byte[] file = api.download(c.adminToken, url, lang);
+        try (var wb = new XSSFWorkbook(new ByteArrayInputStream(file))) {
+            assertThat(wb.getNumberOfSheets()).as(url).isEqualTo(dataSheets + 1);
+            assertThat(wb.getActiveSheetIndex()).isEqualTo(dataSheets);
+            assertThat(wb.getSheetName(dataSheets)).isEqualTo(lang.equals("vi") ? "Hướng dẫn" : "Guide");
+            for (int i = 0; i < dataSheets; i++) assertThat(wb.getSheetAt(i).getLastRowNum()).as("chỉ dòng tiêu đề").isZero();
+        }
+        return file;
+    }
+
+    @Test
+    @DisplayName("File mẫu hợp đồng (en): sheet Hướng dẫn không bị đọc thành phụ cấp; điền 1 hợp đồng → tạo")
+    void contractTemplate() throws Exception {
+        var c = fixture.standardCompany();
+        byte[] file = template(c, "/api/v1/contracts/template", "en", 2);
+        assertThat(actions(preview(c, "/api/v1/contracts/preview-import", file))).isEmpty();
+        byte[] filled = edit(file, wb -> {
+            Sheet s = wb.getSheetAt(0);
+            fill(s, 1, "Contract No", "HD-MAU-1");
+            fill(s, 1, "Employee Code", c.emp(2).code());
+            fill(s, 1, "Type", "INDEFINITE");
+            fill(s, 1, "Start Date", "2026-11-01");
+            fill(s, 1, "Base Salary", "12000000");
+            wb.removeSheetAt(1);        // chỉ hợp đồng: sheet thứ 2 giờ là Hướng dẫn → phụ cấp giữ nguyên
+        });
+        JsonNode prev = preview(c, "/api/v1/contracts/preview-import", filled);
+        noProblems(prev);
+        assertThat(actions(prev)).containsExactly("CREATE");
+        doImport(c, "/api/v1/contracts/import", filled);
+        assertThat(one("SELECT COUNT(*) FROM labor_contracts WHERE company_id = ? AND contract_no = 'HD-MAU-1' AND deleted = 0",
+            c.id)).isEqualTo("1");
+    }
+
+    @Test
+    @DisplayName("File mẫu ngày lễ: điền 1 ngày → tạo")
+    void holidayTemplate() throws Exception {
+        var c = fixture.standardCompany();
+        byte[] file = template(c, "/api/v1/holidays/template", "vi", 1);
+        byte[] filled = edit(file, wb -> {
+            Sheet s = wb.getSheetAt(0);
+            fill(s, 1, "Ngày", "2026-12-24");
+            fill(s, 1, "Tên ngày lễ", "Nghỉ Giáng sinh");
+        });
+        JsonNode prev = preview(c, "/api/v1/holidays/preview-import", filled);
+        noProblems(prev);
+        assertThat(actions(prev)).contains("CREATE");
+        doImport(c, "/api/v1/holidays/import", filled);
+        assertThat(one("SELECT name FROM holidays WHERE company_id = ? AND holiday_date = '2026-12-24' AND deleted = 0", c.id))
+            .isEqualTo("Nghỉ Giáng sinh");
+    }
+
+    @Test
+    @DisplayName("File mẫu Excel chung: cột Lệnh, nhập nguyên mẫu không đổi; điền phòng ban + nhân viên → tạo đúng thứ tự")
+    void universalTemplate() throws Exception {
+        var c = fixture.standardCompany();
+        byte[] file = api.download(c.adminToken, "/api/v1/excel/template", "vi");
+        int sheets;
+        try (var wb = new XSSFWorkbook(new ByteArrayInputStream(file))) {
+            sheets = wb.getNumberOfSheets();
+            assertThat(wb.getSheetName(sheets - 1)).isEqualTo("Hướng dẫn");
+            assertThat(FMT.formatCellValue(wb.getSheet("Phòng ban").getRow(0).getCell(0))).isEqualTo("Lệnh");
+        }
+        assertThat(actions(preview(c, "/api/v1/excel/preview-import", file))).isEmpty();
+        try (var wb = new XSSFWorkbook(new ByteArrayInputStream(file))) {     // hướng dẫn: Mã NV (*) không bắt buộc khi thêm mới
+            Sheet g = wb.getSheet("Hướng dẫn");
+            Row codeRow = null;
+            boolean inEmployees = false;
+            for (Row r : g) {
+                String a = FMT.formatCellValue(r.getCell(0));
+                if (a.startsWith("Sheet: ")) inEmployees = a.startsWith("Sheet: Nhân viên");
+                if (inEmployees && codeRow == null && a.startsWith("Mã NV")) codeRow = r;
+            }
+            assertThat(FMT.formatCellValue(codeRow.getCell(1))).isEmpty();
+            assertThat(FMT.formatCellValue(codeRow.getCell(3))).contains("tự cấp");
+        }
+        byte[] filled = edit(file, wb -> {
+            Sheet d = wb.getSheet("Phòng ban");
+            fill(d, 1, "Lệnh", "MERGE");
+            fill(d, 1, "Mã phòng ban", "CH01");
+            fill(d, 1, "Tên phòng ban", "Cửa hàng Quận 1");
+            Sheet e = null;
+            for (Sheet sh : wb) if (sh.getSheetName().startsWith("Nhân viên")) { e = sh; break; }
+            fill(e, 1, "Lệnh", "MERGE");
+            fill(e, 1, "Họ và tên", "Chung Mẫu");
+            fill(e, 1, "Email", "chung.mau@test.local");
+            fill(e, 1, "Phòng ban", "CH01");
+        });
+        JsonNode prev = preview(c, "/api/v1/excel/preview-import", filled);
+        noProblems(prev);
+        assertThat(actions(prev)).containsExactly("MERGE", "MERGE");
+        doImport(c, "/api/v1/excel/import", filled);
+        assertThat(one("SELECT d.code FROM employees e JOIN departments d ON d.id = e.department_id "
+            + "WHERE e.company_id = ? AND e.email = 'chung.mau@test.local' AND e.deleted = 0", c.id)).isEqualTo("CH01");
+        // Chỉ chọn một module
+        byte[] one = api.download(c.adminToken, "/api/v1/excel/template?types=department", "en");
+        try (var wb = new XSSFWorkbook(new ByteArrayInputStream(one))) {
+            assertThat(wb.getNumberOfSheets()).isEqualTo(2);
+            assertThat(wb.getSheetName(1)).isEqualTo("Guide");
+        }
+    }
 }

@@ -5471,4 +5471,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActProfileEditReject => 'Profile edit request rejected';
+
+  @override
+  String get excelDownloadTemplate => 'Download template';
+
+  @override
+  String get excelDownloadTemplateHint =>
+      'An empty Excel file with exactly the import columns, plus a Guide sheet with an example for each column';
+
+  @override
+  String get excelTemplateIntro =>
+      'Importing for the first time? Download the template, fill it in using the Guide sheet, then choose the file below.';
 }

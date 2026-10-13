@@ -5460,4 +5460,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActProfileEditReject => 'Từ chối yêu cầu sửa hồ sơ';
+
+  @override
+  String get excelDownloadTemplate => 'Tải file mẫu';
+
+  @override
+  String get excelDownloadTemplateHint =>
+      'File Excel trống đúng các cột cần nhập, kèm sheet Hướng dẫn và ví dụ cho từng cột';
+
+  @override
+  String get excelTemplateIntro =>
+      'Lần đầu nhập dữ liệu? Tải file mẫu, điền theo sheet Hướng dẫn rồi chọn file ở dưới.';
 }
