@@ -30,7 +30,7 @@ flowchart LR
 | Chấm công | `attendances`, `attendance_requests`, `attendance_period_locks`, `employee_locations` | Công tính tức thời từ giờ vào / ra + ca + dung sai, chỉ lưu khi duyệt. Kỳ khoá thì mọi sửa bị chặn. Vị trí: bán kính công ty hoặc phòng; thiết bị gắn theo NV |
 | Nghỉ phép | `leave_types`, `leave_grants`, `leave_ledger_entries`, `leave_requests`, `leave_accrual_rules` | Chỉ trừ ngày có ca, bỏ ngày lễ và giờ nghỉ trưa. Sổ trừ / hoàn ghi đúng quỹ đã trừ; huỷ / từ chối hoàn lại |
 | Lịch | `work_calendars`, `holidays` (`company_id` trống = mẫu hệ thống) | Lịch tuần 7 ký tự (`F` cả ngày, `H` nửa ngày, `O` nghỉ) theo phòng, phòng con kế thừa. Ngày lễ: mẫu hệ thống → chép riêng khi công ty sửa năm đó |
-| Lương | `salary_grades`, `salary_histories`, `formula_variables`, `salary_formulas`, `payrolls`, `tax_policies` | Kỳ theo ngày chốt; công thức có biến hệ thống + biến tự định nghĩa; thuế / BH theo chính sách hiệu lực ở **ngày cuối kỳ**; phiếu lưu snapshot; không tự duyệt phiếu của mình |
+| Lương | `salary_grades`, `salary_histories`, `formula_variables`, `salary_formulas`, `payrolls`, `tax_policies` | Kỳ theo ngày chốt; công thức có biến hệ thống + biến tự định nghĩa; thuế / BH theo chính sách hiệu lực ở **ngày cuối kỳ**; phiếu lưu snapshot; không tự duyệt phiếu của mình; bậc lương (và chức vụ) còn NV hoặc quá trình công tác dùng không xoá được (`error.salary_grade.in_use`, `error.position.in_use`) — xoá mềm khi còn liên kết làm nạp NV lỗi 500 |
 | Báo cáo | (đọc) | Tổng quan, nhân sự, chấm công, lương, danh sách đóng BH; luôn lọc theo phạm vi |
 | Excel | `excel_history` | Xuất / xem trước / nhập theo lệnh, thứ tự module theo phụ thuộc, file kết quả có dòng lỗi |
 | Nhật ký | `audit_logs` | Chỉ ghi thêm; ghi cả lần xem tài liệu nhạy cảm |

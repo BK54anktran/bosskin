@@ -5,6 +5,8 @@ import com.bosskin.dto.PositionDTO;
 import com.bosskin.entity.Department;
 import com.bosskin.entity.Position;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.EmployeeJobHistoryRepository;
+import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.PositionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,8 @@ public class PositionExcelService {
 
     private final PositionRepository positionRepo;
     private final DepartmentRepository departmentRepo;
+    private final EmployeeRepository employeeRepo;
+    private final EmployeeJobHistoryRepository jobHistoryRepo;
 
     @Transactional(readOnly = true)
     public List<PositionDTO.FlatItem> getFlat(Long companyId) {
@@ -124,6 +128,10 @@ public class PositionExcelService {
             String code = row.getCode().trim().toUpperCase();
             Position pos = existing.get(code);
             if (pos == null) continue;
+            // Như nút xoá: chức vụ còn NV / quá trình công tác dùng thì không xoá (xoá mềm làm hỏng nạp NV)
+            if (employeeRepo.countByPositionIdAndCompanyId(pos.getId(), companyId) > 0
+                    || jobHistoryRepo.countUsingPosition(pos.getId()) > 0)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "error.import.position_in_use|" + code);
             deleteIds.add(pos.getId());
             deletedCodes.add(code);
         }

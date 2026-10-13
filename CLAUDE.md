@@ -358,12 +358,12 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V19** (`V19__data_integrity.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V20** (`V20__restore_referenced_grades_positions.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
-V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ
-→ Migration tiếp theo phải là **V20**
+V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ)
+→ Migration tiếp theo phải là **V21**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ

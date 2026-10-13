@@ -5,6 +5,8 @@ import com.bosskin.entity.Department;
 import com.bosskin.entity.SalaryGrade;
 import com.bosskin.entity.User;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.EmployeeJobHistoryRepository;
+import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.SalaryGradeRepository;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
@@ -27,6 +29,8 @@ public class SalaryGradeController {
 
     private final SalaryGradeRepository gradeRepo;
     private final DepartmentRepository departmentRepo;
+    private final EmployeeRepository employeeRepo;
+    private final EmployeeJobHistoryRepository jobHistoryRepo;
 
     @GetMapping
     public ResponseEntity<List<SalaryGradeDTO>> list(
@@ -110,6 +114,10 @@ public class SalaryGradeController {
         SalaryGrade grade = gradeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.salary_grade.not_found"));
         requireSameCompany(grade, user);
+        // Bậc còn được NV / quá trình công tác dùng mà xoá mềm thì mọi chỗ nạp NV đó lỗi 500 (EntityNotFound)
+        if (employeeRepo.countBySalaryGradeId(id) > 0 || jobHistoryRepo.countUsingSalaryGrade(id) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.salary_grade.in_use");
+        }
         gradeRepo.delete(grade);
         return ResponseEntity.noContent().build();
     }

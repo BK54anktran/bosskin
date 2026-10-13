@@ -26,6 +26,6 @@ Mở **Phòng ban**. Mỗi phòng hiện mã và số nhân viên; bấm mũi t�
 
 ## Chức vụ
 
-Bấm **Quản lý chức vụ** trên phòng: thêm, sửa, xoá chức vụ (mã chức vụ duy nhất trong phòng). Chức vụ dùng khi thêm nhân viên.
+Bấm **Quản lý chức vụ** trên phòng: thêm, sửa, xoá chức vụ (mã chức vụ duy nhất trong phòng). Chức vụ dùng khi thêm nhân viên. Chức vụ còn nhân viên hoặc còn trong quá trình công tác không xoá được (cả khi xoá qua nhập Excel).
 
 ![Chức vụ của một phòng](img:positions)

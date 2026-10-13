@@ -25,6 +25,8 @@ public class SalaryGradeDescriptor implements ExcelEntityDescriptor<SalaryGradeD
 
     private final SalaryGradeRepository gradeRepo;
     private final DepartmentRepository  deptRepo;
+    private final com.bosskin.repository.EmployeeRepository employeeRepo;
+    private final com.bosskin.repository.EmployeeJobHistoryRepository jobHistoryRepo;
 
     @Data
     public static class Row {
@@ -182,6 +184,11 @@ public class SalaryGradeDescriptor implements ExcelEntityDescriptor<SalaryGradeD
                 SalaryGrade grade = existing.get(codeKey);
 
                 if (rw.command() == ImportCommand.DELETE) {
+                    if (grade != null && (employeeRepo.countBySalaryGradeId(grade.getId()) > 0
+                            || jobHistoryRepo.countUsingSalaryGrade(grade.getId()) > 0)) {
+                        results.add(SheetImportResult.RowResult.error(rowNum, "error.salary_grade.in_use"));
+                        continue;
+                    }
                     if (!dryRun && grade != null) gradeRepo.delete(grade);
                     results.add(SheetImportResult.RowResult.ok(rowNum));
                     continue;

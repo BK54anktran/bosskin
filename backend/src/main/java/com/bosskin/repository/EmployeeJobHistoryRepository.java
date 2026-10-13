@@ -11,6 +11,14 @@ import java.util.Optional;
 
 public interface EmployeeJobHistoryRepository extends JpaRepository<EmployeeJobHistory, Long> {
 
+    /** Số mốc công tác (của NV chưa xoá) trỏ tới bậc lương — còn mốc thì không xoá bậc được. */
+    @Query("SELECT COUNT(h) FROM EmployeeJobHistory h WHERE h.salaryGrade.id = :gradeId AND h.deleted = false AND h.employee.deleted = false")
+    long countUsingSalaryGrade(@Param("gradeId") Long gradeId);
+
+    /** Số mốc công tác (của NV chưa xoá) trỏ tới chức vụ. */
+    @Query("SELECT COUNT(h) FROM EmployeeJobHistory h WHERE h.position.id = :positionId AND h.deleted = false AND h.employee.deleted = false")
+    long countUsingPosition(@Param("positionId") Long positionId);
+
     /** Toàn bộ quá trình của một nhân viên, mới nhất trước. */
     @Query("SELECT h FROM EmployeeJobHistory h WHERE h.employee.id = :employeeId AND h.deleted = false "
         + "ORDER BY h.effectiveFrom DESC, h.id DESC")

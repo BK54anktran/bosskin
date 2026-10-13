@@ -10,7 +10,7 @@ chỉ cần tạo – kiểm tra – duyệt – trả ở tab đầu.
 
 ## Bậc lương
 
-Mỗi bậc là một nhóm cách trả lương: **theo ngày** hoặc **theo giờ**, kèm đơn giá. Nhân viên gắn với một bậc (ở hồ sơ).
+Mỗi bậc là một nhóm cách trả lương: **theo ngày** hoặc **theo giờ**, kèm đơn giá. Nhân viên gắn với một bậc (ở hồ sơ). Bậc đang có nhân viên dùng (hiện tại hoặc trong quá trình công tác) không xoá được: đổi bậc cho nhân viên trước.
 
 ![Bậc lương](img:salary-grades)
 

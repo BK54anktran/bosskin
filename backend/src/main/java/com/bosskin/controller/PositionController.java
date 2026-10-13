@@ -5,6 +5,7 @@ import com.bosskin.entity.Department;
 import com.bosskin.entity.Position;
 import com.bosskin.entity.User;
 import com.bosskin.repository.DepartmentRepository;
+import com.bosskin.repository.EmployeeJobHistoryRepository;
 import com.bosskin.repository.EmployeeRepository;
 import com.bosskin.repository.PositionRepository;
 import com.bosskin.service.DeptScopeService;
@@ -27,6 +28,7 @@ public class PositionController {
     private final PositionRepository positionRepository;
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeJobHistoryRepository jobHistoryRepository;
     private final DeptScopeService deptScopeService;
 
     @GetMapping
@@ -96,6 +98,9 @@ public class PositionController {
         requireViewScope(user, pos.getDepartment().getId());
         if (employeeRepository.countByPositionIdAndCompanyId(pos.getId(), user.getCompany().getId()) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.has_employees");
+        }
+        if (jobHistoryRepository.countUsingPosition(pos.getId()) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.in_use");
         }
         positionRepository.delete(pos);
         return ResponseEntity.noContent().build();
