@@ -10214,7 +10214,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailDomainHint.
   ///
   /// In vi, this message translates to:
-  /// **'Email đăng nhập, đuôi @{domain}'**
+  /// **'VD: ten@{domain}'**
   String emailDomainHint(String domain);
 }
 

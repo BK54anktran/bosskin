@@ -285,8 +285,8 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   controller: _email,
                   decoration: InputDecoration(
                     labelText: '${s.workEmail} *',
-                    // V22: tài khoản phải theo đuôi email của công ty
-                    helperText: !_isEdit && _companyDomain != null ? s.emailDomainHint(_companyDomain!) : null,
+                    // V22: tài khoản phải theo đuôi email của công ty — gợi ý trong ô (helperText làm ô cao lệch hàng)
+                    hintText: !_isEdit && _companyDomain != null ? s.emailDomainHint(_companyDomain!) : null,
                   ),
                   enabled: !_isEdit,
                   validator: (v) {

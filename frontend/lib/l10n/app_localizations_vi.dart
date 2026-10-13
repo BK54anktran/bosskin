@@ -5507,6 +5507,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String emailDomainHint(String domain) {
-    return 'Email đăng nhập, đuôi @$domain';
+    return 'VD: ten@$domain';
   }
 }

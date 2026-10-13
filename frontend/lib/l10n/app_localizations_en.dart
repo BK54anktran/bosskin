@@ -5518,6 +5518,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String emailDomainHint(String domain) {
-    return 'Login email, ending with @$domain';
+    return 'e.g. name@$domain';
   }
 }

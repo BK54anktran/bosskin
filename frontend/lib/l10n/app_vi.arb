@@ -1883,6 +1883,6 @@
   ,"emailDomainChangeRule": "Mọi tài khoản trong công ty phải dùng đuôi này. Chỉ đổi được khi không còn tài khoản dùng đuôi cũ."
   ,"emailDomainMismatch": "Email phải có đuôi @{domain}"
   ,"@emailDomainMismatch": { "placeholders": { "domain": { "type": "String" } } }
-  ,"emailDomainHint": "Email đăng nhập, đuôi @{domain}"
+  ,"emailDomainHint": "VD: ten@{domain}"
   ,"@emailDomainHint": { "placeholders": { "domain": { "type": "String" } } }
 }
