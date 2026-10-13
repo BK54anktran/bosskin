@@ -82,9 +82,15 @@ public class Api {
 
     /** Tải file (xuất Excel) — trả nguyên byte. */
     public byte[] download(String token, String url) {
+        return download(token, url, null);
+    }
+
+    /** Tải file với ngôn ngữ (Accept-Language, vd. "vi") — đầu cột / tên sheet xuất theo ngôn ngữ đó. */
+    public byte[] download(String token, String url, String lang) {
         try {
             MockHttpServletRequestBuilder req = request(HttpMethod.GET, url);
             if (token != null) req.header("Authorization", "Bearer " + token);
+            if (lang != null) req.header("Accept-Language", lang);
             MockHttpServletResponse r = mvc.perform(req).andReturn().getResponse();
             if (r.getStatus() != 200) throw new IllegalStateException("GET " + url + " → " + r.getStatus());
             return r.getContentAsByteArray();

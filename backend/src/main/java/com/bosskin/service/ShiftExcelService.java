@@ -803,7 +803,7 @@ public class ShiftExcelService {
             AssignDayKey day = entry.getKey();
             com.bosskin.entity.Employee emp = empMap.get(day.getEmpCode());
             List<String> warnings = new ArrayList<>();
-            if (emp == null) warnings.add("Không tìm thấy nhân viên: " + day.getEmpCode());
+            if (emp == null) warnings.add("error.employee.not_found|" + day.getEmpCode());
 
             String action = "NO_CHANGE";
             List<FieldChange> changes = new ArrayList<>();

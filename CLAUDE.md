@@ -579,6 +579,10 @@ V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: I
 - Tên sheet Excel **không được chứa** `/`, `\`, `?`, `*`, `[`, `]` — dùng `-` thay `/` trong ngày tháng.
 - Tên sheet tối đa **31 ký tự**.
 - Bỏ dấu tiếng Việt trong tên sheet nếu dùng ký tự đặc biệt.
+- Đầu cột xuất theo ngôn ngữ người dùng → khi đọc phải khớp **mọi bản dịch** (`excelI18n.allValues(key)`), không so chuỗi tiếng Việt cứng.
+- Nhập lại nguyên file vừa xuất phải là "không đổi" ở cả xem trước lẫn nhập thật (không ghi đè, không tạo dòng rỗng). Bảng công /
+  chấm công theo ngày so với chính dòng bảng công như file xuất (`TimesheetSource`, giờ làm tròn, giờ nghỉ ca, tăng ca tính sẵn)
+  và chỉ ghi ô đã đổi. Kiểm thử vòng xuất → sửa → nhập: `ExcelRoundTripTest` (thêm luồng Excel mới → thêm ca test ở đó).
 
 ### Soft Delete
 - Tất cả entity quan trọng (Attendance, Employee, ...) dùng **soft delete** (`deleted = true`) — không `DELETE` cứng.

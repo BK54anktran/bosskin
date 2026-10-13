@@ -954,7 +954,7 @@ public class AttendanceExcelService {
             List<String> warnings = new ArrayList<>();
             Employee emp = empMap.get(row.empCode);
             if (emp == null) {
-                warnings.add("Không tìm thấy nhân viên: " + row.empCode);
+                warnings.add("error.employee.not_found|" + row.empCode);
                 result.add(AttendanceDiff.builder()
                     .action("CREATE").code(row.empCode)
                     .name(row.empName + " — " + row.date.format(ddMM))
@@ -1226,7 +1226,10 @@ public class AttendanceExcelService {
             Row row0 = sheet.getRow(0);
             if (row0 == null) return List.of();
             String row0First = fmt.formatCellValue(row0.getCell(0)).trim();
-            boolean isDayViewFormat = row0First.startsWith("Chấm công ngày");
+            // Day view: dòng 1 là header có cột "Nhân viên" / "Employee" (đầu cột theo ngôn ngữ lúc xuất)
+            boolean isDayViewFormat = sheet.getRow(1) != null
+                && col(headerIndex(sheet.getRow(1), fmt), "excel.col.attendance.employee") != null;
+            LocalDate dayViewDate = isDayViewFormat ? findDate(row0First, sheet.getSheetName()) : null;
 
             Row headerRow = isDayViewFormat ? sheet.getRow(1) : sheet.getRow(0);
             if (headerRow == null) return List.of();
@@ -1252,27 +1255,18 @@ public class AttendanceExcelService {
             }
             int dataStartRow = 2;
 
-            // Map tên cột (bỏ " *", bỏ newline) → index
-            Map<String, Integer> colIdx = new HashMap<>();
-            for (int c = 0; c < headerRow.getLastCellNum(); c++) {
-                Cell cell = headerRow.getCell(c);
-                if (cell == null) continue;
-                String name = fmt.formatCellValue(cell).trim()
-                    .replace("\n", " ").replace("  ", " ")  // normalize newline
-                    .replace(" *", "").trim();
-                colIdx.put(name, c);
-            }
-
-            Integer colNgay    = colIdx.get("Ngày");
-            Integer colCI      = colIdx.get("Check-in");
-            Integer colCO      = colIdx.get("Check-out");
-            Integer colBreak   = colIdx.get("Giờ giải lao");
-            Integer colOtDay   = colIdx.get("Tăng ca ngày");
-            Integer colOtNight = colIdx.get("Tăng ca đêm");
-            Integer colDelete   = colIdx.get("Xóa");
-            Integer colApproved = colIdx.get("Trạng thái duyệt");
+            // Đầu cột theo ngôn ngữ lúc xuất (vi / en) → khớp mọi bản dịch của key
+            Map<String, Integer> colIdx = headerIndex(headerRow, fmt);
+            Integer colNgay    = isDayViewFormat ? null : col(colIdx, "excel.col.attendance.date");
+            Integer colCI      = col(colIdx, "excel.col.attendance.checkIn");
+            Integer colCO      = col(colIdx, "excel.col.attendance.checkOut");
+            Integer colBreak   = col(colIdx, "excel.col.attendance.breakTime");
+            Integer colOtDay   = col(colIdx, "excel.col.attendance.otDay");
+            Integer colOtNight = col(colIdx, "excel.col.attendance.otNight");
+            Integer colDelete   = col(colIdx, "excel.col.attendance.delete");
+            Integer colApproved = col(colIdx, "excel.col.attendance.approveStatus");
             // Cột Nhân viên (day view format)
-            Integer colEmp     = colIdx.get("Nhân viên");
+            Integer colEmp     = isDayViewFormat ? col(colIdx, "excel.col.attendance.employee") : null;
 
             if (colNgay == null && colEmp == null) return List.of();
 
@@ -1294,13 +1288,9 @@ public class AttendanceExcelService {
                 // Parse ngày
                 LocalDate date;
                 if (isDayViewFormat) {
-                    // Day view: ngày lấy từ sheet name "Cham cong dd-MM-yyyy"
-                    String sn = sheet.getSheetName();
-                    try {
-                        String part = sn.replace("Cham cong ", "").trim();
-                        String[] p = part.split("-");
-                        date = LocalDate.of(Integer.parseInt(p[2]), Integer.parseInt(p[1]), Integer.parseInt(p[0]));
-                    } catch (Exception e) { continue; }
+                    // Day view: ngày lấy từ dòng tiêu đề "… dd/MM/yyyy" (hoặc tên sheet "… dd-MM-yyyy")
+                    if (dayViewDate == null) continue;
+                    date = dayViewDate;
                 } else {
                     // Timesheet: cột "Ngày" chứa số ngày trong tháng
                     if (colNgay == null) continue;
@@ -1367,23 +1357,119 @@ public class AttendanceExcelService {
     }
 
     private LocalDate parseBaseDateFromSheetName(String sheetName) {
-        // "Cham cong dd-MM-yyyy" (day view) hoặc "Cham cong MM-yyyy" (timesheet)
-        try {
-            String part = sheetName.replace("Cham cong ", "").trim();
-            String[] parts = part.split("-");
-            if (parts.length == 3) {
-                // dd-MM-yyyy
-                return LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), 1);
-            } else if (parts.length == 2) {
-                // MM-yyyy
-                return LocalDate.of(Integer.parseInt(parts[1]), Integer.parseInt(parts[0]), 1);
+        // "Chấm công MM-yyyy" / "Attendance MM-yyyy" (timesheet)
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d{1,2})-(\\d{4})\\s*$").matcher(sheetName);
+        if (!m.find()) return null;
+        try { return LocalDate.of(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(1)), 1); }
+        catch (Exception e) { return null; }
+    }
+
+    /** Ngày dd/MM/yyyy trong dòng tiêu đề, không có thì dd-MM-yyyy trong tên sheet. */
+    private static LocalDate findDate(String info, String sheetName) {
+        for (String[] src : new String[][]{{info, "/"}, {sheetName, "-"}}) {
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(\\d{1,2})" + src[1] + "(\\d{1,2})" + src[1] + "(\\d{4})").matcher(src[0]);
+            if (m.find()) {
+                try { return LocalDate.of(Integer.parseInt(m.group(3)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(1))); }
+                catch (Exception ignored) {}
             }
-        } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    /** Đầu cột đã chuẩn hoá (bỏ xuống dòng, dấu " *", không phân biệt hoa thường) → chỉ số cột. */
+    private static Map<String, Integer> headerIndex(Row headerRow, DataFormatter fmt) {
+        Map<String, Integer> idx = new HashMap<>();
+        for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+            Cell cell = headerRow.getCell(c);
+            if (cell != null) idx.putIfAbsent(normHeader(fmt.formatCellValue(cell)), c);
+        }
+        return idx;
+    }
+
+    private static String normHeader(String s) {
+        return s.replace("\n", " ").replaceAll("\\s+", " ").replaceAll("\\s*\\*\\s*$", "").trim().toLowerCase(Locale.ROOT);
+    }
+
+    /** Dòng bảng công hiện tại của một NV trong khoảng ngày (như màn hình / file xuất). */
+    @FunctionalInterface
+    public interface TimesheetSource {
+        List<AttendanceDTO.TimesheetRow> rows(com.bosskin.entity.Employee employee, LocalDate from, LocalDate to);
+    }
+
+    /** NV → ngày → dòng bảng công hiện tại (ưu tiên dòng có bản ghi chấm công khi một ngày nhiều ca). */
+    private Map<Long, Map<LocalDate, AttendanceDTO.TimesheetRow>> currentRows(List<TimesheetImportRow> rows,
+            Map<String, com.bosskin.entity.Employee> empMap, TimesheetSource source) {
+        Map<Long, Map<LocalDate, AttendanceDTO.TimesheetRow>> out = new HashMap<>();
+        if (source == null) return out;
+        Map<String, List<LocalDate>> datesByEmp = new HashMap<>();
+        for (TimesheetImportRow r : rows) datesByEmp.computeIfAbsent(r.empCode, k -> new ArrayList<>()).add(r.date);
+        datesByEmp.forEach((code, dates) -> {
+            com.bosskin.entity.Employee emp = empMap.get(code);
+            if (emp == null) return;
+            LocalDate from = Collections.min(dates), to = Collections.max(dates);
+            Map<LocalDate, AttendanceDTO.TimesheetRow> byDate = new HashMap<>();
+            for (AttendanceDTO.TimesheetRow tr : source.rows(emp, from, to)) {
+                AttendanceDTO.TimesheetRow prev = byDate.get(tr.getDate());
+                if (prev == null || (prev.getAttendanceId() == null && tr.getAttendanceId() != null)) byDate.put(tr.getDate(), tr);
+            }
+            out.put(emp.getId(), byDate);
+        });
+        return out;
+    }
+
+    /** Giá trị đang có theo đúng cách file xuất ghi: check-in, check-out, giờ giải lao, tăng ca ngày, tăng ca đêm. */
+    private String[] currentValues(AttendanceDTO.TimesheetRow r) {
+        if (r == null) return new String[]{"", "", "", "", ""};
+        String ci = r.getOverrideCheckIn() != null ? r.getOverrideCheckIn().format(TIME_FMT)
+            : (r.getCheckIn() != null ? r.getCheckIn().format(TIME_FMT) : "");
+        String co = r.getOverrideCheckOut() != null ? r.getOverrideCheckOut().format(TIME_FMT)
+            : (r.getCheckOut() != null ? r.getCheckOut().format(TIME_FMT) : "");
+        String br = r.getBreakMinutes() > 0 ? formatMins(r.getBreakMinutes()) : "";
+        double otDay = r.getOverrideOtDayMinutes() != null ? r.getOverrideOtDayMinutes() / 60.0 : r.getOtDayHours();
+        double otNight = r.getOverrideOtNightMinutes() != null ? r.getOverrideOtNightMinutes() / 60.0 : r.getOtNightHours();
+        return new String[]{ci, co, br, otDay > 0 ? formatHours(otDay) : "", otNight > 0 ? formatHours(otNight) : ""};
+    }
+
+    /** Bản sao dòng file, ô nào trùng giá trị đang có thì bỏ (null = không đổi). */
+    private TimesheetImportRow onlyChanged(TimesheetImportRow r, AttendanceDTO.TimesheetRow cur, Attendance att) {
+        String[] v = currentValues(cur);
+        TimesheetImportRow o = new TimesheetImportRow();
+        o.empCode = r.empCode;
+        o.date = r.date;
+        o.deleteFlag = r.deleteFlag;
+        o.checkIn = differs(r.checkIn, v[0]);
+        o.checkOut = differs(r.checkOut, v[1]);
+        o.breakMinutes = differs(r.breakMinutes, v[2]);
+        o.otDayMinutes = differs(r.otDayMinutes, v[3]);
+        o.otNightMinutes = differs(r.otNightMinutes, v[4]);
+        o.approved = att == null || (r.approved != null && r.approved != att.isApproved()) ? r.approved : null;
+        return o;
+    }
+
+    private static String differs(String value, String current) {
+        if (value == null) return null;
+        String v = value.trim();
+        if (v.matches("\\d:\\d{2}")) v = "0" + v;      // Excel có thể bỏ số 0 đầu ("8:05")
+        return v.equals(current) ? null : v;
+    }
+
+    private static boolean hasChange(TimesheetImportRow r, Attendance att) {
+        return r.checkIn != null || r.checkOut != null || r.breakMinutes != null
+            || r.otDayMinutes != null || r.otNightMinutes != null
+            || (r.approved != null && att != null && r.approved != att.isApproved());
+    }
+
+    private Integer col(Map<String, Integer> colIdx, String key) {
+        for (String v : excelI18n.allValues(key)) {
+            Integer i = colIdx.get(normHeader(v));
+            if (i != null) return i;
+        }
         return null;
     }
 
     @Transactional(readOnly = true)
-    public List<AttendanceDiff> previewImportTimesheet(Long companyId, Long userId, MultipartFile file) {
+    public List<AttendanceDiff> previewImportTimesheet(Long companyId, Long userId, MultipartFile file, TimesheetSource source) {
         List<TimesheetImportRow> rows = readTimesheetSheet(file);
         if (rows.isEmpty()) return List.of();
 
@@ -1403,13 +1489,17 @@ public class AttendanceExcelService {
         }
 
         DateTimeFormatter ddMM = DateTimeFormatter.ofPattern("dd/MM");
+        Map<Long, Map<LocalDate, AttendanceDTO.TimesheetRow>> current = currentRows(rows, empMap, source);
         List<AttendanceDiff> result = new ArrayList<>();
-        for (TimesheetImportRow row : rows) {
-            com.bosskin.entity.Employee emp = empMap.get(row.empCode);
+        for (TimesheetImportRow fileRow : rows) {
+            com.bosskin.entity.Employee emp = empMap.get(fileRow.empCode);
+            TimesheetImportRow row = emp == null ? fileRow : onlyChanged(fileRow,
+                current.getOrDefault(emp.getId(), Map.of()).get(fileRow.date),
+                existingMap.getOrDefault(emp.getId(), Map.of()).get(fileRow.date));
             if (emp == null) {
                 result.add(AttendanceDiff.builder().action("CREATE").code(row.empCode)
                     .name(row.empCode + " — " + row.date.format(ddMM))
-                    .changes(List.of()).warnings(List.of("Không tìm thấy nhân viên: " + row.empCode)).build());
+                    .changes(List.of()).warnings(List.of("error.employee.not_found|" + row.empCode)).build());
                 continue;
             }
             Attendance att = existingMap.getOrDefault(emp.getId(), Map.of()).get(row.date);
@@ -1424,27 +1514,18 @@ public class AttendanceExcelService {
             }
 
             List<FieldChange> changes = new ArrayList<>();
-            String curCI = "", curCO = "", curBr = "", curOtDay = "", curOtNight = "";
-            if (att != null) {
-                curCI = att.getOverrideCheckIn() != null ? att.getOverrideCheckIn().format(TIME_FMT)
-                    : (att.getCheckIn() != null ? att.getCheckIn().toLocalTime().format(TIME_FMT) : "");
-                curCO = att.getOverrideCheckOut() != null ? att.getOverrideCheckOut().format(TIME_FMT)
-                    : (att.getCheckOut() != null ? att.getCheckOut().toLocalTime().format(TIME_FMT) : "");
-                curBr     = att.getOverrideBreakMinutes()    != null ? formatMins(att.getOverrideBreakMinutes())    : "";
-                curOtDay  = att.getOverrideOtDayMinutes()    != null ? formatMins(att.getOverrideOtDayMinutes())    : "";
-                curOtNight = att.getOverrideOtNightMinutes() != null ? formatMins(att.getOverrideOtNightMinutes())  : "";
-            }
-            // Detect thay đổi: cả khi thêm mới lẫn khi xóa (để trống) giá trị cũ
-            if (row.checkIn     != null && !row.checkIn.equals(curCI))
-                changes.add(new FieldChange("Check-in",      curCI,     row.checkIn));
-            if (row.checkOut    != null && !row.checkOut.equals(curCO))
-                changes.add(new FieldChange("Check-out",     curCO,     row.checkOut));
-            if (row.breakMinutes  != null && !row.breakMinutes.equals(curBr))
-                changes.add(new FieldChange("Giờ giải lao", curBr,     row.breakMinutes));
-            if (row.otDayMinutes  != null && !row.otDayMinutes.equals(curOtDay))
-                changes.add(new FieldChange("Tăng ca ngày", curOtDay,  row.otDayMinutes));
-            if (row.otNightMinutes != null && !row.otNightMinutes.equals(curOtNight))
-                changes.add(new FieldChange("Tăng ca đêm",  curOtNight, row.otNightMinutes));
+            // onlyChanged đã bỏ các ô trùng giá trị đang có (như file xuất) → ô còn lại là thay đổi thật
+            String[] cur = currentValues(current.getOrDefault(emp.getId(), Map.of()).get(row.date));
+            if (row.checkIn     != null)
+                changes.add(new FieldChange("Check-in",      cur[0], row.checkIn));
+            if (row.checkOut    != null)
+                changes.add(new FieldChange("Check-out",     cur[1], row.checkOut));
+            if (row.breakMinutes  != null)
+                changes.add(new FieldChange("Giờ giải lao", cur[2], row.breakMinutes));
+            if (row.otDayMinutes  != null)
+                changes.add(new FieldChange("Tăng ca ngày", cur[3], row.otDayMinutes));
+            if (row.otNightMinutes != null)
+                changes.add(new FieldChange("Tăng ca đêm",  cur[4], row.otNightMinutes));
             if (row.approved != null && att != null && row.approved != att.isApproved())
                 changes.add(new FieldChange("Trạng thái duyệt",
                     att.isApproved() ? "true" : "false", row.approved ? "true" : "false"));
@@ -1452,19 +1533,6 @@ public class AttendanceExcelService {
             if (changes.isEmpty() && att != null) continue;
             if (changes.isEmpty() && att == null) continue; // row trống, không có gì để tạo
             String action = att == null ? "CREATE" : "UPDATE";
-            // Với CREATE, hiện tất cả field sẽ được tạo
-            if (att == null) {
-                if (row.checkIn     != null && !row.checkIn.isBlank())
-                    changes.add(new FieldChange("Check-in",      "", row.checkIn));
-                if (row.checkOut    != null && !row.checkOut.isBlank())
-                    changes.add(new FieldChange("Check-out",     "", row.checkOut));
-                if (row.breakMinutes != null && !row.breakMinutes.isBlank())
-                    changes.add(new FieldChange("Giờ giải lao",  "", row.breakMinutes));
-                if (row.otDayMinutes != null && !row.otDayMinutes.isBlank())
-                    changes.add(new FieldChange("Tăng ca ngày",  "", row.otDayMinutes));
-                if (row.otNightMinutes != null && !row.otNightMinutes.isBlank())
-                    changes.add(new FieldChange("Tăng ca đêm",   "", row.otNightMinutes));
-            }
             result.add(AttendanceDiff.builder().action(action).code(row.empCode).name(label)
                 .changes(changes).warnings(List.of()).build());
         }
@@ -1472,7 +1540,7 @@ public class AttendanceExcelService {
     }
 
     @Transactional
-    public Map<String, Integer> importTimesheet(Long companyId, Long userId, MultipartFile file) {
+    public Map<String, Integer> importTimesheet(Long companyId, Long userId, MultipartFile file, TimesheetSource source) {
         List<TimesheetImportRow> rows = readTimesheetSheet(file);
         if (rows.isEmpty()) return Map.of("created", 0, "updated", 0, "deleted", 0, "skipped", 0);
 
@@ -1510,11 +1578,15 @@ public class AttendanceExcelService {
         List<Attendance> toSave = new ArrayList<>();
         List<Boolean> approveFlags = new ArrayList<>();
 
-        for (TimesheetImportRow row : rows) {
-            com.bosskin.entity.Employee emp = empMap.get(row.empCode);
+        Map<Long, Map<LocalDate, AttendanceDTO.TimesheetRow>> current = currentRows(rows, empMap, source);
+        for (TimesheetImportRow fileRow : rows) {
+            com.bosskin.entity.Employee emp = empMap.get(fileRow.empCode);
             if (emp == null) { skipped++; continue; }
             try {
-                Attendance att = existingMap.getOrDefault(emp.getId(), Map.of()).get(row.date);
+                Attendance att = existingMap.getOrDefault(emp.getId(), Map.of()).get(fileRow.date);
+                // Chỉ ghi ô đã đổi so với giá trị đang có — nhập lại nguyên file không sửa gì
+                TimesheetImportRow row = onlyChanged(fileRow,
+                    current.getOrDefault(emp.getId(), Map.of()).get(fileRow.date), att);
                 if (row.deleteFlag) {
                     if (att == null || att.isDeleted()) { skipped++; continue; }
                     att.setDeleted(true);
@@ -1523,6 +1595,7 @@ public class AttendanceExcelService {
                     deleted++; continue;
                 }
                 if (att == null) {
+                    if (!hasChange(row, null)) continue;     // như xem trước: không có ô nào đổi → không tạo
                     boolean hasCheckIn = row.checkIn != null && !row.checkIn.isBlank();
                     boolean hasCheckOut = row.checkOut != null && !row.checkOut.isBlank();
                     boolean hasShift = shiftDatesByEmployee
@@ -1537,6 +1610,7 @@ public class AttendanceExcelService {
                     approveFlags.add(row.approved != null && row.approved);
                     created++;
                 } else {
+                    if (!hasChange(row, att)) continue;
                     boolean wasApproved = att.isApproved();
                     if (wasApproved) {
                         att.setApproved(false);

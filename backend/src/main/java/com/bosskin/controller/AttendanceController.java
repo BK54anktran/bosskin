@@ -1877,6 +1877,17 @@ public class AttendanceController {
             requireViewScope(user, employee.getDepartment().getId());
         }
         var company = employee.getCompany();
+        List<AttendanceDTO.TimesheetRow> rows = timesheetRowsFor(employee, from, to);
+        return attendanceExcelService.exportTimesheetRange(
+            user.getCompany().getId(), user.getId(),
+            employee.getFullName(), employee.getEmployeeCode(), from, to, rows,
+            company.isAttendanceDayNightMode(), company.isAttendanceOtEnabled(), LocaleContextHolder.getLocale());
+    }
+
+    /** Các dòng bảng công của một NV (giống màn hình / file xuất) — dùng khi xuất và khi so sánh lúc nhập lại. */
+    private List<AttendanceDTO.TimesheetRow> timesheetRowsFor(Employee employee, LocalDate from, LocalDate to) {
+        Long employeeId = employee.getId();
+        var company = employee.getCompany();
         LocalTime dayStart = company.isAttendanceDayNightMode() && company.getDayStartTime() != null
             ? company.getDayStartTime() : (company.isAttendanceDayNightMode() ? LocalTime.of(6,0) : LocalTime.MIDNIGHT);
         LocalTime dayEnd = company.isAttendanceDayNightMode() && company.getDayEndTime() != null
@@ -1901,10 +1912,7 @@ public class AttendanceController {
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1))
             rows.addAll(buildTimesheetRows(d, attMap.getOrDefault(d, List.of()), shiftMap.get(d), requestMap.get(d), leaveMap.get(d), dayStart, dayEnd, otEnabled, policy));
         markCalendar(rows, employee, from, to);
-        return attendanceExcelService.exportTimesheetRange(
-            user.getCompany().getId(), user.getId(),
-            employee.getFullName(), employee.getEmployeeCode(), from, to, rows,
-            company.isAttendanceDayNightMode(), otEnabled, LocaleContextHolder.getLocale());
+        return rows;
     }
 
     @GetMapping("/export-day-view")
@@ -1999,7 +2007,7 @@ public class AttendanceController {
             @AuthenticationPrincipal User user) {
         requirePermission(user, "ATTENDANCE_VIEW");
         return ResponseEntity.ok(
-            attendanceExcelService.previewImportTimesheet(user.getCompany().getId(), user.getId(), file));
+            attendanceExcelService.previewImportTimesheet(user.getCompany().getId(), user.getId(), file, this::timesheetRowsFor));
     }
 
     @PostMapping("/import-timesheet")
@@ -2009,7 +2017,7 @@ public class AttendanceController {
         requirePermission(user, "ATTENDANCE_MANAGE");
         requirePermission(user, "ATTENDANCE_APPROVE"); // import bảng công ghi luôn trạng thái đã duyệt
         Map<String, Integer> result = new java.util.HashMap<>(
-            attendanceExcelService.importTimesheet(user.getCompany().getId(), user.getId(), file));
+            attendanceExcelService.importTimesheet(user.getCompany().getId(), user.getId(), file, this::timesheetRowsFor));
 
         // Xử lý approve/unapprove cho các row có trạng thái duyệt thay đổi
         List<AttendanceExcelService.ApproveTask> approveTasks = attendanceExcelService.getLastImportApproveTasks();
