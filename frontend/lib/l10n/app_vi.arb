@@ -1881,7 +1881,7 @@
   ,"emailDomainExample": "VD: th.com"
   ,"emailDomainInvalid": "Đuôi email không hợp lệ (VD: th.com)"
   ,"emailDomainChangeRule": "Mọi tài khoản trong công ty phải dùng đuôi này. Chỉ đổi được khi không còn tài khoản dùng đuôi cũ."
-  ,"emailDomainMismatch": "Email phải có đuôi @{domain}"
+  ,"emailDomainMismatch": "Email phải có dạng tên@{domain} (VD: an.nguyen@{domain})"
   ,"@emailDomainMismatch": { "placeholders": { "domain": { "type": "String" } } }
   ,"emailDomainHint": "VD: ten@{domain}"
   ,"@emailDomainHint": { "placeholders": { "domain": { "type": "String" } } }

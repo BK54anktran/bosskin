@@ -5502,7 +5502,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String emailDomainMismatch(String domain) {
-    return 'Email phải có đuôi @$domain';
+    return 'Email phải có dạng tên@$domain (VD: an.nguyen@$domain)';
   }
 
   @override

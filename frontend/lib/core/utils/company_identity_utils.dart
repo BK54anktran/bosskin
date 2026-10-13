@@ -23,3 +23,15 @@ bool emailMatchesDomain(String? domain, String email) {
   if (domain == null || domain.isEmpty) return true;
   return email.trim().toLowerCase().endsWith('@${domain.toLowerCase()}');
 }
+
+final _localPartPattern = RegExp(r'^[^\s@]+$');
+
+/// Email đăng nhập hợp lệ cho công ty: đúng một "@", phần trước "@" không rỗng / không khoảng trắng,
+/// và theo đuôi công ty (nếu công ty đã đặt đuôi).
+bool isValidCompanyEmail(String? domain, String email) {
+  final e = email.trim();
+  final at = e.indexOf('@');
+  if (at <= 0 || at != e.lastIndexOf('@') || !_localPartPattern.hasMatch(e.substring(0, at))) return false;
+  if (domain == null || domain.isEmpty) return e.substring(at + 1).contains('.');
+  return emailMatchesDomain(domain, e);
+}

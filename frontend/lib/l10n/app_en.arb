@@ -1876,6 +1876,6 @@
   ,"emailDomainExample": "e.g. th.com"
   ,"emailDomainInvalid": "Invalid email domain (e.g. th.com)"
   ,"emailDomainChangeRule": "Every account in the company must use this domain. It can only be changed when no account still uses the old domain."
-  ,"emailDomainMismatch": "Email must end with @{domain}"
+  ,"emailDomainMismatch": "Email must look like name@{domain} (e.g. an.nguyen@{domain})"
   ,"emailDomainHint": "e.g. name@{domain}"
 }

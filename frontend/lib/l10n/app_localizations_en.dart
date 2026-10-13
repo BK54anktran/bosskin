@@ -5513,7 +5513,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String emailDomainMismatch(String domain) {
-    return 'Email must end with @$domain';
+    return 'Email must look like name@$domain (e.g. an.nguyen@$domain)';
   }
 
   @override

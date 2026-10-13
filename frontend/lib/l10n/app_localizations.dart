@@ -10208,7 +10208,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailDomainMismatch.
   ///
   /// In vi, this message translates to:
-  /// **'Email phải có đuôi @{domain}'**
+  /// **'Email phải có dạng tên@{domain} (VD: an.nguyen@{domain})'**
   String emailDomainMismatch(String domain);
 
   /// No description provided for @emailDomainHint.

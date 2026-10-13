@@ -278,10 +278,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     _DialogField(ctrl: adminEmailCtrl, label: s.adminEmailLabel,
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) {
-                          if (v == null || !v.contains('@')) return s.invalidEmail;
                           final domain = normalizeEmailDomain(domainCtrl.text);
-                          if (domain.isNotEmpty && !emailMatchesDomain(domain, v)) {
-                            return s.emailDomainMismatch(domain);
+                          if (v == null || !isValidCompanyEmail(domain.isEmpty ? null : domain, v)) {
+                            return domain.isNotEmpty ? s.emailDomainMismatch(domain) : s.invalidEmail;
                           }
                           return null;
                         }),

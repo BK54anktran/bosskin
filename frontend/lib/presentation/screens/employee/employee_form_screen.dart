@@ -290,9 +290,10 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   ),
                   enabled: !_isEdit,
                   validator: (v) {
-                    if (v == null || !v.contains('@')) return s.invalidEmail;
-                    if (!_isEdit && !emailMatchesDomain(_companyDomain, v)) {
-                      return s.emailDomainMismatch(_companyDomain!);
+                    if (_isEdit) return null;
+                    // Nói rõ dạng cần nhập (vd. "ten@th.com") thay cho "Email không hợp lệ"
+                    if (v == null || !isValidCompanyEmail(_companyDomain, v)) {
+                      return _companyDomain != null ? s.emailDomainMismatch(_companyDomain!) : s.invalidEmail;
                     }
                     return null;
                   },
