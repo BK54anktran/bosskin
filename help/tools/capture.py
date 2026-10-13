@@ -204,25 +204,31 @@ async def nghi_phep(sh):
 async def nhan_su(sh):
     await sh.login(ADMIN)
     await sh.goto('/employees')
-    await sh.shot('employees', [('Thêm nhân viên', 'button'), ('Tìm theo tên', 'textbox'), sh.box(1172, 202, 232, 34, 'Nút thao tác')])
+    await sh.shot('employees', [('Thêm nhân viên', 'button'), ('Tìm theo tên', 'textbox'), sh.box(1134, 202, 270, 34, 'Nút thao tác')])
     await sh.click('Thêm nhân viên', role='button', wait=2500)
     await sh.shot('employee-new', [('Họ và tên', 'textbox'), ('Email công việc', 'textbox'), ('Phòng ban', 'button'),
                                    ('Quản lý trực tiếp', 'button'), ('Tạo', 'button', 0, True)])
     await sh.scroll(900)
     await sh.shot('employee-new-2', [])
     await sh.goto('/employees')
-    # Nút thao tác trên dòng đầu: quá trình công tác · người phụ thuộc · tài liệu · lương · sửa · nghỉ việc
-    await sh.click(sh.box(1180, 211, 16, 16))
+    # Nút thao tác trên dòng đầu: quá trình công tác · người phụ thuộc · tài liệu · lương · đặt lại mật khẩu · sửa · nghỉ việc
+    await sh.click(sh.box(1140, 211, 16, 16))
     await sh.shot('job-history', [])
     await sh.esc()
     await sh.type('Tìm theo tên', 'Trần Quốc Bảo')
     await sh.page.wait_for_timeout(1500)
-    await sh.click(sh.box(1220, 211, 16, 16))
+    await sh.click(sh.box(1180, 211, 16, 16))
     await sh.shot('dependents', [('Thêm người phụ thuộc', None, 0, False, 3000, None, None)])
     await sh.esc()
     await sh.goto('/employees')
-    await sh.click(sh.box(1260, 211, 16, 16))
+    await sh.click(sh.box(1220, 211, 16, 16))
     await sh.shot('employee-documents', [])
+    await sh.esc()
+    await sh.click(sh.box(1300, 211, 16, 16))      # đặt lại mật khẩu: chỉ chụp hộp xác nhận, không bấm
+    await sh.shot('employee-reset-password', [])
+    await sh.esc()
+    await sh.click(sh.box(1380, 211, 16, 16))      # nghỉ việc: chỉ chụp hộp chọn ngày, không bấm
+    await sh.shot('employee-resign', [])
     await sh.esc()
     await sh.click(sh.box(1340, 211, 16, 16), wait=2500)
     await sh.shot('employee-edit', [])

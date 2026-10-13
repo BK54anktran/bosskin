@@ -22,6 +22,10 @@ Mở **Nhân viên**. Tìm theo tên, email, mã NV; lọc theo phòng ban và t
 
 ![Danh sách nhân viên](img:employees)
 
+![Đặt lại mật khẩu cho nhân viên quên mật khẩu](img:employee-reset-password)
+
+![Nghỉ việc: chọn ngày làm việc cuối](img:employee-resign)
+
 > **Lưu ý:** Số CCCD, số tài khoản, MST, sổ BHXH hiện dạng `****1234` nếu bạn không có quyền *Xem dữ liệu nhạy cảm*.
 
 ## Thêm nhân viên

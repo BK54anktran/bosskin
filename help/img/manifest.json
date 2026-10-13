@@ -238,6 +238,14 @@
   "caption": null,
   "marks": []
  },
+ "employee-reset-password": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-resign": {
+  "caption": null,
+  "marks": []
+ },
  "employees": {
   "caption": null,
   "marks": [
@@ -307,8 +315,8 @@
   "caption": null,
   "marks": [
    "Loại nghỉ phép\nPhép năm (PN)",
-   "Từ ngày: 10/10/2026",
-   "Đến ngày: 10/10/2026",
+   "Từ ngày: 13/10/2026",
+   "Đến ngày: 13/10/2026",
    "Lý do",
    "Tạo"
   ]
