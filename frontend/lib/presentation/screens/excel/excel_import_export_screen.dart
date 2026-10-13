@@ -984,36 +984,43 @@ class _HistoryTileState extends State<_HistoryTile> {
         const SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
+            // Wrap: xuất / nhập nhiều module thì chip tên module dài — xuống dòng thay vì tràn ra ngoài thẻ
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(typeLabel,
+                      style: TextStyle(
+                          fontSize: 10, fontWeight: FontWeight.w600, color: color)),
                 ),
-                child: Text(typeLabel,
-                    style: TextStyle(
-                        fontSize: 10, fontWeight: FontWeight.w600, color: color)),
-              ),
-              const SizedBox(width: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: AppTheme.border,
-                  borderRadius: BorderRadius.circular(4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: AppTheme.border,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(_moduleLabel(s),
+                      style: TextStyle(
+                          fontSize: 10, color: AppTheme.textSecondary)),
                 ),
-                child: Text(_moduleLabel(s),
-                    style: TextStyle(
-                        fontSize: 10, color: AppTheme.textSecondary)),
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(entry.filename,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w500),
-                    overflow: TextOverflow.ellipsis),
-              ),
-            ]),
+                if (entry.filename.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 2),
+                    child: Text(entry.filename,
+                        maxLines: 1,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis),
+                  ),
+              ],
+            ),
             if (parts.isNotEmpty) ...[
               const SizedBox(height: 2),
               Text(parts.join(' · '),
