@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../data/services/company_feature_service.dart';
 import '../../../data/services/team_approval_service.dart';
 import '../../../data/repositories/company_setting_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
@@ -72,6 +73,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
   bool _standardDaysFromCalendar = false;
   /// Bước K: PERMISSION (mặc định) | MANAGER_THEN_HR
   String _approvalMode = 'PERMISSION';
+  bool _shiftRegistrationEnabled = false;
 
   bool _locationCheckEnabled = false;
   bool _deviceBindingEnabled = false;
@@ -147,6 +149,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
         _employerHealthCtrl.text = _percentText(payroll?['employerHealthPercent'], '3');
         _employerUnemploymentCtrl.text = _percentText(payroll?['employerUnemploymentPercent'], '1');
         _approvalMode = ((data['approval'] as Map?)?['mode'] as String?) ?? 'PERMISSION';
+        _shiftRegistrationEnabled = (data['shiftRegistration'] as Map?)?['enabled'] == true;
         _contractWarningCtrl.text =
             (((data['contract'] as Map?)?['expiryWarningDays'] as num?)?.toInt() ?? 30).toString();
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
@@ -289,12 +292,14 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
         },
         'approval': {'mode': _approvalMode},
         'contract': {'expiryWarningDays': int.tryParse(_contractWarningCtrl.text.trim()) ?? 30},
+        'shiftRegistration': {'enabled': _shiftRegistrationEnabled},
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.saveSuccess), backgroundColor: AppTheme.secondary),
       );
       TeamApprovalService.instance.refresh();
+      CompanyFeatureService.instance.refresh();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -394,6 +399,25 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             decoration: InputDecoration(labelText: s.leaveHoursPerDay),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.shiftRegSettingTitle, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _shiftRegistrationEnabled,
+                            onChanged: (v) => setState(() => _shiftRegistrationEnabled = v),
+                            title: Text(s.shiftRegSettingEnabled),
+                          ),
+                          Text(s.shiftRegSettingHelper,
+                              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                         ],
                       ),
                     ),

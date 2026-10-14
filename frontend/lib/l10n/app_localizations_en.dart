@@ -5520,4 +5520,330 @@ class AppLocalizationsEn extends AppLocalizations {
   String emailDomainHint(String domain) {
     return 'e.g. name@$domain';
   }
+
+  @override
+  String get shiftRegMenu => 'Schedule registration';
+
+  @override
+  String get shiftRegTab => 'Registration';
+
+  @override
+  String get shiftRegSettingTitle => 'Schedule registration';
+
+  @override
+  String get shiftRegSettingEnabled =>
+      'Let employees register their work schedule';
+
+  @override
+  String get shiftRegSettingHelper =>
+      'On: show \"Schedule registration\" for employees and the \"Registration\" tab in Shifts. Managers open / close each round (a week, a month or any range). Off: hide both; existing data is kept.';
+
+  @override
+  String get shiftRegTabHelper =>
+      'Open a round for employees to register work days and hours; approve by day to create shift assignments.';
+
+  @override
+  String get shiftRegCreate => 'New registration round';
+
+  @override
+  String get shiftRegEdit => 'Edit registration round';
+
+  @override
+  String get shiftRegEmpty => 'No registration rounds yet';
+
+  @override
+  String get shiftRegStatusDraft => 'Draft';
+
+  @override
+  String get shiftRegStatusOpen => 'Open';
+
+  @override
+  String get shiftRegStatusClosed => 'Closed';
+
+  @override
+  String get shiftRegOpen => 'Open';
+
+  @override
+  String get shiftRegReopen => 'Reopen';
+
+  @override
+  String get shiftRegClose => 'Close';
+
+  @override
+  String get shiftRegOpened => 'Round opened';
+
+  @override
+  String get shiftRegClosed => 'Round closed';
+
+  @override
+  String get shiftRegDeleteTitle => 'Delete registration round';
+
+  @override
+  String shiftRegDeleteConfirm(String name) {
+    return 'Delete round \"$name\" and its registrations?';
+  }
+
+  @override
+  String get shiftRegDeleted => 'Round deleted';
+
+  @override
+  String shiftRegDeadline(String time) {
+    return 'Deadline $time';
+  }
+
+  @override
+  String get shiftRegNoDeadline => 'No deadline';
+
+  @override
+  String get shiftRegDeadlineLabel => 'Deadline — closes automatically';
+
+  @override
+  String shiftRegRegistered(int count, int total) {
+    return '$count / $total registered';
+  }
+
+  @override
+  String get shiftRegName => 'Round name';
+
+  @override
+  String get shiftRegRange => 'Date range';
+
+  @override
+  String get shiftRegPresetNextWeek => 'Next week';
+
+  @override
+  String get shiftRegPresetNext2Weeks => 'Next 2 weeks';
+
+  @override
+  String get shiftRegPresetNextMonth => 'Next month';
+
+  @override
+  String get shiftRegPresetCustom => 'Custom';
+
+  @override
+  String get shiftRegLimits => 'Limits (optional)';
+
+  @override
+  String get shiftRegEarliest => 'Earliest time (HH:mm)';
+
+  @override
+  String get shiftRegLatest => 'Latest time (HH:mm)';
+
+  @override
+  String get shiftRegMinHours => 'Min hours per slot';
+
+  @override
+  String get shiftRegMaxHours => 'Max hours per slot';
+
+  @override
+  String get shiftRegMinDays => 'Min days per person';
+
+  @override
+  String get shiftRegNeededPerDay => 'People needed per day';
+
+  @override
+  String get shiftRegFormHelper =>
+      'Only employees in the selected departments (including sub-departments) can register. Opening the round notifies them. Time limits apply to custom hours only.';
+
+  @override
+  String get shiftRegFormRequired =>
+      'Enter a name, a date range and choose departments';
+
+  @override
+  String get shiftRegSaveDraft => 'Save draft';
+
+  @override
+  String get shiftRegSaveOpen => 'Save and open';
+
+  @override
+  String get shiftRegBoardHelper =>
+      'Tap a pending cell to approve / change hours / reject; tap a day to see people per hour.';
+
+  @override
+  String get shiftRegBoardEmpty => 'No employees in this round';
+
+  @override
+  String shiftRegPeople(int count) {
+    return '$count people';
+  }
+
+  @override
+  String shiftRegPeopleNeed(int count, int need) {
+    return '$count / need $need';
+  }
+
+  @override
+  String shiftRegApproveDay(int count) {
+    return 'Approve ($count)';
+  }
+
+  @override
+  String shiftRegApprovedCount(int count) {
+    return 'Approved $count registrations → shift assignments';
+  }
+
+  @override
+  String shiftRegSkippedTitle(int count) {
+    return '$count registrations could not be approved:';
+  }
+
+  @override
+  String get shiftRegRejectedOne => 'Registration rejected';
+
+  @override
+  String get shiftRegAnyPickTitle =>
+      'Pick a shift for people available all day';
+
+  @override
+  String get shiftRegSkipAny => 'Skip them';
+
+  @override
+  String get shiftRegShift => 'Shift';
+
+  @override
+  String get shiftRegKeep => 'As registered';
+
+  @override
+  String shiftRegRegisteredAs(String slot) {
+    return 'Registered: $slot';
+  }
+
+  @override
+  String get shiftRegKindShift => 'Existing shift';
+
+  @override
+  String get shiftRegKindCustom => 'Custom hours';
+
+  @override
+  String get shiftRegKindAny => 'Available all day';
+
+  @override
+  String get shiftRegAnyShort => 'All day';
+
+  @override
+  String get shiftRegAnyTime => 'Available all day — any shift works';
+
+  @override
+  String get shiftRegAnyHelper =>
+      'Your manager will choose the shift when scheduling.';
+
+  @override
+  String shiftRegDaysOf(int days, int min) {
+    return 'only $days/$min days';
+  }
+
+  @override
+  String shiftRegChartTitle(String day) {
+    return '$day — people per hour';
+  }
+
+  @override
+  String get shiftRegChartHelper =>
+      'People available all day count for every hour.';
+
+  @override
+  String shiftRegChartNeedHelper(int need) {
+    return 'Red bars: hours with fewer than $need people. People available all day count for every hour.';
+  }
+
+  @override
+  String get shiftRegNoOpenRound =>
+      'There is no registration round for you right now';
+
+  @override
+  String get shiftRegRound => 'Registration round';
+
+  @override
+  String shiftRegWindow(String from, String to) {
+    return 'Hours $from–$to';
+  }
+
+  @override
+  String get shiftRegClosedHint => 'This round is closed — view only.';
+
+  @override
+  String get shiftRegNotWorking => 'Not working';
+
+  @override
+  String get shiftRegAddSlot => 'Add 2nd slot';
+
+  @override
+  String shiftRegHours(String hours) {
+    return '$hours h';
+  }
+
+  @override
+  String shiftRegTotals(int days, String hours) {
+    return '$days days · $hours h';
+  }
+
+  @override
+  String shiftRegMinDaysHint(int days) {
+    return 'At least $days days required';
+  }
+
+  @override
+  String get shiftRegSubmit => 'Submit';
+
+  @override
+  String get shiftRegUpdate => 'Update';
+
+  @override
+  String get shiftRegSaved => 'Registration submitted';
+
+  @override
+  String get shiftRegPickShift => 'Pick a shift';
+
+  @override
+  String get shiftRegTooManySlots => 'At most 2 slots per day';
+
+  @override
+  String get shiftRegAnyAlone =>
+      '\"Available all day\" cannot be combined with other slots';
+
+  @override
+  String get shiftRegOverlap => 'Time slots overlap';
+
+  @override
+  String get shiftRegInvalidTime => 'Invalid time';
+
+  @override
+  String get permUiShiftRegistrationSelf =>
+      'Schedule registration menu (when enabled)';
+
+  @override
+  String get permDescShiftRegistrationSelf =>
+      'Register own work days and hours in open rounds';
+
+  @override
+  String get permUiShiftRegistrationManage => 'Registration tab in Shifts';
+
+  @override
+  String get permDescShiftRegistrationManage =>
+      'Create / open / close registration rounds, approve registrations into shift assignments';
+
+  @override
+  String get auditActShiftRegRoundCreate => 'Create registration round';
+
+  @override
+  String get auditActShiftRegRoundUpdate => 'Update registration round';
+
+  @override
+  String get auditActShiftRegRoundDelete => 'Delete registration round';
+
+  @override
+  String get auditActShiftRegRoundOpen => 'Open registration round';
+
+  @override
+  String get auditActShiftRegRoundClose => 'Close registration round';
+
+  @override
+  String get auditActShiftRegSubmit => 'Submit schedule registration';
+
+  @override
+  String get auditActShiftRegApprove =>
+      'Approve registration → shift assignment';
+
+  @override
+  String get auditActShiftRegReject => 'Reject schedule registration';
 }

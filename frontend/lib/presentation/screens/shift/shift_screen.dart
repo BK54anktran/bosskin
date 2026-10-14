@@ -20,7 +20,9 @@ import '../../widgets/import_preview_dialog.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
 import 'shift_assign_tab.dart';
+import 'shift_registration_tab.dart';
 import 'shift_rotation_tab.dart';
+import '../../../data/services/company_feature_service.dart';
 import 'shift_form_dialog.dart';
 
 class ShiftScreen extends StatefulWidget {
@@ -31,8 +33,8 @@ class ShiftScreen extends StatefulWidget {
 }
 
 class _ShiftScreenState extends State<ShiftScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tab;
+    with TickerProviderStateMixin {
+  late TabController _tab;
   final _assignTabKey = const ShiftAssignTabKey();
   List<WorkShift> _shifts = [];
   List<DepartmentFlat> _allDepartments = [];
@@ -46,13 +48,36 @@ class _ShiftScreenState extends State<ShiftScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 3, vsync: this, animationDuration: Duration.zero);
+    _tab = TabController(length: _tabCount, vsync: this, animationDuration: Duration.zero);
+    CompanyFeatureService.instance.addListener(_onFeaturesChanged);
     _loadShifts();
     _loadDepartments();
   }
 
+  /// V23: tab "Đăng ký lịch" khi công ty bật chức năng và có quyền quản lý đăng ký.
+  bool get _showRegistration {
+    final u = AuthService.instance.currentUser;
+    return CompanyFeatureService.instance.shiftRegistration &&
+        (u?.can('SHIFT_REGISTRATION_MANAGE') ?? false) &&
+        (u?.can('SHIFT_VIEW') ?? false);
+  }
+
+  int get _tabCount => _showRegistration ? 4 : 3;
+
+  void _onFeaturesChanged() {
+    if (!mounted || _tab.length == _tabCount) return;
+    final old = _tab;
+    setState(() {
+      _tab = TabController(
+          length: _tabCount, vsync: this, animationDuration: Duration.zero,
+          initialIndex: old.index < _tabCount ? old.index : 0);
+    });
+    old.dispose();
+  }
+
   @override
   void dispose() {
+    CompanyFeatureService.instance.removeListener(_onFeaturesChanged);
     _tab.dispose();
     _searchCtrl.dispose();
     super.dispose();
@@ -299,6 +324,7 @@ class _ShiftScreenState extends State<ShiftScreen>
                   Tab(text: s.shiftAssignmentsTab),
                   Tab(text: s.shiftListTab),
                   Tab(text: s.rotationTab),
+                  if (_tab.length == 4) Tab(text: s.shiftRegTab),
                 ],
                 onTap: (_) => setState(() {}),
               ),
@@ -347,7 +373,7 @@ class _ShiftScreenState extends State<ShiftScreen>
             ],
           ]),
         ),
-        if (_tab.index != 2)
+        if (_tab.index < 2)
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
           child: Row(
@@ -400,6 +426,11 @@ class _ShiftScreenState extends State<ShiftScreen>
                 canManage: canManage,
                 onGenerated: _assignTabKey.reload,
               ),
+              if (_tab.length == 4)
+                ShiftRegistrationTab(
+                  departments: _allDepartments,
+                  onApproved: _assignTabKey.reload,
+                ),
             ],
           ),
         ),

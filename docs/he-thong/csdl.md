@@ -2,7 +2,7 @@
 
 # Cơ sở dữ liệu
 
-MySQL 8, utf8mb4. Lược đồ tại migration **V22 – company identity**, 50 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
+MySQL 8, utf8mb4. Lược đồ tại migration **V23 – shift registration**, 53 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
 
 Ký hiệu: 🔑 khoá chính · ↗ khoá ngoại (bảng.cột, hành vi khi xoá) · `∅` không có mặc định.
 
@@ -11,7 +11,7 @@ Ký hiệu: 🔑 khoá chính · ↗ khoá ngoại (bảng.cột, hành vi khi x
 - **Công ty & tài khoản**: [`companies`](#companies), [`fcm_notification_logs`](#fcm_notification_logs), [`permissions`](#permissions), [`role_permission_dept_scopes`](#role_permission_dept_scopes), [`role_permissions`](#role_permissions), [`roles`](#roles), [`system_admins`](#system_admins), [`trial_requests`](#trial_requests), [`user_permission_dept_scopes`](#user_permission_dept_scopes), [`user_permissions`](#user_permissions), [`user_roles`](#user_roles), [`user_sessions`](#user_sessions), [`users`](#users)
 - **Tổ chức & nhân viên**: [`departments`](#departments), [`document_types`](#document_types), [`employee_code_counters`](#employee_code_counters), [`employee_dependents`](#employee_dependents), [`employee_documents`](#employee_documents), [`employee_job_histories`](#employee_job_histories), [`employee_locations`](#employee_locations), [`employees`](#employees), [`positions`](#positions), [`profile_edit_requests`](#profile_edit_requests)
 - **Hợp đồng**: [`contract_allowances`](#contract_allowances), [`contract_appendices`](#contract_appendices), [`labor_contracts`](#labor_contracts)
-- **Ca làm**: [`shift_assignments`](#shift_assignments), [`shift_rotations`](#shift_rotations), [`shift_swap_requests`](#shift_swap_requests), [`work_shifts`](#work_shifts)
+- **Ca làm**: [`shift_assignments`](#shift_assignments), [`shift_registration_round_departments`](#shift_registration_round_departments), [`shift_registration_rounds`](#shift_registration_rounds), [`shift_registrations`](#shift_registrations), [`shift_rotations`](#shift_rotations), [`shift_swap_requests`](#shift_swap_requests), [`work_shifts`](#work_shifts)
 - **Chấm công**: [`attendance_approve_leaves`](#attendance_approve_leaves), [`attendance_period_locks`](#attendance_period_locks), [`attendance_requests`](#attendance_requests), [`attendances`](#attendances)
 - **Nghỉ phép**: [`leave_accrual_rules`](#leave_accrual_rules), [`leave_grants`](#leave_grants), [`leave_ledger_entries`](#leave_ledger_entries), [`leave_requests`](#leave_requests), [`leave_types`](#leave_types)
 - **Lịch & ngày lễ**: [`holidays`](#holidays), [`work_calendars`](#work_calendars)
@@ -67,6 +67,7 @@ Duy nhất: (code) · (domain)
 | `employer_social_rate` | decimal(6,4) |  | 0.1750 |  |
 | `employer_health_rate` | decimal(6,4) |  | 0.0300 |  |
 | `employer_unemployment_rate` | decimal(6,4) |  | 0.0100 |  |
+| `shift_registration_enabled` | tinyint(1) |  | 0 |  |
 
 ### fcm_notification_logs
 
@@ -531,6 +532,57 @@ Duy nhất: (company_id, contract_no_key)
 | `check_out_notif_sent_at` | datetime | có | ∅ |  |
 | `snapshot_shift_type` | varchar(20) | có | ∅ |  |
 | `snapshot_required_minutes` | int | có | ∅ |  |
+
+### shift_registration_round_departments
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|---|---|---|
+| `round_id` | bigint |  | ∅ | 🔑 ↗ [shift_registration_rounds](#shift_registration_rounds).id (cascade) |
+| `department_id` | bigint |  | ∅ | 🔑 ↗ [departments](#departments).id (cascade) |
+
+### shift_registration_rounds
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|---|---|---|
+| `id` | bigint |  | ∅ | 🔑 tự tăng |
+| `company_id` | bigint |  | ∅ | ↗ [companies](#companies).id (cascade) |
+| `name` | varchar(100) |  | ∅ |  |
+| `from_date` | date |  | ∅ |  |
+| `to_date` | date |  | ∅ |  |
+| `status` | enum('DRAFT','OPEN','CLOSED') |  | DRAFT |  |
+| `closes_at` | datetime(6) | có | ∅ |  |
+| `earliest_time` | time | có | ∅ |  |
+| `latest_time` | time | có | ∅ |  |
+| `min_hours` | decimal(4,2) | có | ∅ |  |
+| `max_hours` | decimal(4,2) | có | ∅ |  |
+| `min_days` | int | có | ∅ |  |
+| `needed_per_day` | int | có | ∅ |  |
+| `note` | varchar(500) | có | ∅ |  |
+| `created_by` | bigint | có | ∅ | ↗ [users](#users).id (set null) |
+| `deleted` | tinyint(1) |  | 0 |  |
+| `created_at` | datetime(6) |  | ∅ |  |
+| `updated_at` | datetime(6) |  | ∅ |  |
+
+### shift_registrations
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|---|---|---|
+| `id` | bigint |  | ∅ | 🔑 tự tăng |
+| `round_id` | bigint |  | ∅ | ↗ [shift_registration_rounds](#shift_registration_rounds).id (cascade) |
+| `employee_id` | bigint |  | ∅ | ↗ [employees](#employees).id (cascade) |
+| `work_date` | date |  | ∅ |  |
+| `kind` | enum('SHIFT','CUSTOM','ANY') |  | ∅ |  |
+| `shift_id` | bigint | có | ∅ | ↗ [work_shifts](#work_shifts).id (set null) |
+| `start_time` | time | có | ∅ |  |
+| `end_time` | time | có | ∅ |  |
+| `note` | varchar(255) | có | ∅ |  |
+| `status` | enum('PENDING','APPROVED','REJECTED') |  | PENDING |  |
+| `assignment_id` | bigint | có | ∅ | ↗ [shift_assignments](#shift_assignments).id (set null) |
+| `decided_by` | bigint | có | ∅ | ↗ [users](#users).id (set null) |
+| `decided_at` | datetime(6) | có | ∅ |  |
+| `deleted` | tinyint(1) |  | 0 |  |
+| `created_at` | datetime(6) |  | ∅ |  |
+| `updated_at` | datetime(6) |  | ∅ |  |
 
 ### shift_rotations
 

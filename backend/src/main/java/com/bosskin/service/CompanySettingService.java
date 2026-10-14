@@ -132,6 +132,10 @@ public class CompanySettingService {
             c.setContractExpiryWarningDays(days);
         }
 
+        if (req.getShiftRegistration() != null) {
+            c.setShiftRegistrationEnabled(req.getShiftRegistration().isEnabled());
+        }
+
         companyRepository.save(c);
         return toResponse(c);
     }
@@ -189,6 +193,9 @@ public class CompanySettingService {
                 .build())
             .contract(CompanySettingDTO.ContractSetting.builder()
                 .expiryWarningDays(c.getContractExpiryWarningDays())
+                .build())
+            .shiftRegistration(CompanySettingDTO.ShiftRegistrationSetting.builder()
+                .enabled(c.isShiftRegistrationEnabled())
                 .build())
             .build();
     }

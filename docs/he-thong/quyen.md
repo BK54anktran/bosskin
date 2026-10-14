@@ -2,7 +2,7 @@
 
 # Danh mục quyền
 
-48 mã quyền (bảng `permissions`, thêm bằng migration). Vai trò của công ty gom một tập quyền + phạm vi phòng ban; cách kiểm tra quyền và phạm vi ở [phân quyền](phan-quyen.md). **Cần** = quyền phải có kèm (`required_rule`), màn Phân quyền tự tích theo. Cột **Endpoint** đếm số API kiểm mã này trực tiếp ở controller.
+50 mã quyền (bảng `permissions`, thêm bằng migration). Vai trò của công ty gom một tập quyền + phạm vi phòng ban; cách kiểm tra quyền và phạm vi ở [phân quyền](phan-quyen.md). **Cần** = quyền phải có kèm (`required_rule`), màn Phân quyền tự tích theo. Cột **Endpoint** đếm số API kiểm mã này trực tiếp ở controller.
 
 
 ## ATTENDANCE
@@ -118,9 +118,11 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `SHIFT_VIEW` | Xem ca làm |  | 10 | nav_access, permission_labels, roles_screen, shift_screen |
+| `SHIFT_VIEW` | Xem ca làm |  | 20 | nav_access, permission_labels, roles_screen, shift_screen |
 | `SHIFT_MANAGE` | Quản lý ca làm | `SHIFT_VIEW` | 24 | nav_access, permission_labels, shift_assign_tab, shift_screen |
 | `SHIFT_SWAP_APPROVE` | Duyệt yêu cầu đổi ca / nhường ca | `SHIFT_VIEW` | 1 | nav_access, permission_labels, shift_swap_screen |
+| `SHIFT_REGISTRATION_SELF` | Tự đăng ký lịch làm việc (khi công ty bật) |  | 3 | nav_access, permission_labels |
+| `SHIFT_REGISTRATION_MANAGE` | Tạo / mở / đóng đợt đăng ký lịch, duyệt đăng ký thành phân ca | `SHIFT_VIEW` | 10 | permission_labels, shift_screen |
 
 ## USER
 

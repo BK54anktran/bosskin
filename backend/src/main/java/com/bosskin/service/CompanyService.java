@@ -49,7 +49,7 @@ public class CompanyService {
     public static final String DEFAULT_EMPLOYEE_ROLE_NAME = "Nhân viên";
     /** ATTENDANCE_VIEW / LEAVE_VIEW là quyền tiên quyết của module, giới hạn phạm vi "chỉ mình tôi". */
     public static final java.util.Set<String> DEFAULT_EMPLOYEE_PERMISSIONS = java.util.Set.of(
-        "ATTENDANCE_VIEW", "ATTENDANCE_SELF", "LEAVE_VIEW", "LEAVE_REQUEST_CREATE");
+        "ATTENDANCE_VIEW", "ATTENDANCE_SELF", "LEAVE_VIEW", "LEAVE_REQUEST_CREATE", "SHIFT_REGISTRATION_SELF");
 
     @Transactional
     public CompanyResponse create(CreateCompanyRequest req) {

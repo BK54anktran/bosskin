@@ -10216,6 +10216,564 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'VD: ten@{domain}'**
   String emailDomainHint(String domain);
+
+  /// No description provided for @shiftRegMenu.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng ký lịch'**
+  String get shiftRegMenu;
+
+  /// No description provided for @shiftRegTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng ký lịch'**
+  String get shiftRegTab;
+
+  /// No description provided for @shiftRegSettingTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng ký lịch làm việc'**
+  String get shiftRegSettingTitle;
+
+  /// No description provided for @shiftRegSettingEnabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho nhân viên đăng ký lịch làm việc'**
+  String get shiftRegSettingEnabled;
+
+  /// No description provided for @shiftRegSettingHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật: hiện menu \"Đăng ký lịch\" cho nhân viên và tab \"Đăng ký lịch\" ở Ca làm. Quản lý mở / đóng từng đợt (tuần, tháng hoặc khoảng ngày tuỳ chọn). Tắt: ẩn cả hai, dữ liệu cũ giữ nguyên.'**
+  String get shiftRegSettingHelper;
+
+  /// No description provided for @shiftRegTabHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở đợt cho nhân viên tự đăng ký ngày làm và khung giờ; duyệt theo ngày để tạo phân ca.'**
+  String get shiftRegTabHelper;
+
+  /// No description provided for @shiftRegCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đợt đăng ký'**
+  String get shiftRegCreate;
+
+  /// No description provided for @shiftRegEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa đợt đăng ký'**
+  String get shiftRegEdit;
+
+  /// No description provided for @shiftRegEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đợt đăng ký nào'**
+  String get shiftRegEmpty;
+
+  /// No description provided for @shiftRegStatusDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nháp'**
+  String get shiftRegStatusDraft;
+
+  /// No description provided for @shiftRegStatusOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang mở'**
+  String get shiftRegStatusOpen;
+
+  /// No description provided for @shiftRegStatusClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đóng'**
+  String get shiftRegStatusClosed;
+
+  /// No description provided for @shiftRegOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở đăng ký'**
+  String get shiftRegOpen;
+
+  /// No description provided for @shiftRegReopen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở lại'**
+  String get shiftRegReopen;
+
+  /// No description provided for @shiftRegClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng'**
+  String get shiftRegClose;
+
+  /// No description provided for @shiftRegOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã mở đợt đăng ký'**
+  String get shiftRegOpened;
+
+  /// No description provided for @shiftRegClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đóng đợt đăng ký'**
+  String get shiftRegClosed;
+
+  /// No description provided for @shiftRegDeleteTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá đợt đăng ký'**
+  String get shiftRegDeleteTitle;
+
+  /// No description provided for @shiftRegDeleteConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá đợt \"{name}\" và các đăng ký trong đợt?'**
+  String shiftRegDeleteConfirm(String name);
+
+  /// No description provided for @shiftRegDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xoá đợt'**
+  String get shiftRegDeleted;
+
+  /// No description provided for @shiftRegDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn chót {time}'**
+  String shiftRegDeadline(String time);
+
+  /// No description provided for @shiftRegNoDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không hạn chót'**
+  String get shiftRegNoDeadline;
+
+  /// No description provided for @shiftRegDeadlineLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn chót — tới giờ tự đóng'**
+  String get shiftRegDeadlineLabel;
+
+  /// No description provided for @shiftRegRegistered.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} / {total} người đã đăng ký'**
+  String shiftRegRegistered(int count, int total);
+
+  /// No description provided for @shiftRegName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên đợt'**
+  String get shiftRegName;
+
+  /// No description provided for @shiftRegRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng ngày'**
+  String get shiftRegRange;
+
+  /// No description provided for @shiftRegPresetNextWeek.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuần sau'**
+  String get shiftRegPresetNextWeek;
+
+  /// No description provided for @shiftRegPresetNext2Weeks.
+  ///
+  /// In vi, this message translates to:
+  /// **'2 tuần tới'**
+  String get shiftRegPresetNext2Weeks;
+
+  /// No description provided for @shiftRegPresetNextMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng sau'**
+  String get shiftRegPresetNextMonth;
+
+  /// No description provided for @shiftRegPresetCustom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự chọn'**
+  String get shiftRegPresetCustom;
+
+  /// No description provided for @shiftRegLimits.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giới hạn (không bắt buộc)'**
+  String get shiftRegLimits;
+
+  /// No description provided for @shiftRegEarliest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung giờ từ (HH:mm)'**
+  String get shiftRegEarliest;
+
+  /// No description provided for @shiftRegLatest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung giờ đến (HH:mm)'**
+  String get shiftRegLatest;
+
+  /// No description provided for @shiftRegMinHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi khung ít nhất (giờ)'**
+  String get shiftRegMinHours;
+
+  /// No description provided for @shiftRegMaxHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi khung tối đa (giờ)'**
+  String get shiftRegMaxHours;
+
+  /// No description provided for @shiftRegMinDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi người ít nhất (ngày)'**
+  String get shiftRegMinDays;
+
+  /// No description provided for @shiftRegNeededPerDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần mỗi ngày (người)'**
+  String get shiftRegNeededPerDay;
+
+  /// No description provided for @shiftRegFormHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ nhân viên thuộc phòng ban đã chọn (gồm phòng con) được đăng ký. Mở đợt sẽ gửi thông báo cho họ. Giới hạn giờ chỉ áp cho giờ tuỳ chỉnh.'**
+  String get shiftRegFormHelper;
+
+  /// No description provided for @shiftRegFormRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập tên đợt, khoảng ngày và chọn phòng ban'**
+  String get shiftRegFormRequired;
+
+  /// No description provided for @shiftRegSaveDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu nháp'**
+  String get shiftRegSaveDraft;
+
+  /// No description provided for @shiftRegSaveOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu và mở đăng ký'**
+  String get shiftRegSaveOpen;
+
+  /// No description provided for @shiftRegBoardHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm ô chờ duyệt để duyệt / đổi giờ / từ chối; bấm ngày để xem số người theo giờ.'**
+  String get shiftRegBoardHelper;
+
+  /// No description provided for @shiftRegBoardEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có nhân viên trong đợt'**
+  String get shiftRegBoardEmpty;
+
+  /// No description provided for @shiftRegPeople.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} người'**
+  String shiftRegPeople(int count);
+
+  /// No description provided for @shiftRegPeopleNeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} / cần {need}'**
+  String shiftRegPeopleNeed(int count, int need);
+
+  /// No description provided for @shiftRegApproveDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt ({count})'**
+  String shiftRegApproveDay(int count);
+
+  /// No description provided for @shiftRegApprovedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã duyệt {count} đăng ký → phân ca'**
+  String shiftRegApprovedCount(int count);
+
+  /// No description provided for @shiftRegSkippedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} đăng ký chưa duyệt được:'**
+  String shiftRegSkippedTitle(int count);
+
+  /// No description provided for @shiftRegRejectedOne.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã từ chối đăng ký'**
+  String get shiftRegRejectedOne;
+
+  /// No description provided for @shiftRegAnyPickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ca cho người rảnh cả ngày'**
+  String get shiftRegAnyPickTitle;
+
+  /// No description provided for @shiftRegSkipAny.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua họ'**
+  String get shiftRegSkipAny;
+
+  /// No description provided for @shiftRegShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca'**
+  String get shiftRegShift;
+
+  /// No description provided for @shiftRegKeep.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo đăng ký'**
+  String get shiftRegKeep;
+
+  /// No description provided for @shiftRegRegisteredAs.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đăng ký: {slot}'**
+  String shiftRegRegisteredAs(String slot);
+
+  /// No description provided for @shiftRegKindShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca có sẵn'**
+  String get shiftRegKindShift;
+
+  /// No description provided for @shiftRegKindCustom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ tuỳ chỉnh'**
+  String get shiftRegKindCustom;
+
+  /// No description provided for @shiftRegKindAny.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rảnh cả ngày'**
+  String get shiftRegKindAny;
+
+  /// No description provided for @shiftRegAnyShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rảnh cả ngày'**
+  String get shiftRegAnyShort;
+
+  /// No description provided for @shiftRegAnyTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rảnh cả ngày — xếp ca nào cũng được'**
+  String get shiftRegAnyTime;
+
+  /// No description provided for @shiftRegAnyHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý sẽ chọn ca cho bạn khi xếp lịch.'**
+  String get shiftRegAnyHelper;
+
+  /// No description provided for @shiftRegDaysOf.
+  ///
+  /// In vi, this message translates to:
+  /// **'mới {days}/{min} ngày'**
+  String shiftRegDaysOf(int days, int min);
+
+  /// No description provided for @shiftRegChartTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{day} — số người theo giờ'**
+  String shiftRegChartTitle(String day);
+
+  /// No description provided for @shiftRegChartHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người rảnh cả ngày được tính vào mọi giờ.'**
+  String get shiftRegChartHelper;
+
+  /// No description provided for @shiftRegChartNeedHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cột đỏ: giờ có ít hơn {need} người. Người rảnh cả ngày được tính vào mọi giờ.'**
+  String shiftRegChartNeedHelper(int need);
+
+  /// No description provided for @shiftRegNoOpenRound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện không có đợt đăng ký lịch nào dành cho bạn'**
+  String get shiftRegNoOpenRound;
+
+  /// No description provided for @shiftRegRound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đợt đăng ký'**
+  String get shiftRegRound;
+
+  /// No description provided for @shiftRegWindow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung giờ {from}–{to}'**
+  String shiftRegWindow(String from, String to);
+
+  /// No description provided for @shiftRegClosedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đợt đã đóng — chỉ xem được.'**
+  String get shiftRegClosedHint;
+
+  /// No description provided for @shiftRegNotWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không làm'**
+  String get shiftRegNotWorking;
+
+  /// No description provided for @shiftRegAddSlot.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm khung 2'**
+  String get shiftRegAddSlot;
+
+  /// No description provided for @shiftRegHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ'**
+  String shiftRegHours(String hours);
+
+  /// No description provided for @shiftRegTotals.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày · {hours} giờ'**
+  String shiftRegTotals(int days, String hours);
+
+  /// No description provided for @shiftRegMinDaysHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần ít nhất {days} ngày'**
+  String shiftRegMinDaysHint(int days);
+
+  /// No description provided for @shiftRegSubmit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi đăng ký'**
+  String get shiftRegSubmit;
+
+  /// No description provided for @shiftRegUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật đăng ký'**
+  String get shiftRegUpdate;
+
+  /// No description provided for @shiftRegSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi đăng ký'**
+  String get shiftRegSaved;
+
+  /// No description provided for @shiftRegPickShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ca'**
+  String get shiftRegPickShift;
+
+  /// No description provided for @shiftRegTooManySlots.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối đa 2 khung mỗi ngày'**
+  String get shiftRegTooManySlots;
+
+  /// No description provided for @shiftRegAnyAlone.
+  ///
+  /// In vi, this message translates to:
+  /// **'\"Rảnh cả ngày\" không đi kèm khung khác'**
+  String get shiftRegAnyAlone;
+
+  /// No description provided for @shiftRegOverlap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các khung giờ bị chồng nhau'**
+  String get shiftRegOverlap;
+
+  /// No description provided for @shiftRegInvalidTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ không hợp lệ'**
+  String get shiftRegInvalidTime;
+
+  /// No description provided for @permUiShiftRegistrationSelf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Menu Đăng ký lịch (khi công ty bật)'**
+  String get permUiShiftRegistrationSelf;
+
+  /// No description provided for @permDescShiftRegistrationSelf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự đăng ký ngày làm và khung giờ trong đợt đang mở'**
+  String get permDescShiftRegistrationSelf;
+
+  /// No description provided for @permUiShiftRegistrationManage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tab Đăng ký lịch ở Ca làm'**
+  String get permUiShiftRegistrationManage;
+
+  /// No description provided for @permDescShiftRegistrationManage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo / mở / đóng đợt đăng ký lịch, duyệt đăng ký thành phân ca'**
+  String get permDescShiftRegistrationManage;
+
+  /// No description provided for @auditActShiftRegRoundCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đợt đăng ký lịch'**
+  String get auditActShiftRegRoundCreate;
+
+  /// No description provided for @auditActShiftRegRoundUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa đợt đăng ký lịch'**
+  String get auditActShiftRegRoundUpdate;
+
+  /// No description provided for @auditActShiftRegRoundDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá đợt đăng ký lịch'**
+  String get auditActShiftRegRoundDelete;
+
+  /// No description provided for @auditActShiftRegRoundOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở đợt đăng ký lịch'**
+  String get auditActShiftRegRoundOpen;
+
+  /// No description provided for @auditActShiftRegRoundClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng đợt đăng ký lịch'**
+  String get auditActShiftRegRoundClose;
+
+  /// No description provided for @auditActShiftRegSubmit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi đăng ký lịch'**
+  String get auditActShiftRegSubmit;
+
+  /// No description provided for @auditActShiftRegApprove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt đăng ký lịch → phân ca'**
+  String get auditActShiftRegApprove;
+
+  /// No description provided for @auditActShiftRegReject.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối đăng ký lịch'**
+  String get auditActShiftRegReject;
 }
 
 class _AppLocalizationsDelegate

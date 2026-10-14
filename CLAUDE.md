@@ -358,14 +358,14 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V22** (`V22__company_identity.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V23** (`V23__shift_registration.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
 V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ),
 V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản),
-V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`)
-→ Migration tiếp theo phải là **V23**
+V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc
+→ Migration tiếp theo phải là **V24**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -549,9 +549,17 @@ V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<m�
 - Danh mục khác (phòng ban, ca, loại phép, bậc lương…) mã unique theo công ty, tra cứu luôn lọc `company_id` — không gắn tiền tố.
 - Test: `Fixture.newCompany()` đặt đuôi `<mã>.test`, dùng `c.email("x")`; `CompanyIdentityTest`.
 
-## Thiết kế chờ làm
-- Đăng ký lịch làm việc (NV tự chọn ngày + khung giờ theo đợt quản lý mở / đóng, công ty bật / tắt, duyệt → phân ca giờ tuỳ chỉnh):
-  `docs/thiet-ke/dang-ky-ca.md` + hình mẫu `docs/thiet-ke/dang-ky-ca/*.png`. Migration dự kiến V23. Còn 4 câu cần chủ dự án chốt (mục 11).
+## Đăng ký lịch làm việc (V23, 14/10/2026)
+- Thiết kế + quyết định của chủ dự án: `docs/thiet-ke/dang-ky-ca.md`. Công ty bật / tắt (`companies.shift_registration_enabled`, cài đặt
+  `shiftRegistration.enabled`); tắt → API 403 `error.shift_registration.disabled`, FE ẩn menu / tab qua `CompanyFeatureService`.
+- `shift_registration_rounds` (DRAFT | OPEN | CLOSED, ≤ 62 ngày, phòng ban + phòng con, hạn chót tự đóng — job 5 phút, hai đợt chung phòng không chồng ngày)
+  + `shift_registrations` (`kind` SHIFT | CUSTOM | ANY = rảnh cả ngày, ≤ 2 khung / ngày, PENDING | APPROVED | REJECTED, `assignment_id`).
+- Quyền `SHIFT_REGISTRATION_SELF` (vai trò mặc định "Nhân viên") / `SHIFT_REGISTRATION_MANAGE` (cần `SHIFT_VIEW`, phạm vi phòng ban theo SHIFT_VIEW).
+- Duyệt theo ngày `POST /shift-registration-rounds/{id}/days/{date}/approve {anyShiftId?}` hoặc từng ô → `WorkShiftService.assign`
+  (mỗi ô một giao dịch, lỗi trả trong `skipped`); không tự duyệt của mình. Đăng ký chỉ là nguyện vọng, quản lý vẫn xếp ca bình thường.
+- `ShiftRegistrationService`, `ShiftRegistrationController`; FE `shift/shift_registration_tab.dart` (tab "Đăng ký lịch" ở Ca làm),
+  `shift/my_shift_registration_screen.dart` (`/shift-registration`), `core/utils/shift_registration_utils.dart`. Test: `ShiftRegistrationTest`.
+- Chưa làm: xuất Excel lưới, nhắc trước hạn chót, ảnh trợ giúp, đợt mẫu trong seed.
 
 ## Màn hình Flutter
 | Screen | Path |

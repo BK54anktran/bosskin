@@ -28,6 +28,7 @@ class AppRoutes {
   static const String departments = '/departments';
   static const String shifts = '/shifts';
   static const String shiftSwaps = '/shift-swaps';
+  static const String shiftRegistration = '/shift-registration';
   static const String roles = '/roles';
   static const String leaves = '/leaves';
   static const String companySettings = '/company-settings';

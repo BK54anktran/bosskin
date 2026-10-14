@@ -5509,4 +5509,324 @@ class AppLocalizationsVi extends AppLocalizations {
   String emailDomainHint(String domain) {
     return 'VD: ten@$domain';
   }
+
+  @override
+  String get shiftRegMenu => 'Đăng ký lịch';
+
+  @override
+  String get shiftRegTab => 'Đăng ký lịch';
+
+  @override
+  String get shiftRegSettingTitle => 'Đăng ký lịch làm việc';
+
+  @override
+  String get shiftRegSettingEnabled => 'Cho nhân viên đăng ký lịch làm việc';
+
+  @override
+  String get shiftRegSettingHelper =>
+      'Bật: hiện menu \"Đăng ký lịch\" cho nhân viên và tab \"Đăng ký lịch\" ở Ca làm. Quản lý mở / đóng từng đợt (tuần, tháng hoặc khoảng ngày tuỳ chọn). Tắt: ẩn cả hai, dữ liệu cũ giữ nguyên.';
+
+  @override
+  String get shiftRegTabHelper =>
+      'Mở đợt cho nhân viên tự đăng ký ngày làm và khung giờ; duyệt theo ngày để tạo phân ca.';
+
+  @override
+  String get shiftRegCreate => 'Tạo đợt đăng ký';
+
+  @override
+  String get shiftRegEdit => 'Sửa đợt đăng ký';
+
+  @override
+  String get shiftRegEmpty => 'Chưa có đợt đăng ký nào';
+
+  @override
+  String get shiftRegStatusDraft => 'Nháp';
+
+  @override
+  String get shiftRegStatusOpen => 'Đang mở';
+
+  @override
+  String get shiftRegStatusClosed => 'Đã đóng';
+
+  @override
+  String get shiftRegOpen => 'Mở đăng ký';
+
+  @override
+  String get shiftRegReopen => 'Mở lại';
+
+  @override
+  String get shiftRegClose => 'Đóng';
+
+  @override
+  String get shiftRegOpened => 'Đã mở đợt đăng ký';
+
+  @override
+  String get shiftRegClosed => 'Đã đóng đợt đăng ký';
+
+  @override
+  String get shiftRegDeleteTitle => 'Xoá đợt đăng ký';
+
+  @override
+  String shiftRegDeleteConfirm(String name) {
+    return 'Xoá đợt \"$name\" và các đăng ký trong đợt?';
+  }
+
+  @override
+  String get shiftRegDeleted => 'Đã xoá đợt';
+
+  @override
+  String shiftRegDeadline(String time) {
+    return 'Hạn chót $time';
+  }
+
+  @override
+  String get shiftRegNoDeadline => 'Không hạn chót';
+
+  @override
+  String get shiftRegDeadlineLabel => 'Hạn chót — tới giờ tự đóng';
+
+  @override
+  String shiftRegRegistered(int count, int total) {
+    return '$count / $total người đã đăng ký';
+  }
+
+  @override
+  String get shiftRegName => 'Tên đợt';
+
+  @override
+  String get shiftRegRange => 'Khoảng ngày';
+
+  @override
+  String get shiftRegPresetNextWeek => 'Tuần sau';
+
+  @override
+  String get shiftRegPresetNext2Weeks => '2 tuần tới';
+
+  @override
+  String get shiftRegPresetNextMonth => 'Tháng sau';
+
+  @override
+  String get shiftRegPresetCustom => 'Tự chọn';
+
+  @override
+  String get shiftRegLimits => 'Giới hạn (không bắt buộc)';
+
+  @override
+  String get shiftRegEarliest => 'Khung giờ từ (HH:mm)';
+
+  @override
+  String get shiftRegLatest => 'Khung giờ đến (HH:mm)';
+
+  @override
+  String get shiftRegMinHours => 'Mỗi khung ít nhất (giờ)';
+
+  @override
+  String get shiftRegMaxHours => 'Mỗi khung tối đa (giờ)';
+
+  @override
+  String get shiftRegMinDays => 'Mỗi người ít nhất (ngày)';
+
+  @override
+  String get shiftRegNeededPerDay => 'Cần mỗi ngày (người)';
+
+  @override
+  String get shiftRegFormHelper =>
+      'Chỉ nhân viên thuộc phòng ban đã chọn (gồm phòng con) được đăng ký. Mở đợt sẽ gửi thông báo cho họ. Giới hạn giờ chỉ áp cho giờ tuỳ chỉnh.';
+
+  @override
+  String get shiftRegFormRequired =>
+      'Nhập tên đợt, khoảng ngày và chọn phòng ban';
+
+  @override
+  String get shiftRegSaveDraft => 'Lưu nháp';
+
+  @override
+  String get shiftRegSaveOpen => 'Lưu và mở đăng ký';
+
+  @override
+  String get shiftRegBoardHelper =>
+      'Bấm ô chờ duyệt để duyệt / đổi giờ / từ chối; bấm ngày để xem số người theo giờ.';
+
+  @override
+  String get shiftRegBoardEmpty => 'Chưa có nhân viên trong đợt';
+
+  @override
+  String shiftRegPeople(int count) {
+    return '$count người';
+  }
+
+  @override
+  String shiftRegPeopleNeed(int count, int need) {
+    return '$count / cần $need';
+  }
+
+  @override
+  String shiftRegApproveDay(int count) {
+    return 'Duyệt ($count)';
+  }
+
+  @override
+  String shiftRegApprovedCount(int count) {
+    return 'Đã duyệt $count đăng ký → phân ca';
+  }
+
+  @override
+  String shiftRegSkippedTitle(int count) {
+    return '$count đăng ký chưa duyệt được:';
+  }
+
+  @override
+  String get shiftRegRejectedOne => 'Đã từ chối đăng ký';
+
+  @override
+  String get shiftRegAnyPickTitle => 'Chọn ca cho người rảnh cả ngày';
+
+  @override
+  String get shiftRegSkipAny => 'Bỏ qua họ';
+
+  @override
+  String get shiftRegShift => 'Ca';
+
+  @override
+  String get shiftRegKeep => 'Theo đăng ký';
+
+  @override
+  String shiftRegRegisteredAs(String slot) {
+    return 'Đã đăng ký: $slot';
+  }
+
+  @override
+  String get shiftRegKindShift => 'Ca có sẵn';
+
+  @override
+  String get shiftRegKindCustom => 'Giờ tuỳ chỉnh';
+
+  @override
+  String get shiftRegKindAny => 'Rảnh cả ngày';
+
+  @override
+  String get shiftRegAnyShort => 'Rảnh cả ngày';
+
+  @override
+  String get shiftRegAnyTime => 'Rảnh cả ngày — xếp ca nào cũng được';
+
+  @override
+  String get shiftRegAnyHelper => 'Quản lý sẽ chọn ca cho bạn khi xếp lịch.';
+
+  @override
+  String shiftRegDaysOf(int days, int min) {
+    return 'mới $days/$min ngày';
+  }
+
+  @override
+  String shiftRegChartTitle(String day) {
+    return '$day — số người theo giờ';
+  }
+
+  @override
+  String get shiftRegChartHelper => 'Người rảnh cả ngày được tính vào mọi giờ.';
+
+  @override
+  String shiftRegChartNeedHelper(int need) {
+    return 'Cột đỏ: giờ có ít hơn $need người. Người rảnh cả ngày được tính vào mọi giờ.';
+  }
+
+  @override
+  String get shiftRegNoOpenRound =>
+      'Hiện không có đợt đăng ký lịch nào dành cho bạn';
+
+  @override
+  String get shiftRegRound => 'Đợt đăng ký';
+
+  @override
+  String shiftRegWindow(String from, String to) {
+    return 'Khung giờ $from–$to';
+  }
+
+  @override
+  String get shiftRegClosedHint => 'Đợt đã đóng — chỉ xem được.';
+
+  @override
+  String get shiftRegNotWorking => 'Không làm';
+
+  @override
+  String get shiftRegAddSlot => 'Thêm khung 2';
+
+  @override
+  String shiftRegHours(String hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String shiftRegTotals(int days, String hours) {
+    return '$days ngày · $hours giờ';
+  }
+
+  @override
+  String shiftRegMinDaysHint(int days) {
+    return 'Cần ít nhất $days ngày';
+  }
+
+  @override
+  String get shiftRegSubmit => 'Gửi đăng ký';
+
+  @override
+  String get shiftRegUpdate => 'Cập nhật đăng ký';
+
+  @override
+  String get shiftRegSaved => 'Đã gửi đăng ký';
+
+  @override
+  String get shiftRegPickShift => 'Chọn ca';
+
+  @override
+  String get shiftRegTooManySlots => 'Tối đa 2 khung mỗi ngày';
+
+  @override
+  String get shiftRegAnyAlone => '\"Rảnh cả ngày\" không đi kèm khung khác';
+
+  @override
+  String get shiftRegOverlap => 'Các khung giờ bị chồng nhau';
+
+  @override
+  String get shiftRegInvalidTime => 'Giờ không hợp lệ';
+
+  @override
+  String get permUiShiftRegistrationSelf =>
+      'Menu Đăng ký lịch (khi công ty bật)';
+
+  @override
+  String get permDescShiftRegistrationSelf =>
+      'Tự đăng ký ngày làm và khung giờ trong đợt đang mở';
+
+  @override
+  String get permUiShiftRegistrationManage => 'Tab Đăng ký lịch ở Ca làm';
+
+  @override
+  String get permDescShiftRegistrationManage =>
+      'Tạo / mở / đóng đợt đăng ký lịch, duyệt đăng ký thành phân ca';
+
+  @override
+  String get auditActShiftRegRoundCreate => 'Tạo đợt đăng ký lịch';
+
+  @override
+  String get auditActShiftRegRoundUpdate => 'Sửa đợt đăng ký lịch';
+
+  @override
+  String get auditActShiftRegRoundDelete => 'Xoá đợt đăng ký lịch';
+
+  @override
+  String get auditActShiftRegRoundOpen => 'Mở đợt đăng ký lịch';
+
+  @override
+  String get auditActShiftRegRoundClose => 'Đóng đợt đăng ký lịch';
+
+  @override
+  String get auditActShiftRegSubmit => 'Gửi đăng ký lịch';
+
+  @override
+  String get auditActShiftRegApprove => 'Duyệt đăng ký lịch → phân ca';
+
+  @override
+  String get auditActShiftRegReject => 'Từ chối đăng ký lịch';
 }

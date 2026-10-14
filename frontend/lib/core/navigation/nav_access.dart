@@ -1,4 +1,5 @@
 import '../../data/services/auth_service.dart';
+import '../../data/services/company_feature_service.dart';
 import '../../data/services/team_approval_service.dart';
 import '../constants/app_constants.dart';
 
@@ -17,6 +18,7 @@ const Map<String, List<String>> routeAnyOf = {
   AppRoutes.departments: ['DEPARTMENT_VIEW'],
   AppRoutes.shifts: ['SHIFT_VIEW', 'SHIFT_MANAGE'],
   AppRoutes.shiftSwaps: ['ATTENDANCE_SELF', 'SHIFT_SWAP_APPROVE'],
+  AppRoutes.shiftRegistration: ['SHIFT_REGISTRATION_SELF'],
   AppRoutes.attendance: ['ATTENDANCE_VIEW'],
   AppRoutes.checkInOut: ['ATTENDANCE_SELF'],
   AppRoutes.attendanceRequests: [
@@ -42,6 +44,7 @@ const Set<String> selfOnlyRoutes = {
   AppRoutes.checkInOut,
   AppRoutes.selfPayroll,
   AppRoutes.profile,
+  AppRoutes.shiftRegistration,
 };
 
 bool canAccessRoute(AuthUser? user, String route) {
@@ -55,6 +58,8 @@ bool canAccessRoute(AuthUser? user, String route) {
 /// Hiển thị trên menu: như [canAccessRoute], thêm ẩn màn cá nhân khi impersonate.
 bool showInMenu(AuthUser? user, String route) {
   if (AuthService.instance.isImpersonating && selfOnlyRoutes.contains(route)) return false;
+  // V23: chỉ hiện khi công ty bật đăng ký lịch làm việc
+  if (route == AppRoutes.shiftRegistration && !CompanyFeatureService.instance.shiftRegistration) return false;
   // Bước K: quyền đến từ quan hệ quản lý trực tiếp (backend kiểm), menu chỉ hiện khi có cấp dưới + chế độ bật
   if (route == AppRoutes.teamApprovals) {
     return user != null && !user.isSystemAdmin && TeamApprovalService.instance.visible;

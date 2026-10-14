@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-40 controller, 312 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+41 controller, 325 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -36,6 +36,7 @@
 | [SalaryGradeController](#salarygradecontroller) | `/api/v1/salary-grades` | 4 |
 | [SalaryHistoryController](#salaryhistorycontroller) | `/api/v1/salary-histories` | 4 |
 | [ShiftPlanController](#shiftplancontroller) | `/` | 12 |
+| [ShiftRegistrationController](#shiftregistrationcontroller) | `/` | 13 |
 | [SystemAdminController](#systemadmincontroller) | `/admin/system-admins` | 5 |
 | [TaxPolicyController](#taxpolicycontroller) | `/admin/tax-policies` | 4 |
 | [TeamApprovalController](#teamapprovalcontroller) | `/api/v1/team-approvals` | 4 |
@@ -490,6 +491,26 @@
 | PUT | `/api/v1/shift-swaps/{id}/approve` | — | `approveSwap` |
 | PUT | `/api/v1/shift-swaps/{id}/reject` | — | `rejectSwap` |
 | PUT | `/api/v1/shift-swaps/{id}/cancel` | — | `cancelSwap` |
+
+## ShiftRegistrationController
+
+`backend/src/main/java/com/bosskin/controller/ShiftRegistrationController.java`
+
+| Method | Đường dẫn | Quyền | Hàm |
+|---|---|---|---|
+| GET | `/api/v1/shift-registration-rounds` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `rounds` |
+| POST | `/api/v1/shift-registration-rounds` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `create` |
+| PUT | `/api/v1/shift-registration-rounds/{id}` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `update` |
+| DELETE | `/api/v1/shift-registration-rounds/{id}` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `delete` |
+| POST | `/api/v1/shift-registration-rounds/{id}/open` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `open` |
+| POST | `/api/v1/shift-registration-rounds/{id}/close` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `close` |
+| GET | `/api/v1/shift-registration-rounds/{id}/board` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `board` |
+| POST | `/api/v1/shift-registration-rounds/{id}/days/{date}/approve` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `approveDay` |
+| POST | `/api/v1/shift-registrations/{id}/approve` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `approve` |
+| POST | `/api/v1/shift-registrations/{id}/reject` | SHIFT_VIEW, SHIFT_REGISTRATION_MANAGE | `reject` |
+| GET | `/api/v1/shift-registrations/self/rounds` | SHIFT_REGISTRATION_SELF | `myRounds` |
+| GET | `/api/v1/shift-registrations/self/rounds/{id}` | SHIFT_REGISTRATION_SELF | `myRound` |
+| PUT | `/api/v1/shift-registrations/self/rounds/{id}` | SHIFT_REGISTRATION_SELF | `saveMine` |
 
 ## SystemAdminController
 

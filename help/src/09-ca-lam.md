@@ -46,6 +46,19 @@ Cho tổ làm ca xoay vòng (vd. 6 ngày ca 1 – 6 ngày ca 2 – 2 ngày ngh�
 
 ![Mẫu xoay ca](img:shift-rotation)
 
+## Đăng ký lịch làm việc
+
+Khi công ty bật **Đăng ký lịch làm việc** (Cài đặt công ty → Chung), Ca làm có thêm tab **Đăng ký lịch** cho người có quyền quản lý đăng ký lịch.
+
+1. Bấm **Tạo đợt đăng ký**: đặt tên, chọn nhanh *Tuần sau* / *2 tuần tới* / *Tháng sau* hoặc tự chọn từ ngày – đến ngày (tối đa 62 ngày),
+   chọn phòng ban, hạn chót (tới giờ đợt tự đóng) và giới hạn nếu cần (khung giờ cho phép, số giờ mỗi khung, số ngày tối thiểu, số người cần mỗi ngày).
+2. **Lưu và mở đăng ký** — nhân viên thuộc các phòng ban đó nhận thông báo. Có thể **Đóng** / **Mở lại** đợt bất kỳ lúc nào ngay trên danh sách.
+3. Bấm vào đợt để xem lưới người × ngày. Mỗi cột ngày có số người / số cần và nút **Duyệt (n)**: duyệt mọi đăng ký chờ của ngày đó → tạo phân ca luôn.
+   Người đăng ký *rảnh cả ngày* cần chọn ca khi duyệt. Đăng ký trùng phân ca có sẵn được bỏ qua và báo lại.
+4. Bấm một ô đang chờ để duyệt riêng, đổi sang ca khác / giờ khác, hoặc từ chối. Bấm tiêu đề ngày để xem số người theo từng giờ.
+
+Đăng ký chỉ là nguyện vọng — quản lý vẫn xếp ca bình thường ở **Phân công ca**.
+
 ## Duyệt đổi ca
 
 Mở **Đổi ca** → lọc **Chờ duyệt**. Mỗi yêu cầu hiện ai đổi với ai, ca và ngày. Bấm **Duyệt** hoặc **Từ chối**.

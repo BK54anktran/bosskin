@@ -3,7 +3,7 @@
 --
 -- CẢNH BÁO: xoá cứng, không hoàn tác. Sao lưu DB trước (runbook mục 5). Chỉ chạy khi chắc chắn muốn bỏ công ty TEST.
 -- Cách chạy: mysql -h <host> -u <user> -p <tên DB> < tools/demo/clear_test_company.sql
---            (hoặc dán cả file vào khung SQL của công cụ quản trị DB). Lược đồ: V22.
+--            (hoặc dán cả file vào khung SQL của công cụ quản trị DB). Lược đồ: V23.
 -- Không xoá file tài liệu đã tải lên kho (S3 / thư mục local, đường dẫn company-<id>/...) — dọn tay nếu cần.
 --
 -- Khoá ngoại vẫn BẬT: sót bảng nào thì MySQL báo lỗi và không xoá dòng đó (an toàn hơn tắt kiểm tra).
@@ -32,6 +32,9 @@ DELETE FROM leave_ledger_entries WHERE company_id = @cid;
 DELETE FROM leave_requests WHERE company_id = @cid;
 DELETE ar FROM attendance_requests ar JOIN employees e ON e.id = ar.employee_id WHERE e.company_id = @cid;
 DELETE FROM shift_swap_requests WHERE company_id = @cid;
+DELETE x FROM shift_registrations x JOIN shift_registration_rounds r ON r.id = x.round_id WHERE r.company_id = @cid;
+DELETE x FROM shift_registration_round_departments x JOIN shift_registration_rounds r ON r.id = x.round_id WHERE r.company_id = @cid;
+DELETE FROM shift_registration_rounds WHERE company_id = @cid;
 DELETE a FROM attendances a JOIN employees e ON e.id = a.employee_id WHERE e.company_id = @cid;
 DELETE sa FROM shift_assignments sa JOIN employees e ON e.id = sa.employee_id WHERE e.company_id = @cid;
 DELETE FROM shift_rotations WHERE company_id = @cid;

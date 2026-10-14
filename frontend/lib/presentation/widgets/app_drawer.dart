@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/navigation/navigator_keys.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/company_feature_service.dart';
 import '../../data/services/team_approval_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
@@ -21,12 +22,14 @@ class _AppDrawerState extends State<AppDrawer> {
     super.initState();
     AuthService.instance.addListener(_onAuthChanged);
     TeamApprovalService.instance.addListener(_onAuthChanged);
+    CompanyFeatureService.instance.addListener(_onAuthChanged);
   }
 
   @override
   void dispose() {
     AuthService.instance.removeListener(_onAuthChanged);
     TeamApprovalService.instance.removeListener(_onAuthChanged);
+    CompanyFeatureService.instance.removeListener(_onAuthChanged);
     super.dispose();
   }
 

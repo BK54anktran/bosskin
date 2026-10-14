@@ -135,6 +135,11 @@ public class Company extends BaseEntity {
     @Builder.Default
     private ApprovalMode approvalMode = ApprovalMode.PERMISSION;
 
+    /** V23: cho nhân viên đăng ký lịch làm việc theo đợt (ẩn menu / tab và chặn API khi tắt). */
+    @Column(name = "shift_registration_enabled", nullable = false)
+    @Builder.Default
+    private boolean shiftRegistrationEnabled = false;
+
     /** Bước L: báo trước hợp đồng sắp hết hạn (ngày). */
     @Column(name = "contract_expiry_warning_days", nullable = false)
     @Builder.Default

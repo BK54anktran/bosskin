@@ -66,6 +66,12 @@ public class CompanySettingDTO {
         private int expiryWarningDays;
     }
 
+    /** V23: đăng ký lịch làm việc. */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class ShiftRegistrationSetting {
+        private boolean enabled;
+    }
+
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Response {
         private AttendanceSetting attendance;
@@ -73,6 +79,7 @@ public class CompanySettingDTO {
         private PayrollSetting payroll;
         private ApprovalSetting approval;
         private ContractSetting contract;
+        private ShiftRegistrationSetting shiftRegistration;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -137,5 +144,7 @@ public class CompanySettingDTO {
         @Valid private ApprovalUpsert approval;
         /** Không gửi = giữ nguyên. */
         @Valid private ContractUpsert contract;
+        /** V23. Không gửi = giữ nguyên. */
+        private ShiftRegistrationSetting shiftRegistration;
     }
 }

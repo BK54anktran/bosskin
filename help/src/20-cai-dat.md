@@ -16,6 +16,7 @@ Mở **Cài đặt công ty** (cuối menu). Hai tab: **Chung** và **Lịch là
 | Phân biệt ngày / đêm, Bật chế độ OT | Tách giờ ca đêm; cho phép đăng ký tăng ca |
 | Thiết lập phép | 1 ngày phép = bao nhiêu giờ (cho đơn nghỉ theo giờ) |
 | **Người duyệt đơn** | *Theo quyền và phạm vi* (mặc định) hoặc *Quản lý trực tiếp duyệt trước, rồi HR* |
+| Đăng ký lịch làm việc | Bật: nhân viên có menu *Đăng ký lịch*, Ca làm có tab *Đăng ký lịch* để quản lý mở / đóng đợt và duyệt thành phân ca |
 | Báo trước hợp đồng hết hạn | Số ngày (mặc định 30) — hợp đồng / tài liệu hết hạn trong số ngày này hiện cảnh báo |
 
 ![Lương và bảo hiểm](img:settings-general-2)

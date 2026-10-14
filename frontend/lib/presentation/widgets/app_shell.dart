@@ -8,6 +8,7 @@ import '../../core/localization/language_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/notification_service.dart';
+import '../../data/services/company_feature_service.dart';
 import '../../data/services/team_approval_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'app_drawer.dart';
@@ -45,6 +46,8 @@ class _AppShellState extends State<AppShell>
     LanguageService.instance.addListener(_onLocaleChanged);
     TeamApprovalService.instance.addListener(_onLocaleChanged);
     TeamApprovalService.instance.refresh();
+    CompanyFeatureService.instance.addListener(_onLocaleChanged);
+    CompanyFeatureService.instance.refresh();
   }
 
   @override
@@ -53,6 +56,7 @@ class _AppShellState extends State<AppShell>
     AuthService.instance.removeListener(_onAuthChanged);
     LanguageService.instance.removeListener(_onLocaleChanged);
     TeamApprovalService.instance.removeListener(_onLocaleChanged);
+    CompanyFeatureService.instance.removeListener(_onLocaleChanged);
     _sidebarCtrl.dispose();
     super.dispose();
   }
@@ -60,6 +64,7 @@ class _AppShellState extends State<AppShell>
   void _onAuthChanged() {
     if (mounted) setState(() {});
     TeamApprovalService.instance.refresh();
+    CompanyFeatureService.instance.refresh();
   }
 
   void _onLocaleChanged() {
@@ -71,6 +76,7 @@ class _AppShellState extends State<AppShell>
     if (state == AppLifecycleState.resumed) {
       setState(() {});
       TeamApprovalService.instance.refresh();
+      CompanyFeatureService.instance.refresh();
     }
   }
 
@@ -225,6 +231,7 @@ class _AppShellState extends State<AppShell>
       AppRoutes.dashboard => s.dashboard,
       AppRoutes.employees => s.employees,
       AppRoutes.shiftSwaps => s.swapMenu,
+      AppRoutes.shiftRegistration => s.shiftRegMenu,
       AppRoutes.departments => s.departments,
       AppRoutes.shifts => s.shifts,
       AppRoutes.roles => s.roles,
