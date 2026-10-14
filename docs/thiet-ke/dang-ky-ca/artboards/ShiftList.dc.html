@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Ca làm · Danh sách ca</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.sw{width:28px;height:28px;border-radius:50%;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;padding:0;transition:transform .12s}
+.sw:hover{transform:scale(1.1)}
+.sw.on{box-shadow:0 0 0 2.5px #000 inset}
+</style>
+</helmet>
+<div style="position: relative; min-height: 900px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Ca làm" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Ca làm" min-h="844" hint-size="220px,844px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 8px 12px 0 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px">
+        <dc-import name="CmpTabs" items="Phân công ca|Danh sách ca|Xoay ca|Đăng ký lịch" hrefs="Shifts.dc.html|ShiftList.dc.html|ShiftRotation.dc.html|ShiftRegistration.dc.html" active="Danh sách ca" size="sm" line="{{no}}" hint-size="440px,46px"></dc-import>
+        <div style="padding-bottom: 8px"><dc-import name="CmpButton" label="Tạo ca mới" icon="add" variant="filled" size="md" on-click="{{openNew}}" hint-size="140px,36px"></dc-import></div>
+      </div>
+      <div style="padding: 8px 12px 10px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--bk-divider)">
+        <div style="flex: 1 1 400px"><dc-import name="CmpField" kind="search" placeholder="Tìm kiếm" variant="filled" hint-size="100%,44px"></dc-import></div>
+        <dc-import name="CmpField" label="Phòng ban" options="Tất cả|Phòng Kỹ Thuật|Phòng Kinh Doanh" width="152px" hint-size="152px,44px"></dc-import>
+      </div>
+      <div style="flex: 1; padding: 6px 18px 16px; display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+          <h2 style="margin: 12px 0 2px 4px; font-size: 11px; font-weight: 500; color: var(--bk-text-3)">{{g.title}}</h2>
+          <sc-for list="{{g.items}}" as="s" hint-placeholder-count="3">
+            <div class="bk-card bk-row" style="min-height: 76px; border-radius: 8px; border-color: transparent; padding: 0 16px; display: flex; align-items: center; gap: 12px">
+              <span style="width: 42px; height: 42px; border-radius: 8px; background: {{g.tile}}; color: {{g.fg}}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600">{{s.code}}</span>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 14px; font-weight: 500">{{s.code}}</span>
+                <span style="font-size: 11px; color: var(--bk-text-3)">{{s.time}}</span>
+                <span style="font-size: 10px; color: var(--bk-text-2)">Giờ làm: {{s.hours}}</span>
+              </div>
+              <dc-import name="CmpIconButton" icon="edit" label="Chỉnh sửa ca {{s.code}}" size="18" box="36" on-click="{{s.edit}}" hint-size="36px,36px"></dc-import>
+              <dc-import name="CmpIconButton" icon="delete" label="Xóa ca {{s.code}}" tone="danger" size="18" box="36" on-click="{{s.del}}" hint-size="36px,36px"></dc-import>
+            </div>
+          </sc-for>
+        </sc-for>
+      </div>
+      <dc-import name="CmpPagination" total="{{total}}" hint-size="100%,40px"></dc-import>
+    </main>
+  </div>
+
+  <sc-if value="{{dialog}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-backdrop bk-backdrop--center">
+      <form class="bk-modal" role="dialog" aria-label="{{fTitle}}" style="width: 494px; border-radius: 16px; padding: 24px">
+        <h2 style="font-size: 16px; font-weight: 500">{{fTitle}}</h2>
+        <div style="display: flex; gap: 12px">
+          <label class="bk-fl" style="flex: 3"><small>Tên ca *</small><input type="text" defaultValue="{{fName}}" aria-label="Tên ca"></label>
+          <label class="bk-fl" style="flex: 2"><small>Mã ca *</small><input type="text" defaultValue="{{fCode}}" aria-label="Mã ca" style="text-transform: uppercase"></label>
+        </div>
+        <label class="bk-fl"><small>Nhóm ca</small><input type="text" defaultValue="{{fGroup}}" placeholder="Ví dụ: Ca hành chính, Ca kỹ thuật..." list="shift-groups" aria-label="Nhóm ca"></label>
+        <datalist id="shift-groups"><option value="Ca sáng"></option><option value="Ca chiều"></option></datalist>
+        <div style="display: flex; gap: 12px">
+          <label class="bk-fl" style="flex: 1"><small>Giờ bắt đầu</small><span style="display: flex; align-items: center"><input type="text" defaultValue="{{fStart}}" placeholder="--:--" aria-label="Giờ bắt đầu"><dc-import name="CmpIcon" icon="clock" size="18" hint-size="18px,18px"></dc-import></span></label>
+          <label class="bk-fl" style="flex: 1"><small>Giờ kết thúc</small><span style="display: flex; align-items: center"><input type="text" defaultValue="{{fEnd}}" placeholder="--:--" aria-label="Giờ kết thúc"><dc-import name="CmpIcon" icon="clock" size="18" hint-size="18px,18px"></dc-import></span></label>
+        </div>
+        <div style="display: flex; gap: 12px">
+          <label class="bk-fl" style="flex: 1"><small>Nghỉ giải lao từ</small><span style="display: flex; align-items: center"><input type="text" placeholder="--:--" aria-label="Nghỉ giải lao từ"><dc-import name="CmpIcon" icon="clock" size="18" hint-size="18px,18px"></dc-import></span></label>
+          <label class="bk-fl" style="flex: 1"><small>Nghỉ giải lao đến</small><span style="display: flex; align-items: center"><input type="text" placeholder="--:--" aria-label="Nghỉ giải lao đến"><dc-import name="CmpIcon" icon="clock" size="18" hint-size="18px,18px"></dc-import></span></label>
+        </div>
+        <span style="font-size: 12px; color: var(--bk-text-3); margin-top: 4px">Màu hiển thị</span>
+        <div role="radiogroup" aria-label="Màu hiển thị" style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{swatches}}" as="w" hint-placeholder-count="16">
+            <button type="button" role="radio" aria-checked="{{w.on}}" aria-label="Màu {{w.hex}}" class="{{w.cls}}" onClick="{{w.pick}}" style="background: {{w.hex}}"><sc-if value="{{w.sel}}" hint-placeholder-val="{{ false }}"><dc-import name="CmpIcon" icon="check" size="16" stroke="3" color="#FFFFFF" hint-size="16px,16px"></dc-import></sc-if></button>
+          </sc-for>
+          <button type="button" class="sw" aria-label="Chọn màu khác" style="background: transparent; color: var(--bk-text-3)"><dc-import name="CmpIcon" icon="add" size="16" hint-size="16px,16px"></dc-import></button>
+        </div>
+        <label class="bk-fl bk-fl--sel" style="min-height: 26px; padding: 0 12px"><select aria-label="Áp dụng cho phòng ban" style="font-size: 13px"><option>Tất cả</option><option>Phòng Kỹ Thuật</option><option>Phòng Nhân Sự</option></select></label>
+        <div class="bk-modal__actions">
+          <dc-import name="CmpButton" label="Hủy" icon="" variant="text" size="md" on-click="{{close}}" hint-size="70px,36px"></dc-import>
+          <dc-import name="CmpButton" label="{{fBtn}}" icon="" variant="filled" size="md" on-click="{{close}}" hint-size="100px,36px"></dc-import>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+  <sc-if value="{{askDel}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="CmpConfirmDialog" title="Xóa ca làm" message="{{delMsg}}" confirm="Xóa" tone="text" on-cancel="{{close}}" on-confirm="{{doDel}}" hint-size="100%,100%"></dc-import>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { form: null, color: '#1976D2', del: null, gone: {} }; }
+  renderVals() {
+    const s = this.state;
+    const G = [
+      { title: 'Ca chiều', group: 'Ca chiều', tile: 'var(--bk-success-soft)', fg: '#047857', items: [['B', '15:00', '23:00', '8h'], ['B1', '15:00', '19:00', '4h'], ['B2', '19:00', '23:00', '4h']] },
+      { title: 'Ca sáng', group: 'Ca sáng', tile: 'var(--bk-primary-soft-12)', fg: 'var(--bk-primary-dark)', items: [['A', '07:00', '15:00', '8h'], ['A1', '07:00', '11:00', '4h'], ['A2', '11:00', '15:00', '4h']] }
+    ];
+    const groups = G.map((g) => ({ ...g, items: g.items.filter(([c]) => !s.gone[c]).map(([code, a, b, hours]) => ({
+      code, time: a + ' – ' + b, hours,
+      edit: () => this.setState({ form: { code, a, b, group: g.group }, color: '#1976D2' }),
+      del: () => this.setState({ del: code })
+    })) }));
+    const HEX = ['#1976D2','#1565C0','#0288D1','#00838F','#388E3C','#558B2F','#F57C00','#E65100','#7B1FA2','#AD1457','#D32F2F','#B71C1C','#0097A7','#00695C','#5D4037','#455A64'];
+    const swatches = HEX.map((hex) => { const sel = hex === s.color; return { hex, sel, on: sel ? 'true' : 'false', cls: 'sw' + (sel ? ' on' : ''), pick: () => this.setState({ color: hex }) }; });
+    const f = s.form, edit = f && f.code;
+    const close = () => this.setState({ form: null, del: null });
+    return {
+      groups, no: false, swatches, total: 8 - Object.keys(s.gone).length,
+      dialog: !!f, fTitle: edit ? 'Sửa ca làm' : 'Tạo ca làm mới', fBtn: edit ? 'Lưu' : 'Tạo ca mới',
+      fName: edit ? f.code : '', fCode: edit ? f.code : '', fGroup: edit ? f.group : '', fStart: edit ? f.a : '', fEnd: edit ? f.b : '',
+      openNew: () => this.setState({ form: {}, color: '#1976D2' }), close,
+      askDel: !!s.del, delMsg: s.del ? 'Xóa ca "' + s.del + '"?' : '',
+      doDel: () => this.setState({ del: null, gone: Object.assign({}, s.gone, { [s.del]: true }) })
+    };
+  }
+}
+</script>
+</body>
+</html>

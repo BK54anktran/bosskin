@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Cài đặt công ty</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; min-height: 1760px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Cài đặt công ty" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Cài đặt công ty" min-h="1704" hint-size="220px,1704px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; padding: 0 16px 40px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <div style="align-self: stretch; margin: 0 -16px 14px; padding: 0 16px; border-bottom: 1px solid var(--bk-divider)"><dc-import name="CmpTabs" items="Chung|Lịch làm việc" hrefs="CompanySettings.dc.html|WorkCalendar.dc.html" active="Chung" size="sm" hint-size="260px,46px"></dc-import></div>
+      <section class="bk-card" style="width: 100%; max-width: 846px; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600">Thiết lập chấm công</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 15px">Phân biệt ngày/đêm</span><dc-import name="CmpSwitch" on="{{yes}}" label="Phân biệt ngày/đêm" hint-size="52px,32px"></dc-import></div>
+        <div style="display: flex; gap: 12px">
+          <dc-import name="CmpField" label="Ban ngày từ" kind="time" value="06:00" icon="clock" size="lg" hint-size="100%,56px"></dc-import>
+          <dc-import name="CmpField" label="Ban ngày đến" kind="time" value="22:00" icon="clock" size="lg" hint-size="100%,56px"></dc-import>
+        </div>
+        <span style="font-size: 11px; color: var(--bk-text-3)">Ban đêm: 22:00 ~ 06:00</span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 15px">Bật chế độ OT</span><dc-import name="CmpSwitch" on="{{yes}}" label="Bật chế độ OT" hint-size="52px,32px"></dc-import></div>
+      </section>
+      <section class="bk-card" style="width: 100%; max-width: 846px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600">Đăng ký lịch làm việc</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 15px">Cho nhân viên đăng ký lịch làm việc</span><dc-import name="CmpSwitch" on="{{yes}}" label="Cho nhân viên đăng ký lịch làm việc" hint-size="52px,32px"></dc-import></div>
+        <span style="font-size: 11px; color: var(--bk-text-3); line-height: 1.45">Bật: hiện menu "Đăng ký lịch" cho nhân viên và tab "Đăng ký lịch" ở Ca làm; quản lý mở / đóng từng đợt (tuần, tháng hoặc khoảng ngày tuỳ chọn). Tắt: ẩn cả hai, đợt đang mở ngừng nhận đăng ký, dữ liệu cũ giữ nguyên.</span>
+      </section>
+      <section class="bk-card" style="width: 100%; max-width: 846px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600">Thiết lập phép</h2>
+        <dc-import name="CmpField" label="1 ngày = bao nhiêu giờ" kind="number" value="8" variant="filled" hint-size="100%,44px"></dc-import>
+      </section>
+      <section class="bk-card" style="width: 100%; max-width: 846px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600">Lương</h2>
+        <dc-import name="CmpField" label="Số ngày công tiêu chuẩn / tháng" kind="number" value="26" suffix="ngày" variant="filled" hint-size="100%,44px"></dc-import>
+        <dc-import name="CmpField" label="Ngày chốt lương (bắt đầu kỳ)" kind="number" value="25" suffix="ngày" variant="filled" hint-size="100%,44px"></dc-import>
+        <span style="padding-left: 18px; font-size: 11px; color: var(--bk-text-3)">1–28. VD: 25 → kỳ tháng 5 = 25/4–24/5</span>
+        <dc-import name="CmpField" label="Vùng lương tối thiểu" options="Vùng 1|Vùng 2|Vùng 3|Vùng 4" variant="filled" hint-size="100%,44px"></dc-import>
+        <span style="padding-left: 18px; font-size: 11px; color: var(--bk-text-3)">Dùng để tính trần lương đóng BHTN (20 × lương tối thiểu vùng). Thông số do quản trị hệ thống cập nhật.</span>
+      </section>
+      <section class="bk-card" style="width: 100%; max-width: 846px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600">Vị trí check-in</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 15px">Bật kiểm tra vị trí check-in</span><dc-import name="CmpSwitch" on="{{yes}}" label="Bật kiểm tra vị trí check-in" hint-size="52px,32px"></dc-import></div>
+        <div style="height: 300px; border-radius: 8px; background: #E0E0E0; display: flex; align-items: center; justify-content: center">
+          <span style="width: 82px; height: 82px; border-radius: 50%; border: 1.5px solid var(--bk-primary); background: rgba(37,99,235,.12); display: flex; align-items: center; justify-content: center; color: #E53935"><dc-import name="CmpIcon" icon="pin" size="28" stroke="2.2" hint-size="28px,28px"></dc-import></span>
+        </div>
+        <dc-import name="CmpButton" label="Lấy vị trí hiện tại" icon="my-location" variant="outlined" size="block" hint-size="100%,32px"></dc-import>
+        <div style="display: flex; gap: 8px">
+          <dc-import name="CmpField" label="Vĩ độ" kind="number" value="10.860657" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Kinh độ" kind="number" value="106.635740" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Bán kính" kind="number" value="100" suffix="m" variant="filled" width="104px" hint-size="104px,44px"></dc-import>
+        </div>
+        <div style="display: flex; justify-content: center"><dc-import name="CmpButton" label="Xóa vị trí" icon="close" variant="text" hint-size="110px,30px"></dc-import></div>
+      </section>
+      <section class="bk-card" style="width: 100%; max-width: 846px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 600">Phạm vi giờ check-in/out</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <dc-import name="CmpField" label="Check-in trước ca" kind="time" value="00:30" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Check-in sau ca" kind="time" value="00:30" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Check-out trước ca" kind="time" value="00:30" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Check-out sau ca" kind="time" value="00:30" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" kind="number" placeholder="Dung sai check-in (phút)" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" kind="number" placeholder="Dung sai check-out (phút)" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Làm tròn check-in" options="15 phút|5 phút|10 phút|30 phút|Không áp dụng" variant="filled" hint-size="100%,44px"></dc-import>
+          <dc-import name="CmpField" label="Làm tròn check-out" options="5 phút|10 phút|15 phút|30 phút|Không áp dụng" variant="filled" hint-size="100%,44px"></dc-import>
+        </div>
+        <dc-import name="CmpField" label="Làm tròn giờ ngày/đêm/OT" options="Không áp dụng|5 phút|15 phút|30 phút" variant="filled" hint-size="100%,44px"></dc-import>
+      </section>
+      <div style="width: 100%; max-width: 846px; margin-top: 8px"><dc-import name="CmpButton" label="Lưu" icon="save" variant="filled" on-click="{{saved}}" hint-size="86px,30px"></dc-import></div>
+    </main>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-toast" role="status" style="position: fixed"><dc-import name="CmpIcon" icon="check" size="16" stroke="2.6" color="#4ADE80" hint-size="16px,16px"></dc-import>Đã lưu cài đặt công ty</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { toast: false }; }
+  componentWillUnmount(){ clearTimeout(this.t); }
+  renderVals() {
+    return { yes: true, toast: this.state.toast, saved: () => { clearTimeout(this.t); this.setState({ toast: true }); this.t = setTimeout(() => this.setState({ toast: false }), 2000); } };
+  }
+}
+</script>
+</body>
+</html>

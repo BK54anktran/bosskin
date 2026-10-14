@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Đăng ký lịch của tôi</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.q{flex:1;height:30px;border-radius:8px;border:1px solid var(--bk-outline);background:var(--bk-bg);font:inherit;font-size:12px;color:var(--bk-text);cursor:pointer}
+.q:hover{background:var(--bk-hover)}
+.q.on{background:#D9DFF6;border-color:transparent;font-weight:500}
+.tm{height:38px;padding:0 10px;border-radius:10px;background:var(--bk-surface);border:1px solid var(--bk-border);font:inherit;font-size:14px;color:var(--bk-text)}
+.tm.bad{border-color:var(--bk-error)}
+</style>
+</helmet>
+<div style="position: relative; min-height: 900px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Đăng ký lịch" user="Phạm Thu Hà" email="ha.pham@test.com" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Đăng ký lịch" min-h="844" hint-size="220px,844px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; padding: 18px 16px 40px; box-sizing: border-box; display: flex; justify-content: center">
+      <div style="width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid #BFDBFE; border-radius: 6px; background: #EAF1FB; color: var(--bk-primary-dark); font-size: 13px">
+          <dc-import name="CmpIcon" icon="clock" size="18" hint-size="18px,18px"></dc-import>
+          <div style="flex: 1"><b style="font-weight: 600">Tuần 44 · 27/10 – 02/11/2026</b><div style="font-size: 12px; margin-top: 2px">Hạn chót 24/10 18:00 — còn 2 ngày 5 giờ · khung 06:00–23:00, mỗi khung 2–10 giờ</div></div>
+          <dc-import name="CmpBadge" label="{{stLabel}}" tone="{{stTone}}" size="xs" hint-size="70px,20px"></dc-import>
+        </div>
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+          <section class="bk-card" style="padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <div><b style="font-size: 14px; font-weight: 500; color: {{d.color}}">{{d.label}}</b><sc-if value="{{d.off}}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; color: var(--bk-text-2)">Không làm</div></sc-if></div>
+              <dc-import name="CmpSwitch" on="{{d.on}}" label="Làm {{d.label}}" on-toggle="{{d.toggle}}" hint-size="52px,32px"></dc-import>
+            </div>
+            <sc-if value="{{d.hasLeave}}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; padding: 8px 10px; border: 1px solid #F5D9B8; border-radius: 6px; background: #FAF1E8">Bạn có đơn nghỉ phép đã duyệt ngày này</div></sc-if>
+            <sc-if value="{{d.on}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; gap: 6px">
+                <sc-for list="{{d.quick}}" as="q" hint-placeholder-count="4"><button type="button" class="{{q.cls}}" aria-pressed="{{q.on}}" onClick="{{q.pick}}">{{q.label}}</button></sc-for>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 13px">
+                <select class="{{d.tmCls}}" aria-label="Giờ bắt đầu" value="{{d.start}}" onChange="{{d.setStart}}"><sc-for list="{{hourOpts}}" as="h" hint-placeholder-count="3"><option value="{{h.v}}">{{h.t}}</option></sc-for></select>
+                <span>–</span>
+                <select class="{{d.tmCls}}" aria-label="Giờ kết thúc" value="{{d.end}}" onChange="{{d.setEnd}}"><sc-for list="{{hourOpts}}" as="h" hint-placeholder-count="3"><option value="{{h.v}}">{{h.t}}</option></sc-for></select>
+                <span style="font-size: 11px; color: var(--bk-text-3)">{{d.hours}} giờ</span>
+                <span style="flex: 1"></span>
+                <dc-import name="CmpButton" label="Khung 2" icon="add" variant="text" hint-size="96px,30px"></dc-import>
+              </div>
+              <sc-if value="{{d.bad}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: var(--bk-error)">{{d.err}}</span></sc-if>
+            </sc-if>
+          </section>
+        </sc-for>
+        <div class="bk-card" style="position: sticky; bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 14px rgba(15,23,42,.08)">
+          <div style="flex: 1; font-size: 12px; color: var(--bk-text-3)"><b style="font-size: 14px; font-weight: 600; color: var(--bk-text)">{{nDays}} ngày · {{nHours}} giờ</b><br>Cần ít nhất 3 ngày · gửi rồi vẫn sửa được tới hạn chót</div>
+          <dc-import name="CmpButton" label="{{sendLabel}}" icon="send" variant="filled" size="md" disabled="{{cantSend}}" on-click="{{send}}" hint-size="150px,36px"></dc-import>
+        </div>
+      </div>
+    </main>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-toast" role="status"><dc-import name="CmpIcon" icon="check" size="16" stroke="2.6" color="#4ADE80" hint-size="16px,16px"></dc-import>{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.state = {
+      sent: false, toast: '',
+      days: [
+        { label: 'Thứ Hai, 27/10', on: true, s: 8, e: 14 },
+        { label: 'Thứ Ba, 28/10', on: false, s: 8, e: 14 },
+        { label: 'Thứ Tư, 29/10', on: true, s: 8, e: 14 },
+        { label: 'Thứ Năm, 30/10', on: false, s: 8, e: 14, leave: true },
+        { label: 'Thứ Sáu, 31/10', on: true, s: 14, e: 22 },
+        { label: 'Thứ Bảy, 01/11', on: true, s: 8, e: 22, we: true },
+        { label: 'Chủ nhật, 02/11', on: false, s: 8, e: 14, we: true }
+      ]
+    };
+  }
+  upd(i, patch) { const days = this.state.days.slice(); days[i] = Object.assign({}, days[i], patch); this.setState({ days }); }
+  renderVals() {
+    const Q = [['Cả ngày', 6, 23], ['Sáng', 6, 14], ['Chiều', 14, 18], ['Tối', 18, 23]];
+    const fmt = (h) => String(h).padStart(2, '0') + ':00';
+    const hourOpts = [];
+    for (let h = 6; h <= 23; h++) hourOpts.push({ v: String(h), t: fmt(h) });
+    let nDays = 0, nHours = 0, anyBad = false;
+    const days = this.state.days.map((d, i) => {
+      const hours = d.e - d.s;
+      const err = hours <= 0 ? 'Giờ kết thúc phải sau giờ bắt đầu' : (hours > 10 ? 'Mỗi khung tối đa 10 giờ — tách thành 2 khung' : (hours < 2 ? 'Mỗi khung ít nhất 2 giờ' : ''));
+      if (d.on) { nDays++; nHours += Math.max(0, hours); if (err) anyBad = true; }
+      return {
+        label: d.label, on: d.on, off: !d.on, hasLeave: !!d.leave, color: d.we ? '#DC2626' : 'var(--bk-text)',
+        start: String(d.s), end: String(d.e), hours, bad: d.on && !!err, err, tmCls: 'tm' + (err ? ' bad' : ''),
+        toggle: (v) => this.upd(i, { on: v }),
+        setStart: (e) => this.upd(i, { s: Number(e.target.value) }),
+        setEnd: (e) => this.upd(i, { e: Number(e.target.value) }),
+        quick: Q.map(([label, s, e]) => { const on = d.s === s && d.e === e; return { label, on: on ? 'true' : 'false', cls: 'q' + (on ? ' on' : ''), pick: () => this.upd(i, { s, e }) }; })
+      };
+    });
+    return {
+      days, hourOpts, nDays, nHours,
+      cantSend: anyBad || nDays < 3,
+      sendLabel: this.state.sent ? 'Cập nhật' : 'Gửi đăng ký',
+      stLabel: this.state.sent ? 'Đã gửi' : 'Chưa gửi', stTone: this.state.sent ? 'success' : 'neutral',
+      send: () => { this.setState({ sent: true, toast: 'Đã gửi đăng ký ' + nDays + ' ngày' }); clearTimeout(this.t); this.t = setTimeout(() => this.setState({ toast: '' }), 2200); },
+      toast: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Component — Sidebar</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.sb-list{position:absolute;inset:0;overflow-y:auto;padding:6px 2px 12px;display:flex;flex-direction:column;gap:2px}
+.sb-list .bk-nav{min-height:34px;gap:12px}
+.sb-h{display:flex;align-items:center;gap:4px;margin:8px 4px 0;padding:4px 8px 4px 12px;min-height:22px;border:0;background:transparent;border-radius:6px;font:inherit;font-size:11px;letter-spacing:.6px;font-weight:600;text-transform:uppercase;color:var(--bk-text-2);cursor:pointer;text-align:left}
+.sb-h:hover{background:var(--bk-hover)}
+.sb-h.is-lock{cursor:default;background:transparent}
+.sb-h span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<nav aria-label="Menu chính" style="width: var(--bk-sidebar-w); min-height: {{minH}}px; height: 100%; position: relative; flex-shrink: 0; background: var(--bk-bg); border-right: 1px solid var(--bk-border); box-sizing: border-box; display: flex; flex-direction: column; font-family: var(--bk-font)">
+  <div class="sb-list">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="7">
+      <sc-if value="{{g.hasTitle}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="{{g.cls}}" aria-expanded="{{g.expanded}}" onClick="{{g.toggle}}"><span>{{g.title}}</span><sc-if value="{{g.showChev}}" hint-placeholder-val="{{ true }}"><dc-import name="CmpIcon" icon="{{g.chev}}" size="16" hint-size="16px,16px"></dc-import></sc-if></button>
+      </sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+        <a class="{{it.cls}}" href="{{it.href}}"><dc-import name="CmpIcon" icon="{{it.icon}}" size="20" hint-size="20px,20px"></dc-import>{{it.label}}</a>
+      </sc-for>
+    </sc-for>
+  </div>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","default":"Tổng quan","options":["Tổng quan","Check-in / Check-out","Đăng ký lịch","Phiếu lương của tôi","Thông tin cá nhân","Yêu cầu chấm công","Nghỉ phép","Đổi ca","Duyệt cho nhóm","Yêu cầu chỉnh sửa","Nhân viên","Sơ đồ tổ chức","Phòng ban","Hợp đồng lao động","Tài liệu nhân sự","Ca làm","Chấm công","Bảng lương","Báo cáo","Import / Export","Cài đặt công ty","Phân quyền","Nhật ký thao tác"]},"minH":{"editor":"int","default":844,"min":200,"max":4000},"$preview":{"width":220,"height":844}}'>
+// Khớp frontend/lib/core/navigation/nav_menu.dart: cùng nhóm, cùng thứ tự.
+// Nhóm chứa màn đang mở luôn mở (không thu gọn được); nhóm khác bấm tiêu đề để thu gọn.
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { closed: {} }; }
+  renderVals() {
+    const active = this.props.active ?? 'Tổng quan';
+    const G = [
+      ['home', '', [['Tổng quan', 'dashboard', 'Dashboard.dc.html']]],
+      ['self', 'Của tôi', [
+        ['Check-in / Check-out', 'login', 'CheckIn.dc.html'],
+        ['Đăng ký lịch', 'calendar', 'ShiftRegistrationSelf.dc.html'],
+        ['Phiếu lương của tôi', 'receipt', 'SelfPayroll.dc.html'],
+        ['Thông tin cá nhân', 'person', 'Profile.dc.html']]],
+      ['requests', 'Đơn từ & phê duyệt', [
+        ['Yêu cầu chấm công', 'note-add', 'AttendanceRequests.dc.html'],
+        ['Nghỉ phép', 'beach', 'Leaves.dc.html'],
+        ['Đổi ca', 'swap', 'ShiftSwaps.dc.html'],
+        ['Duyệt cho nhóm', 'checklist', 'TeamApprovals.dc.html'],
+        ['Yêu cầu chỉnh sửa', 'assignment', 'EditRequests.dc.html']]],
+      ['hr', 'Nhân sự', [
+        ['Nhân viên', 'people', 'Employees.dc.html'],
+        ['Sơ đồ tổ chức', 'tree', 'OrgChart.dc.html'],
+        ['Phòng ban', 'tree', 'Departments.dc.html'],
+        ['Hợp đồng lao động', 'note-add', 'Contracts.dc.html'],
+        ['Tài liệu nhân sự', 'briefcase', 'Documents.dc.html']]],
+      ['time', 'Ca & chấm công', [
+        ['Ca làm', 'calendar', 'Shifts.dc.html'],
+        ['Chấm công', 'clock', 'Attendance.dc.html']]],
+      ['pay', 'Lương & báo cáo', [
+        ['Bảng lương', 'payments', 'Payroll.dc.html'],
+        ['Báo cáo', 'analytics', 'Reports.dc.html'],
+        ['Import / Export', 'import-export', 'Excel.dc.html']]],
+      ['system', 'Cài đặt & hệ thống', [
+        ['Cài đặt công ty', 'tune', 'CompanySettings.dc.html'],
+        ['Phân quyền', 'shield', 'Roles.dc.html'],
+        ['Nhật ký thao tác', 'history', 'AuditLog.dc.html']]]
+    ];
+    const closed = this.state.closed;
+    const groups = G.map(([id, title, list]) => {
+      const locked = list.some(([l]) => l === active);
+      const isClosed = !!title && !locked && !!closed[id];
+      return {
+        hasTitle: !!title, title, cls: 'sb-h' + (locked ? ' is-lock' : ''), showChev: !locked,
+        expanded: isClosed ? 'false' : 'true', chev: isClosed ? 'chevron-right' : 'chevron-down',
+        toggle: locked ? () => {} : () => this.setState({ closed: Object.assign({}, closed, { [id]: !closed[id] }) }),
+        items: isClosed ? [] : list.map(([label, icon, href]) => ({ label, icon, href,
+          cls: 'bk-nav bk-rp' + (label === active ? (label === 'Yêu cầu chỉnh sửa' ? ' is-warn' : ' is-on') : '') }))
+      };
+    });
+    return { groups, minH: this.props.minH ?? 844 };
+  }
+}
+</script>
+</body>
+</html>

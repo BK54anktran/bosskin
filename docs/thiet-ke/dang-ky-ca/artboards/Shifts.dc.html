@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Ca làm · Phân công ca</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.grid{border-collapse:collapse;font-size:11px}
+.grid th{height:40px;min-width:180px;background:#F3F4F6;border-right:1px solid #E5E7EB;border-bottom:1px solid #D1D5DB;font-weight:500}
+.grid td{height:52px;border-right:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:0}
+.cell{width:100%;height:52px;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background-color .15s}
+.cell:hover{background:rgba(72,92,147,.08)}
+.cell:active{background:rgba(72,92,147,.18)}
+.tpl{display:flex;align-items:center;gap:10px;width:100%;padding:6px 8px;border:1px solid transparent;border-radius:8px;background:transparent;font:inherit;text-align:left;cursor:pointer}
+.tpl:hover{background:rgba(72,92,147,.06)}
+.qf{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:1px solid var(--bk-border);border-radius:8px;background:var(--bk-bg);font:inherit;text-align:left;cursor:pointer}
+.qf.on{border-color:var(--bk-action);box-shadow:0 0 0 1px var(--bk-action);background:var(--bk-action-soft)}
+</style>
+</helmet>
+<div style="position: relative; min-height: 900px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Ca làm" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Ca làm" min-h="844" hint-size="220px,844px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 8px 12px 0 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px">
+        <dc-import name="CmpTabs" items="Phân công ca|Danh sách ca|Xoay ca|Đăng ký lịch" hrefs="Shifts.dc.html|ShiftList.dc.html|ShiftRotation.dc.html|ShiftRegistration.dc.html" active="Phân công ca" size="sm" line="{{no}}" hint-size="440px,46px"></dc-import>
+        <div style="display: flex; gap: 8px; padding-bottom: 8px">
+          <dc-import name="CmpButton" label="Xuất Excel" icon="upload" variant="outlined" hint-size="130px,30px"></dc-import>
+          <dc-import name="CmpButton" label="Nhập Excel" icon="download" variant="outlined" hint-size="130px,30px"></dc-import>
+        </div>
+      </div>
+      <div style="padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--bk-divider)">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <div style="flex: 1 1 400px"><dc-import name="CmpField" kind="search" placeholder="Tìm kiếm" variant="filled" hint-size="100%,44px"></dc-import></div>
+          <dc-import name="CmpField" label="Phòng ban" options="Tất cả|Phòng Kỹ Thuật|Phòng Kinh Doanh|Phòng Nhân Sự" width="152px" hint-size="152px,44px"></dc-import>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+          <dc-import name="CmpField" label="Xem theo" options="Kỳ lương|Tuần|Tháng" width="142px" hint-size="142px,44px"></dc-import>
+          <dc-import name="CmpIconButton" icon="chevron-left" label="Kỳ trước" size="18" box="30" hint-size="30px,30px"></dc-import>
+          <span style="font-size: 15px; font-weight: 600">10/2026</span>
+          <dc-import name="CmpIconButton" icon="chevron-right" label="Kỳ sau" size="18" box="30" hint-size="30px,30px"></dc-import>
+          <span style="flex: 1"></span>
+          <button type="button" class="bk-ib bk-rp" aria-label="Điền nhanh ca" aria-pressed="{{qf}}" onClick="{{toggleQf}}" style="width: 40px; height: 40px; background: {{qfBg}}; color: {{qfFg}}"><dc-import name="CmpIcon" icon="grid-add" size="20" hint-size="20px,20px"></dc-import></button>
+        </div>
+      </div>
+      <div style="flex: 1; display: flex; min-height: 0">
+        <div style="flex: 1; min-width: 0; overflow-x: auto; background: var(--bk-bg)">
+          <table class="grid">
+            <thead><tr>
+              <th style="min-width: 180px; position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; color: var(--bk-text-3); border-right: 2px solid #D1D5DB">Nhân viên</th>
+              <sc-for list="{{days}}" as="d" hint-placeholder-count="10"><th style="color: {{d.color}}"><div style="font-size: 13px">{{d.num}}</div><div style="font-size: 9px; font-weight: 400">{{d.wd}}</div></th></sc-for>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="11">
+                <tr>
+                  <td style="position: sticky; left: 0; z-index: 1; background: {{r.bg}}; padding: 0 8px; border-right: 2px solid #D1D5DB"><div style="font-size: 11px; color: var(--bk-text)">{{r.name}}</div><div style="margin-top: 3px; font-size: 9px; color: var(--bk-text-2)">{{r.sub}}</div></td>
+                  <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="10">
+                    <td style="background: {{c.bg}}"><button type="button" class="cell" aria-label="{{c.label}}" onClick="{{c.click}}">
+                      <sc-if value="{{c.on}}" hint-placeholder-val="{{ false }}"><span class="bk-bump" style="padding: 4px 10px; border-radius: 6px; background: {{c.tile}}; color: {{c.fg}}; font-size: 11px; font-weight: 600">{{c.text}}</span></sc-if>
+                    </button></td>
+                  </sc-for>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <sc-if value="{{qf}}" hint-placeholder-val="{{ false }}">
+          <aside class="bk-enter" aria-label="Điền nhanh ca" style="width: 182px; flex-shrink: 0; border-left: 1px solid var(--bk-border); background: var(--bk-bg); padding: 10px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+            <b style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600"><dc-import name="CmpIcon" icon="grid-add" size="14" hint-size="14px,14px"></dc-import>Điền nhanh ca</b>
+            <span style="font-size: 10px; color: var(--bk-text-2); line-height: 1.4">Chọn ca bên dưới rồi nhấn vào ô để gán</span>
+            <sc-for list="{{qfGroups}}" as="g" hint-placeholder-count="2">
+              <span style="margin-top: 4px; font-size: 10px; font-weight: 600; color: var(--bk-text-3)">{{g.title}}</span>
+              <sc-for list="{{g.items}}" as="t" hint-placeholder-count="3">
+                <button type="button" class="{{t.cls}}" onClick="{{t.pick}}" aria-pressed="{{t.on}}">
+                  <span style="width: 26px; height: 22px; border-radius: 5px; background: {{t.tile}}; color: {{t.fg}}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{{t.code}}</span>
+                  <span style="display: flex; flex-direction: column"><span style="font-size: 11px">{{t.code}}</span><span style="font-size: 9px; color: var(--bk-text-2)">{{t.time}}</span></span>
+                </button>
+              </sc-for>
+            </sc-for>
+          </aside>
+        </sc-if>
+      </div>
+      <dc-import name="CmpPagination" total="11" hint-size="100%,40px"></dc-import>
+    </main>
+  </div>
+
+  <sc-if value="{{picker}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-backdrop bk-backdrop--center">
+      <div class="bk-modal" role="dialog" aria-label="Chọn ca cho {{pkName}}" style="width: 340px; border-radius: 18px; padding: 0 0 10px; gap: 0">
+        <div style="align-self: center; margin-top: 0; padding: 10px 16px; background: var(--bk-bg); border-radius: 0 0 8px 8px; text-align: center; box-shadow: 0 2px 6px rgba(15,23,42,.08)"><b style="display: block; font-size: 13px; font-weight: 500">{{pkName}}</b><span style="font-size: 10px; color: var(--bk-text-2)">{{pkDate}}</span></div>
+        <div style="padding: 14px 12px 6px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 10px; color: var(--bk-text-3)">Chọn ca</span>
+          <label class="bk-fl bk-fl--sel" style="min-height: 34px; padding: 0 12px; border: 1px solid var(--bk-primary); background: #EEF4FF"><select aria-label="Chọn ca" style="font-size: 12px; color: var(--bk-primary); font-weight: 500"><option>Giờ tùy chỉnh</option><option>A</option><option>B</option></select></label>
+          <span style="margin-top: 8px; font-size: 10px; color: var(--bk-text-3)">Ca mẫu</span>
+          <sc-for list="{{tpls}}" as="t" hint-placeholder-count="6">
+            <button type="button" class="tpl bk-rp" onClick="{{t.pick}}">
+              <span style="width: 24px; height: 24px; border-radius: 5px; background: {{t.tile}}; color: {{t.fg}}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{{t.code}}</span>
+              <span style="display: flex; flex-direction: column"><span style="font-size: 12px">{{t.code}}</span><span style="font-size: 10px; color: var(--bk-text-2)">{{t.time}}</span></span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="border-top: 1px solid var(--bk-outline); padding: 8px 12px 0; display: flex; justify-content: flex-end">
+          <dc-import name="CmpButton" label="Đóng" icon="" variant="text" size="md" on-click="{{closePk}}" hint-size="70px,36px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { on: {}, qf: false, qfPick: null, pk: null }; }
+  renderVals() {
+    const S = {
+      A: ['07:00 – 15:00', 'am'], A1: ['07:00 – 11:00', 'am'], A2: ['11:00 – 15:00', 'am'],
+      B: ['15:00 – 23:00', 'pm'], B1: ['15:00 – 19:00', 'pm'], B2: ['19:00 – 23:00', 'pm']
+    };
+    const tone = (c) => S[c][1] === 'am' ? ['var(--bk-primary-soft-12)', 'var(--bk-primary-dark)'] : ['var(--bk-success-soft)', '#047857'];
+    const WD = ['CN','T2','T3','T4','T5','T6','T7'];
+    const WDL = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+    const days = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(2026, 8, 25 + i);
+      const we = d.getDay() === 0 || d.getDay() === 6;
+      days.push({ num: d.getDate(), wd: WD[d.getDay()], color: we ? '#DC2626' : 'var(--bk-text)', we,
+        long: WDL[d.getDay()] + ', ' + String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/2026' });
+    }
+    const EMP = [['Bùi Thị Hoa','EMP00008 • Phòng Nhân Sự'],['Đặng Văn Giang','EMP00007 • Phòng Kinh Doanh'],['Hoàng Văn Em','EMP00005 • Phòng Kỹ Thuật'],['Lê Văn Cường','EMP00003 • Phòng Kỹ Thuật'],['Nhân viên dev back_end java','EMP00009 • Back-end'],['Phạm Thị Dung','EMP00004 • Phòng Kỹ Thuật'],['Trần Ngọc Anh','EMP00001 • Ban Giám Đốc'],['Trần Thị Bích','EMP00002 • Phòng Nhân Sự'],['Trợ lý','EMP00010 • Trợ lý giám đốc'],['Trợ lý 2','EMP00011 • trợ lý giám đốc 1'],['Vũ Thị Phương','EMP00006 • Phòng Kinh Doanh']];
+    const st = this.state, on = st.on;
+    const assign = (key, code) => this.setState({ on: Object.assign({}, this.state.on, { [key]: code }), pk: null });
+    const rows = EMP.map(([name, sub], ri) => {
+      const bg = ri % 2 ? '#F8F9FB' : '#FFFFFF';
+      return { name, sub, bg, cells: days.map((d, ci) => {
+        const key = ri + '-' + ci, code = on[key];
+        const [tile, fg] = code ? tone(code) : ['', ''];
+        return { on: !!code, text: code ? code + ' ' + S[code][0].replace(' – ', '–') : '', tile, fg, bg: d.we ? '#FEF0EF' : bg,
+          label: 'Xếp ca ' + name + ' ngày ' + d.num,
+          click: () => {
+            if (this.state.qf && this.state.qfPick) assign(key, this.state.on[key] === this.state.qfPick ? null : this.state.qfPick);
+            else this.setState({ pk: { key, name, date: d.long } });
+          } };
+      }) };
+    });
+    const mk = (code) => { const [tile, fg] = tone(code); return { code, time: S[code][0], tile, fg }; };
+    const tpls = ['A', 'B', 'A1', 'A2', 'B1', 'B2'].map((c) => Object.assign(mk(c), { pick: () => assign(st.pk.key, c) }));
+    const qfGroups = [['Ca chiều', ['B', 'B1', 'B2']], ['Ca sáng', ['A', 'A1', 'A2']]].map(([title, list]) => ({ title, items: list.map((c) => {
+      const sel = st.qfPick === c;
+      return Object.assign(mk(c), { on: sel ? 'true' : 'false', cls: 'qf bk-rp' + (sel ? ' on' : ''), pick: () => this.setState({ qfPick: sel ? null : c }) });
+    }) }));
+    return {
+      days, rows, no: false, tpls, qfGroups,
+      qf: st.qf, qfBg: st.qf ? 'var(--bk-action-soft)' : 'var(--bk-hover)', qfFg: st.qf ? 'var(--bk-action)' : 'var(--bk-text-3)',
+      toggleQf: () => this.setState({ qf: !st.qf, qfPick: null }),
+      picker: !!st.pk, pkName: st.pk ? st.pk.name : '', pkDate: st.pk ? st.pk.date : '',
+      closePk: () => this.setState({ pk: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

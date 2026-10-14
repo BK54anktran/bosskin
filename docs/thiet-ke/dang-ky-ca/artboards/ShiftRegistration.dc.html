@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Ca làm · Đăng ký lịch</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.bar{width:90px;height:6px;border-radius:3px;background:var(--bk-hover);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--bk-success)}
+.seg{display:flex;border:1px solid var(--bk-text-2);border-radius:20px;overflow:hidden;height:36px}
+.seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-right:1px solid var(--bk-text-2);background:transparent;font:inherit;font-size:13px;font-weight:500;color:var(--bk-text);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:#D9DFF6;color:#101B41}
+</style>
+</helmet>
+<div style="position: relative; min-height: 900px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Ca làm" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Ca làm" min-h="844" hint-size="220px,844px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 8px 12px 0 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px">
+        <dc-import name="CmpTabs" items="Phân công ca|Danh sách ca|Xoay ca|Đăng ký lịch" hrefs="Shifts.dc.html|ShiftList.dc.html|ShiftRotation.dc.html|ShiftRegistration.dc.html" active="Đăng ký lịch" size="sm" line="{{no}}" hint-size="440px,46px"></dc-import>
+        <div style="display: flex; gap: 8px; padding-bottom: 8px">
+          <dc-import name="CmpButton" label="Tạo đợt đăng ký" icon="add" variant="filled" on-click="{{openNew}}" hint-size="160px,30px"></dc-import>
+        </div>
+      </div>
+      <div style="padding: 8px 12px 10px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--bk-divider)">
+        <div style="flex: 1 1 360px"><dc-import name="CmpField" kind="search" placeholder="Tìm theo tên đợt" variant="filled" hint-size="100%,44px"></dc-import></div>
+        <dc-import name="CmpField" label="Trạng thái" options="Tất cả|Nháp|Đang mở|Đã đóng|Đã xếp lịch" width="170px" hint-size="170px,44px"></dc-import>
+        <dc-import name="CmpField" label="Phòng ban" options="Tất cả|Cửa hàng Q1|Cửa hàng Q3|Kho tổng" width="170px" hint-size="170px,44px"></dc-import>
+      </div>
+      <div style="overflow-x: auto; background: var(--bk-bg)">
+        <table class="bk-table" style="min-width: 900px">
+          <thead><tr><th>Đợt đăng ký</th><th>Khoảng ngày</th><th>Phòng ban</th><th>Hạn chót</th><th>Đã đăng ký</th><th>Trạng thái</th><th style="text-align: right">Thao tác</th></tr></thead>
+          <tbody>
+            <sc-for list="{{rounds}}" as="r" hint-placeholder-count="5">
+              <tr>
+                <td><a href="ShiftRegistrationDetail.dc.html" style="font-size: 13px; font-weight: 500; color: var(--bk-text); text-decoration: none">{{r.name}}</a><div style="margin-top: 3px; font-size: 11px; color: var(--bk-text-2)">Tạo bởi Nguyễn Văn An</div></td>
+                <td>{{r.range}}</td>
+                <td>{{r.depts}}</td>
+                <td>{{r.deadline}}<sc-if value="{{r.hasLeft}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 3px; font-size: 11px; color: var(--bk-text-2)">{{r.left}}</div></sc-if></td>
+                <td>{{r.count}}<div class="bar"><i style="width: {{r.pct}}%"></i></div></td>
+                <td><dc-import name="CmpBadge" label="{{r.status}}" tone="{{r.tone}}" size="xs" hint-size="80px,20px"></dc-import></td>
+                <td style="text-align: right">
+                  <sc-if value="{{r.canClose}}" hint-placeholder-val="{{ true }}"><dc-import name="CmpButton" label="Đóng" icon="lock" variant="outlined" on-click="{{r.close}}" hint-size="90px,30px"></dc-import></sc-if>
+                  <sc-if value="{{r.canOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="CmpButton" label="{{r.openLabel}}" icon="unlock" variant="{{r.openVariant}}" on-click="{{r.open}}" hint-size="130px,30px"></dc-import></sc-if>
+                  <sc-if value="{{r.applied}}" hint-placeholder-val="{{ false }}"><a href="ShiftRegistrationDetail.dc.html" style="font-size: 13px">Xem</a></sc-if>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin: 0; padding: 10px 16px; font-size: 11px; color: var(--bk-text-3)">Tab này và mục menu "Đăng ký lịch" chỉ hiện khi công ty bật "Cho nhân viên đăng ký lịch làm việc" ở Cài đặt công ty. Bấm tên đợt để xem chi tiết.</p>
+      <div style="margin-top: auto"><dc-import name="CmpPagination" total="{{total}}" hint-size="100%,40px"></dc-import></div>
+    </main>
+  </div>
+
+  <sc-if value="{{newDlg}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-backdrop bk-backdrop--center" style="padding-top: 70px">
+      <form class="bk-modal" role="dialog" aria-label="Tạo đợt đăng ký" style="width: 540px">
+        <h2>Tạo đợt đăng ký</h2>
+        <label class="bk-fl"><small>Tên đợt *</small><input type="text" defaultValue="Tuần 44" aria-label="Tên đợt"></label>
+        <span class="bk-sub">Khoảng ngày</span>
+        <div class="seg" role="group" aria-label="Chọn nhanh khoảng ngày">
+          <sc-for list="{{presets}}" as="p" hint-placeholder-count="4"><button type="button" class="{{p.cls}}" aria-pressed="{{p.on}}" onClick="{{p.pick}}">{{p.label}}</button></sc-for>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <label class="bk-fl" style="flex: 1"><small>Từ ngày</small><input type="text" value="{{from}}" aria-label="Từ ngày" readOnly="{{fixed}}"></label>
+          <label class="bk-fl" style="flex: 1"><small>Đến ngày</small><input type="text" value="{{to}}" aria-label="Đến ngày" readOnly="{{fixed}}"></label>
+        </div>
+        <label class="bk-fl bk-fl--sel"><small>Phòng ban</small><select aria-label="Phòng ban"><option>Cửa hàng Q1, Cửa hàng Q3</option><option>Kho tổng</option><option>Tất cả phòng ban</option></select></label>
+        <label class="bk-fl"><small>Hạn chót — tự đóng lúc</small><input type="text" defaultValue="24/10/2026 18:00" aria-label="Hạn chót"></label>
+        <span class="bk-sub">Giới hạn (không bắt buộc)</span>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <label class="bk-fl"><small>Khung giờ từ</small><input type="text" defaultValue="06:00" aria-label="Khung giờ từ"></label>
+          <label class="bk-fl"><small>Khung giờ đến</small><input type="text" defaultValue="23:00" aria-label="Khung giờ đến"></label>
+          <label class="bk-fl"><small>Mỗi khung ít nhất (giờ)</small><input type="number" defaultValue="2" aria-label="Mỗi khung ít nhất"></label>
+          <label class="bk-fl"><small>Mỗi khung tối đa (giờ)</small><input type="number" defaultValue="10" aria-label="Mỗi khung tối đa"></label>
+          <label class="bk-fl"><small>Mỗi người ít nhất (ngày)</small><input type="number" defaultValue="3" aria-label="Mỗi người ít nhất"></label>
+          <label class="bk-fl"><small>Cần mỗi ngày (người)</small><input type="number" defaultValue="4" aria-label="Cần mỗi ngày"></label>
+        </div>
+        <p>Đợt chỉ cho nhân viên thuộc phòng ban đã chọn. Mở đăng ký sẽ gửi báo đẩy cho họ; tới hạn chót đợt tự đóng.</p>
+        <div class="bk-modal__actions">
+          <dc-import name="CmpButton" label="Hủy" icon="" variant="text" size="md" on-click="{{close}}" hint-size="70px,36px"></dc-import>
+          <dc-import name="CmpButton" label="Lưu nháp" icon="" variant="outlined" size="md" on-click="{{saveDraft}}" hint-size="100px,36px"></dc-import>
+          <dc-import name="CmpButton" label="Lưu và mở đăng ký" icon="unlock" variant="filled" size="md" on-click="{{saveOpen}}" hint-size="180px,36px"></dc-import>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-toast" role="status"><dc-import name="CmpIcon" icon="check" size="16" stroke="2.6" color="#4ADE80" hint-size="16px,16px"></dc-import>{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.state = {
+      newDlg: false, preset: 'Tuần sau', toast: '',
+      rounds: [
+        { name: 'Tuần 44', range: '27/10 – 02/11/2026', depts: 'Cửa hàng Q1, Cửa hàng Q3', deadline: '24/10 18:00', left: 'còn 2 ngày 5 giờ', done: 9, all: 14, st: 'OPEN' },
+        { name: 'Tháng 11 — Kho', range: '01/11 – 30/11/2026', depts: 'Kho tổng', deadline: '28/10 17:00', left: '', done: 0, all: 8, st: 'DRAFT' },
+        { name: 'Tuần 43', range: '20/10 – 26/10/2026', depts: 'Cửa hàng Q1, Cửa hàng Q3', deadline: '17/10 18:00', left: '', done: 13, all: 14, st: 'CLOSED' },
+        { name: 'Tuần 42', range: '13/10 – 19/10/2026', depts: 'Cửa hàng Q1, Cửa hàng Q3', deadline: '10/10 18:00', left: '', done: 14, all: 14, st: 'APPLIED' },
+        { name: 'Tuần 41', range: '06/10 – 12/10/2026', depts: 'Cửa hàng Q1, Cửa hàng Q3', deadline: '03/10 18:00', left: '', done: 13, all: 14, st: 'APPLIED' }
+      ]
+    };
+  }
+  setStatus(i, st, msg) {
+    const rounds = this.state.rounds.slice();
+    rounds[i] = Object.assign({}, rounds[i], { st, left: st === 'OPEN' ? 'còn 2 ngày' : '' });
+    this.setState({ rounds, toast: msg });
+    clearTimeout(this.t); this.t = setTimeout(() => this.setState({ toast: '' }), 2200);
+  }
+  add(st) {
+    const R = { 'Tuần sau': ['Tuần 45', '03/11 – 09/11/2026'], '2 tuần tới': ['Tuần 45–46', '03/11 – 16/11/2026'], 'Tháng sau': ['Tháng 11', '01/11 – 30/11/2026'], 'Tự chọn': ['Đợt tự chọn', '03/11 – 12/11/2026'] }[this.state.preset];
+    const r = { name: R[0], range: R[1], depts: 'Cửa hàng Q1, Cửa hàng Q3', deadline: '31/10 18:00', left: st === 'OPEN' ? 'còn 4 ngày' : '', done: 0, all: 14, st };
+    this.setState({ rounds: [r].concat(this.state.rounds), newDlg: false, toast: st === 'OPEN' ? 'Đã mở đăng ký, đã báo cho nhân viên' : 'Đã lưu nháp' });
+    clearTimeout(this.t); this.t = setTimeout(() => this.setState({ toast: '' }), 2200);
+  }
+  renderVals() {
+    const S = { DRAFT: ['Nháp', 'neutral'], OPEN: ['Đang mở', 'success'], CLOSED: ['Đã đóng', 'warning'], APPLIED: ['Đã xếp lịch', 'primary'] };
+    const rounds = this.state.rounds.map((r, i) => ({
+      name: r.name, range: r.range, depts: r.depts, deadline: r.deadline, left: r.left, hasLeft: !!r.left,
+      count: r.done + ' / ' + r.all, pct: Math.round(r.done * 100 / r.all),
+      status: S[r.st][0], tone: S[r.st][1],
+      canClose: r.st === 'OPEN', canOpen: r.st === 'DRAFT' || r.st === 'CLOSED', applied: r.st === 'APPLIED',
+      openLabel: r.st === 'DRAFT' ? 'Mở đăng ký' : 'Mở lại', openVariant: r.st === 'DRAFT' ? 'filled' : 'outlined',
+      close: () => this.setStatus(i, 'CLOSED', 'Đã đóng đợt ' + r.name),
+      open: () => this.setStatus(i, 'OPEN', 'Đã mở đợt ' + r.name)
+    }));
+    const D = { 'Tuần sau': ['27/10/2026', '02/11/2026'], '2 tuần tới': ['27/10/2026', '09/11/2026'], 'Tháng sau': ['01/11/2026', '30/11/2026'], 'Tự chọn': ['', ''] };
+    const presets = Object.keys(D).map((label) => {
+      const on = label === this.state.preset;
+      return { label, on: on ? 'true' : 'false', cls: on ? 'on' : '', pick: () => this.setState({ preset: label }) };
+    });
+    return {
+      no: false, rounds, total: rounds.length, presets,
+      from: D[this.state.preset][0], to: D[this.state.preset][1], fixed: this.state.preset !== 'Tự chọn',
+      newDlg: this.state.newDlg, toast: this.state.toast,
+      openNew: () => this.setState({ newDlg: true }),
+      close: () => this.setState({ newDlg: false }),
+      saveDraft: () => this.add('DRAFT'),
+      saveOpen: () => this.add('OPEN')
+    };
+  }
+}
+</script>
+</body>
+</html>

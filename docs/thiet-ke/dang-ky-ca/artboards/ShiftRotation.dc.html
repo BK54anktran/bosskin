@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Ca làm · Xoay ca</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.day{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px}
+.day small{font-size:10px;color:var(--bk-text-2)}
+.tile{min-width:40px;height:28px;padding:0 6px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;box-sizing:border-box}
+.emp{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;background:#FFFFFF;border:0;font:inherit;font-size:14px;color:var(--bk-text);cursor:pointer;text-align:left;width:100%}
+.emp:hover{background:var(--bk-hover)}
+.ord{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+</style>
+</helmet>
+<div style="position: relative; min-height: 900px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Ca làm" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Ca làm" min-h="844" hint-size="220px,844px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 8px 12px 0 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px">
+        <dc-import name="CmpTabs" items="Phân công ca|Danh sách ca|Xoay ca|Đăng ký lịch" hrefs="Shifts.dc.html|ShiftList.dc.html|ShiftRotation.dc.html|ShiftRegistration.dc.html" active="Xoay ca" size="sm" line="{{no}}" hint-size="440px,46px"></dc-import>
+        <div style="padding-bottom: 8px"><dc-import name="CmpButton" label="Thêm mẫu xoay" icon="add" variant="filled" size="md" on-click="{{openNew}}" hint-size="150px,36px"></dc-import></div>
+      </div>
+      <div style="padding: 14px 16px; border-top: 1px solid var(--bk-divider); display: flex; flex-direction: column; gap: 14px">
+        <p style="margin: 0; font-size: 13px; color: var(--bk-text-3); max-width: 820px; line-height: 1.5">Mẫu xoay ca: chu kỳ các ngày, mỗi ngày một hoặc nhiều ca hoặc nghỉ. Áp dụng để tự sinh phân ca cho nhiều nhân viên.</p>
+        <sc-for list="{{rotations}}" as="r" hint-placeholder-count="2">
+          <article class="bk-card bk-card--hover" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+              <span style="color: var(--bk-action); display: flex"><dc-import name="CmpIcon" icon="sync" size="20" hint-size="20px,20px"></dc-import></span>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px; font-weight: 500">{{r.name}}</b><span style="font-size: 12px; color: var(--bk-text-2)">Chu kỳ {{r.n}} ngày</span></div>
+              <dc-import name="CmpIconButton" icon="edit" label="Chỉnh sửa" tone="primary" size="18" box="36" on-click="{{r.edit}}" hint-size="36px,36px"></dc-import>
+              <dc-import name="CmpIconButton" icon="delete" label="Xóa" tone="danger" size="18" box="36" on-click="{{r.del}}" hint-size="36px,36px"></dc-import>
+              <dc-import name="CmpButton" label="Áp dụng cho nhân viên" icon="people" variant="outlined" size="sm" on-click="{{r.apply}}" hint-size="190px,30px"></dc-import>
+            </div>
+            <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px">
+              <sc-for list="{{r.days}}" as="d" hint-placeholder-count="8">
+                <div class="day"><small>Ngày {{d.n}}</small><span class="tile" style="background: {{d.bg}}; color: {{d.fg}}">{{d.code}}</span></div>
+              </sc-for>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </main>
+  </div>
+  <sc-if value="{{editDlg}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-backdrop bk-backdrop--center" style="padding-top: 140px">
+      <form class="bk-modal" role="dialog" aria-label="{{edTitle}}" style="width: 520px">
+        <h2>{{edTitle}}</h2>
+        <input class="bk-in" type="text" placeholder="Tên mẫu" defaultValue="{{edName}}" aria-label="Tên mẫu">
+        <span style="font-size: 12px; color: var(--bk-text-3)">Chọn ca cho từng ngày trong chu kỳ; không chọn ca nào = ngày nghỉ.</span>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{edDays}}" as="d" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: #FFFFFF; flex-wrap: wrap">
+              <span style="width: 60px; font-size: 13px; color: var(--bk-text-3)">Ngày {{d.n}}</span>
+              <sc-for list="{{d.opts}}" as="o" hint-placeholder-count="3"><button type="button" class="tile bk-rp" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="border: 1px solid {{o.border}}; background: {{o.bg}}; color: {{o.fg}}; cursor: pointer; font: inherit; font-size: 11px; font-weight: 600">{{o.code}}</button></sc-for>
+              <sc-if value="{{d.off}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: var(--bk-text-2)">Nghỉ</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <dc-import name="CmpButton" label="Thêm ngày" icon="add" variant="text" size="sm" on-click="{{addDay}}" hint-size="110px,30px"></dc-import>
+        <div class="bk-modal__actions">
+          <dc-import name="CmpButton" label="Hủy" icon="" variant="text" size="md" on-click="{{close}}" hint-size="70px,36px"></dc-import>
+          <dc-import name="CmpButton" label="Lưu" icon="" variant="filled" size="md" on-click="{{saveRot}}" hint-size="70px,36px"></dc-import>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+  <sc-if value="{{applyDlg}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-backdrop bk-backdrop--center" style="padding-top: 90px">
+      <form class="bk-modal" role="dialog" aria-label="Áp dụng mẫu" style="width: 560px">
+        <h2>Áp dụng mẫu "{{apName}}"</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <label class="bk-fl"><small>Từ ngày</small><input type="text" defaultValue="01/11/2026" aria-label="Từ ngày"></label>
+          <label class="bk-fl"><small>Đến ngày</small><input type="text" defaultValue="30/11/2026" aria-label="Đến ngày"></label>
+          <label class="bk-fl bk-fl--sel"><small>Ngày bắt đầu ứng với</small><select aria-label="Ngày bắt đầu ứng với"><sc-for list="{{apDays}}" as="d" hint-placeholder-count="8"><option>{{d}}</option></sc-for></select></label>
+          <label class="bk-fl bk-fl--sel"><small>Mỗi người sau lệch</small><select aria-label="Mỗi người sau lệch"><option>Không lệch</option><option>1 ngày</option><option>2 ngày</option><option>4 ngày</option></select></label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div style="flex: 1"><dc-import name="CmpField" kind="search" placeholder="Tìm kiếm" variant="outline" size="sm" hint-size="100%,38px"></dc-import></div>
+          <span style="font-size: 13px; color: var(--bk-text-3); white-space: nowrap">Đã chọn {{nSel}} người</span>
+          <dc-import name="CmpButton" label="Bỏ chọn" icon="" variant="text" size="sm" on-click="{{clearSel}}" hint-size="80px,30px"></dc-import>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; max-height: 250px; overflow: auto">
+          <sc-for list="{{emps}}" as="e" hint-placeholder-count="8">
+            <button type="button" class="emp" aria-pressed="{{e.on}}" onClick="{{e.toggle}}"><span class="ord" style="background: {{e.ordBg}}; color: {{e.ordFg}}">{{e.ord}}</span><span style="flex: 1">{{e.name}}</span><span style="font-size: 12px; color: var(--bk-text-2)">{{e.dept}}</span></button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: var(--bk-text-3); line-height: 1.45">Thứ tự chọn quyết định độ lệch: người chọn trước lệch ít hơn. Ngày đã có chấm công được giữ nguyên.</span>
+        <div class="bk-modal__actions">
+          <dc-import name="CmpButton" label="Hủy" icon="" variant="text" size="md" on-click="{{close}}" hint-size="70px,36px"></dc-import>
+          <dc-import name="CmpButton" label="Áp dụng" icon="" variant="filled" size="md" disabled="{{noSel}}" on-click="{{doApply}}" hint-size="90px,36px"></dc-import>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+  <sc-if value="{{resultDlg}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-backdrop bk-backdrop--center" style="padding-top: 200px">
+      <div class="bk-modal" role="dialog" aria-label="Kết quả áp dụng mẫu" style="width: 460px">
+        <h2>Kết quả áp dụng mẫu</h2>
+        <p>Đã xếp {{assigned}} ngày, bỏ ca 8 ngày nghỉ, giữ nguyên 2 ngày.</p>
+        <span class="bk-sub">1 ngày không xếp được:</span>
+        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--bk-text-3)"><li>Hoàng Văn Em — 07/11/2026: Ca chồng giờ với ca đã có</li></ul>
+        <div class="bk-modal__actions"><dc-import name="CmpButton" label="Đóng" icon="" variant="filled" size="md" on-click="{{close}}" hint-size="80px,36px"></dc-import></div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{hasDel}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="CmpConfirmDialog" title="Xoá mẫu xoay ca" message="{{delMsg}}" confirm="Xóa" tone="danger" width="400" on-cancel="{{close}}" on-confirm="{{doDel}}" hint-size="100%,100%"></dc-import>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.state = {
+      rots: [
+        { id: 1, name: 'Xưởng 3 ca 4 kíp', days: ['A', 'A', 'B', 'B', 'C', 'C', '', ''] },
+        { id: 2, name: 'Bảo vệ 2 ngày làm 1 ngày nghỉ', days: ['A', 'B', ''] },
+        { id: 3, name: 'Văn phòng ca gãy T2–T6', days: ['A1+B1', 'A1+B1', 'A1+B1', 'A1+B1', 'A1+B1', '', ''] }
+      ],
+      dlg: null, cur: null, edDays: [], sel: [], del: null
+    };
+  }
+  renderVals() {
+    const st = this.state;
+    const TONE = { A: ['var(--bk-primary-soft-12)', 'var(--bk-primary-dark)'], A1: ['var(--bk-primary-soft-12)', 'var(--bk-primary-dark)'], B: ['var(--bk-success-soft)', '#047857'], B1: ['var(--bk-success-soft)', '#047857'], C: ['var(--bk-indigo-soft)', 'var(--bk-indigo)'] };
+    const tile = (code) => code ? (TONE[code.split('+')[0]] || TONE.A) : ['var(--bk-hover)', 'var(--bk-text-2)'];
+    const rotations = st.rots.map((r) => ({
+      name: r.name, n: r.days.length,
+      days: r.days.map((c, i) => { const [bg, fg] = tile(c); return { n: i + 1, code: c || 'Nghỉ', bg, fg }; }),
+      edit: () => this.setState({ dlg: 'edit', cur: r.id, edDays: r.days.slice() }),
+      del: () => this.setState({ del: r }),
+      apply: () => this.setState({ dlg: 'apply', cur: r.id, sel: [] })
+    }));
+    const cur = st.rots.find((r) => r.id === st.cur);
+    const CODES = ['A', 'B', 'C'];
+    const edDays = st.edDays.map((c, i) => ({
+      n: i + 1, off: !c,
+      opts: CODES.map((code) => { const on = c === code; const [bg, fg] = tile(code); return { code, on: on ? 'true' : 'false', bg: on ? bg : '#FFFFFF', fg: on ? fg : 'var(--bk-text-2)', border: on ? fg : 'var(--bk-outline)',
+        pick: () => { const d = this.state.edDays.slice(); d[i] = on ? '' : code; this.setState({ edDays: d }); } }; })
+    }));
+    const EMP = [['Bùi Thị Hoa', 'Phòng Nhân Sự'], ['Đặng Văn Giang', 'Phòng Kinh Doanh'], ['Hoàng Văn Em', 'Phòng Kỹ Thuật'], ['Lê Văn Cường', 'Phòng Kỹ Thuật'], ['Phạm Thị Dung', 'Phòng Kỹ Thuật'], ['Trần Thị Bích', 'Phòng Nhân Sự'], ['Vũ Thị Phương', 'Phòng Kinh Doanh'], ['Trợ lý', 'Trợ lý giám đốc']];
+    const emps = EMP.map(([name, dept]) => {
+      const idx = st.sel.indexOf(name);
+      return { name, dept, on: idx >= 0 ? 'true' : 'false', ord: idx >= 0 ? idx + 1 : '', ordBg: idx >= 0 ? 'var(--bk-action)' : 'var(--bk-hover)', ordFg: '#FFFFFF',
+        toggle: () => this.setState({ sel: idx >= 0 ? st.sel.filter((x) => x !== name) : st.sel.concat([name]) }) };
+    });
+    return {
+      no: false, rotations,
+      openNew: () => this.setState({ dlg: 'edit', cur: null, edDays: ['A', 'A', 'B', 'B', ''] }),
+      editDlg: st.dlg === 'edit', edTitle: cur ? 'Sửa mẫu xoay' : 'Thêm mẫu xoay', edName: cur ? cur.name : '', edDays,
+      addDay: () => this.setState({ edDays: st.edDays.concat(['']) }),
+      saveRot: () => { const days = st.edDays.slice(); this.setState({ dlg: null, rots: cur ? st.rots.map((r) => r.id === cur.id ? Object.assign({}, r, { days }) : r) : st.rots.concat([{ id: Date.now(), name: 'Mẫu xoay mới', days }]) }); },
+      applyDlg: st.dlg === 'apply', apName: cur ? cur.name : '', apDays: cur ? cur.days.map((c, i) => 'Ngày ' + (i + 1) + (c ? ' — ' + c : ' — Nghỉ')) : [],
+      emps, nSel: st.sel.length, noSel: st.sel.length === 0, clearSel: () => this.setState({ sel: [] }),
+      doApply: () => this.setState({ dlg: 'result' }), resultDlg: st.dlg === 'result', assigned: st.sel.length * 20,
+      hasDel: !!st.del, delMsg: st.del ? 'Xoá mẫu "' + st.del.name + '"? Phân ca đã sinh không bị ảnh hưởng.' : '',
+      doDel: () => this.setState({ rots: st.rots.filter((r) => r.id !== st.del.id), del: null }),
+      close: () => this.setState({ dlg: null, del: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

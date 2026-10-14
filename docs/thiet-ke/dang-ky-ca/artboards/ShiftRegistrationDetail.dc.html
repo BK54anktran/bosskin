@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Ca làm · Chi tiết đợt đăng ký</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.grid{border-collapse:collapse;font-size:11px}
+.grid th{height:40px;min-width:104px;background:#F3F4F6;border-right:1px solid #E5E7EB;border-bottom:1px solid #D1D5DB;font-weight:500;padding:0}
+.grid td{height:58px;border-right:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:0}
+.hd{width:100%;height:40px;border:0;background:transparent;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hd:hover{background:rgba(72,92,147,.08)}
+.cell{width:100%;min-height:58px;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;box-sizing:border-box;font:inherit}
+.cell:hover{background:rgba(72,92,147,.08)}
+.cell.sel{outline:2px solid var(--bk-action);outline-offset:-2px;background:var(--bk-action-soft)}
+.slot{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.col{flex:1;border-radius:3px 3px 0 0}
+</style>
+</helmet>
+<div style="position: relative; min-height: 900px; display: flex; flex-direction: column; background: var(--bk-surface); color: var(--bk-text); font-family: var(--bk-font)">
+  <dc-import name="CmpAppHeader" title="Ca làm" hint-size="100%,56px"></dc-import>
+  <div style="flex: 1; display: flex; flex-wrap: wrap">
+    <dc-import name="CmpSidebar" active="Ca làm" min-h="844" hint-size="220px,844px"></dc-import>
+    <main class="bk-enter" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+      <div style="padding: 10px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--bk-divider)">
+        <a href="ShiftRegistration.dc.html" aria-label="Về danh sách đợt" style="display: flex; color: var(--bk-text)"><dc-import name="CmpIcon" icon="arrow-left" size="20" hint-size="20px,20px"></dc-import></a>
+        <b style="font-size: 16px; font-weight: 600">Tuần 43 · 20/10 – 26/10/2026</b>
+        <dc-import name="CmpBadge" label="{{stLabel}}" tone="{{stTone}}" size="xs" hint-size="80px,20px"></dc-import>
+        <span style="font-size: 12px; color: var(--bk-text-3)">Cửa hàng Q1, Cửa hàng Q3 · 13/14 người đã đăng ký · cần 4 người / ngày</span>
+        <span style="flex: 1"></span>
+        <dc-import name="CmpButton" label="{{toggleLabel}}" icon="{{toggleIcon}}" variant="outlined" on-click="{{toggleOpen}}" hint-size="100px,30px"></dc-import>
+        <dc-import name="CmpButton" label="Xuất Excel" icon="upload" variant="outlined" hint-size="120px,30px"></dc-import>
+        <dc-import name="CmpButton" label="Xếp lịch từ đăng ký" icon="grid-add" variant="filled" disabled="{{cantApply}}" on-click="{{apply}}" hint-size="180px,30px"></dc-import>
+      </div>
+      <div style="min-height: 44px; padding: 6px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: {{selBg}}">
+        <sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
+          <b style="font-size: 13px; font-weight: 500; color: var(--bk-action)">Đã chọn {{selCount}} ô</b>
+          <dc-import name="CmpButton" label="Duyệt" icon="check" variant="success" on-click="{{approveSel}}" hint-size="90px,30px"></dc-import>
+          <dc-import name="CmpButton" label="Từ chối" icon="close" variant="outlined" on-click="{{rejectSel}}" hint-size="100px,30px"></dc-import>
+          <dc-import name="CmpButton" label="Bỏ chọn" icon="" variant="text" on-click="{{clearSel}}" hint-size="80px,30px"></dc-import>
+        </sc-if>
+        <sc-if value="{{noSel}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: var(--bk-text-3)">Bấm ô để chọn (duyệt / từ chối hàng loạt). Bấm ngày ở tiêu đề để xem số người theo giờ.</span></sc-if>
+        <span style="flex: 1"></span>
+        <span style="font-size: 11px; color: var(--bk-text-3); display: flex; gap: 14px"><span><i class="lg" style="background: #FDE7C2"></i>Chờ duyệt</span><span><i class="lg" style="background: #C9F0E1"></i>Đã duyệt</span><span><i class="lg" style="background: #FBD5D5"></i>Từ chối</span><span><i class="lg" style="background: var(--bk-primary-soft-12)"></i>Đã xếp lịch</span></span>
+      </div>
+      <div style="flex: 1; display: flex; flex-wrap: wrap; min-height: 0">
+        <div style="flex: 999 1 640px; min-width: 0; overflow-x: auto; background: var(--bk-bg)">
+          <table class="grid">
+            <thead><tr>
+              <th style="min-width: 190px; text-align: left; padding-left: 8px; color: var(--bk-text-3); border-right: 2px solid #D1D5DB">Nhân viên</th>
+              <sc-for list="{{days}}" as="d" hint-placeholder-count="7"><th style="background: {{d.bg}}"><button type="button" class="hd" onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="color: {{d.color}}"><span style="font-size: 13px; font-weight: {{d.fw}}">{{d.num}}</span><span style="font-size: 9px">{{d.wd}}</span></button></th></sc-for>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+                <tr>
+                  <td style="background: {{r.bg}}; padding: 0 8px; border-right: 2px solid #D1D5DB"><div style="font-size: 11px">{{r.name}}</div><div style="margin-top: 3px; font-size: 9px; color: var(--bk-text-2)">{{r.code}} • <span style="color: {{r.subColor}}">{{r.sub}}</span></div></td>
+                  <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="7">
+                    <td style="background: {{c.bg}}"><button type="button" class="{{c.cls}}" aria-label="{{c.label}}" aria-pressed="{{c.on}}" onClick="{{c.click}}">
+                      <sc-for list="{{c.slots}}" as="s" hint-placeholder-count="1"><span class="slot" style="background: {{s.bg}}; color: {{s.fg}}; text-decoration: {{s.deco}}">{{s.text}}</span></sc-for>
+                    </button></td>
+                  </sc-for>
+                </tr>
+              </sc-for>
+              <tr>
+                <td style="height: 40px; background: var(--bk-surface); padding: 0 8px; border-right: 2px solid #D1D5DB; font-size: 11px; font-weight: 600">Số người / cần 4</td>
+                <sc-for list="{{sums}}" as="s" hint-placeholder-count="7"><td style="height: 40px; background: var(--bk-surface); text-align: center; font-weight: 600; color: {{s.color}}">{{s.n}}</td></sc-for>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <aside style="flex: 1 1 280px; max-width: 320px; border-left: 1px solid var(--bk-border); background: var(--bk-bg); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+          <b style="font-size: 13px; font-weight: 600">{{dayTitle}} — số người theo giờ</b>
+          <div style="position: relative; height: 120px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid var(--bk-border)">
+            <sc-for list="{{hours}}" as="h" hint-placeholder-count="16"><div class="col" title="{{h.tip}}" style="height: {{h.pct}}%; background: {{h.bg}}; border-top: 2px solid {{h.line}}"></div></sc-for>
+            <div style="position: absolute; left: 0; right: 0; bottom: 66%; border-top: 1px dashed var(--bk-error)"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--bk-text-2)"><span>6h</span><span>9</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
+          <p style="margin: 0; font-size: 12px; color: var(--bk-text-3); line-height: 1.45">Đường đứt = mức cần (4 người). Cột đỏ là giờ thiếu người: {{shortText}}</p>
+        </aside>
+      </div>
+    </main>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+    <div class="bk-toast" role="status"><dc-import name="CmpIcon" icon="check" size="16" stroke="2.6" color="#4ADE80" hint-size="16px,16px"></dc-import>{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+// Ô = danh sách khung giờ [bắt đầu, kết thúc, trạng thái]; W chờ duyệt, A đã duyệt, R từ chối, S đã xếp lịch.
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.state = {
+      open: false, applied: false, sel: {}, day: 4, toast: '',
+      data: [
+        ['Lê Minh An', 'TEST00012', 'Cửa hàng Q1', [[[8,14,'A']], [], [[8,14,'A']], [], [[14,22,'A']], [[8,14,'W'],[17,22,'W']], []]],
+        ['Phạm Thu Hà', 'TEST00013', 'Cửa hàng Q1', [[[17,22,'W']], [[17,22,'W']], [], [[17,22,'W']], [], [[10,14,'A'],[18,22,'A']], [[10,22,'R']]]],
+        ['Trần Quốc Việt', 'TEST00014', 'Cửa hàng Q3', [[[6,14,'A']], [[6,14,'A']], [[6,14,'A']], [[6,14,'A']], [[6,14,'A']], [], []]],
+        ['Võ Thanh Tâm', 'TEST00016', 'Cửa hàng Q3', [[[14,22,'A']], [[14,22,'A']], [[14,22,'A']], [], [], [[14,22,'A']], [[8,14,'A']]]],
+        ['Ngô Bảo Châu', 'TEST00017', 'Cửa hàng Q3', [[], [[8,16,'W']], [[8,16,'W']], [[8,16,'W']], [[8,12,'W']], [], [[14,22,'W']]]],
+        ['Đỗ Ngọc Mai', 'TEST00015', 'Cửa hàng Q1', [[], [], [], [], [], [[14,22,'W']], []]]
+      ]
+    };
+  }
+  flash(msg) { this.setState({ toast: msg }); clearTimeout(this.t); this.t = setTimeout(() => this.setState({ toast: '' }), 2200); }
+  decide(to) {
+    const sel = this.state.sel;
+    const data = this.state.data.map((r, ri) => [r[0], r[1], r[2], r[3].map((c, ci) => sel[ri + '-' + ci] ? c.map((s) => s[2] === 'S' ? s : [s[0], s[1], to]) : c)]);
+    this.setState({ data, sel: {} });
+    this.flash((to === 'A' ? 'Đã duyệt ' : 'Đã từ chối ') + Object.keys(sel).length + ' ô');
+  }
+  renderVals() {
+    const st = this.state;
+    const T = { W: ['#FDE7C2', '#B45309', 'none'], A: ['#C9F0E1', '#047857', 'none'], R: ['#FBD5D5', '#B91C1C', 'line-through'], S: ['var(--bk-primary-soft-12)', 'var(--bk-primary-dark)', 'none'] };
+    const NUM = [20, 21, 22, 23, 24, 25, 26], WD = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], WDL = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const we = (i) => i >= 5;
+    const days = NUM.map((n, i) => ({ num: n, wd: WD[i], on: st.day === i ? 'true' : 'false', fw: st.day === i ? 700 : 500,
+      color: we(i) ? '#DC2626' : (st.day === i ? 'var(--bk-action)' : 'var(--bk-text)'),
+      bg: st.day === i ? 'var(--bk-action-soft)' : (we(i) ? '#FEF0EF' : '#F3F4F6'), pick: () => this.setState({ day: i }) }));
+    const fmt = (h) => String(h).padStart(2, '0') + ':00';
+    const rows = st.data.map(([name, code, dept, cells], ri) => {
+      const bg = ri % 2 ? '#F8F9FB' : '#FFFFFF';
+      const daysOn = cells.filter((c) => c.some((s) => s[2] !== 'R')).length;
+      return { name, code, bg, sub: daysOn < 3 ? 'mới ' + daysOn + '/3 ngày' : dept, subColor: daysOn < 3 ? 'var(--bk-error)' : 'var(--bk-text-2)',
+        cells: cells.map((c, ci) => {
+          const key = ri + '-' + ci, on = !!st.sel[key];
+          return { bg: we(ci) ? '#FEF0EF' : bg, cls: 'cell' + (on ? ' sel' : ''), on: on ? 'true' : 'false',
+            label: name + ' ngày ' + NUM[ci] + '/10',
+            slots: c.map((s) => ({ text: fmt(s[0]) + '–' + fmt(s[1]), bg: T[s[2]][0], fg: T[s[2]][1], deco: T[s[2]][2] })),
+            click: () => { if (!c.length || st.applied) return; const sel = Object.assign({}, this.state.sel); if (sel[key]) delete sel[key]; else sel[key] = true; this.setState({ sel }); } };
+        }) };
+    });
+    const live = (s) => s[2] !== 'R';
+    const sums = NUM.map((n, ci) => { const k = st.data.filter((r) => r[3][ci].some(live)).length; return { n: k, color: k >= 4 ? '#047857' : 'var(--bk-error)' }; });
+    const hours = [], short = [];
+    for (let h = 6; h < 22; h++) {
+      const k = st.data.filter((r) => r[3][st.day].some((s) => live(s) && s[0] <= h && h < s[1])).length;
+      const lo = k < 4;
+      if (lo) short.push(h);
+      hours.push({ pct: Math.max(4, Math.round(k * 100 / 6)), bg: lo ? 'var(--bk-error-soft)' : 'var(--bk-primary-soft-12)', line: lo ? 'var(--bk-error)' : 'var(--bk-primary)', tip: fmt(h) + ': ' + k + ' người' });
+    }
+    const ranges = [];
+    short.forEach((h) => { const last = ranges[ranges.length - 1]; if (last && last[1] === h) last[1] = h + 1; else ranges.push([h, h + 1]); });
+    const nSel = Object.keys(st.sel).length;
+    return {
+      days, rows, sums, hours,
+      dayTitle: WDL[st.day] + ' ' + NUM[st.day] + '/10',
+      shortText: ranges.length ? ranges.map((r) => fmt(r[0]) + '–' + fmt(r[1])).join(', ') + '.' : 'không có.',
+      stLabel: st.applied ? 'Đã xếp lịch' : (st.open ? 'Đang mở' : 'Đã đóng'), stTone: st.applied ? 'primary' : (st.open ? 'success' : 'warning'),
+      toggleLabel: st.open ? 'Đóng' : 'Mở lại', toggleIcon: st.open ? 'lock' : 'unlock',
+      toggleOpen: () => { this.setState({ open: !st.open, applied: false }); this.flash(st.open ? 'Đã đóng đợt' : 'Đã mở lại đợt'); },
+      cantApply: st.open || st.applied,
+      apply: () => {
+        const data = st.data.map((r) => [r[0], r[1], r[2], r[3].map((c) => c.map((s) => s[2] === 'A' ? [s[0], s[1], 'S'] : s))]);
+        this.setState({ data, applied: true, sel: {} }); this.flash('Đã tạo phân ca từ các khung đã duyệt');
+      },
+      hasSel: nSel > 0, noSel: nSel === 0, selCount: nSel, selBg: nSel ? 'var(--bk-action-soft)' : 'transparent',
+      approveSel: () => this.decide('A'), rejectSel: () => this.decide('R'), clearSel: () => this.setState({ sel: {} }),
+      toast: st.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
