@@ -76,6 +76,8 @@ Lưu ý khi tạo trên Vibe Host:
 - **Cập nhật bản web:** cùng cách — push `main` → chờ workflow **Frontend build** chạy xong bước "Đăng gói web lên release web-latest" (file `bosskin-web.tar.gz`, có trước bước build APK) → bấm triển khai lại website Web. `frontend/Dockerfile` chỉ tải gói đó về và chạy Nginx: cài Flutter + build web trên máy build của Vibe Host vượt mốc ~5 phút (`fetch failed` 3 lần liên tiếp, 12/10/2026).
 - **Triển khai khi workflow chưa xong** → bước tải gói báo `invalid response status 404` (release đang được thay). Sau một lượt lỗi, Vibe Host
   chặn triển khai lại cùng mã nguồn (`SAME_ERROR_UNFIXED`) — cần một commit mới trên `main` (13/10/2026). Luôn chờ cả hai workflow xong rồi mới triển khai.
+- **Repo phải public** để Dockerfile tải được `api-latest` / `web-latest` (link release không kèm token). Repo private → cũng lỗi
+  `invalid response status 404` dù file vẫn còn trên release (14/10/2026). Muốn private: tải qua GitHub API có token đặt ở biến Vibe Host.
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
 - **CSDL: không tạo tay.** Khi tạo website API, Vibe Host quét thấy app cần MySQL, tự tạo CSDL `<tên website>-db` (MySQL 8.0, "primary") và tiêm `DB_URL` (dạng `mysql://…`), `DB_PASSWORD`, `MYSQL_*`… — app dùng luôn (`backend/docker/entrypoint.sh` thêm `jdbc:`). Đừng tạo CSDL riêng rồi đặt `DB_URL` tay: nền tảng vẫn tạo cái của nó thành hai CSDL, và xoá cái "primary" khi website đang chạy làm nó kẹt "Đang triển khai", hỏng mọi lượt deploy sau (11/10/2026 — phải xoá website tạo lại).
 - Khoá tuỳ chọn trong `backend/.env.example` để dạng chú thích: nền tảng quét file này và coi khoá trống là bắt buộc.
