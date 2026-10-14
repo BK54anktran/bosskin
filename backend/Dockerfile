@@ -9,9 +9,10 @@ WORKDIR /app
 ARG JAR_URL=https://github.com/BK54anktran/bosskin/releases/download/api-latest/bosskin-api.jar
 ADD ${JAR_URL} /app/app.jar
 # Chạy bằng user thường; thư mục dữ liệu cho tài liệu nhân sự (DOCUMENTS_STORAGE=local) và cache ô bản đồ
-RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/documents /data/map-tiles && chown -R app:app /data \
- && chmod 644 /app/app.jar
+# Quyền đặt lại tại đây: máy build có thể lấy mã nguồn với umask chặt (14/10/2026: entrypoint.sh "Permission denied" khi chạy bằng user app)
 COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/documents /data/map-tiles && chown -R app:app /data \
+ && chmod 644 /app/app.jar && chmod 755 /app/entrypoint.sh
 USER app
 ENV PORT=8080 \
     SPRING_PROFILES_ACTIVE=prod \

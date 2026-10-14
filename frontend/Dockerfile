@@ -13,6 +13,6 @@ RUN rm -rf /usr/share/nginx/html/* \
  && chmod -R a+rX /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/40-env.sh /docker-entrypoint.d/40-env.sh
-RUN chmod +x /docker-entrypoint.d/40-env.sh
+RUN chmod 644 /etc/nginx/conf.d/default.conf && chmod 755 /docker-entrypoint.d/40-env.sh
 ENV API_HOST=
 EXPOSE 8080 3000
