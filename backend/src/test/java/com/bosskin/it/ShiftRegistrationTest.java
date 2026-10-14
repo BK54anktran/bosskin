@@ -188,6 +188,18 @@ class ShiftRegistrationTest extends IntegrationTest {
         api.post(c.adminToken, "/api/v1/shift-registrations/" + pending + "/approve", Map.of("startTime", "10:00", "endTime", "12:00")).expectOk();
         assertThat(assignRepo.findByEmployeeIdAndWorkDate(e.id(), MON)).hasSize(2);
 
+        // Lưới hiện ca / giờ thực tế đã xếp: "rảnh cả ngày" → CHIEU 13:00–17:00, ô đổi giờ → 10:00–12:00
+        JsonNode after = api.get(c.adminToken, "/api/v1/shift-registration-rounds/" + id + "/board").expectOk().body();
+        Map<Long, JsonNode> regOf = new HashMap<>();
+        for (JsonNode emp : after.path("employees")) {
+            for (JsonNode r : emp.path("registrations")) if ("APPROVED".equals(r.path("status").asText())) regOf.put(emp.path("id").asLong(), r);
+        }
+        assertThat(regOf.get(d.id()).path("assignedShiftCode").asText()).isEqualTo("CHIEU");
+        assertThat(regOf.get(d.id()).path("assignedStartTime").asText()).isEqualTo("13:00");
+        assertThat(regOf.get(e.id()).path("assignedStartTime").asText()).isEqualTo("10:00");
+        assertThat(regOf.get(e.id()).path("assignedEndTime").asText()).isEqualTo("12:00");
+        assertThat(regOf.get(a.id()).path("assignedEndTime").asText()).isEqualTo("14:00");
+
         // Đã duyệt: NV gửi lại không đổi được ngày đó, đợt không xoá được
         save(c.tokenOf(a), id, List.of(custom(MON, "15:00", "18:00"), custom(MON.plusDays(1), "08:00", "12:00"))).expectOk();
         JsonNode mine = api.get(c.tokenOf(a), "/api/v1/shift-registrations/self/rounds/" + id).expectOk().body();

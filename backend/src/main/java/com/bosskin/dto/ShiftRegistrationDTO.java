@@ -90,6 +90,10 @@ public class ShiftRegistrationDTO {
         private String note;
         private String status;
         private Long assignmentId;
+        /** Đã duyệt: ca / giờ thực tế của phân ca đã tạo (null khi phân ca đã bị xoá). */
+        private String assignedShiftCode;
+        @JsonFormat(pattern = "HH:mm") private LocalTime assignedStartTime;
+        @JsonFormat(pattern = "HH:mm") private LocalTime assignedEndTime;
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

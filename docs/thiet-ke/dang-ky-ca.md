@@ -54,6 +54,8 @@ Duyệt cả ngày (chọn ca cho người rảnh cả ngày)                   
 - Theo ngày: mọi khung chờ của ngày đó trong phạm vi người duyệt → `WorkShiftService.assign` (ca có sẵn → gắn ca; giờ tuỳ chỉnh → phân ca giờ tuỳ chỉnh;
   rảnh cả ngày → ca quản lý chọn, không chọn thì bỏ qua và báo). Mỗi khung một giao dịch: trùng phân ca có sẵn, quá 4 ca/ngày, kỳ đã khoá… → bỏ qua, trả lý do.
 - Từng ô: duyệt theo đăng ký / đổi sang ca khác / giờ khác, hoặc từ chối.
+- Ô đã duyệt hiện **ca / giờ thực tế của phân ca đã tạo** (`assignedShiftCode`, `assignedStartTime/EndTime`), di chuột xem bản đăng ký gốc;
+  biểu đồ số người theo giờ cũng dùng giờ đã xếp.
 - Không tự duyệt / từ chối đăng ký của chính mình (`cannot_process_own`). Chế độ duyệt 2 bước (quản lý trực tiếp → nhân sự) không áp dụng.
 
 ## 5. Dữ liệu (V23)

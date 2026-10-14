@@ -47,6 +47,7 @@ public class ShiftRegistrationService {
     private final EmployeeRepository employeeRepo;
     private final DepartmentRepository departmentRepo;
     private final WorkShiftRepository shiftRepo;
+    private final ShiftAssignmentRepository assignRepo;
     private final UserRepository userRepo;
     private final DeptScopeService deptScopeService;
     private final WorkShiftService workShiftService;
@@ -158,7 +159,9 @@ public class ShiftRegistrationService {
         Set<Long> scope = managerScope(user);
         ShiftRegistrationRound r = getRound(companyId, id, scope);
         Context ctx = new Context(companyId);
-        Map<Long, List<ShiftRegistration>> byEmp = regRepo.findByRoundFetch(r.getId()).stream()
+        List<ShiftRegistration> all = regRepo.findByRoundFetch(r.getId());
+        ctx.preloadAssignments(all);
+        Map<Long, List<ShiftRegistration>> byEmp = all.stream()
             .filter(x -> WorkShiftService.inShiftScope(x.getEmployee(), scope, user.getEmployeeId()))
             .collect(Collectors.groupingBy(x -> x.getEmployee().getId(), LinkedHashMap::new, Collectors.toList()));
         // Nhân viên thuộc đợt + người đã đăng ký nhưng nay đã chuyển phòng (vẫn hiện để không mất đăng ký).
@@ -653,7 +656,12 @@ public class ShiftRegistrationService {
 
     private ShiftRegistrationDTO.RegistrationResponse toRegResponse(ShiftRegistration x, Context ctx) {
         WorkShift ws = x.getShiftId() != null ? ctx.shiftAny(x.getShiftId()) : null;
+        // Đã duyệt: giờ / ca thực tế của phân ca đã tạo (có thể khác đăng ký, vd. "rảnh cả ngày" được xếp ca SANG).
+        ShiftAssignment sa = x.getAssignmentId() != null ? ctx.assignment(x.getAssignmentId()) : null;
         return ShiftRegistrationDTO.RegistrationResponse.builder()
+            .assignedShiftCode(sa != null && sa.getShift() != null ? sa.getShift().getCode() : null)
+            .assignedStartTime(sa != null ? sa.effectiveStartTime() : null)
+            .assignedEndTime(sa != null ? sa.effectiveEndTime() : null)
             .id(x.getId()).employeeId(x.getEmployee().getId()).workDate(x.getWorkDate())
             .kind(x.getKind().name()).shiftId(x.getShiftId()).shiftCode(ws != null ? ws.getCode() : null)
             .startTime(x.getStartTime()).endTime(x.getEndTime()).note(x.getNote())
@@ -676,6 +684,7 @@ public class ShiftRegistrationService {
         private Map<Long, String> deptNames;
         private final Map<Long, String> userNames = new HashMap<>();
         private List<Employee> employees;
+        private final Map<Long, ShiftAssignment> assignments = new HashMap<>();
 
         Context(Long companyId) {
             this.companyId = companyId;
@@ -683,6 +692,20 @@ public class ShiftRegistrationService {
 
         WorkShift shift(Long id) {
             return id == null ? null : activeShifts().get(id);
+        }
+
+        /** Phân ca đã tạo khi duyệt; đã bị xoá → null. Nạp sẵn cả lô bằng preloadAssignments. */
+        ShiftAssignment assignment(Long id) {
+            if (!assignments.containsKey(id)) assignments.put(id, assignRepo.findById(id).orElse(null));
+            return assignments.get(id);
+        }
+
+        void preloadAssignments(Collection<ShiftRegistration> regs) {
+            List<Long> ids = regs.stream().map(ShiftRegistration::getAssignmentId).filter(Objects::nonNull)
+                .filter(id -> !assignments.containsKey(id)).toList();
+            if (ids.isEmpty()) return;
+            ids.forEach(id -> assignments.put(id, null));
+            assignRepo.findAllById(ids).forEach(a -> assignments.put(a.getId(), a));
         }
 
         WorkShift shiftAny(Long id) {

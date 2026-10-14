@@ -82,6 +82,10 @@ class RegSlot {
   final String? endTime;
   final String? note;
   final String status;
+  /// Đã duyệt: ca / giờ thực tế của phân ca đã tạo (null khi phân ca đã bị xoá).
+  final String? assignedShiftCode;
+  final String? assignedStartTime;
+  final String? assignedEndTime;
 
   const RegSlot({
     this.id,
@@ -93,7 +97,21 @@ class RegSlot {
     this.endTime,
     this.note,
     this.status = 'PENDING',
+    this.assignedShiftCode,
+    this.assignedStartTime,
+    this.assignedEndTime,
   });
+
+  bool get hasAssigned => status == 'APPROVED' && assignedStartTime != null && assignedEndTime != null;
+
+  /// Đã duyệt: "CA 08:00–12:00" theo phân ca đã xếp; còn lại theo đăng ký. Rảnh cả ngày chưa xếp → null.
+  String? timeLabel() {
+    if (hasAssigned) {
+      return '${assignedShiftCode != null ? '$assignedShiftCode ' : ''}$assignedStartTime–$assignedEndTime';
+    }
+    if (isAny) return null;
+    return '${shiftCode != null ? '$shiftCode ' : ''}$startTime–$endTime';
+  }
 
   bool get isAny => kind == 'ANY';
 
@@ -107,6 +125,9 @@ class RegSlot {
         endTime: m['endTime'] as String?,
         note: m['note'] as String?,
         status: (m['status'] ?? 'PENDING') as String,
+        assignedShiftCode: m['assignedShiftCode'] as String?,
+        assignedStartTime: m['assignedStartTime'] as String?,
+        assignedEndTime: m['assignedEndTime'] as String?,
       );
 
   Map<String, dynamic> toJson() => {

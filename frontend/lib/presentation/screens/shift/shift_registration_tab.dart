@@ -841,9 +841,9 @@ class _SlotChip extends StatelessWidget {
       'REJECTED' => AppTheme.error,
       _ => AppTheme.warning,
     };
-    final text = slot.isAny
-        ? anyLabel
-        : '${slot.shiftCode != null ? '${slot.shiftCode} ' : ''}${slot.startTime}–${slot.endTime}';
+    final text = slot.timeLabel() ?? anyLabel;
+    // Đã duyệt khác đăng ký (rảnh cả ngày / đổi giờ) → di chuột xem bản đăng ký gốc
+    final registered = slot.isAny ? anyLabel : '${slot.shiftCode != null ? '${slot.shiftCode} ' : ''}${slot.startTime}–${slot.endTime}';
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(color: AppTheme.tint(color), borderRadius: BorderRadius.circular(6)),
@@ -857,8 +857,9 @@ class _SlotChip extends StatelessWidget {
         ),
       ),
     );
-    if (onTap == null) return chip;
-    return MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: onTap, child: chip));
+    final shown = registered != text ? Tooltip(message: AppLocalizations.of(context).shiftRegRegisteredAs(registered), child: chip) : chip;
+    if (onTap == null) return shown;
+    return MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: onTap, child: shown));
   }
 }
 
@@ -879,10 +880,13 @@ class _HourChart extends StatelessWidget {
     for (var h = 6; h < 24; h++) {
       final m = h * 60;
       counts.add(live.where((r) {
-        if (r.isAny) return true;
-        final a = regTimeToMinutes(r.startTime);
-        if (a == null || r.endTime == null) return false;
-        final b = a + regSlotMinutes(r.startTime!, r.endTime!);
+        // Đã duyệt → theo giờ phân ca đã xếp; rảnh cả ngày chưa xếp → mọi giờ
+        final start = r.hasAssigned ? r.assignedStartTime : r.startTime;
+        final end = r.hasAssigned ? r.assignedEndTime : r.endTime;
+        if (r.isAny && !r.hasAssigned) return true;
+        final a = regTimeToMinutes(start);
+        if (a == null || end == null) return false;
+        final b = a + regSlotMinutes(start!, end);
         return (a <= m && m < b) || (a <= m + 1440 && m + 1440 < b);
       }).length);
     }

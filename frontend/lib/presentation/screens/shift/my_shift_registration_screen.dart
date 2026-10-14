@@ -354,9 +354,8 @@ class _MyShiftRegistrationScreenState extends State<MyShiftRegistrationScreen> {
   }
 
   String _slotText(AppLocalizations s, RegSlot r) {
-    if (r.isAny) return s.shiftRegAnyTime;
-    final time = '${r.startTime ?? ''}–${r.endTime ?? ''}';
-    return r.shiftCode != null ? '${r.shiftCode} · $time' : time;
+    // Đã duyệt: hiện ca / giờ quản lý đã xếp
+    return r.timeLabel() ?? s.shiftRegAnyTime;
   }
 
   Widget _slotEditor(AppLocalizations s, DateTime d, List<_Draft> list, int i, MyRegRound data, bool editable) {

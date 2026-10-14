@@ -56,6 +56,7 @@ Khi công ty bật **Đăng ký lịch làm việc** (Cài đặt công ty → C
 3. Bấm vào đợt để xem lưới người × ngày. Mỗi cột ngày có số người / số cần và nút **Duyệt (n)**: duyệt mọi đăng ký chờ của ngày đó → tạo phân ca luôn.
    Người đăng ký *rảnh cả ngày* cần chọn ca khi duyệt. Đăng ký trùng phân ca có sẵn được bỏ qua và báo lại.
 4. Bấm một ô đang chờ để duyệt riêng, đổi sang ca khác / giờ khác, hoặc từ chối. Bấm tiêu đề ngày để xem số người theo từng giờ.
+   Ô đã duyệt (màu xanh) hiện ca và giờ đã xếp; di chuột vào ô để xem nhân viên đã đăng ký gì.
 
 Đăng ký chỉ là nguyện vọng — quản lý vẫn xếp ca bình thường ở **Phân công ca**.
 
