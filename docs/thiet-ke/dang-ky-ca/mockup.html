@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Mockup — Đăng ký lịch làm việc</title>
+<link rel="stylesheet" href="../../in-an/fonts.css">
+<style>
+  :root { --primary:#2563eb; --primary-d:#1d4ed8; --navy:#0b1630; --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e2e8f0;
+          --soft:#f4f7fc; --green:#10b981; --amber:#f59e0b; --red:#ef4444; --sky:#5fa9d2; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Be Vietnam Pro',sans-serif; background:#dfe5ee; color:var(--ink); padding:24px; font-size:13px; }
+  .frame { background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 6px 24px rgba(11,22,48,.18); margin-bottom:28px; }
+  .desk { width:1280px; display:flex; }
+  .side { width:200px; background:var(--soft); border-right:1px solid var(--line); padding:14px 10px; }
+  .side .logo { font-weight:800; font-size:16px; padding:4px 8px 14px; color:var(--navy); }
+  .side div.i { padding:7px 10px; border-radius:6px; color:var(--ink2); margin-bottom:2px; }
+  .side div.i.on { background:#e3ebfd; color:var(--primary-d); font-weight:600; }
+  .main { flex:1; padding:18px 22px; }
+  .bar { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .bar h1 { font-size:18px; font-weight:700; flex:1; }
+  .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:14px; }
+  .tabs span { padding:8px 14px; color:var(--muted); }
+  .tabs span.on { color:var(--primary-d); border-bottom:2px solid var(--primary); font-weight:600; }
+  .btn { background:var(--primary); color:#fff; border-radius:8px; padding:8px 14px; font-weight:600; display:inline-block; }
+  .btn.o { background:#fff; color:var(--primary-d); border:1px solid #c7d6f7; }
+  .btn.g { background:var(--green); }
+  .btn.s { padding:5px 10px; font-size:12px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; color:var(--muted); font-weight:600; font-size:12px; padding:8px 10px; border-bottom:1px solid var(--line); background:var(--soft); }
+  td { padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  .chip { display:inline-block; border-radius:20px; padding:2px 9px; font-size:11.5px; font-weight:600; }
+  .c-open { background:#dcfce7; color:#047857; } .c-closed { background:#fef3c7; color:#b45309; } .c-draft { background:#e2e8f0; color:#475569; }
+  .c-applied { background:#e0e7ff; color:#3730a3; }
+  .grid td, .grid th { text-align:center; padding:6px; border:1px solid var(--line); }
+  .grid td.n { text-align:left; white-space:nowrap; }
+  .slot { display:block; border-radius:6px; padding:3px 4px; font-size:11.5px; font-weight:600; margin:2px 0; }
+  .s-p { background:#fef3c7; color:#92400e; } .s-a { background:#dcfce7; color:#065f46; } .s-r { background:#fee2e2; color:#991b1b; text-decoration:line-through; }
+  .sel { outline:2px solid var(--primary); outline-offset:-2px; }
+  .sum td { background:var(--soft); font-weight:600; }
+  .low { color:var(--red); } .ok { color:#047857; }
+  .chart { display:flex; align-items:flex-end; gap:4px; height:110px; padding:8px 0 0; border-bottom:1px solid var(--line); }
+  .chart div { flex:1; background:#bfd3fb; border-radius:3px 3px 0 0; position:relative; }
+  .chart div.lo { background:#fecaca; }
+  .hours { display:flex; gap:4px; font-size:10.5px; color:var(--muted); } .hours span { flex:1; text-align:center; }
+  .card { border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .note { font-size:12px; color:var(--muted); }
+  /* điện thoại */
+  .phone { width:390px; border-radius:28px; border:10px solid var(--navy); }
+  .ph-top { background:var(--primary); color:#fff; padding:14px 16px; }
+  .ph-top b { font-size:16px; } .ph-top div { font-size:12px; opacity:.9; margin-top:3px; }
+  .ph-body { padding:12px 12px 0; background:var(--soft); }
+  .day { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+  .day .h { display:flex; align-items:center; }
+  .day .h b { flex:1; } .tog { width:38px; height:22px; border-radius:11px; background:#cbd5e1; position:relative; }
+  .tog::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; }
+  .tog.on { background:var(--primary); } .tog.on::after { left:19px; }
+  .times { display:flex; gap:6px; align-items:center; margin-top:8px; }
+  .tbox { border:1px solid #c7d6f7; border-radius:8px; padding:6px 10px; font-weight:600; background:#f8fbff; }
+  .quick { display:flex; gap:6px; margin-top:8px; } .quick span { font-size:11.5px; border:1px solid var(--line); border-radius:14px; padding:3px 9px; color:var(--ink2); }
+  .quick span.on { background:#e3ebfd; border-color:#c7d6f7; color:var(--primary-d); font-weight:600; }
+  .warn { font-size:11.5px; color:#b45309; margin-top:6px; }
+  .ph-foot { background:#fff; border-top:1px solid var(--line); padding:10px 14px 14px; display:flex; align-items:center; gap:10px; }
+  .ph-foot div { flex:1; font-size:12.5px; color:var(--ink2); }
+  .row2 { display:flex; gap:28px; align-items:flex-start; }
+  .dialog { width:520px; padding:20px; }
+  .fld { border:1px solid #cbd5e1; border-radius:8px; padding:9px 11px; margin-top:4px; }
+  label { font-size:12px; color:var(--muted); display:block; margin-top:12px; }
+  .pills span { display:inline-block; border:1px solid var(--line); border-radius:16px; padding:4px 11px; margin:6px 6px 0 0; font-size:12px; }
+  .pills span.on { background:#e3ebfd; border-color:#c7d6f7; color:var(--primary-d); font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- 1. Danh sách đợt + hộp tạo đợt -->
+<div class="row2">
+<div class="frame desk" id="quan-ly-danh-sach" style="width:900px">
+  <div class="side"><div class="logo">BossKin</div><div class="i">Tổng quan</div><div class="i">Nhân viên</div><div class="i on">Ca làm</div><div class="i">Chấm công</div><div class="i">Nghỉ phép</div><div class="i">Bảng lương</div></div>
+  <div class="main">
+    <div class="bar"><h1>Ca làm</h1><span class="btn">+ Tạo đợt đăng ký</span></div>
+    <div class="tabs"><span>Danh sách ca</span><span>Phân ca</span><span>Xoay ca</span><span class="on">Đăng ký lịch</span></div>
+    <table>
+      <tr><th>Đợt</th><th>Khoảng ngày</th><th>Phòng ban</th><th>Hạn chót</th><th>Đã đăng ký</th><th>Trạng thái</th><th></th></tr>
+      <tr><td><b>Tuần 43</b></td><td>20/10 – 26/10</td><td>Cửa hàng Q1, Q3</td><td>17/10 18:00</td><td>9 / 14</td><td><span class="chip c-open">Đang mở</span></td><td><span class="btn o s">Đóng</span></td></tr>
+      <tr><td><b>Tháng 11 — Kho</b></td><td>01/11 – 30/11</td><td>Kho</td><td>25/10 17:00</td><td>0 / 8</td><td><span class="chip c-draft">Nháp</span></td><td><span class="btn s">Mở</span></td></tr>
+      <tr><td><b>Tuần 42</b></td><td>13/10 – 19/10</td><td>Cửa hàng Q1, Q3</td><td>10/10 18:00</td><td>14 / 14</td><td><span class="chip c-applied">Đã xếp lịch</span></td><td></td></tr>
+      <tr><td><b>Tuần 41</b></td><td>06/10 – 12/10</td><td>Cửa hàng Q1, Q3</td><td>03/10 18:00</td><td>13 / 14</td><td><span class="chip c-applied">Đã xếp lịch</span></td><td></td></tr>
+    </table>
+    <p class="note" style="margin-top:12px">Chỉ hiện khi công ty bật "Cho nhân viên đăng ký lịch làm việc" ở Cài đặt công ty.</p>
+  </div>
+</div>
+<div class="frame dialog" id="tao-dot">
+  <div style="font-size:17px;font-weight:700">Tạo đợt đăng ký</div>
+  <label>Tên đợt</label><div class="fld">Tuần 44</div>
+  <label>Khoảng ngày</label>
+  <div class="pills"><span class="on">Tuần sau</span><span>2 tuần tới</span><span>Tháng sau</span><span>Tự chọn</span></div>
+  <div style="display:flex;gap:10px"><div class="fld" style="flex:1">27/10/2026</div><div class="fld" style="flex:1">02/11/2026</div></div>
+  <label>Phòng ban</label><div class="fld">Cửa hàng Q1, Cửa hàng Q3</div>
+  <label>Hạn chót (tự đóng)</label><div class="fld">24/10/2026 18:00</div>
+  <label>Giới hạn (không bắt buộc)</label>
+  <div style="display:flex;gap:10px"><div class="fld" style="flex:1">Khung giờ 06:00 – 23:00</div><div class="fld" style="flex:1">Mỗi khung 2 – 10 giờ</div></div>
+  <div style="display:flex;gap:10px"><div class="fld" style="flex:1">Ít nhất 3 ngày / người</div><div class="fld" style="flex:1">Cần 4 người / ngày</div></div>
+  <div style="margin-top:16px;text-align:right"><span class="btn o">Lưu nháp</span> <span class="btn">Lưu và mở đăng ký</span></div>
+</div>
+</div>
+
+<!-- 2. Chi tiết đợt -->
+<div class="frame desk" id="quan-ly-chi-tiet">
+  <div class="side"><div class="logo">BossKin</div><div class="i">Tổng quan</div><div class="i">Nhân viên</div><div class="i on">Ca làm</div><div class="i">Chấm công</div><div class="i">Nghỉ phép</div><div class="i">Bảng lương</div></div>
+  <div class="main">
+    <div class="bar"><h1>Tuần 43 · 20/10 – 26/10 <span class="chip c-closed" style="vertical-align:middle">Đã đóng</span></h1>
+      <span class="btn o">Mở lại</span><span class="btn o">Xuất Excel</span><span class="btn g">Xếp lịch từ đăng ký</span></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+      <span class="note">Đã chọn 3 ô</span><span class="btn s">Duyệt</span><span class="btn o s">Từ chối</span>
+      <span class="note" style="margin-left:auto">● Chờ duyệt &nbsp; ● Đã duyệt &nbsp; ● Từ chối · Bấm ô để sửa giờ / gắn ca có sẵn</span>
+    </div>
+    <div style="display:flex;gap:18px">
+    <table class="grid" style="flex:1">
+      <tr><th style="text-align:left">Nhân viên</th><th>T2 20/10</th><th>T3 21/10</th><th>T4 22/10</th><th>T5 23/10</th><th>T6 24/10</th><th>T7 25/10</th><th>CN 26/10</th></tr>
+      <tr><td class="n"><b>Lê Minh An</b><br><span class="note">TEST00012</span></td><td><span class="slot s-a">08:00–14:00</span></td><td></td><td><span class="slot s-a">08:00–14:00</span></td><td></td><td><span class="slot s-p">14:00–22:00</span></td><td><span class="slot s-p">08:00–22:00</span></td><td></td></tr>
+      <tr><td class="n"><b>Phạm Thu Hà</b><br><span class="note">TEST00013</span></td><td class="sel"><span class="slot s-p">17:00–22:00</span></td><td class="sel"><span class="slot s-p">17:00–22:00</span></td><td></td><td class="sel"><span class="slot s-p">17:00–22:00</span></td><td></td><td><span class="slot s-a">10:00–14:00</span><span class="slot s-a">18:00–22:00</span></td><td><span class="slot s-r">10:00–22:00</span></td></tr>
+      <tr><td class="n"><b>Trần Quốc Việt</b><br><span class="note">TEST00014</span></td><td><span class="slot s-a">06:00–14:00</span></td><td><span class="slot s-a">06:00–14:00</span></td><td><span class="slot s-a">06:00–14:00</span></td><td><span class="slot s-a">06:00–14:00</span></td><td><span class="slot s-a">06:00–14:00</span></td><td></td><td></td></tr>
+      <tr><td class="n"><b>Đỗ Ngọc Mai</b><br><span class="note">TEST00015 · <span class="low">mới 1/3 ngày</span></span></td><td></td><td></td><td></td><td></td><td></td><td><span class="slot s-p">14:00–22:00</span></td><td></td></tr>
+      <tr class="sum"><td class="n">Số người / cần 4</td><td class="low">3</td><td class="low">2</td><td class="low">2</td><td class="low">2</td><td class="low">2</td><td class="ok">4</td><td class="low">1</td></tr>
+    </table>
+    <div class="card" style="width:300px">
+      <b>T6 24/10 — số người theo giờ</b>
+      <div class="chart">
+        <div style="height:20%"></div><div style="height:20%"></div><div style="height:20%"></div><div style="height:20%"></div><div class="lo" style="height:5%"></div><div class="lo" style="height:5%"></div><div style="height:25%"></div><div style="height:25%"></div><div style="height:25%"></div><div style="height:25%"></div><div style="height:25%"></div><div style="height:25%"></div><div style="height:25%"></div><div style="height:25%"></div><div class="lo" style="height:5%"></div><div class="lo" style="height:5%"></div>
+      </div>
+      <div class="hours"><span>6h</span><span></span><span></span><span>9</span><span></span><span></span><span>12</span><span></span><span></span><span>15</span><span></span><span></span><span>18</span><span></span><span></span><span>21</span></div>
+      <p class="note" style="margin-top:8px">Đỏ = dưới mức cần. 10:00–12:00 và 20:00–22:00 đang thiếu người.</p>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Nhân viên trên điện thoại -->
+<div class="frame phone" id="nhan-vien">
+  <div class="ph-top"><b>Đăng ký lịch · Tuần 43</b><div>20/10 – 26/10 · Hạn chót 17/10 18:00 (còn 1 ngày 6 giờ)</div></div>
+  <div class="ph-body">
+    <div class="day"><div class="h"><b>Thứ Hai 20/10</b><span class="tog on"></span></div>
+      <div class="quick"><span>Cả ngày</span><span class="on">Sáng</span><span>Chiều</span><span>Tối</span></div>
+      <div class="times"><span class="tbox">08:00</span>–<span class="tbox">14:00</span><span class="note">6 giờ</span><span style="margin-left:auto;color:var(--primary-d);font-weight:600">+ Khung 2</span></div></div>
+    <div class="day"><div class="h"><b>Thứ Ba 21/10</b><span class="tog"></span></div><div class="note" style="margin-top:4px">Không làm</div></div>
+    <div class="day"><div class="h"><b>Thứ Tư 22/10</b><span class="tog on"></span></div>
+      <div class="times"><span class="tbox">08:00</span>–<span class="tbox">14:00</span><span class="note">6 giờ</span></div></div>
+    <div class="day"><div class="h"><b>Thứ Năm 23/10</b><span class="tog"></span></div><div class="warn">Bạn có đơn nghỉ phép đã duyệt ngày này</div></div>
+    <div class="day"><div class="h"><b>Thứ Sáu 24/10</b><span class="tog on"></span></div>
+      <div class="times"><span class="tbox">14:00</span>–<span class="tbox">22:00</span><span class="note">8 giờ</span></div></div>
+    <div class="day"><div class="h"><b>Thứ Bảy 25/10</b><span class="tog on"></span></div>
+      <div class="times"><span class="tbox">08:00</span>–<span class="tbox">22:00</span><span class="note">14 giờ</span></div>
+      <div class="warn" style="color:var(--red)">Mỗi khung tối đa 10 giờ — tách thành 2 khung</div></div>
+  </div>
+  <div class="ph-foot"><div><b>4 ngày · 34 giờ</b><br>Cần ít nhất 3 ngày</div><span class="btn">Gửi đăng ký</span></div>
+</div>
+
+</body>
+</html>

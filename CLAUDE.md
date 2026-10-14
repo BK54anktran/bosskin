@@ -549,6 +549,10 @@ V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<m�
 - Danh mục khác (phòng ban, ca, loại phép, bậc lương…) mã unique theo công ty, tra cứu luôn lọc `company_id` — không gắn tiền tố.
 - Test: `Fixture.newCompany()` đặt đuôi `<mã>.test`, dùng `c.email("x")`; `CompanyIdentityTest`.
 
+## Thiết kế chờ làm
+- Đăng ký lịch làm việc (NV tự chọn ngày + khung giờ theo đợt quản lý mở / đóng, công ty bật / tắt, duyệt → phân ca giờ tuỳ chỉnh):
+  `docs/thiet-ke/dang-ky-ca.md` + hình mẫu `docs/thiet-ke/dang-ky-ca/*.png`. Migration dự kiến V23. Còn 4 câu cần chủ dự án chốt (mục 11).
+
 ## Màn hình Flutter
 | Screen | Path |
 |--------|------|
