@@ -76,6 +76,8 @@ Lưu ý khi tạo trên Vibe Host:
 - **Cập nhật bản web:** cùng cách — push `main` → chờ workflow **Frontend build** chạy xong bước "Đăng gói web lên release web-latest" (file `bosskin-web.tar.gz`, có trước bước build APK) → bấm triển khai lại website Web. `frontend/Dockerfile` chỉ tải gói đó về và chạy Nginx: cài Flutter + build web trên máy build của Vibe Host vượt mốc ~5 phút (`fetch failed` 3 lần liên tiếp, 12/10/2026).
 - **Triển khai khi workflow chưa xong** → bước tải gói báo `invalid response status 404` (release đang được thay). Sau một lượt lỗi, Vibe Host
   chặn triển khai lại cùng mã nguồn (`SAME_ERROR_UNFIXED`) — cần một commit mới trên `main` (13/10/2026). Luôn chờ cả hai workflow xong rồi mới triển khai.
+- **Cache bản web:** `frontend/web/flutter_bootstrap.js` nạp assets qua `v<số build>/assets/…` (nginx bỏ tiền tố), `/assets/` để `no-cache` —
+  font icon rút gọn trùng tên giữa các bản, trước đây cache 7 ngày làm icon mới không hiện sau khi triển khai (14/10/2026).
 - **Repo phải public** để Dockerfile tải được `api-latest` / `web-latest` (link release không kèm token). Repo private → cũng lỗi
   `invalid response status 404` dù file vẫn còn trên release (14/10/2026). Muốn private: tải qua GitHub API có token đặt ở biến Vibe Host.
 - **`DB_URL` ghi dạng `mysql://<host>:<port>/<db>?…`** (bỏ `jdbc:` — nền tảng chỉ nhận `scheme://`); image tự thêm `jdbc:` lúc khởi động.
