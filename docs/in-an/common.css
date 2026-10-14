@@ -1,0 +1,20 @@
+@import url(fonts.css);
+
+:root {
+  --navy: #0b1630; --navy-2: #16306a; --blue: #2563eb; --blue-d: #1d4ed8; --sky: #5fa9d2;
+  --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+  --ink: #0f172a; --ink-2: #334155; --muted: #56657a; --line: #e2e8f0; --soft: #f4f7fc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: 'Be Vietnam Pro', sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { background: #fff; }
+.page { position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+.page:last-child { page-break-after: auto; break-after: auto; }
+img { display: block; }
+.shot { border-radius: 3mm; box-shadow: 0 2mm 6mm rgba(11, 22, 48, .25); background: #fff; }
+.phone { border: 1.6mm solid #0b1630; border-radius: 7mm; overflow: hidden; box-shadow: 0 3mm 8mm rgba(11, 22, 48, .35); background: #0b1630; }
+.phone img { width: 100%; }
+.ic { display: inline-flex; align-items: center; justify-content: center; border-radius: 3mm; color: #fff; flex: none; }
+.ic svg { width: 60%; height: 60%; }
+.qr { background: #fff; padding: 2mm; border-radius: 2mm; }
+.qr img { width: 100%; }

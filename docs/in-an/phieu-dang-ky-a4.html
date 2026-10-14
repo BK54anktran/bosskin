@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Phiếu đăng ký dùng thử</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  @page { size: A4; margin: 0; }
+  .page { width: 210mm; height: 297mm; padding: 8mm 13mm 7mm; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; gap: 3mm; border-bottom: .6mm solid var(--navy); padding-bottom: 3mm; }
+  .top img { width: 11mm; height: 11mm; border-radius: 50%; }
+  .top .t { flex: 1; }
+  .top h1 { font-size: 6mm; font-weight: 800; color: var(--navy); }
+  .top p { font-size: 2.9mm; color: var(--muted); margin-top: .5mm; }
+  .top .no { font-size: 2.9mm; color: var(--muted); text-align: right; line-height: 1.8; }
+  .top .no span { display: inline-block; width: 30mm; border-bottom: .3mm dotted #94a3b8; }
+  h2 { margin-top: 3mm; font-size: 3.5mm; font-weight: 800; color: #fff; background: var(--navy-2); border-radius: 1.2mm; padding: 1.2mm 2.5mm; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 7mm; }
+  .f { display: flex; align-items: flex-end; gap: 2mm; margin-top: 2mm; font-size: 3.05mm; }
+  .f label { white-space: nowrap; color: var(--ink-2); }
+  .f .ln { flex: 1; border-bottom: .3mm dotted #94a3b8; height: 4.4mm; }
+  .f.full { grid-column: 1 / -1; }
+  .hint { font-size: 2.45mm; color: var(--muted); margin-top: .6mm; }
+  .opts { display: flex; flex-wrap: wrap; gap: 1.4mm 5mm; margin-top: 1.6mm; font-size: 3mm; color: var(--ink-2); }
+  .opts.col3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .opt { display: inline-flex; align-items: center; gap: 1.6mm; }
+  .box { width: 3.4mm; height: 3.4mm; border: .35mm solid #475569; border-radius: .6mm; flex: none; }
+  .q { margin-top: 2.1mm; font-size: 3.05mm; color: var(--ink-2); }
+  .q b { color: var(--ink); font-weight: 600; }
+  .lines .ln2 { border-bottom: .3mm dotted #94a3b8; height: 5.5mm; }
+  .idbox { margin-top: 2.2mm; display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .idbox > div { border: .35mm solid var(--line); background: var(--soft); border-radius: 2mm; padding: 2.4mm 3mm; font-size: 3mm; color: var(--ink-2); }
+  .idbox b { color: var(--ink); }
+  .cells { display: flex; gap: .9mm; margin-top: 1.8mm; }
+  .cells span { width: 5.2mm; height: 6mm; border: .3mm solid #64748b; border-radius: .6mm; background: #fff; }
+  .domain { display: flex; align-items: flex-end; gap: 1mm; margin-top: 2.2mm; font-weight: 700; color: var(--ink); }
+  .domain .ln { flex: 1; border-bottom: .3mm dotted #64748b; height: 5mm; }
+  .consent { margin-top: 2.2mm; font-size: 2.75mm; color: var(--ink-2); line-height: 1.5; display: flex; gap: 2mm; }
+  .sign { margin-top: 2.5mm; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; font-size: 3mm; text-align: center; color: var(--ink-2); }
+  .sign b { display: block; color: var(--ink); }
+  .sign i { display: block; font-size: 2.5mm; font-style: italic; color: var(--muted); }
+  .sign .space { height: 12mm; }
+  .staff { margin-top: 2mm; border: .4mm dashed #94a3b8; border-radius: 2mm; padding: 2.4mm 3mm; font-size: 2.85mm; color: var(--ink-2); }
+  .staff b { color: var(--navy); font-size: 3mm; }
+  .staff .grid .f { margin-top: 1.8mm; font-size: 2.85mm; }
+  .foot { margin-top: 2.4mm; display: flex; align-items: center; justify-content: space-between; font-size: 2.7mm; color: var(--muted); }
+  .foot b { color: var(--ink); }
+  .foot .qr { width: 13mm; padding: .8mm; border: .3mm solid var(--line); }
+  .foot .qs { display: flex; gap: 3mm; align-items: center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <img src="img/logo-192.png" alt="">
+    <div class="t">
+      <h1>PHIẾU ĐĂNG KÝ DÙNG THỬ BOSSKIN</h1>
+      <p>Chấm công · xếp ca · nghỉ phép · tính lương — bosskin.io.vn · 0865 854 002</p>
+    </div>
+    <div class="no">Số phiếu: <span></span><br>Ngày: <span></span></div>
+  </div>
+
+  <h2>1. Thông tin doanh nghiệp</h2>
+  <div class="grid">
+    <div class="f full"><label>Tên công ty:</label><div class="ln"></div></div>
+    <div class="f"><label>Mã số thuế:</label><div class="ln"></div></div>
+    <div class="f"><label>Ngành nghề:</label><div class="ln"></div></div>
+    <div class="f full"><label>Địa chỉ:</label><div class="ln"></div></div>
+    <div class="f"><label>Số chi nhánh / địa điểm làm việc:</label><div class="ln"></div></div>
+    <div class="f"><label>Website:</label><div class="ln"></div></div>
+  </div>
+  <div class="q"><b>Số nhân viên:</b></div>
+  <div class="opts"><span class="opt"><span class="box"></span>Dưới 20</span><span class="opt"><span class="box"></span>20 – 50</span><span class="opt"><span class="box"></span>50 – 100</span><span class="opt"><span class="box"></span>100 – 300</span><span class="opt"><span class="box"></span>Trên 300</span>
+    <span class="opt">— Trong đó làm theo ca: ………… người</span></div>
+
+  <h2>2. Người liên hệ</h2>
+  <div class="grid">
+    <div class="f"><label>Họ và tên:</label><div class="ln"></div></div>
+    <div class="f"><label>Chức vụ:</label><div class="ln"></div></div>
+    <div class="f"><label>Điện thoại / Zalo:</label><div class="ln"></div></div>
+    <div class="f"><label>Email:</label><div class="ln"></div></div>
+  </div>
+  <div class="q"><b>Liên hệ thuận tiện qua:</b></div>
+  <div class="opts"><span class="opt"><span class="box"></span>Gọi điện</span><span class="opt"><span class="box"></span>Zalo</span><span class="opt"><span class="box"></span>Email</span><span class="opt"><span class="box"></span>Gặp trực tiếp</span>
+    <span class="opt">— Khung giờ: ……………………………</span></div>
+
+  <h2>3. Hiện trạng và nhu cầu</h2>
+  <div class="q"><b>Hiện đang chấm công / tính lương bằng:</b></div>
+  <div class="opts"><span class="opt"><span class="box"></span>Sổ / giấy</span><span class="opt"><span class="box"></span>Máy vân tay / thẻ từ</span><span class="opt"><span class="box"></span>Excel</span><span class="opt"><span class="box"></span>Phần mềm khác: ……………………………</span></div>
+  <div class="q"><b>Cần giải quyết (chọn nhiều):</b></div>
+  <div class="opts col3">
+    <span class="opt"><span class="box"></span>Chấm công bằng điện thoại (GPS)</span>
+    <span class="opt"><span class="box"></span>Xếp ca / xoay ca / ca đêm</span>
+    <span class="opt"><span class="box"></span>Nghỉ phép, đơn từ online</span>
+    <span class="opt"><span class="box"></span>Chốt công, tăng ca</span>
+    <span class="opt"><span class="box"></span>Tính lương, BHXH, thuế TNCN</span>
+    <span class="opt"><span class="box"></span>Phiếu lương cho nhân viên</span>
+    <span class="opt"><span class="box"></span>Hợp đồng lao động</span>
+    <span class="opt"><span class="box"></span>Hồ sơ, giấy tờ nhân sự</span>
+    <span class="opt"><span class="box"></span>Báo cáo, phân quyền</span>
+  </div>
+  <div class="grid">
+    <div class="f"><label>Số ca làm / ngày:</label><div class="ln"></div></div>
+    <div class="f"><label>Ngày chốt công hằng tháng:</label><div class="ln"></div></div>
+  </div>
+  <div class="q"><b>Mong muốn khác / khó khăn hiện tại:</b></div>
+  <div class="lines"><div class="ln2"></div><div class="ln2"></div></div>
+
+  <h2>4. Thông tin tạo tài khoản dùng thử</h2>
+  <div class="idbox">
+    <div><b>Mã công ty</b> (2–12 chữ cái / số, bắt đầu bằng chữ, viết hoa)
+      <div class="cells"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="hint">Dùng làm đầu mã nhân viên: VD mã TH → nhân viên TH00001, TH00002… Không đổi được sau khi tạo.</div></div>
+    <div><b>Đuôi email công ty</b> (mọi tài khoản đăng nhập dùng đuôi này)
+      <div class="domain">@<div class="ln"></div></div>
+      <div class="hint">VD: congty.vn → nhân viên đăng nhập bằng an.nguyen@congty.vn</div></div>
+  </div>
+  <div class="grid">
+    <div class="f"><label>Email quản trị (admin):</label><div class="ln"></div></div>
+    <div class="f"><label>Ngày muốn bắt đầu dùng thử:</label><div class="ln"></div></div>
+  </div>
+  <div class="q"><b>Hỗ trợ nhập dữ liệu ban đầu:</b></div>
+  <div class="opts"><span class="opt"><span class="box"></span>Tự nhập theo file mẫu Excel</span><span class="opt"><span class="box"></span>Nhờ BossKin hỗ trợ nhập</span><span class="opt"><span class="box"></span>Cần hướng dẫn trực tiếp tại công ty</span></div>
+
+  <div class="consent"><span class="box"></span><span>Tôi đồng ý để BossKin dùng thông tin trên để liên hệ tư vấn, tạo tài khoản dùng thử và hỗ trợ. Thông tin không được chia sẻ cho bên thứ ba.</span></div>
+
+  <div class="sign">
+    <div><b>Đại diện doanh nghiệp</b><i>(Ký, ghi rõ họ tên)</i><div class="space"></div></div>
+    <div><b>Nhân viên tư vấn BossKin</b><i>(Ký, ghi rõ họ tên)</i><div class="space"></div></div>
+  </div>
+
+  <div class="staff">
+    <b>Phần dành cho BossKin</b>
+    <div class="grid">
+      <div class="f"><label>Người tư vấn:</label><div class="ln"></div></div>
+      <div class="f"><label>Nguồn khách:</label><div class="ln"></div></div>
+      <div class="f"><label>Ngày tạo tài khoản:</label><div class="ln"></div></div>
+      <div class="f"><label>Trạng thái:</label><div class="ln"></div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div><b>BossKin</b> · Hotline / Zalo <b>0865 854 002</b> · <b>bosskin.io.vn</b><br>Đăng ký online: quét mã bên phải hoặc vào bosskin.io.vn, mục Dùng thử.</div>
+    <div class="qs"><div class="qr"><img src="img/qr-web.svg" alt=""></div><div class="qr"><img src="img/qr-zalo.svg" alt=""></div></div>
+  </div>
+</div>
+</body>
+</html>

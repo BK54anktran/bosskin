@@ -692,6 +692,8 @@ V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<m�
   chỉ thêm công ty mới, đã có mã TEST / đuôi test.com thì dừng. Đổi API mà script hỏng → sửa cùng seed_demo (quy tắc 2).
   Xoá hẳn công ty TEST để tạo lại: `tools/demo/clear_test_company.sql` (chủ dự án tự chạy, sao lưu trước; khoá ngoại bật, một transaction,
   chỉ dữ liệu company TEST; không xoá file tài liệu trong kho). Thêm bảng mới có company_id / employee_id / user_id → thêm vào script này.
+- Tài liệu in đi sale `docs/in-an/` (poster A3, tờ giới thiệu A4 2 mặt, phiếu đăng ký A4): HTML + `build.py` (Playwright) → `pdf/*.pdf`
+  (commit PDF), ảnh từ `landing/assets/`, font Be Vietnam Pro nhúng sẵn. Đổi liên hệ / tính năng chính → sửa cả ở đây (README trong thư mục).
 
 ## Tài liệu hệ thống & trang trợ giúp (10/2026)
 - `docs/he-thong/`: tài liệu kỹ thuật (kiến trúc, phân quyền, nghiệp vụ, bảo mật, triển khai). `api.md`, `csdl.md`, `quyen.md` **tự sinh**

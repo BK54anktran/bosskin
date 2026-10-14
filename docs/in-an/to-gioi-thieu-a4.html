@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Tờ giới thiệu A4</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  @page { size: A4; margin: 0; }
+  .page { width: 210mm; height: 297mm; display: flex; flex-direction: column; }
+  .pad { padding: 0 14mm; }
+  header { background: radial-gradient(120% 90% at 90% 0%, #2a56b8 0%, var(--navy-2) 40%, var(--navy) 85%); color: #fff; padding: 9mm 14mm 8mm; }
+  .brand { display: flex; align-items: center; gap: 2.6mm; font-weight: 800; font-size: 7.5mm; }
+  .brand img { width: 10mm; height: 10mm; border-radius: 50%; background: #fff; }
+  .brand small { margin-left: auto; font-size: 3.2mm; font-weight: 500; color: #b9cdf3; }
+  h1 { margin-top: 5mm; font-size: 7.6mm; line-height: 1.18; font-weight: 800; }
+  h1 em { font-style: normal; color: #7cc4ff; }
+  header p { margin-top: 3mm; font-size: 3.7mm; line-height: 1.55; color: #d7e3fb; max-width: 165mm; }
+  h2 { font-size: 5.4mm; font-weight: 800; color: var(--navy); }
+  h2 small { display: block; font-size: 2.9mm; font-weight: 700; color: var(--blue); letter-spacing: .3mm; text-transform: uppercase; margin-bottom: 1mm; }
+  .pains { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-top: 3.5mm; }
+  .pain { background: var(--soft); border-radius: 2.5mm; padding: 2.5mm; font-size: 3mm; line-height: 1.45; }
+  .pain b { display: block; color: var(--red); font-size: 3.1mm; margin-bottom: 1mm; }
+  .pain i { display: block; font-style: normal; color: var(--green); font-weight: 600; margin-top: 1.5mm; }
+  .row { display: flex; gap: 6mm; align-items: center; margin-top: 5mm; }
+  .row.rev { flex-direction: row-reverse; }
+  .row .txt { flex: 1; }
+  .row h3 { font-size: 4.4mm; font-weight: 800; display: flex; align-items: center; gap: 2.4mm; }
+  .row h3 .ic { width: 7.5mm; height: 7.5mm; border-radius: 2mm; }
+  .row ul { margin-top: 2mm; list-style: none; }
+  .row li { font-size: 3.15mm; line-height: 1.5; padding-left: 4.2mm; position: relative; margin-top: .8mm; color: var(--ink-2); }
+  .row li::before { content: ''; position: absolute; left: 0; top: 1.5mm; width: 2mm; height: 2mm; border-radius: 50%; background: var(--blue); }
+  .row .pic { width: 78mm; flex: none; }
+  .row .pic img { width: 100%; }
+  .row .ph { width: 34mm; flex: none; margin: 0 29mm; }
+  .row .ph .phone { border-width: 1mm; border-radius: 4.5mm; }
+  .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-top: 3.5mm; }
+  .fcard { border: .35mm solid var(--line); border-radius: 2.5mm; overflow: hidden; }
+  .fcard .img { height: 30mm; background: var(--soft); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+  .fcard .img img.d { width: 100%; height: 100%; object-fit: cover; object-position: left top; }
+  .fcard .img img.p { width: 30mm; margin-bottom: -22mm; border: .8mm solid var(--navy); border-radius: 3.5mm 3.5mm 0 0; box-shadow: 0 1mm 3mm rgba(11,22,48,.3); }
+  .fcard .b { padding: 3mm 3.5mm 3.2mm; }
+  .fcard h3 { font-size: 3.9mm; font-weight: 800; display: flex; align-items: center; gap: 2mm; }
+  .fcard h3 .ic { width: 6.5mm; height: 6.5mm; border-radius: 1.6mm; }
+  .fcard ul { margin-top: 1.5mm; list-style: none; }
+  .fcard li { font-size: 2.9mm; line-height: 1.45; padding-left: 3.6mm; position: relative; margin-top: .6mm; color: var(--ink-2); }
+  .fcard li::before { content: ''; position: absolute; left: 0; top: 1.3mm; width: 1.7mm; height: 1.7mm; border-radius: 50%; background: var(--blue); }
+  footer { margin-top: auto; background: var(--navy); color: #fff; padding: 3.5mm 14mm; display: flex; align-items: center; gap: 6mm; font-size: 3.2mm; }
+  footer .txt { flex: 1; line-height: 1.5; color: #c9d7f2; }
+  footer b { color: #fff; font-size: 4.2mm; }
+  footer .qr { width: 17mm; padding: 1.2mm; }
+  footer .q { text-align: center; font-size: 2.6mm; color: #c9d7f2; }
+  footer .q small { display: block; margin-top: 1mm; }
+  .grid4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3mm; margin-top: 3mm; }
+  .card { border: .35mm solid var(--line); border-radius: 2.5mm; padding: 2.8mm 3.2mm; }
+  .card b { display: flex; align-items: center; gap: 2mm; font-size: 3.6mm; }
+  .card b .ic { width: 6.5mm; height: 6.5mm; border-radius: 1.6mm; }
+  .card p { margin-top: 1.6mm; font-size: 3mm; line-height: 1.5; color: var(--ink-2); }
+  .roles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-top: 3.5mm; }
+  .role { background: var(--soft); border-radius: 2.5mm; padding: 2.6mm; font-size: 2.9mm; line-height: 1.45; color: var(--ink-2); }
+  .role b { display: block; font-size: 3.4mm; color: var(--navy); margin-bottom: 1mm; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; margin-top: 3.5mm; }
+  .step { display: flex; gap: 2.5mm; font-size: 3mm; line-height: 1.45; color: var(--ink-2); }
+  .step .n { flex: none; width: 7mm; height: 7mm; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 3.6mm; }
+  .step b { display: block; color: var(--ink); font-size: 3.3mm; }
+  .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 6mm; margin-top: 2.5mm; }
+  .faq div { font-size: 2.95mm; line-height: 1.45; color: var(--ink-2); }
+  .faq b { display: block; color: var(--ink); font-size: 3.2mm; margin-bottom: .6mm; }
+  section { margin-top: 4mm; }
+  .tech { margin-top: 3mm; display: flex; gap: 2mm; flex-wrap: wrap; }
+  .tech span { font-size: 2.6mm; font-weight: 600; color: var(--navy-2); background: #e8effd; border-radius: 10mm; padding: 1mm 2.6mm; }
+</style>
+</head>
+<body>
+<!-- ═══════════ MẶT 1 ═══════════ -->
+<div class="page">
+  <header>
+    <div class="brand"><img src="img/logo-192.png" alt="">BossKin<small>bosskin.io.vn · 0865 854 002</small></div>
+    <h1>Chấm công, xếp ca, nghỉ phép và <em>tính lương</em><br>gọn trong một ứng dụng</h1>
+    <p>Phần mềm nhân sự cho doanh nghiệp Việt Nam. Nhân viên chấm công bằng điện thoại, quản lý duyệt bằng một chạm,
+      bảng lương tự tính đúng quy định bảo hiểm và thuế — trên điện thoại Android và trình duyệt web.</p>
+  </header>
+
+  <section class="pad">
+    <h2><small>Vì sao cần BossKin</small>Những việc đang tốn thời gian mỗi tháng</h2>
+    <div class="pains">
+      <div class="pain"><b>Chấm công hộ, quên chấm</b>Máy vân tay, sổ giấy dễ chấm hộ, khó tra lại.<i>→ Chấm bằng điện thoại, kiểm tra GPS và đúng máy</i></div>
+      <div class="pain"><b>Cuối tháng đối chiếu Excel</b>Gom công, phép, tăng ca từ nhiều nơi mất vài ngày.<i>→ Duyệt và khoá kỳ công bằng một nút</i></div>
+      <div class="pain"><b>Tính lương dễ sai</b>Bảo hiểm có trần, thuế luỹ tiến, người phụ thuộc…<i>→ Tự tính theo quy định, có phiếu lương</i></div>
+      <div class="pain"><b>Đơn từ qua tin nhắn</b>Xin nghỉ, đổi ca, sửa giờ thất lạc, không ai theo dõi.<i>→ Gửi và duyệt ngay trên app</i></div>
+    </div>
+  </section>
+
+  <section class="pad" style="margin-top:4.5mm">
+    <h2><small>Tính năng chính</small>Mọi việc nhân sự hằng ngày, ở một chỗ</h2>
+    <div class="fgrid">
+      <div class="fcard"><div class="img"><img class="p" src="img/dt-cham-cong.webp" alt=""></div><div class="b"><h3><span class="ic" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M12 7v5l3 2"/></svg></span>Chấm công trên điện thoại</h3><ul><li>Chỉ chấm trong bán kính quanh văn phòng / phòng ban</li><li>Mỗi tài khoản gắn một điện thoại — không chấm hộ</li><li>Từ chối vị trí giả lập; không cần máy chấm công</li></ul></div></div>
+      <div class="fcard"><div class="img"><img class="d" src="img/man-xep-ca.webp" alt=""></div><div class="b"><h3><span class="ic" style="background:var(--sky)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>Xếp ca và nghỉ phép</h3><ul><li>Ca qua đêm, ca gãy, ca linh hoạt; mẫu xoay ca, đổi ca</li><li>Lịch làm việc theo phòng ban, ngày lễ theo năm</li><li>Sổ phép tự trừ đúng ngày có ca, tự cộng hằng tháng</li></ul></div></div>
+      <div class="fcard"><div class="img"><img class="d" src="img/man-duyet-cong.webp" alt=""></div><div class="b"><h3><span class="ic" style="background:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Chốt công cả kỳ bằng một nút</h3><ul><li>Duyệt công 300 nhân viên trong chưa đầy một phút</li><li>Đi muộn, về sớm, tăng ca ngày / đêm tính tự động</li><li>Khoá kỳ: số liệu đã chốt không ai sửa được</li></ul></div></div>
+      <div class="fcard"><div class="img"><img class="p" src="img/dt-phieu-luong.webp" alt=""></div><div class="b"><h3><span class="ic" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg></span>Tính lương tự động</h3><ul><li>BHXH, BHYT, BHTN có trần; thuế TNCN luỹ tiến, người phụ thuộc</li><li>Lương, phụ cấp từ hợp đồng; công thức tự đặt</li><li>Phiếu lương ngay trên điện thoại nhân viên</li></ul></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="txt"><b>Dùng thử với dữ liệu của chính công ty bạn</b><br>Liên hệ để được hướng dẫn nhập nhân viên, xếp ca và chạy thử một kỳ công.</div>
+    <div class="q"><div class="qr"><img src="img/qr-web.svg" alt=""></div><small>Đăng ký</small></div>
+    <div class="q"><div class="qr"><img src="img/qr-zalo.svg" alt=""></div><small>Zalo</small></div>
+  </footer>
+</div>
+
+<!-- ═══════════ MẶT 2 ═══════════ -->
+<div class="page">
+  <section class="pad" style="margin-top:6mm">
+    <h2><small>Hồ sơ nhân sự</small>Đầy đủ hồ sơ, không cần thêm phần mềm</h2>
+    <div class="grid4">
+      <div class="card"><b><span class="ic" style="background:var(--navy-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>Hợp đồng lao động</b>
+        <p>Thử việc, xác định và không xác định thời hạn, phụ lục tăng lương, phụ cấp. Nhắc trước khi hợp đồng hết hạn.</p></div>
+      <div class="card"><b><span class="ic" style="background:var(--sky)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><path d="M12 8v4M5 16v-2h14v2"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/></svg></span>Quá trình công tác</b>
+        <p>Chuyển phòng, thăng chức, đổi bậc lương theo ngày hiệu lực; sơ đồ tổ chức theo quản lý trực tiếp.</p></div>
+      <div class="card"><b><span class="ic" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></span>Thuế & bảo hiểm</b>
+        <p>Mã số thuế, sổ BHXH, người phụ thuộc. Số nhạy cảm được che với người không có quyền xem.</p></div>
+      <div class="card"><b><span class="ic" style="background:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/></svg></span>Giấy tờ nhân sự</b>
+        <p>CCCD, bằng cấp, hợp đồng đã ký lưu riêng tư; báo giấy tờ sắp hết hạn hoặc còn thiếu.</p></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><small>Báo cáo & bảo mật</small>Số liệu rõ ràng, quyền hạn chặt chẽ</h2>
+    <div class="row" style="margin-top:2mm">
+      <div class="txt">
+        <ul>
+          <li>Tổng quan hôm nay: ai đi làm, đi muộn, nghỉ phép; chi phí lương kỳ gần nhất</li>
+          <li>8 báo cáo Excel: nhân sự, chấm công, tăng ca, chi phí lương, tổng quan năm</li>
+          <li>Phân quyền theo vai trò và từng phòng ban; kế toán không tự duyệt lương của mình</li>
+          <li>Nhật ký ghi lại mọi thao tác nhạy cảm; xác thực 2 lớp cho quản trị</li>
+                  </ul>
+      </div>
+      <div class="pic shot"><img src="img/man-tong-quan.webp" alt=""></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><small>Cho ai</small>Mỗi người một việc, cùng một ứng dụng</h2>
+    <div class="roles">
+      <div class="role"><b>Chủ doanh nghiệp</b>Biết ngay hôm nay ai đi làm, chi phí lương bao nhiêu, không phải hỏi ai.</div>
+      <div class="role"><b>Nhân sự & kế toán</b>Chốt công, tính lương, xuất báo cáo trong một buổi thay vì vài ngày.</div>
+      <div class="role"><b>Quản lý phòng ban</b>Xếp ca, duyệt đơn nghỉ và sửa giờ cho người mình quản lý, ngay trên điện thoại.</div>
+      <div class="role"><b>Nhân viên</b>Chấm công, xin nghỉ, đổi ca, xem số dư phép, phiếu lương, hợp đồng của mình.</div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><small>Bắt đầu</small>Dùng được ngay trong ngày đầu tiên</h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>Nhập nhân viên từ Excel</b>Dùng file mẫu có sẵn, xem trước từng dòng trước khi nhập.</div></div>
+      <div class="step"><span class="n">2</span><div><b>Tạo ca và xếp lịch</b>Khai báo ca, áp mẫu xoay ca hoặc nhập bảng phân ca bằng Excel.</div></div>
+      <div class="step"><span class="n">3</span><div><b>Nhân viên cài app</b>Đăng nhập bằng tài khoản được cấp và bắt đầu chấm công.</div></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><small>Hỏi đáp</small>Câu hỏi thường gặp</h2>
+    <div class="faq">
+      <div><b>Có cần mua máy chấm công không?</b>Không. Nhân viên chấm bằng điện thoại của mình; BossKin kiểm tra GPS và chỉ nhận chiếc máy đã đăng ký.</div>
+      <div><b>Dữ liệu cũ trong Excel chuyển sang được không?</b>Được. Nhân viên, phòng ban, ca, phân ca nhập từ Excel, có xem trước thay đổi.</div>
+      <div><b>Ca đêm, ca gãy, ca linh hoạt có được không?</b>Được. Ca qua đêm tính đúng giờ đêm; ca linh hoạt chỉ cần làm đủ giờ.</div>
+      <div><b>Chạy trên thiết bị nào?</b>App Android cho nhân viên (iPhone dùng qua trình duyệt), bản web cho quản lý, nhân sự, kế toán.</div>
+    </div>
+    <div class="tech"><span>Android</span><span>iPhone (trình duyệt)</span><span>Web trên máy tính</span><span>Tiếng Việt · English</span><span>BHXH & thuế TNCN Việt Nam</span></div>
+  </section>
+
+  <footer>
+    <div class="txt"><b>BossKin</b> — Chấm công đúng · Tính lương nhanh · Quản lý nhẹ nhàng<br>
+      Điện thoại / Zalo: <b style="font-size:3.6mm">0865 854 002</b> &nbsp;·&nbsp; Website: <b style="font-size:3.6mm">bosskin.io.vn</b></div>
+    <div class="q"><div class="qr"><img src="img/qr-web.svg" alt=""></div><small>Đăng ký dùng thử</small></div>
+    <div class="q"><div class="qr"><img src="img/qr-zalo.svg" alt=""></div><small>Zalo</small></div>
+  </footer>
+</div>
+</body>
+</html>

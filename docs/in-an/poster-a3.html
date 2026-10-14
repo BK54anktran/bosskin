@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Poster A3</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  @page { size: 297mm 420mm; margin: 0; }
+  .page { width: 297mm; height: 420mm; display: flex; flex-direction: column; }
+  .cta { margin-top: auto; }
+  .hero { background: radial-gradient(120% 80% at 85% 10%, #2a56b8 0%, var(--navy-2) 38%, var(--navy) 80%); color: #fff;
+          padding: 18mm 20mm 0; position: relative; }
+  .brand { display: flex; align-items: center; gap: 4mm; font-weight: 800; font-size: 13mm; letter-spacing: -.2mm; }
+  .brand img { width: 17mm; height: 17mm; border-radius: 50%; background: #fff; }
+  .tag { margin-top: 3mm; font-size: 5mm; color: #b9cdf3; font-weight: 500; }
+  h1 { margin-top: 9mm; font-size: 13.2mm; line-height: 1.15; font-weight: 800; letter-spacing: -.4mm; max-width: 245mm; }
+  h1 em { font-style: normal; color: #7cc4ff; }
+  .sub { margin-top: 6mm; font-size: 5.6mm; line-height: 1.5; color: #d7e3fb; max-width: 225mm; }
+  .visual { position: relative; margin: 8mm 0 -34mm; height: 104mm; }
+  .visual .desk { position: absolute; left: 0; bottom: 0; width: 190mm; }
+  .visual .desk img { width: 100%; border-radius: 3mm; }
+  .visual .phone { position: absolute; right: 6mm; bottom: -6mm; width: 52mm; }
+  .body { padding: 44mm 20mm 0; flex: 1; }
+  .feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm 8mm; }
+  .feat { display: flex; gap: 4mm; align-items: flex-start; }
+  .feat .ic { width: 14mm; height: 14mm; }
+  .feat b { display: block; font-size: 5.6mm; line-height: 1.25; }
+  .feat span { display: block; margin-top: 1.4mm; font-size: 4mm; line-height: 1.45; color: var(--muted); }
+  .stats { margin-top: 8mm; display: grid; grid-template-columns: repeat(4, 1fr); border-top: .5mm solid var(--line); border-bottom: .5mm solid var(--line); }
+  .stats div { padding: 5mm 3mm; text-align: center; }
+  .stats div + div { border-left: .5mm solid var(--line); }
+  .stats b { display: block; font-size: 8mm; font-weight: 800; color: var(--blue-d); }
+  .stats span { display: block; margin-top: 1mm; font-size: 3.6mm; color: var(--muted); line-height: 1.35; }
+  .cta { background: var(--navy); color: #fff; padding: 10mm 20mm; display: flex; align-items: center; gap: 9mm; }
+  .cta .txt { flex: 1; }
+  .cta h2 { font-size: 9mm; line-height: 1.2; font-weight: 800; }
+  .cta p { margin-top: 3mm; font-size: 4.6mm; color: #c9d7f2; line-height: 1.5; }
+  .cta .contact { margin-top: 5mm; display: flex; gap: 8mm; font-size: 5.4mm; font-weight: 700; }
+  .cta .contact span { color: #7cc4ff; font-weight: 600; font-size: 4mm; display: block; }
+  .qrbox { text-align: center; width: 38mm; }
+  .qrbox .qr { width: 38mm; }
+  .qrbox small { display: block; margin-top: 2mm; font-size: 3.6mm; color: #c9d7f2; }
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="hero">
+    <div class="brand"><img src="img/logo-192.png" alt="">BossKin</div>
+    <div class="tag">Phần mềm nhân sự cho doanh nghiệp Việt Nam</div>
+    <h1>Chấm công, xếp ca, nghỉ phép và <em>tính lương</em> — gọn trong một ứng dụng</h1>
+    <p class="sub">Nhân viên chấm công bằng điện thoại, quản lý duyệt bằng một chạm,
+      bảng lương tự tính đúng quy định — không còn file Excel cuối tháng.</p>
+    <div class="visual">
+      <div class="desk shot"><img src="img/man-tong-quan.webp" alt=""></div>
+      <div class="phone"><img src="img/dt-cham-cong.webp" alt=""></div>
+    </div>
+  </section>
+
+  <section class="body">
+    <div class="feats">
+      <div class="feat"><div class="ic" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M12 7v5l3 2"/></svg></div>
+        <div><b>Chấm công bằng điện thoại</b><span>Kiểm tra GPS và đúng máy đã đăng ký — không chấm hộ.</span></div></div>
+      <div class="feat"><div class="ic" style="background:var(--sky)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h3M14 13h3M7 17h3"/></svg></div>
+        <div><b>Xếp ca trong vài phút</b><span>Ca đêm, ca gãy, ca linh hoạt, mẫu xoay ca, đổi ca.</span></div></div>
+      <div class="feat"><div class="ic" style="background:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div><b>Nghỉ phép, duyệt một chạm</b><span>Sổ phép tự trừ, tự cộng hằng tháng, duyệt trên điện thoại.</span></div></div>
+      <div class="feat"><div class="ic" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M6 10v5M18 10v5"/></svg></div>
+        <div><b>Tính lương tự động</b><span>BHXH, thuế TNCN theo quy định; phiếu lương trên app.</span></div></div>
+      <div class="feat"><div class="ic" style="background:var(--navy-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
+        <div><b>Hồ sơ & hợp đồng</b><span>Hợp đồng, phụ lục, giấy tờ, người phụ thuộc, nhắc hết hạn.</span></div></div>
+      <div class="feat"><div class="ic" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+        <div><b>Báo cáo & phân quyền</b><span>8 báo cáo Excel, quyền theo phòng ban, nhật ký thao tác.</span></div></div>
+    </div>
+
+    <div class="stats">
+      <div><b>0 đồng</b><span>máy chấm công<br>dùng điện thoại có sẵn</span></div>
+      <div><b>&lt; 1 phút</b><span>duyệt công cả kỳ<br>cho 300 nhân viên</span></div>
+      <div><b>GPS + 1 máy</b><span>chống chấm công hộ</span></div>
+      <div><b>8 báo cáo</b><span>xuất Excel<br>trong vài giây</span></div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="txt">
+      <h2>Dùng thử với dữ liệu của chính công ty bạn</h2>
+      <p>Chúng tôi hỗ trợ nhập nhân viên, xếp ca và chạy thử một kỳ công trước khi bạn quyết định.</p>
+      <div class="contact">
+        <div><span>Điện thoại / Zalo</span>0865 854 002</div>
+        <div><span>Website</span>bosskin.io.vn</div>
+      </div>
+    </div>
+    <div class="qrbox"><div class="qr"><img src="img/qr-web.svg" alt=""></div><small>Đăng ký dùng thử</small></div>
+    <div class="qrbox"><div class="qr"><img src="img/qr-zalo.svg" alt=""></div><small>Nhắn Zalo</small></div>
+  </section>
+</div>
+</body>
+</html>
