@@ -3,7 +3,7 @@
 Kịch bản bán hàng: kich-ban-ban-hang.md (bản gốc, sửa ở đây) → pdf/kich-ban-ban-hang.pdf + .docx (cần pandoc).
 
   pip install playwright markdown && python -m playwright install chromium
-  python docs/in-an/build.py            → docs/in-an/pdf/*.pdf, *.docx, preview/*.png
+  python docs/in-an/build.py            → docs/in-an/pdf/*.pdf, *.docx, anh/*.png (ảnh từng trang, 200 dpi — cần pdftoppm), preview/*.png
 Biến CHROMIUM_PATH: dùng Chromium có sẵn thay vì bản Playwright tải về.
 """
 import glob, os, pathlib, re, shutil, subprocess
@@ -73,3 +73,17 @@ with sync_playwright() as pw:
         page.close()
         print('ok', name)
     browser.close()
+
+
+# Ảnh PNG từng trang (gửi Zalo / Facebook / Canva): anh/<tên>-<trang>.png, 200 dpi
+if shutil.which('pdftoppm'):
+    (HERE / 'anh').mkdir(exist_ok=True)
+    for old in (HERE / 'anh').glob('*.png'):
+        old.unlink()
+    for name in DOCS:
+        pdf = HERE / 'pdf' / f'{name}.pdf'
+        if pdf.exists():
+            subprocess.run(['pdftoppm', '-r', '200', '-png', str(pdf), str(HERE / 'anh' / name)], check=True)
+    print('ok ảnh:', len(list((HERE / 'anh').glob('*.png'))), 'trang')
+else:
+    print('bỏ qua ảnh PNG: chưa cài pdftoppm (poppler)')

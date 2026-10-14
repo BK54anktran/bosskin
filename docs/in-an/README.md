@@ -7,6 +7,9 @@
 | `pdf/kich-ban-ban-hang.pdf` + `.docx` | A4, 4 trang | Kịch bản cho nhân viên kinh doanh: chuẩn bị, mở đầu, câu hỏi nhu cầu, demo trên Công ty test, xử lý từ chối, chốt, theo dõi + tin nhắn Zalo mẫu. **Sửa ở `kich-ban-ban-hang.md`** rồi chạy lại `build.py` |
 | `pdf/phieu-dang-ky-a4.pdf` | A4, 1 mặt | Khách điền tay: doanh nghiệp, người liên hệ, nhu cầu, **mã công ty + đuôi email** để tạo tài khoản dùng thử |
 
+Ảnh PNG từng trang (200 dpi) ở `anh/` — gửi Zalo / Facebook, hoặc kéo vào Canva: `poster-a3-1.png`, `to-gioi-thieu-a4-1.png` / `-2.png`,
+`phieu-dang-ky-a4-1.png`, `kich-ban-ban-hang-1…4.png`.
+
 ## In
 - Giấy gợi ý: poster couche 200–250 g (có thể cán mờ); tờ giới thiệu couche 150 g in 2 mặt; phiếu đăng ký giấy văn phòng 80 g.
 - Nền màu chạy sát mép: dặn nhà in **in tràn lề** (hoặc chấp nhận viền trắng nhỏ khi in máy văn phòng).
