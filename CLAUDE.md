@@ -687,6 +687,9 @@ V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<m�
 - Host chính: Vibe Host `https://bosskin.io.vn` (`landing/Dockerfile`, trợ giúp ở `/help/`, ảnh mạng xã hội ở `/social/`; host duy nhất — Netlify đã gỡ 12/10/2026); app `https://app.bosskin.io.vn`, API `https://api.bosskin.io.vn` (`docs/he-thong/trien-khai.md`). Form dùng thử: có `apiUrl` → API BossKin, không thì Supabase
   (`supabaseUrl` + `supabaseKey`); thiếu cả hai → form báo lỗi. Ô bẫy bot `website`. `appUrl` trống → ẩn nút Đăng nhập.
 - Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).
+- Công ty dùng thử trên prod: `tools/demo/seed_test_company.py [API]` — "Công ty test", mã `TEST`, đuôi `@test.com`, 24 NV (gộp dữ liệu chụp ảnh
+  seed_demo + seed_help_extra), tắt kiểm tra vị trí / gắn thiết bị. Hỏi email + mật khẩu + mã 2FA system admin và mật khẩu chung tài khoản dùng thử;
+  chỉ thêm công ty mới, đã có mã TEST / đuôi test.com thì dừng. Đổi API mà script hỏng → sửa cùng seed_demo (quy tắc 2).
 
 ## Tài liệu hệ thống & trang trợ giúp (10/2026)
 - `docs/he-thong/`: tài liệu kỹ thuật (kiến trúc, phân quyền, nghiệp vụ, bảo mật, triển khai). `api.md`, `csdl.md`, `quyen.md` **tự sinh**
