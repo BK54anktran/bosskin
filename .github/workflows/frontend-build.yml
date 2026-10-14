@@ -9,6 +9,8 @@ name: Frontend build
 # - Nhánh main + có khoá thật: APK được đăng thành bosskin.apk ở release "app-latest" — trang giới thiệu (nút "Tải cho Android")
 #   tải file này. Khoá gốc: frontend/android/app/release.jks + key.properties trên máy dev (không commit), xem landing/README.md.
 # - Số phiên bản: tên theo pubspec, số build = số lần chạy workflow (versionCode luôn tăng).
+# - 3 job: check (analyze + chuỗi + test) → web và apk chạy song song trên 2 máy riêng; APK lỗi không chặn gói web.
+#   Job apk dọn bớt công cụ cài sẵn trên runner trước khi build (đã từng hết đĩa giữa lúc build APK).
 on:
   # Chỉ main (đăng gói web / APK) và PR (kiểm tra) — nhánh làm việc không build riêng, tránh chạy trùng
   push:
@@ -33,21 +35,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: frontend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Java 17 (Android)
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -71,6 +67,29 @@ jobs:
       - name: Test (quyền vào màn, menu nhóm, bản dịch mã lỗi backend)
         run: flutter test
 
+  web:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Ghim phiên bản đã build thử thành công (Gradle 8.14.3, AGP 8.11.1, Kotlin 2.2.20).
+          # Nâng Flutter → nâng cả ba nếu Flutter đòi, build thử rồi mới đổi số ở đây.
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
       - name: Build web
         run: flutter build web --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
 
@@ -88,6 +107,50 @@ jobs:
             --notes "File do workflow frontend-build.yml tự cập nhật; frontend/Dockerfile tải về khi build image."
           gh release upload web-latest "$RUNNER_TEMP/bosskin-web.tar.gz" --clobber
           gh release edit web-latest --notes "Commit: ${GITHUB_SHA}  ·  Build: $(date -u +%Y-%m-%dT%H:%M:%SZ)  ·  Run: ${GITHUB_RUN_NUMBER}"
+
+      - name: Upload web
+        uses: actions/upload-artifact@v4
+        with:
+          name: bosskin-web-${{ github.run_number }}
+          path: frontend/build/web
+          retention-days: 30
+
+  apk:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Dọn đĩa runner (bỏ .NET, GHC, CodeQL, Swift, Boost không dùng)
+        working-directory: .
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift /usr/local/share/boost
+          sudo docker image prune --all --force >/dev/null 2>&1 || true
+          df -h /
+
+      - name: Set up Java 17 (Android)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Ghim phiên bản đã build thử thành công (Gradle 8.14.3, AGP 8.11.1, Kotlin 2.2.20).
+          # Nâng Flutter → nâng cả ba nếu Flutter đòi, build thử rồi mới đổi số ở đây.
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
 
       - name: Android signing (nếu có khoá)
         env:
@@ -110,13 +173,6 @@ jobs:
 
       - name: Build APK
         run: flutter build apk --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
-
-      - name: Upload web
-        uses: actions/upload-artifact@v4
-        with:
-          name: bosskin-web-${{ github.run_number }}
-          path: frontend/build/web
-          retention-days: 30
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

@@ -120,7 +120,8 @@ Xem CLAUDE.md, mục *Chạy & quản lý server dev*: `dev\runner.cmd`, `dev\st
 ## 10. Phát hành web và app Android (Bước B)
 
 Workflow **Frontend build** (`.github/workflows/frontend-build.yml`) chạy cho mỗi push đụng `frontend/**`
-(hoặc chạy tay): `flutter analyze` (lỗi mới chặn), kiểm tra chuỗi tiếng Việt viết cứng, build web và APK.
+(hoặc chạy tay), gồm 3 job: **check** (`flutter analyze` — lỗi mới chặn, chuỗi tiếng Việt viết cứng, `flutter test`) rồi **web** và **apk**
+chạy song song trên hai máy riêng — APK lỗi không chặn gói web (triển khai web chỉ cần job web xanh).
 Kết quả tải ở GitHub → Actions → lần chạy → *Artifacts*: `bosskin-web-<số>` và `bosskin-apk-<số>`.
 Số build = số lần chạy workflow (versionCode luôn tăng, cài đè được lên bản cũ).
 

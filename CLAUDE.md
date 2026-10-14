@@ -368,7 +368,7 @@ V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<m�
 → Migration tiếp theo phải là **V24**
 
 ## Vận hành (Bước 2)
-- Build frontend: `.github/workflows/frontend-build.yml` (chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
+- Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
   secrets `ANDROID_KEYSTORE_*`; thiếu thì ký debug). Gradle 8.14.3, AGP 8.11.1, Kotlin 2.2.20; Gradle heap 4G (`gradle.properties`).
 - Runbook: `docs/runbook.md` (biến môi trường, deploy, rollback, sao lưu/khôi phục DB, sự cố). Đổi cách deploy/biến môi trường → sửa runbook.
 - Deploy EB **chạy tay** (workflow_dispatch); push `main` chỉ chạy test. Gói: jar + Procfile + `.ebextensions`.
