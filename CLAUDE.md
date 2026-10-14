@@ -690,6 +690,8 @@ V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<m�
 - Công ty dùng thử trên prod: `tools/demo/seed_test_company.py [API]` — "Công ty test", mã `TEST`, đuôi `@test.com`, 24 NV (gộp dữ liệu chụp ảnh
   seed_demo + seed_help_extra), tắt kiểm tra vị trí / gắn thiết bị. Hỏi email + mật khẩu + mã 2FA system admin và mật khẩu chung tài khoản dùng thử;
   chỉ thêm công ty mới, đã có mã TEST / đuôi test.com thì dừng. Đổi API mà script hỏng → sửa cùng seed_demo (quy tắc 2).
+  Xoá hẳn công ty TEST để tạo lại: `tools/demo/clear_test_company.sql` (chủ dự án tự chạy, sao lưu trước; khoá ngoại bật, một transaction,
+  chỉ dữ liệu company TEST; không xoá file tài liệu trong kho). Thêm bảng mới có company_id / employee_id / user_id → thêm vào script này.
 
 ## Tài liệu hệ thống & trang trợ giúp (10/2026)
 - `docs/he-thong/`: tài liệu kỹ thuật (kiến trúc, phân quyền, nghiệp vụ, bảo mật, triển khai). `api.md`, `csdl.md`, `quyen.md` **tự sinh**
