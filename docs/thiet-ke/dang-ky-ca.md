@@ -1,6 +1,7 @@
 # Thiết kế: Đăng ký lịch làm việc (nhân viên tự đăng ký ngày + khung giờ)
 
-Trạng thái: **bản thiết kế, chưa làm**. Ngày viết 14/10/2026. Hình mẫu giao diện: `dang-ky-ca/*.png` (nguồn `dang-ky-ca/mockup.html`).
+Trạng thái: **bản thiết kế, chưa làm**. Ngày viết 14/10/2026. Hình mẫu giao diện: `dang-ky-ca/*.png` theo đúng style bộ thiết kế BossKin (nguồn `dang-ky-ca/mockup.html`, chụp lại bằng `dang-ky-ca/render.py`);
+bản tương tác nằm trong artifact thiết kế BossKin (màn `ShiftRegistration*`).
 
 ## 1. Mục tiêu
 
@@ -137,11 +138,11 @@ Báo đẩy: mở đợt (NV trong phạm vi), 24 giờ trước hạn chót (NV
 
 ## 8. Giao diện
 
-**Cài đặt công ty → Chung**: công tắc "Cho nhân viên đăng ký lịch làm việc" (cần quyền sửa cài đặt).
+**Cài đặt công ty → Chung**: thẻ "Đăng ký lịch làm việc" với công tắc "Cho nhân viên đăng ký lịch làm việc" (cần quyền sửa cài đặt), hình `dang-ky-ca/cai-dat.png`.
 
 **Quản lý — Ca làm → tab "Đăng ký lịch"** (ẩn khi tắt chức năng hoặc thiếu quyền), hình `dang-ky-ca/quan-ly-danh-sach.png`, `quan-ly-chi-tiet.png`:
 - Danh sách đợt: tên, khoảng ngày, phòng ban, hạn chót, trạng thái, số người đã đăng ký / tổng; nút **Mở** / **Đóng** ngay trên dòng.
-- Tạo đợt: chọn nhanh "Tuần sau" / "Tháng sau" hoặc chọn từ ngày – đến ngày; phòng ban (`DepartmentPickerField`); hạn chót; giới hạn (mở rộng).
+- Tạo đợt (hộp thoại, hình `dang-ky-ca/tao-dot.png`): chọn nhanh "Tuần sau" / "Tháng sau" hoặc chọn từ ngày – đến ngày; phòng ban (`DepartmentPickerField`); hạn chót; giới hạn (mở rộng).
 - Chi tiết đợt: lưới người × ngày, mỗi ô là khung giờ (màu theo trạng thái), hàng cuối "số người / cần"; biểu đồ số người theo giờ của ngày đang chọn
   để thấy giờ nào thiếu người; chọn nhiều ô → Duyệt / Từ chối; bấm ô → sửa giờ / gắn ca có sẵn; nút **Xếp lịch từ đăng ký**, **Xuất Excel**.
 
