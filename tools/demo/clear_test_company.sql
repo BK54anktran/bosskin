@@ -9,6 +9,9 @@
 -- Khoá ngoại vẫn BẬT: sót bảng nào thì MySQL báo lỗi và không xoá dòng đó (an toàn hơn tắt kiểm tra).
 -- Cả file trong một transaction: lỗi giữa chừng → đóng kết nối là huỷ hết.
 
+-- MySQL Workbench bật "safe update" mặc định (lỗi 1175 với UPDATE / DELETE … JOIN) → tắt trong phiên này, bật lại ở cuối.
+SET SQL_SAFE_UPDATES = 0;
+
 SET @cid := (SELECT id FROM companies WHERE code = 'TEST' AND domain = 'test.com');
 SELECT IFNULL(CONCAT('Xoá công ty TEST, id = ', @cid), 'Không có công ty TEST / test.com — không xoá gì') AS thong_bao;
 
@@ -81,3 +84,5 @@ COMMIT;
 
 SELECT IF(EXISTS (SELECT 1 FROM companies WHERE code = 'TEST'), 'CÒN công ty TEST — kiểm tra lỗi phía trên', 'Đã xoá xong công ty TEST')
   AS ket_qua;
+
+SET SQL_SAFE_UPDATES = 1;
