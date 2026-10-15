@@ -9,7 +9,7 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `ATTENDANCE_VIEW` | Xem dữ liệu chấm công |  | 20 | attendance_day_tab, attendance_requests_screen, attendance_screen, attendance_ti |
+| `ATTENDANCE_VIEW` | Xem dữ liệu chấm công |  | 21 | attendance_day_tab, attendance_requests_screen, attendance_screen, attendance_ti |
 | `ATTENDANCE_MANAGE` | Chỉnh sửa chấm công | `ATTENDANCE_VIEW` | 14 | attendance_screen, nav_access, permission_labels |
 | `ATTENDANCE_SELF` | Tự check-in/check-out | `ATTENDANCE_VIEW` | 15 | app_shell, nav_access, permission_labels, shift_swap_screen |
 | `ATTENDANCE_REQUEST_APPROVE` | Duyệt yêu cầu chấm công | `ATTENDANCE_VIEW` | 8 | attendance_requests_screen, audit_log_screen, nav_access, permission_labels |

@@ -200,4 +200,34 @@ class CheckInWithoutShiftTest extends IntegrationTest {
         c.setRole(c.emp(9), "Không xem công");
         assertThat(api.get(c.tokenOf(c.emp(9)), "/api/v1/attendances/employees").status()).isEqualTo(403);
     }
+
+    @Test
+    @DisplayName("Không có ca: nhiều lượt vào / ra trong ngày, mỗi lượt một dòng; chưa chấm ra thì không vào lượt mới")
+    void noShift_multiplePunches_eachOwnRow() {
+        var c = fixture.standardCompany();
+        enable(c);
+        var e = c.emp(6);
+        String token = c.tokenOf(e);
+        assertThat(post(token, "/api/v1/attendances/self/check-in", MON.atTime(8, 0)).status()).isEqualTo(201);
+        var again = post(token, "/api/v1/attendances/self/check-in", MON.atTime(8, 30));
+        assertThat(again.status()).isEqualTo(400);
+        assertThat(again.raw()).contains("error.attendance.already_checked_in");
+        assertThat(post(token, "/api/v1/attendances/self/check-out", MON.atTime(11, 0)).status()).isEqualTo(200);
+        assertThat(post(token, "/api/v1/attendances/self/check-in", MON.atTime(13, 0)).status()).isEqualTo(201);
+        assertThat(post(token, "/api/v1/attendances/self/check-out", MON.atTime(17, 0)).status()).isEqualTo(200);
+
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON)).hasSize(2);
+        int inDay = 0;
+        for (var row : api.get(c.adminToken, "/api/v1/attendances/day-view?date=" + MON).expectOk().body()) {
+            if (row.path("employeeId").asLong() == e.id()) inDay++;
+        }
+        assertThat(inDay).as("2 lượt = 2 dòng trên bảng công theo ngày").isEqualTo(2);
+        int inMonth = 0;
+        double hours = 0;
+        for (var row : api.get(c.adminToken, "/api/v1/attendances/timesheet?employeeId=" + e.id() + "&year=2026&month=11").expectOk().body()) {
+            if (MON.toString().equals(row.path("date").asText()) && row.hasNonNull("checkIn")) { inMonth++; hours += row.path("actualHours").asDouble(); }
+        }
+        assertThat(inMonth).isEqualTo(2);
+        assertThat(hours).isEqualTo(7.0);
+    }
 }

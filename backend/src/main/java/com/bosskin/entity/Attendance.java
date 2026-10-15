@@ -157,6 +157,11 @@ public class Attendance extends BaseEntity {
     private String overrideNote;
     // ─────────────────────────────────────────────────────────────────────────
 
+    /** Thứ tự lượt vào / ra của các dòng công không gắn ca trong ngày (0, 1, 2…); dòng gắn ca luôn 0. */
+    @Column(name = "punch_no", nullable = false)
+    @Builder.Default
+    private int punchNo = 0;
+
     @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;

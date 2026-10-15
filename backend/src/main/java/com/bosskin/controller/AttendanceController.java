@@ -385,6 +385,15 @@ public class AttendanceController {
             .findFirst().orElse(null);
 
         List<AttendanceDTO.TimesheetRow> rows = new ArrayList<>();
+        List<Attendance> punches = noShiftPunches(atts);
+        if ((assignments == null || assignments.isEmpty()) && punches.size() > 1) {
+            // Công không theo ca: mỗi lượt vào / ra một dòng; nghỉ phép chỉ gắn vào dòng đầu
+            for (int i = 0; i < punches.size(); i++) {
+                rows.add(buildRow(date, punches.get(i), null, 0, requests,
+                    i == 0 ? resolveLeaveForSlot(leave, null, 1, 0) : null, dayStart, dayEnd, otEnabled, policy));
+            }
+            return rows;
+        }
         for (int i = 0; i < effectiveAssignments.size(); i++) {
             ShiftAssignment sa = effectiveAssignments.get(i);
             Attendance att = sa != null ? attByShift.getOrDefault(sa.getId(), noShiftAtt) : noShiftAtt;
@@ -392,6 +401,11 @@ public class AttendanceController {
             rows.add(buildRow(date, att, sa, i, requests, slotLeave, dayStart, dayEnd, otEnabled, policy));
         }
         return rows;
+    }
+
+    private static List<Attendance> noShiftPunches(List<Attendance> atts) {
+        return atts.stream().filter(a -> a.getShiftAssignment() == null)
+            .sorted(Comparator.comparingInt(Attendance::getPunchNo).thenComparing(Attendance::getId)).toList();
     }
 
     private AttendanceDTO.TimesheetRow buildRow(
@@ -512,6 +526,14 @@ public class AttendanceController {
             .findFirst().orElse(null);
 
         List<AttendanceDTO.DayViewRow> result = new ArrayList<>();
+        List<Attendance> punches = noShiftPunches(atts);
+        if ((assignments == null || assignments.isEmpty()) && punches.size() > 1) {
+            for (int i = 0; i < punches.size(); i++) {
+                result.add(buildDayViewRow(employee, date, punches.get(i), null, effectiveAssignments, requests,
+                    i == 0 ? resolveLeaveForSlotFromList(leaves, null, 1, 0) : null, leaves, dayStart, dayEnd, otEnabled, policy));
+            }
+            return result;
+        }
         for (int i = 0; i < effectiveAssignments.size(); i++) {
             ShiftAssignment sa = effectiveAssignments.get(i);
             Attendance att = sa != null ? attByShift.getOrDefault(sa.getId(), noShiftAtt) : noShiftAtt;
@@ -1400,6 +1422,12 @@ public class AttendanceController {
             .collect(Collectors.toMap(a -> a.getShiftAssignment().getId(), a -> a, (a, b) -> a));
         Attendance noShiftAtt = attendances.stream().filter(a -> a.getShiftAssignment() == null).findFirst().orElse(null);
         Attendance attendance = attendances.isEmpty() ? null : attendances.get(0);
+        if (assignments.isEmpty()) {
+            // Không có ca: hiện lượt đang mở (chưa chấm ra), không thì lượt gần nhất
+            List<Attendance> punches = noShiftPunches(attendances);
+            attendance = punches.stream().filter(a -> a.getCheckIn() != null && a.getCheckOut() == null).findFirst()
+                .orElse(punches.isEmpty() ? null : punches.get(punches.size() - 1));
+        }
 
         // Hôm nay: ca qua đêm của hôm qua còn trong khung giờ thì hiển thị ca đó (A3/A4).
         // Nút check-in/out tính theo thời gian tuyệt đối của từng ca, giống endpoint check-in/out.
@@ -1655,10 +1683,25 @@ public class AttendanceController {
             if (att.getCheckIn() == null) return new ShiftTarget(att, sl.sa(), sl.sw(), sl.start());
         }
         if (isFreeCheckInDay(employee, company, now)) {
-            Attendance att = getOrCreateAttendanceForShift(employee, now.toLocalDate(), null);
-            if (att.getCheckIn() == null) return new ShiftTarget(att, null, null, null);
+            // Mỗi cặp vào / ra là một dòng riêng; còn lượt chưa chấm ra thì chưa được vào lượt mới.
+            List<Attendance> punches = noShiftAttendances(employee, now.toLocalDate());
+            if (punches.stream().noneMatch(a -> a.getCheckIn() != null && a.getCheckOut() == null)) {
+                Attendance fresh = punches.stream().filter(a -> a.getCheckIn() == null).findFirst()
+                    .orElseGet(() -> Attendance.builder()
+                        .employee(employee).date(now.toLocalDate())
+                        .status(Attendance.Status.PRESENT).punchNo(punches.size()).build());
+                return new ShiftTarget(fresh, null, null, null);
+            }
         }
         return null;
+    }
+
+    /** Các dòng công không gắn ca của một ngày, theo thứ tự lượt. */
+    private List<Attendance> noShiftAttendances(Employee employee, LocalDate date) {
+        return attendanceRepository.findByEmployeeIdAndDate(employee.getId(), date).stream()
+            .filter(a -> a.getShiftAssignment() == null)
+            .sorted(Comparator.comparingInt(Attendance::getPunchNo).thenComparing(Attendance::getId))
+            .toList();
     }
 
     /** Giờ tối đa từ lúc chấm vào không theo ca tới lúc chấm ra (quá thì coi như quên chấm ra, quản lý sửa công). */
@@ -1681,10 +1724,11 @@ public class AttendanceController {
     private ShiftTarget findNoShiftCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
         if (company == null || !company.checkInWithoutShiftActive()) return null;
         for (LocalDate d : List.of(now.toLocalDate(), now.toLocalDate().minusDays(1))) {
-            Attendance att = findExistingAttendance(employee, d, null);
-            if (att != null && att.getCheckIn() != null && att.getCheckOut() == null
-                && !now.isBefore(att.getCheckIn()) && !now.isAfter(att.getCheckIn().plusHours(MAX_NO_SHIFT_HOURS))) {
-                return new ShiftTarget(att, null, null, null);
+            for (Attendance att : noShiftAttendances(employee, d)) {
+                if (att.getCheckIn() != null && att.getCheckOut() == null
+                    && !now.isBefore(att.getCheckIn()) && !now.isAfter(att.getCheckIn().plusHours(MAX_NO_SHIFT_HOURS))) {
+                    return new ShiftTarget(att, null, null, null);
+                }
             }
         }
         return null;
@@ -1722,8 +1766,8 @@ public class AttendanceController {
         ShiftTarget t = findCheckOutTarget(employee, company, now);
         if (t != null) return t;
         if (isFreeCheckInDay(employee, company, now)) {
-            Attendance att = findExistingAttendance(employee, now.toLocalDate(), null);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, att != null && att.getCheckOut() != null
+            boolean anyPunch = noShiftAttendances(employee, now.toLocalDate()).stream().anyMatch(a -> a.getCheckIn() != null);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, anyPunch
                 ? "error.attendance.already_checked_out" : "error.attendance.not_checked_in");
         }
         if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
