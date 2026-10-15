@@ -196,6 +196,8 @@ class CheckInWithoutShiftTest extends IntegrationTest {
         assertThat(api.get(token, "/api/v1/employees?page=0&size=5").status()).isEqualTo(403);
         var list = api.get(token, "/api/v1/attendances/employees").expectOk().body();
         assertThat(list.size()).isGreaterThan(1);
+        assertThat(api.get(token, "/api/v1/departments/flat").status()).isEqualTo(403);
+        assertThat(api.get(token, "/api/v1/departments/flat?permission=ATTENDANCE_VIEW").status()).isEqualTo(200);
         c.createRole("Không xem công", java.util.List.of("DASHBOARD_VIEW"));
         c.setRole(c.emp(9), "Không xem công");
         assertThat(api.get(c.tokenOf(c.emp(9)), "/api/v1/attendances/employees").status()).isEqualTo(403);

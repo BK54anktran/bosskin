@@ -142,7 +142,11 @@ public class DepartmentController {
     public ResponseEntity<List<DepartmentDTO.FlatItem>> getFlat(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "DEPARTMENT_VIEW") String permission) {
-        requirePermission(user, "DEPARTMENT_VIEW");
+        // Danh sách phòng ban để lọc theo phạm vi của một quyền khác (vd. ATTENDANCE_VIEW, SHIFT_VIEW): đủ quyền đó, không đòi DEPARTMENT_VIEW
+        if (user == null || !(user.hasPermission("DEPARTMENT_VIEW")
+                || (permission.endsWith("_VIEW") && user.hasPermission(permission)))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
+        }
         return ResponseEntity.ok(departmentService.getFlat(user.getCompany().getId(), user.getId(), permission));
     }
 
