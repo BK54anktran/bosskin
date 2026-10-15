@@ -24,6 +24,7 @@ class Attendance {
   final double? workingHours;
   final double? overtimeHours;
   final String? note;
+  final bool approved;
 
   const Attendance({
     required this.id,
@@ -41,6 +42,7 @@ class Attendance {
     this.workingHours,
     this.overtimeHours,
     this.note,
+    this.approved = true,
   });
 
   factory Attendance.fromJson(Map<String, dynamic> j) => Attendance(
@@ -62,6 +64,7 @@ class Attendance {
         workingHours: (j['workingHours'] as num?)?.toDouble(),
         overtimeHours: (j['overtimeHours'] as num?)?.toDouble(),
         note: j['note'],
+        approved: j['approved'] as bool? ?? true,
       );
 }
 

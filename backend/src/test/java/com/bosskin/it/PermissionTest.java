@@ -156,4 +156,24 @@ class PermissionTest extends IntegrationTest {
         assertThat(deptScopeRepo.findDeptIds(e.userId(), "ATTENDANCE_VIEW"))
             .as("vẫn giới hạn (phòng đã xoá), không rỗng = toàn công ty").isNotEmpty();
     }
+
+    @Test
+    @DisplayName("Xoá công: người chỉ có phạm vi một phòng không xoá được dòng công của phòng khác (cần ATTENDANCE_MANAGE + nằm trong phạm vi xem)")
+    void deleteAttendance_respectsViewScope() {
+        var c = fixture.standardCompany();
+        long tmp = c.createDepartment("TMP2", "Phòng khác", null);
+        long roleId = api.post(c.adminToken, "/api/v1/roles", Map.of(
+            "name", "Sửa công phòng tạm", "description", "test",
+            "permissions", List.of("ATTENDANCE_VIEW", "ATTENDANCE_MANAGE"), "roleViewAllCompany", true,
+            "deptScopes", Map.of("ATTENDANCE_VIEW", List.of(tmp)))).expectOk().id();
+        var scoped = c.emp(1);
+        api.put(c.adminToken, "/api/v1/users/" + scoped.userId() + "/roles", Map.of("roleIds", List.of(roleId))).expectOk();
+        var other = c.emp(6);
+        long attId = api.post(c.adminToken, "/api/v1/attendances/override",
+            Map.of("employeeId", other.id(), "date", "2026-11-02")).expectOk().body().path("attendanceId").asLong();
+
+        var denied = api.delete(c.tokenOf(scoped), "/api/v1/attendances/" + attId);
+        assertThat(denied.status()).as(denied.raw()).isEqualTo(403);
+        assertThat(api.delete(c.adminToken, "/api/v1/attendances/" + attId).status()).isIn(200, 204);
+    }
 }

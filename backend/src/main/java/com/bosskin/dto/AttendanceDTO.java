@@ -27,6 +27,7 @@ public class AttendanceDTO {
         private LocalDateTime checkOut;
         private Attendance.Status status;
         private String note;
+        private boolean approved;
 
         public static Response from(Attendance a) {
             var employee = a.getEmployee();
@@ -43,6 +44,7 @@ public class AttendanceDTO {
                 .checkOut(a.getCheckOut())
                 .status(a.getStatus())
                 .note(a.getNote())
+                .approved(a.isApproved())
                 .build();
         }
     }

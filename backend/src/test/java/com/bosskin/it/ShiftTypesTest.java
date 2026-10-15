@@ -200,4 +200,31 @@ class ShiftTypesTest extends IntegrationTest {
             "requesterAssignmentId", aHc, "targetEmployeeId", b.id()));
         assertThat(res.status()).isEqualTo(409);
     }
+
+    @Test
+    @DisplayName("Duyệt đổi ca theo phạm vi xem ca: người duyệt chỉ có phạm vi phòng khác không thấy, không duyệt, không từ chối được")
+    void swapApproverRespectsShiftViewScope() {
+        var c = fixture.standardCompany();
+        clock.set(MON.minusDays(3).atTime(9, 0));
+        var a = c.emp(6);
+        var b = c.emp(7);
+        long aHc = c.assign(a, "HC", MON);
+        c.assign(b, "DEM", MON);
+        long swapId = api.post(c.tokenOf(a), "/api/v1/shift-swaps", Map.of(
+            "requesterAssignmentId", aHc, "targetEmployeeId", b.id())).expectOk().id();
+
+        long other = c.createDepartment("KHAC", "Phòng khác", null);
+        long roleId = api.post(c.adminToken, "/api/v1/roles", Map.of(
+            "name", "Duyệt đổi ca phòng khác", "description", "test",
+            "permissions", java.util.List.of("SHIFT_VIEW", "SHIFT_SWAP_APPROVE"), "roleViewAllCompany", true,
+            "deptScopes", Map.of("SHIFT_VIEW", java.util.List.of(other)))).expectOk().id();
+        var approver = c.emp(1);
+        api.put(c.adminToken, "/api/v1/users/" + approver.userId() + "/roles", Map.of("roleIds", java.util.List.of(roleId))).expectOk();
+        String token = c.tokenOf(approver);
+
+        assertThat(api.get(token, "/api/v1/shift-swaps").expectOk().body().size()).as("không thấy đơn ngoài phạm vi").isZero();
+        assertThat(api.put(token, "/api/v1/shift-swaps/" + swapId + "/approve", Map.of()).status()).isEqualTo(403);
+        assertThat(api.put(token, "/api/v1/shift-swaps/" + swapId + "/reject", Map.of()).status()).isEqualTo(403);
+        api.put(c.adminToken, "/api/v1/shift-swaps/" + swapId + "/reject", Map.of()).expectOk();
+    }
 }

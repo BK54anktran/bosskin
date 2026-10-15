@@ -232,4 +232,18 @@ class CheckInWithoutShiftTest extends IntegrationTest {
         assertThat(inMonth).isEqualTo(2);
         assertThat(hours).isEqualTo(7.0);
     }
+
+    @Test
+    @DisplayName("Lịch sử chấm công của tôi hiện cả lượt chưa duyệt, kèm cờ approved = false")
+    void selfHistory_includesUnapproved() {
+        var c = fixture.standardCompany();
+        enable(c);
+        var e = c.emp(6);
+        String token = c.tokenOf(e);
+        post(token, "/api/v1/attendances/self/check-in", MON.atTime(9, 0));
+        post(token, "/api/v1/attendances/self/check-out", MON.atTime(11, 0));
+        var hist = api.get(token, "/api/v1/attendances/self/history?year=2026&month=11").expectOk().body();
+        assertThat(hist.size()).isEqualTo(1);
+        assertThat(hist.get(0).path("approved").asBoolean(true)).isFalse();
+    }
 }

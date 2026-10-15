@@ -104,20 +104,20 @@ public class AttendanceRequestController {
     private void requirePermission(User user, String perm) {
         if (user == null || !user.hasPermission(perm)) {
             throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.FORBIDDEN, "Không có quyền: " + perm);
+                org.springframework.http.HttpStatus.FORBIDDEN, "error.permission.denied");
         }
     }
 
     private void requireAnyPermission(User user, String... perms) {
         if (user == null) {
             throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.FORBIDDEN, "Không có quyền");
+                org.springframework.http.HttpStatus.FORBIDDEN, "error.permission.denied");
         }
         for (String perm : perms) {
             if (user.hasPermission(perm)) return;
         }
         throw new org.springframework.web.server.ResponseStatusException(
             org.springframework.http.HttpStatus.FORBIDDEN,
-            "Không có quyền: " + String.join(" hoặc ", perms));
+            "error.permission.denied");
     }
 }

@@ -681,9 +681,10 @@ class _HistorySection extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      a.status.name.toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: 11, color: AppTheme.primary),
+                      a.approved ? a.status.name.toUpperCase() : s.pending,
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: a.approved ? AppTheme.primary : AppTheme.warning),
                     ),
                   ],
                 );

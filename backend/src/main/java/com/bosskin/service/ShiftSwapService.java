@@ -40,13 +40,17 @@ public class ShiftSwapService {
     private final com.bosskin.repository.AttendanceRepository attendanceRepository;
     private final Clock clock;
     private final ManagerApprovalService managerApproval;
+    private final DeptScopeService deptScopeService;
 
     @Transactional(readOnly = true)
     public List<ShiftSwapDTO.Response> list(User user, String statusStr) {
         ShiftSwapRequest.Status status = statusStr == null || statusStr.isBlank()
             ? null : ShiftSwapRequest.Status.valueOf(statusStr.toUpperCase());
         Long onlyEmployee = canApprove(user) ? null : selfEmployee(user).getId();
-        return swapRepo.search(user.getCompany().getId(), status, onlyEmployee).stream().map(this::toResponse).toList();
+        var all = swapRepo.search(user.getCompany().getId(), status, onlyEmployee).stream();
+        // Người duyệt chỉ thấy đơn trong phạm vi xem ca của mình (phạm vi của SHIFT_VIEW)
+        if (onlyEmployee == null) all = all.filter(r -> inApproverScope(user, r));
+        return all.map(this::toResponse).toList();
     }
 
     @Transactional
@@ -92,6 +96,7 @@ public class ShiftSwapService {
     public ShiftSwapDTO.Response approve(User user, Long id, String note) {
         if (!canApprove(user)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         ShiftSwapRequest r = pending(user, id);
+        requireApproverScope(user, r);
         Long myEmpId = employeeRepo.findByUserIdFetch(user.getId()).map(Employee::getId).orElse(null);
         if (myEmpId != null && (r.getRequester().getId().equals(myEmpId) || r.getTargetEmployee().getId().equals(myEmpId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.swap.self_approve");
@@ -127,6 +132,7 @@ public class ShiftSwapService {
     public ShiftSwapDTO.Response reject(User user, Long id, String note) {
         if (!canApprove(user)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
         ShiftSwapRequest r = pending(user, id);
+        requireApproverScope(user, r);
         return doReject(r, user, note);
     }
 
@@ -210,6 +216,22 @@ public class ShiftSwapService {
 
     private boolean canApprove(User user) {
         return user.hasPermission("SHIFT_SWAP_APPROVE");
+    }
+
+    /** Đơn nằm trong phạm vi xem ca của người duyệt: cả người xin và người nhận đều thuộc phòng trong phạm vi (rỗng = toàn công ty). */
+    private boolean inApproverScope(User user, ShiftSwapRequest r) {
+        var scope = deptScopeService.resolvedScopes(user.getId(), "SHIFT_VIEW");
+        if (scope.isEmpty()) return true;
+        if (scope.contains(DeptScopeService.SCOPE_SELF_ONLY)) return false;
+        return deptIn(scope, r.getRequester()) && deptIn(scope, r.getTargetEmployee());
+    }
+
+    private static boolean deptIn(java.util.Set<Long> scope, Employee e) {
+        return e != null && e.getDepartment() != null && scope.contains(e.getDepartment().getId());
+    }
+
+    private void requireApproverScope(User user, ShiftSwapRequest r) {
+        if (!inApproverScope(user, r)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
     private Employee selfEmployee(User user) {

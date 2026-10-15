@@ -166,6 +166,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Param("to") LocalDate to
     );
 
+
     @Query("""
         SELECT a FROM Attendance a
         WHERE a.employee.id = :employeeId

@@ -1237,6 +1237,7 @@ public class AttendanceController {
         requirePermission(user, "ATTENDANCE_MANAGE");
         var att = attendanceRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
+        requireViewScope(user, att.getEmployee().getDepartment().getId());
         periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
         if (att.isApproved())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_approved");
@@ -1293,8 +1294,9 @@ public class AttendanceController {
         var employee = getSelfEmployee(user);
         var period = PayrollPeriod.of(year, month, employee.getCompany().getPayrollCutoffDay());
         List<AttendanceDTO.Response> history = attendanceRepository
-            .findApprovedByEmployeeAndDateRange(employee.getId(), period.from(), period.to())
+            .findByEmployeeAndDateRange(employee.getId(), period.from(), period.to())
             .stream()
+            .sorted(Comparator.comparing(Attendance::getDate).thenComparing(Attendance::getId).reversed())
             .map(AttendanceDTO.Response::from)
             .toList();
         return ResponseEntity.ok(history);
