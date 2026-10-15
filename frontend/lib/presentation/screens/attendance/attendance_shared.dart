@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../data/models/attendance.dart';
 import '../../widgets/status_badge.dart';
@@ -875,4 +876,10 @@ class _AttRequestInfoCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Quyền duyệt / bỏ duyệt công (BE: ATTENDANCE_APPROVE) — tách riêng khỏi quyền xem; dùng chung các tab bảng công.
+bool canApproveAttendance() {
+  final user = AuthService.instance.currentUser;
+  return (user?.isSystemAdmin ?? false) || (user?.can('ATTENDANCE_APPROVE') ?? false);
 }

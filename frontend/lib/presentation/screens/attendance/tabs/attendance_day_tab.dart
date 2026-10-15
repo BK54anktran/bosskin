@@ -14,7 +14,6 @@ import '../../../../data/repositories/leave_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../widgets/day_offset_text.dart';
 import '../../../../data/services/department_service.dart';
-import '../../../../data/services/auth_service.dart';
 import '../../../widgets/department_picker_field.dart';
 import '../attendance_shared.dart';
 import '../../../widgets/holiday_widgets.dart';
@@ -1176,10 +1175,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   }
 
   /// Quyền duyệt / bỏ duyệt công tách riêng khỏi quyền xem (BE: ATTENDANCE_APPROVE).
-  bool get _canApprove {
-    final user = AuthService.instance.currentUser;
-    return (user?.isSystemAdmin ?? false) || (user?.can('ATTENDANCE_APPROVE') ?? false);
-  }
+  bool get _canApprove => canApproveAttendance();
 
   Widget _daySlotActionCell(DayViewRow? slot, double width, Color bg) {
     final s = AppLocalizations.of(context);

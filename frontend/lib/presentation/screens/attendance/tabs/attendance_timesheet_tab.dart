@@ -1318,12 +1318,14 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
             message: row.approvedByName != null ? '${s.approved}: ${row.approvedByName}' : s.approved,
             child: const Icon(Icons.check_circle, color: AppTheme.secondary, size: 18),
           ),
-          const SizedBox(width: 2),
-          SizedBox(width: 24, height: 24, child: IconButton(
-            padding: EdgeInsets.zero, iconSize: 15,
-            icon: const Icon(Icons.lock_open_outlined, color: AppTheme.warning),
-            tooltip: s.unapprove, onPressed: () => _unapproveRow(row),
-          )),
+          if (canApproveAttendance()) ...[
+            const SizedBox(width: 2),
+            SizedBox(width: 24, height: 24, child: IconButton(
+              padding: EdgeInsets.zero, iconSize: 15,
+              icon: const Icon(Icons.lock_open_outlined, color: AppTheme.warning),
+              tooltip: s.unapprove, onPressed: () => _unapproveRow(row),
+            )),
+          ],
         ] else
           Builder(builder: (_) {
             final dk = _dateKey(row.date);
@@ -1347,10 +1349,12 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                       icon: const Icon(Icons.delete_outline, color: AppTheme.error),
                       tooltip: s.delete, onPressed: () => _deleteRow(row))),
                 ],
-                const SizedBox(width: 2),
-                SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
-                    icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
-                    tooltip: s.approve, onPressed: () => _approveRow(row))),
+                if (canApproveAttendance()) ...[
+                  const SizedBox(width: 2),
+                  SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
+                      icon: const Icon(Icons.check_circle_outline, color: AppTheme.secondary),
+                      tooltip: s.approve, onPressed: () => _approveRow(row))),
+                ],
               ],
             ]);
           }),
