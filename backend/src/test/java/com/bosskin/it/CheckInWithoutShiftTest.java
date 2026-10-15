@@ -133,7 +133,7 @@ class CheckInWithoutShiftTest extends IntegrationTest {
             .expectOk().body();
         boolean found = false;
         for (var row : rows) {
-            if (MON.toString().equals(row.path("date").asText()) && row.path("checkIn").asText("").startsWith("09:00")) {
+            if (MON.toString().equals(row.path("date").asText()) && row.path("checkIn").asText("").endsWith("T09:00")) {
                 found = true;
                 assertThat(row.path("actualHours").asDouble()).as("giờ làm").isGreaterThan(0.0);
                 assertThat(row.path("status").asText()).isEqualTo("PRESENT");
