@@ -115,4 +115,47 @@ class CheckInWithoutShiftTest extends IntegrationTest {
         assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON).get(0).getStatus())
             .isEqualTo(Attendance.Status.LATE);
     }
+
+    @Test
+    @DisplayName("Bật: công không ca duyệt được, bảng công có giờ làm và trạng thái PRESENT")
+    void enabled_noShift_approveAndTimesheet() {
+        var c = fixture.standardCompany();
+        enable(c);
+        var e = c.emp(6);
+        String token = c.tokenOf(e);
+        post(token, "/api/v1/attendances/self/check-in", MON.atTime(9, 0));
+        post(token, "/api/v1/attendances/self/check-out", MON.atTime(13, 0));
+
+        assertThat(api.post(c.adminToken, "/api/v1/attendances/approve", Map.of(
+            "employeeId", e.id(), "date", MON.toString())).status()).isEqualTo(200);
+
+        var rows = api.get(c.adminToken, "/api/v1/attendances/timesheet?employeeId=" + e.id() + "&year=2026&month=11")
+            .expectOk().body();
+        boolean found = false;
+        for (var row : rows) {
+            if (MON.toString().equals(row.path("date").asText()) && row.path("checkIn").asText("").startsWith("09:00")) {
+                found = true;
+                assertThat(row.path("actualHours").asDouble()).as("giờ làm").isGreaterThan(0.0);
+                assertThat(row.path("status").asText()).isEqualTo("PRESENT");
+            }
+        }
+        assertThat(found).as("dòng công không ca có trên bảng công").isTrue();
+    }
+
+    @Test
+    @DisplayName("Bật: quên chấm ra công không ca tối hôm trước → chấm ra sáng hôm sau (trong 24 giờ) đóng đúng bản ghi đó, dù hôm sau đã có ca")
+    void enabled_openNoShiftYesterday_checkOutClosesThatRecord() {
+        var c = fixture.standardCompany();
+        enable(c);
+        var e = c.emp(6);
+        String token = c.tokenOf(e);
+        post(token, "/api/v1/attendances/self/check-in", MON.atTime(20, 0));      // không ca, quên chấm ra
+        c.assign(e, "HC", MON.plusDays(1));                                       // hôm sau có ca HC 08:00–17:00
+        var r = post(token, "/api/v1/attendances/self/check-out", MON.plusDays(1).atTime(7, 0));
+        assertThat(r.status()).isEqualTo(200);
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON).get(0).getCheckOut())
+            .isEqualTo(MON.plusDays(1).atTime(7, 0));
+        // ca HC hôm sau không bị dính: chưa có công nào cho ca đó
+        assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON.plusDays(1))).isEmpty();
+    }
 }
