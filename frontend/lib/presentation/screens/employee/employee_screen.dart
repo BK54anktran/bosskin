@@ -566,6 +566,9 @@ class _EmployeeCard extends StatelessWidget {
 
     final user = AuthService.instance.currentUser;
     final canSalary = user != null && (user.isSystemAdmin || user.can('PAYROLL_CREATE'));
+    // V26: nút của tính năng công ty đã tắt không hiện (bấm vào chỉ gặp 403)
+    final canJobHistory = user?.hasFeature('HR_JOBHISTORY') ?? true;
+    final canDependents = user?.hasFeature('PAY_DEPENDENT') ?? true;
     final canDocuments = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_DOCUMENT_VIEW'));
     final canEdit = user != null && (user.isSystemAdmin || user.can('EMPLOYEE_UPDATE'));
     // Người đang làm: nút Nghỉ việc; người đã nghỉ: nút Đi làm lại (cùng quyền EMPLOYEE_DELETE)
@@ -576,20 +579,22 @@ class _EmployeeCard extends StatelessWidget {
     final desktopActions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Tooltip(
-          message: s.jobHistoryTitle,
-          child: IconButton(
-            icon: const Icon(Icons.timeline, size: 20),
-            onPressed: onJobHistory,
+        if (canJobHistory)
+          Tooltip(
+            message: s.jobHistoryTitle,
+            child: IconButton(
+              icon: const Icon(Icons.timeline, size: 20),
+              onPressed: onJobHistory,
+            ),
           ),
-        ),
-        Tooltip(
-          message: s.dependentsTitle,
-          child: IconButton(
-            icon: const Icon(Icons.family_restroom_outlined, size: 20),
-            onPressed: onDependents,
+        if (canDependents)
+          Tooltip(
+            message: s.dependentsTitle,
+            child: IconButton(
+              icon: const Icon(Icons.family_restroom_outlined, size: 20),
+              onPressed: onDependents,
+            ),
           ),
-        ),
         if (canDocuments)
           Tooltip(
             message: s.docTitleDialog,
@@ -639,22 +644,24 @@ class _EmployeeCard extends StatelessWidget {
     final actionsMenu = PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 20),
       itemBuilder: (_) => [
-        PopupMenuItem(
-          value: 'job',
-          child: Row(children: [
-            const Icon(Icons.timeline, size: 18),
-            const SizedBox(width: 10),
-            Text(s.jobHistoryTitle),
-          ]),
-        ),
-        PopupMenuItem(
-          value: 'dependents',
-          child: Row(children: [
-            const Icon(Icons.family_restroom_outlined, size: 18),
-            const SizedBox(width: 10),
-            Text(s.dependentsTitle),
-          ]),
-        ),
+        if (canJobHistory)
+          PopupMenuItem(
+            value: 'job',
+            child: Row(children: [
+              const Icon(Icons.timeline, size: 18),
+              const SizedBox(width: 10),
+              Text(s.jobHistoryTitle),
+            ]),
+          ),
+        if (canDependents)
+          PopupMenuItem(
+            value: 'dependents',
+            child: Row(children: [
+              const Icon(Icons.family_restroom_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(s.dependentsTitle),
+            ]),
+          ),
         if (canDocuments)
           PopupMenuItem(
             value: 'documents',

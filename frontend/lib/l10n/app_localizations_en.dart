@@ -5860,38 +5860,137 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auditActShiftRegReject => 'Reject schedule registration';
 
   @override
-  String get companyModulesTitle => 'Feature modules';
+  String get companyFeaturesTitle => 'Features';
 
   @override
-  String get companyModulesHelper =>
-      'A disabled module is unavailable to the company (menus hidden, permissions removed; existing data is kept). Employees, departments, roles and settings are always available.';
+  String get companyFeaturesHelper =>
+      'A disabled feature is unavailable to the company (menus and buttons hidden, API blocked; existing data is kept). Takes effect immediately. Employees, departments, roles, settings and audit log are always available.';
 
   @override
-  String companyModuleNeeds(String name) {
+  String companyFeatureNeeds(String name) {
     return 'Requires $name';
   }
 
   @override
-  String get companyModuleAttendance => 'Attendance';
+  String get auditActCompanyFeatures => 'Change company features';
 
   @override
-  String get companyModuleShift => 'Shifts (assignment, swaps, registration)';
+  String get featureGroupAttendance => 'Attendance';
 
   @override
-  String get companyModuleLeave => 'Leave';
+  String get featureGroupShift => 'Shifts';
 
   @override
-  String get companyModulePayroll => 'Payroll';
+  String get featureGroupCalendar => 'Calendar & holidays';
 
   @override
-  String get companyModuleContract => 'Labor contracts';
+  String get featureGroupLeave => 'Leave';
 
   @override
-  String get companyModuleDocument => 'HR documents';
+  String get featureGroupPayroll => 'Payroll';
 
   @override
-  String get companyModuleReport => 'Reports';
+  String get featureGroupHr => 'Extended HR';
 
   @override
-  String get auditActCompanyModules => 'Change company feature modules';
+  String get featureGroupReport => 'Reports & data';
+
+  @override
+  String get featureAttSheet => 'Timesheet & approval';
+
+  @override
+  String get featureAttSelf => 'Self check-in / check-out';
+
+  @override
+  String get featureAttGeofence => 'GPS location check';
+
+  @override
+  String get featureAttDevice => 'Check-in device binding';
+
+  @override
+  String get featureAttNoshift => 'Check-in without a shift';
+
+  @override
+  String get featureAttRequest => 'Attendance & overtime requests';
+
+  @override
+  String get featureShiftBasic => 'Shifts & assignments';
+
+  @override
+  String get featureShiftAdvanced => 'Flexible, split & overnight shifts';
+
+  @override
+  String get featureShiftRotation => 'Shift rotation';
+
+  @override
+  String get featureShiftSwap => 'Shift swaps';
+
+  @override
+  String get featureShiftRegistration => 'Schedule registration';
+
+  @override
+  String get featureShiftReminder => 'Shift & check-in reminders';
+
+  @override
+  String get featureCalWorkcal => 'Work calendars by department';
+
+  @override
+  String get featureCalHoliday => 'Holidays';
+
+  @override
+  String get featureLeaveBasic => 'Leave requests & approval';
+
+  @override
+  String get featureLeaveBalance => 'Leave balances & ledger';
+
+  @override
+  String get featureLeaveAccrual => 'Automatic leave accrual';
+
+  @override
+  String get featurePayBasic => 'Payroll & payslips';
+
+  @override
+  String get featurePayFormula => 'Custom pay variables & formulas';
+
+  @override
+  String get featurePayTaxIns => 'Income tax & insurance';
+
+  @override
+  String get featurePayDependent => 'Dependents, tax code, insurance book';
+
+  @override
+  String get featurePayEmployerCost => 'Employer insurance & total cost';
+
+  @override
+  String get featureHrContract => 'Labor contracts & appendices';
+
+  @override
+  String get featureHrContractAlert => 'Contract expiry alerts';
+
+  @override
+  String get featureHrDocument => 'HR documents';
+
+  @override
+  String get featureHrDocumentAlert => 'Document expiry alerts';
+
+  @override
+  String get featureHrOrgchart => 'Org chart & direct managers';
+
+  @override
+  String get featureHrJobhistory => 'Job history';
+
+  @override
+  String get featureHrManagerApproval => 'Two-step approval (manager → HR)';
+
+  @override
+  String get featureRptOverview => 'HR & attendance reports';
+
+  @override
+  String get featureRptPayroll => 'Payroll reports';
+
+  @override
+  String get featureRptInsurance => 'Insurance & dependents reports';
+
+  @override
+  String get featureDataExcel => 'Excel import / export';
 }

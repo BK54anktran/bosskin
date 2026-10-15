@@ -85,7 +85,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             return;
                         }
                         companyRepository.findById(user.getCompanyId())
-                            .ifPresent(co -> user.setDisabledModulesLoaded(co.disabledModuleSet()));
+                            .ifPresent(co -> user.setDisabledFeaturesLoaded(co.disabledFeatureSet()));
                         setAuth(user, request);
                     }
                 }

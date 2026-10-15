@@ -121,7 +121,8 @@ class ApiService {
           if (statusCode == 403 &&
               errData is Map &&
               (errData['message'] == 'error.permission.denied' ||
-                  errData['message'] == 'error.company.module_disabled') &&
+                  errData['message'] == 'error.company.module_disabled' ||
+                  errData['message'] == 'error.company.feature_disabled') &&
               !_isAuthEndpoint(error.requestOptions.path)) {
             // Quyền / gói có thể vừa bị đổi → lấy lại để menu ẩn màn không còn dùng được.
             AuthService.instance.syncPermissions();

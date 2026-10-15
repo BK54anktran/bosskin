@@ -18,11 +18,15 @@ on:
     paths:
       - 'frontend/**'
       - 'tools/ci/**'
+      - 'backend/src/main/java/com/bosskin/core/CompanyFeatures.java'
+      - 'backend/src/main/java/com/bosskin/core/FeatureRoutes.java'
       - '.github/workflows/frontend-build.yml'
   pull_request:
     paths:
       - 'frontend/**'
       - 'tools/ci/**'
+      - 'backend/src/main/java/com/bosskin/core/CompanyFeatures.java'
+      - 'backend/src/main/java/com/bosskin/core/FeatureRoutes.java'
       - '.github/workflows/frontend-build.yml'
   workflow_dispatch:
 
@@ -63,6 +67,10 @@ jobs:
       - name: Chuỗi tiếng Việt viết cứng
         working-directory: .
         run: python3 tools/ci/check_vi_literals.py
+
+      - name: Danh mục tính năng công ty khớp backend (V26)
+        working-directory: .
+        run: python3 tools/ci/check_features.py
 
       - name: Test (quyền vào màn, menu nhóm, bản dịch mã lỗi backend)
         run: flutter test

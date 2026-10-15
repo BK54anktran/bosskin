@@ -7,9 +7,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Gói chức năng của công ty (V24): system admin bật / tắt từng gói cho mỗi công ty. Gói tắt → mọi quyền thuộc gói bị gỡ
- * khỏi tài khoản của công ty (User.getPermissions), API kiểm quyền tự trả 403, menu FE tự ẩn. Phần lõi (nhân viên, phòng ban,
- * phân quyền, cài đặt, lịch làm việc, Excel, nhật ký, tổng quan) luôn có. Lưu ở companies.disabled_modules (NULL = bật hết).
+ * 7 gói chức năng của V24 — từ V26 chỉ còn là lớp tương thích: mỗi gói = tính năng gốc của nó ({@link CompanyFeatures#baseOf}),
+ * app điện thoại đã cài vẫn đọc {@code modules}. Việc bật / tắt thật sự nằm ở {@link CompanyFeatures}.
  */
 public final class CompanyModules {
 
@@ -42,26 +41,6 @@ public final class CompanyModules {
         return null;
     }
 
-    /** Chuỗi lưu DB → tập gói đang tắt. */
-    public static Set<String> parse(String stored) {
-        if (stored == null || stored.isBlank()) return Set.of();
-        return Arrays.stream(stored.split(",")).map(String::trim).filter(ALL::contains).collect(Collectors.toUnmodifiableSet());
-    }
-
-    /** Tập gói đang tắt → chuỗi lưu DB (rỗng → NULL = bật hết). */
-    public static String format(Collection<String> disabled) {
-        String s = ALL.stream().filter(disabled::contains).collect(Collectors.joining(","));
-        return s.isEmpty() ? null : s;
-    }
-
-    /** Bỏ các quyền thuộc gói đang tắt. */
-    public static Set<String> filter(Set<String> permissionCodes, Set<String> disabled) {
-        if (disabled.isEmpty()) return permissionCodes;
-        return permissionCodes.stream()
-            .filter(code -> { String m = moduleOf(code); return m == null || !disabled.contains(m); })
-            .collect(Collectors.toSet());
-    }
-
     /**
      * Kiểm danh sách gói BẬT gửi lên → tập gói TẮT. Mã lạ → error.company.module_invalid|mã; bật gói mà tắt gói nó cần →
      * error.company.module_requires|gói|gói cần.
@@ -83,7 +62,7 @@ public final class CompanyModules {
 
     /** API thuộc gói nhưng chỉ kiểm quyền lõi / quyền gói khác (vd. phiếu lương của tôi) → 403 khi gói tắt. */
     public static void requireEnabled(com.bosskin.entity.Company company, String module) {
-        if (company != null && company.disabledModuleSet().contains(module)) {
+        if (company != null && company.disabledFeatureSet().contains(CompanyFeatures.baseOf(module))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.module_disabled");
         }
     }
@@ -92,9 +71,5 @@ public final class CompanyModules {
         if (user != null && user.isModuleDisabled(module)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.company.module_disabled");
         }
-    }
-
-    public static List<String> enabledOf(Set<String> disabled) {
-        return ALL.stream().filter(m -> !disabled.contains(m)).toList();
     }
 }

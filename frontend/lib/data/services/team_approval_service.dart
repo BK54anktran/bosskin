@@ -20,7 +20,8 @@ class TeamApprovalService extends ChangeNotifier {
     final user = AuthService.instance.currentUser;
     bool visible = false;
     int count = 0;
-    if (user != null && !user.isSystemAdmin && user.employeeId != null) {
+    // V26: tính năng duyệt 2 cấp tắt → không gọi API (tránh 403 lặp lại mỗi lần làm mới)
+    if (user != null && !user.isSystemAdmin && user.employeeId != null && user.hasFeature('HR_MANAGER_APPROVAL')) {
       try {
         final r = await _repo.count();
         visible = r.enabled && r.reportCount > 0;

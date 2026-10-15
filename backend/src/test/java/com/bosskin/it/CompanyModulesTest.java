@@ -45,7 +45,7 @@ class CompanyModulesTest extends IntegrationTest {
         // Phiếu lương của tôi chỉ kiểm ATTENDANCE_SELF → chặn riêng theo gói
         var self = api.get(c.tokenOf(c.emp(6)), "/api/v1/payrolls/self");
         assertThat(self.status()).isEqualTo(403);
-        assertThat(self.raw()).contains("error.company.module_disabled");
+        assertThat(self.raw()).contains("error.company.feature_disabled");
 
         JsonNode login = api.login(c.adminEmail, com.bosskin.support.Fixture.PASSWORD).expectOk().body();
         assertThat(perms(login)).noneMatch(p -> p.startsWith("PAYROLL_") || p.startsWith("CONTRACT_"));

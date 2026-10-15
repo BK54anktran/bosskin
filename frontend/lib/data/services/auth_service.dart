@@ -46,6 +46,10 @@ class AuthUser {
   /// V24: gói chức năng công ty đang bật (ATTENDANCE, SHIFT, LEAVE, PAYROLL, CONTRACT, DOCUMENT, REPORT).
   /// null = phiên cũ / không rõ → coi như bật hết. Quyền thuộc gói tắt đã bị backend bỏ khỏi [permissions].
   final Set<String>? modules;
+
+  /// V26: tính năng công ty đang bật (core/CompanyFeatures). null = phiên cũ / không rõ → coi như bật hết
+  /// (lấy lại khi mở app qua [AuthService.syncPermissions]).
+  final Set<String>? features;
   final int? employeeId;
   final Set<String> permissions;
 
@@ -63,6 +67,7 @@ class AuthUser {
     this.companyCode,
     this.companyDomain,
     this.modules,
+    this.features,
     this.employeeId,
     this.permissions = const {},
     this.deptScopes = const {},
@@ -77,6 +82,9 @@ class AuthUser {
   /// V24: gói chức năng có bật cho công ty không (system admin / phiên cũ → có).
   bool hasModule(String module) => modules == null || modules!.contains(module);
 
+  /// V26: tính năng có bật cho công ty không (system admin / phiên cũ → có).
+  bool hasFeature(String feature) => isSystemAdmin || features == null || features!.contains(feature);
+
   Map<String, dynamic> toJson() => {
         'email': email,
         'fullName': fullName,
@@ -88,6 +96,7 @@ class AuthUser {
         'companyCode': companyCode,
         'companyDomain': companyDomain,
         'modules': modules?.toList(),
+        'features': features?.toList(),
         'employeeId': employeeId,
         'permissions': permissions.toList(),
         'deptScopes': deptScopes.map(
@@ -107,6 +116,7 @@ class AuthUser {
         companyCode: m['companyCode'] as String?,
         companyDomain: m['companyDomain'] as String?,
         modules: (m['modules'] as List?)?.map((e) => e.toString()).toSet(),
+        features: (m['features'] as List?)?.map((e) => e.toString()).toSet(),
         employeeId: m['employeeId'] as int?,
         permissions: (m['permissions'] as List?)
                 ?.map((e) => e.toString())
@@ -481,6 +491,7 @@ class AuthService extends ChangeNotifier {
       companyCode: userMap['companyCode'] as String?,
       companyDomain: userMap['companyDomain'] as String?,
       modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
+      features: (userMap['features'] as List?)?.map((e) => e.toString()).toSet(),
       employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
@@ -525,6 +536,7 @@ class AuthService extends ChangeNotifier {
         companyCode: _currentUser!.companyCode,
         companyDomain: _currentUser!.companyDomain,
       modules: _currentUser!.modules,
+      features: _currentUser!.features,
         employeeId: _currentUser!.employeeId,
         permissions: _currentUser!.permissions,
         deptScopes: _currentUser!.deptScopes,
@@ -557,6 +569,7 @@ class AuthService extends ChangeNotifier {
       companyCode: _currentUser!.companyCode,
       companyDomain: _currentUser!.companyDomain,
       modules: _currentUser!.modules,
+      features: _currentUser!.features,
       employeeId: _currentUser!.employeeId,
       permissions: _currentUser!.permissions,
       deptScopes: _currentUser!.deptScopes,
@@ -642,6 +655,7 @@ class AuthService extends ChangeNotifier {
         companyCode: userMap['companyCode'] as String?,
         companyDomain: userMap['companyDomain'] as String?,
       modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
+      features: (userMap['features'] as List?)?.map((e) => e.toString()).toSet(),
         employeeId:
             userMap['employeeId'] as int?,
         permissions: perms,
@@ -770,6 +784,7 @@ class AuthService extends ChangeNotifier {
       companyCode: userMap['companyCode'] as String?,
       companyDomain: userMap['companyDomain'] as String?,
       modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
+      features: (userMap['features'] as List?)?.map((e) => e.toString()).toSet(),
       employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
@@ -805,6 +820,7 @@ class AuthService extends ChangeNotifier {
       companyCode: _currentUser!.companyCode,
       companyDomain: _currentUser!.companyDomain,
       modules: _currentUser!.modules,
+      features: _currentUser!.features,
       employeeId: _currentUser!.employeeId,
       permissions: newPermissions,
       deptScopes:

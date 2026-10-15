@@ -158,16 +158,18 @@ public class CompanyService {
         if (req.getAddress()      != null) company.setAddress(req.getAddress());
         if (req.getPhone()        != null) company.setPhone(req.getPhone());
         if (req.getCompanyEmail() != null) company.setEmail(req.getCompanyEmail());
-        if (req.getModules() != null) {
-            java.util.Set<String> before = company.disabledModuleSet();
-            java.util.Set<String> disabled = com.bosskin.core.CompanyModules.disabledFromEnabled(req.getModules());
-            company.setDisabledModules(com.bosskin.core.CompanyModules.format(disabled));
+        if (req.getFeatures() != null || req.getModules() != null) {
+            java.util.Set<String> before = company.disabledFeatureSet();
+            java.util.Set<String> disabled = req.getFeatures() != null
+                ? com.bosskin.core.CompanyFeatures.disabledFromEnabled(req.getFeatures())
+                : com.bosskin.core.CompanyFeatures.disabledFromModules(req.getModules());
+            company.setDisabledFeatures(com.bosskin.core.CompanyFeatures.format(disabled));
             if (!disabled.equals(before)) {
-                audit.log("COMPANY_MODULES").company(id).entity("COMPANY", id)
-                    .summary(company.getCode() + ": " + String.join(", ", com.bosskin.core.CompanyModules.enabledOf(disabled)))
-                    .detail(com.bosskin.audit.AuditService.map(
-                        "before", com.bosskin.core.CompanyModules.enabledOf(before),
-                        "after", com.bosskin.core.CompanyModules.enabledOf(disabled)))
+                java.util.List<String> turnedOff = disabled.stream().filter(c -> !before.contains(c)).sorted().toList();
+                java.util.List<String> turnedOn = before.stream().filter(c -> !disabled.contains(c)).sorted().toList();
+                audit.log("COMPANY_FEATURES").company(id).entity("COMPANY", id)
+                    .summary(company.getCode() + ": +" + turnedOn.size() + " / -" + turnedOff.size())
+                    .detail(com.bosskin.audit.AuditService.map("turnedOn", turnedOn, "turnedOff", turnedOff))
                     .save();
             }
         }
@@ -210,7 +212,8 @@ public class CompanyService {
             .active(c.isActive())
             .requireAdmin2fa(c.isRequireAdmin2fa())
             .selfAttendanceEnabled(c.isSelfAttendanceEnabled())
-            .modules(com.bosskin.core.CompanyModules.enabledOf(c.disabledModuleSet()))
+            .modules(com.bosskin.core.CompanyFeatures.modulesOf(c.disabledFeatureSet()))
+            .features(com.bosskin.core.CompanyFeatures.enabledOf(c.disabledFeatureSet()))
             .employeeCount(empCount)
             .adminEmail(adminEmail)
             .createdAt(c.getCreatedAt())

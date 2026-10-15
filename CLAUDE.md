@@ -360,15 +360,15 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V25** (`V25__check_in_without_shift.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V26** (`V26__company_features.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
 V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ),
 V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản),
-V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc, V24 gói chức năng theo công ty,
-V25 chấm công không cần xếp ca
-→ Migration tiếp theo phải là **V26**
+V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc, V24 gói chức năng theo công ty (đã thay bằng V26),
+V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`)
+→ Migration tiếp theo phải là **V27**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -564,16 +564,18 @@ V25 chấm công không cần xếp ca
   `shift/my_shift_registration_screen.dart` (`/shift-registration`), `core/utils/shift_registration_utils.dart`. Test: `ShiftRegistrationTest`.
 - Chưa làm: xuất Excel lưới, nhắc trước hạn chót, ảnh trợ giúp, đợt mẫu trong seed.
 
-## Gói chức năng theo công ty (V24, 15/10/2026)
-- System admin bật / tắt gói cho từng công ty ở hộp "Sửa công ty" (/admin): ATTENDANCE, SHIFT, LEAVE, PAYROLL, CONTRACT, DOCUMENT
-  (`EMPLOYEE_DOCUMENT_*`), REPORT; lõi luôn có; ATTENDANCE cần SHIFT. `core/CompanyModules`, `companies.disabled_modules` (NULL = bật hết).
-- Gói tắt → `User.getPermissions()` bỏ quyền thuộc gói (đăng nhập + mọi kiểm quyền). **Thêm mã quyền mới thuộc gói → đặt tiền tố đúng**
-  (vd. `PAYROLL_…`) để bị lọc theo gói; API của gói mà chỉ kiểm quyền lõi → gọi `CompanyModules.requireEnabled(user, gói)`.
-  Chi tiết `docs/he-thong/phan-quyen.md`. FE `AuthUser.modules` / `hasModule`, `routeModule` (nav_access). Test: `CompanyModulesTest`.
-- Chưa làm: ẩn thẻ Tổng quan và tắt job nền (nhắc chấm công, báo hợp đồng / tài liệu sắp hết hạn…) theo gói tắt.
-- FE lấy lại quyền + gói (`AuthService.syncPermissions`, qua refresh token) khi mở app và khi API trả 403 `error.permission.denied` /
-  `error.company.module_disabled` (tối đa 1 lần / phút) → menu ẩn ngay sau khi system admin tắt gói. Màn lõi không gọi API của gói
-  khi thiếu quyền (vd. Nhân viên chỉ tải bậc lương khi có `PAYROLL_VIEW`).
+## Tính năng theo công ty (V26, 15/10/2026; thay gói chức năng V24)
+- System admin bật / tắt **33 tính năng** cho từng công ty ở hộp "Sửa công ty" (/admin), chia nhóm, có hiệu lực ngay; tiền tính ngoài app (app chỉ giữ công tắc).
+  `core/CompanyFeatures` (danh mục + "cần"), `companies.disabled_features` (NULL = bật hết), nhật ký `COMPANY_FEATURES`. Lõi (nhân viên, phòng ban, phân quyền,
+  cài đặt, tổng quan, nhật ký, bảo mật) luôn có. Thiết kế + danh mục: `docs/thiet-ke/goi-chuc-nang.md`; cơ chế chặn: `docs/he-thong/phan-quyen.md`.
+- Chặn 3 lớp: `User.getPermissions()` bỏ quyền gắn riêng tính năng tắt; `security/FeatureRouteInterceptor` + `core/FeatureRoutes` (đường dẫn → tính năng) trả 403
+  `error.company.feature_disabled`; nghiệp vụ / job tự kiểm `CompanyFeatures.require(user|company, F)`. **Thêm API mới thuộc tính năng → thêm dòng vào `FeatureRoutes`**;
+  thêm tính năng → `CATALOG` + `company_feature_utils.dart` + nhãn vi / en (CI `tools/ci/check_features.py` kiểm khớp). `ATTENDANCE_SELF` là quyền chung, thuộc `ATT_SHEET`.
+- Tương thích app cũ: đăng nhập / làm mới trả `features` và `modules` (7 gói V24 = tính năng gốc còn bật); `PUT /admin/companies/{id}` nhận `features` hoặc `modules`.
+- FE: `AuthUser.hasFeature`, `routeFeature` (nav_access), Cài đặt công ty ẩn mục của tính năng tắt, app lấy lại quyền + tính năng (`AuthService.syncPermissions`, qua refresh token)
+  khi mở app và khi API trả 403 `error.permission.denied` / `module_disabled` / `feature_disabled` (tối đa 1 lần / phút). Màn lõi không gọi API của tính năng khi thiếu quyền
+  (vd. Nhân viên chỉ tải bậc lương khi có `PAYROLL_VIEW`).
+- Chưa làm (giai đoạn 2): hành vi nghiệp vụ bên trong tính năng (xem bảng cuối `goi-chuc-nang.md`), job nền, thẻ Tổng quan, ẩn nút / tab trong màn theo tính năng.
 
 ## Chấm công không cần xếp ca (V25, 15/10/2026)
 - Cài đặt công ty `attendance.checkInWithoutShift` (`companies.check_in_without_shift`, mặc định tắt). Bật → ngày NV không có ca (và không đang trong

@@ -64,6 +64,9 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
   final _standardWorkDaysCtrl = TextEditingController(text: '22');
   final _cutoffDayCtrl = TextEditingController(text: '1');
   /// Bước L: báo trước hợp đồng hết hạn (ngày)
+  /// V26: tính năng công ty đang bật (ẩn mục cài đặt của tính năng tắt).
+  bool _has(String feature) => AuthService.instance.currentUser?.hasFeature(feature) ?? true;
+
   final _contractWarningCtrl = TextEditingController(text: '30');
   int _minWageRegion = 1;
   /// Bước M: tỷ lệ BH công ty đóng (%)
@@ -406,6 +409,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                       ),
                     ),
                   ),
+                  if (_has('SHIFT_REGISTRATION'))
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -425,12 +429,14 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                       ),
                     ),
                   ),
+                  if (_has('HR_MANAGER_APPROVAL') || _has('HR_CONTRACT_ALERT'))
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (_has('HR_MANAGER_APPROVAL')) ...[
                           Text(s.approvalModeTitle, style: const TextStyle(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 8),
                           AppDropdown<String>(
@@ -445,6 +451,8 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                           const SizedBox(height: 4),
                           Text(s.approvalModeHelper,
                               style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          ],
+                          if (_has('HR_CONTRACT_ALERT')) ...[
                           const SizedBox(height: 12),
                           TextField(
                             controller: _contractWarningCtrl,
@@ -454,6 +462,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                               helperText: s.companyContractWarningDaysHelper,
                             ),
                           ),
+                          ],
                         ],
                       ),
                     ),
@@ -506,6 +515,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                           const SizedBox(height: 4),
                           Text(s.minWageRegionHelper,
                               style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          if (_has('PAY_EMPLOYER_COST')) ...[
                           const SizedBox(height: 16),
                           Text(s.employerInsuranceTitle, style: const TextStyle(fontWeight: FontWeight.w600)),
                           const SizedBox(height: 8),
@@ -528,10 +538,12 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                           const SizedBox(height: 4),
                           Text(s.employerInsuranceHelper,
                               style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          ],
                         ],
                       ),
                     ),
                   ),
+                  if (_has('ATT_GEOFENCE') || _has('ATT_DEVICE') || _has('ATT_NOSHIFT'))
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -540,12 +552,14 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                         children: [
                           Text(s.checkInRadius,
                               style: const TextStyle(fontWeight: FontWeight.w700)),
+                          if (_has('ATT_GEOFENCE'))
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             value: _locationCheckEnabled,
                             onChanged: (v) => setState(() => _locationCheckEnabled = v),
                             title: Text(s.locationCheckEnabled),
                           ),
+                          if (_has('ATT_DEVICE'))
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             value: _deviceBindingEnabled,
@@ -553,6 +567,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                             title: Text(s.deviceBindingEnabled),
                             subtitle: Text(s.deviceBindingHint, style: const TextStyle(fontSize: 12)),
                           ),
+                          if (_has('ATT_NOSHIFT'))
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             value: _checkInWithoutShift,
@@ -560,7 +575,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                             title: Text(s.checkInWithoutShiftEnabled),
                             subtitle: Text(s.checkInWithoutShiftHint, style: const TextStyle(fontSize: 12)),
                           ),
-                          if (_locationCheckEnabled) ...[
+                          if (_locationCheckEnabled && _has('ATT_GEOFENCE')) ...[
                             const SizedBox(height: 8),
                             LocationPickerField(
                               latitude: _checkInLat,

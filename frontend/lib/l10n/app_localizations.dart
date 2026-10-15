@@ -10793,71 +10793,269 @@ abstract class AppLocalizations {
   /// **'Từ chối đăng ký lịch'**
   String get auditActShiftRegReject;
 
-  /// No description provided for @companyModulesTitle.
+  /// No description provided for @companyFeaturesTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Gói chức năng'**
-  String get companyModulesTitle;
+  /// **'Tính năng'**
+  String get companyFeaturesTitle;
 
-  /// No description provided for @companyModulesHelper.
+  /// No description provided for @companyFeaturesHelper.
   ///
   /// In vi, this message translates to:
-  /// **'Tắt gói nào thì công ty không dùng được chức năng đó (menu ẩn, quyền bị gỡ; dữ liệu cũ giữ nguyên). Nhân viên, phòng ban, phân quyền, cài đặt luôn có.'**
-  String get companyModulesHelper;
+  /// **'Tắt tính năng nào thì công ty không dùng được tính năng đó (menu, nút ẩn; API bị chặn; dữ liệu cũ giữ nguyên). Có hiệu lực ngay. Nhân viên, phòng ban, phân quyền, cài đặt, nhật ký luôn có.'**
+  String get companyFeaturesHelper;
 
-  /// No description provided for @companyModuleNeeds.
+  /// No description provided for @companyFeatureNeeds.
   ///
   /// In vi, this message translates to:
   /// **'Cần {name}'**
-  String companyModuleNeeds(String name);
+  String companyFeatureNeeds(String name);
 
-  /// No description provided for @companyModuleAttendance.
+  /// No description provided for @auditActCompanyFeatures.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi tính năng công ty'**
+  String get auditActCompanyFeatures;
+
+  /// No description provided for @featureGroupAttendance.
   ///
   /// In vi, this message translates to:
   /// **'Chấm công'**
-  String get companyModuleAttendance;
+  String get featureGroupAttendance;
 
-  /// No description provided for @companyModuleShift.
+  /// No description provided for @featureGroupShift.
   ///
   /// In vi, this message translates to:
-  /// **'Ca làm (phân ca, đổi ca, đăng ký lịch)'**
-  String get companyModuleShift;
+  /// **'Ca làm'**
+  String get featureGroupShift;
 
-  /// No description provided for @companyModuleLeave.
+  /// No description provided for @featureGroupCalendar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch & ngày lễ'**
+  String get featureGroupCalendar;
+
+  /// No description provided for @featureGroupLeave.
   ///
   /// In vi, this message translates to:
   /// **'Nghỉ phép'**
-  String get companyModuleLeave;
+  String get featureGroupLeave;
 
-  /// No description provided for @companyModulePayroll.
+  /// No description provided for @featureGroupPayroll.
   ///
   /// In vi, this message translates to:
   /// **'Tính lương'**
-  String get companyModulePayroll;
+  String get featureGroupPayroll;
 
-  /// No description provided for @companyModuleContract.
+  /// No description provided for @featureGroupHr.
   ///
   /// In vi, this message translates to:
-  /// **'Hợp đồng lao động'**
-  String get companyModuleContract;
+  /// **'Nhân sự mở rộng'**
+  String get featureGroupHr;
 
-  /// No description provided for @companyModuleDocument.
+  /// No description provided for @featureGroupReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo & dữ liệu'**
+  String get featureGroupReport;
+
+  /// No description provided for @featureAttSheet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảng công & duyệt công'**
+  String get featureAttSheet;
+
+  /// No description provided for @featureAttSelf.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự check-in / check-out'**
+  String get featureAttSelf;
+
+  /// No description provided for @featureAttGeofence.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra vị trí GPS'**
+  String get featureAttGeofence;
+
+  /// No description provided for @featureAttDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gắn thiết bị chấm công'**
+  String get featureAttDevice;
+
+  /// No description provided for @featureAttNoshift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công khi không có ca'**
+  String get featureAttNoshift;
+
+  /// No description provided for @featureAttRequest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu chấm công & tăng ca'**
+  String get featureAttRequest;
+
+  /// No description provided for @featureShiftBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca làm & phân ca'**
+  String get featureShiftBasic;
+
+  /// No description provided for @featureShiftAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca linh hoạt, ca gãy, ca qua đêm'**
+  String get featureShiftAdvanced;
+
+  /// No description provided for @featureShiftRotation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay ca'**
+  String get featureShiftRotation;
+
+  /// No description provided for @featureShiftSwap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi / nhường ca'**
+  String get featureShiftSwap;
+
+  /// No description provided for @featureShiftRegistration.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng ký lịch làm việc'**
+  String get featureShiftRegistration;
+
+  /// No description provided for @featureShiftReminder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhắc ca & nhắc chấm công'**
+  String get featureShiftReminder;
+
+  /// No description provided for @featureCalWorkcal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch làm việc theo phòng ban'**
+  String get featureCalWorkcal;
+
+  /// No description provided for @featureCalHoliday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày lễ'**
+  String get featureCalHoliday;
+
+  /// No description provided for @featureLeaveBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn nghỉ phép & duyệt'**
+  String get featureLeaveBasic;
+
+  /// No description provided for @featureLeaveBalance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quỹ phép & sổ trừ / hoàn'**
+  String get featureLeaveBalance;
+
+  /// No description provided for @featureLeaveAccrual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cộng phép tự động'**
+  String get featureLeaveAccrual;
+
+  /// No description provided for @featurePayBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảng lương & phiếu lương'**
+  String get featurePayBasic;
+
+  /// No description provided for @featurePayFormula.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biến & công thức lương tuỳ biến'**
+  String get featurePayFormula;
+
+  /// No description provided for @featurePayTaxIns.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế TNCN & bảo hiểm'**
+  String get featurePayTaxIns;
+
+  /// No description provided for @featurePayDependent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người phụ thuộc, MST, sổ BHXH'**
+  String get featurePayDependent;
+
+  /// No description provided for @featurePayEmployerCost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo hiểm công ty đóng & tổng chi phí'**
+  String get featurePayEmployerCost;
+
+  /// No description provided for @featureHrContract.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng lao động & phụ lục'**
+  String get featureHrContract;
+
+  /// No description provided for @featureHrContractAlert.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo hợp đồng sắp hết hạn'**
+  String get featureHrContractAlert;
+
+  /// No description provided for @featureHrDocument.
   ///
   /// In vi, this message translates to:
   /// **'Tài liệu nhân sự'**
-  String get companyModuleDocument;
+  String get featureHrDocument;
 
-  /// No description provided for @companyModuleReport.
+  /// No description provided for @featureHrDocumentAlert.
   ///
   /// In vi, this message translates to:
-  /// **'Báo cáo'**
-  String get companyModuleReport;
+  /// **'Cảnh báo tài liệu hết hạn / thiếu'**
+  String get featureHrDocumentAlert;
 
-  /// No description provided for @auditActCompanyModules.
+  /// No description provided for @featureHrOrgchart.
   ///
   /// In vi, this message translates to:
-  /// **'Đổi gói chức năng công ty'**
-  String get auditActCompanyModules;
+  /// **'Sơ đồ tổ chức & quản lý trực tiếp'**
+  String get featureHrOrgchart;
+
+  /// No description provided for @featureHrJobhistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá trình công tác'**
+  String get featureHrJobhistory;
+
+  /// No description provided for @featureHrManagerApproval.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt 2 cấp (quản lý → nhân sự)'**
+  String get featureHrManagerApproval;
+
+  /// No description provided for @featureRptOverview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo nhân sự & chấm công'**
+  String get featureRptOverview;
+
+  /// No description provided for @featureRptPayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo lương'**
+  String get featureRptPayroll;
+
+  /// No description provided for @featureRptInsurance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo bảo hiểm & người phụ thuộc'**
+  String get featureRptInsurance;
+
+  /// No description provided for @featureDataExcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập / xuất Excel'**
+  String get featureDataExcel;
 }
 
 class _AppLocalizationsDelegate

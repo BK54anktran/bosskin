@@ -37,19 +37,15 @@ public class SysAdminImpersonateUser extends User {
         return overrideCompany;
     }
 
-    /** V24: toàn quyền trừ quyền thuộc gói chức năng công ty đang tắt. */
-    private Set<String> disabledModules() {
-        return overrideCompany != null ? overrideCompany.disabledModuleSet() : Set.of();
-    }
-
+    /** V26: toàn quyền trừ quyền thuộc tính năng công ty đang tắt. */
     @Override
-    public boolean isModuleDisabled(String module) {
-        return disabledModules().contains(module);
+    protected Set<String> companyDisabledFeatures() {
+        return overrideCompany != null ? overrideCompany.disabledFeatureSet() : Set.of();
     }
 
     @Override
     public Set<String> getPermissions() {
-        return com.bosskin.core.CompanyModules.filter(allPermissions, disabledModules());
+        return com.bosskin.core.CompanyFeatures.filter(allPermissions, companyDisabledFeatures());
     }
 
     @Override
@@ -59,8 +55,8 @@ public class SysAdminImpersonateUser extends User {
 
     @Override
     public boolean hasPermission(String permissionCode) {
-        String module = com.bosskin.core.CompanyModules.moduleOf(permissionCode);
-        return module == null || !disabledModules().contains(module);
+        String feature = com.bosskin.core.CompanyFeatures.featureOfPermission(permissionCode);
+        return feature == null || !companyDisabledFeatures().contains(feature);
     }
 
     @Override

@@ -5843,38 +5843,137 @@ class AppLocalizationsVi extends AppLocalizations {
   String get auditActShiftRegReject => 'Từ chối đăng ký lịch';
 
   @override
-  String get companyModulesTitle => 'Gói chức năng';
+  String get companyFeaturesTitle => 'Tính năng';
 
   @override
-  String get companyModulesHelper =>
-      'Tắt gói nào thì công ty không dùng được chức năng đó (menu ẩn, quyền bị gỡ; dữ liệu cũ giữ nguyên). Nhân viên, phòng ban, phân quyền, cài đặt luôn có.';
+  String get companyFeaturesHelper =>
+      'Tắt tính năng nào thì công ty không dùng được tính năng đó (menu, nút ẩn; API bị chặn; dữ liệu cũ giữ nguyên). Có hiệu lực ngay. Nhân viên, phòng ban, phân quyền, cài đặt, nhật ký luôn có.';
 
   @override
-  String companyModuleNeeds(String name) {
+  String companyFeatureNeeds(String name) {
     return 'Cần $name';
   }
 
   @override
-  String get companyModuleAttendance => 'Chấm công';
+  String get auditActCompanyFeatures => 'Đổi tính năng công ty';
 
   @override
-  String get companyModuleShift => 'Ca làm (phân ca, đổi ca, đăng ký lịch)';
+  String get featureGroupAttendance => 'Chấm công';
 
   @override
-  String get companyModuleLeave => 'Nghỉ phép';
+  String get featureGroupShift => 'Ca làm';
 
   @override
-  String get companyModulePayroll => 'Tính lương';
+  String get featureGroupCalendar => 'Lịch & ngày lễ';
 
   @override
-  String get companyModuleContract => 'Hợp đồng lao động';
+  String get featureGroupLeave => 'Nghỉ phép';
 
   @override
-  String get companyModuleDocument => 'Tài liệu nhân sự';
+  String get featureGroupPayroll => 'Tính lương';
 
   @override
-  String get companyModuleReport => 'Báo cáo';
+  String get featureGroupHr => 'Nhân sự mở rộng';
 
   @override
-  String get auditActCompanyModules => 'Đổi gói chức năng công ty';
+  String get featureGroupReport => 'Báo cáo & dữ liệu';
+
+  @override
+  String get featureAttSheet => 'Bảng công & duyệt công';
+
+  @override
+  String get featureAttSelf => 'Tự check-in / check-out';
+
+  @override
+  String get featureAttGeofence => 'Kiểm tra vị trí GPS';
+
+  @override
+  String get featureAttDevice => 'Gắn thiết bị chấm công';
+
+  @override
+  String get featureAttNoshift => 'Chấm công khi không có ca';
+
+  @override
+  String get featureAttRequest => 'Yêu cầu chấm công & tăng ca';
+
+  @override
+  String get featureShiftBasic => 'Ca làm & phân ca';
+
+  @override
+  String get featureShiftAdvanced => 'Ca linh hoạt, ca gãy, ca qua đêm';
+
+  @override
+  String get featureShiftRotation => 'Xoay ca';
+
+  @override
+  String get featureShiftSwap => 'Đổi / nhường ca';
+
+  @override
+  String get featureShiftRegistration => 'Đăng ký lịch làm việc';
+
+  @override
+  String get featureShiftReminder => 'Nhắc ca & nhắc chấm công';
+
+  @override
+  String get featureCalWorkcal => 'Lịch làm việc theo phòng ban';
+
+  @override
+  String get featureCalHoliday => 'Ngày lễ';
+
+  @override
+  String get featureLeaveBasic => 'Đơn nghỉ phép & duyệt';
+
+  @override
+  String get featureLeaveBalance => 'Quỹ phép & sổ trừ / hoàn';
+
+  @override
+  String get featureLeaveAccrual => 'Cộng phép tự động';
+
+  @override
+  String get featurePayBasic => 'Bảng lương & phiếu lương';
+
+  @override
+  String get featurePayFormula => 'Biến & công thức lương tuỳ biến';
+
+  @override
+  String get featurePayTaxIns => 'Thuế TNCN & bảo hiểm';
+
+  @override
+  String get featurePayDependent => 'Người phụ thuộc, MST, sổ BHXH';
+
+  @override
+  String get featurePayEmployerCost => 'Bảo hiểm công ty đóng & tổng chi phí';
+
+  @override
+  String get featureHrContract => 'Hợp đồng lao động & phụ lục';
+
+  @override
+  String get featureHrContractAlert => 'Cảnh báo hợp đồng sắp hết hạn';
+
+  @override
+  String get featureHrDocument => 'Tài liệu nhân sự';
+
+  @override
+  String get featureHrDocumentAlert => 'Cảnh báo tài liệu hết hạn / thiếu';
+
+  @override
+  String get featureHrOrgchart => 'Sơ đồ tổ chức & quản lý trực tiếp';
+
+  @override
+  String get featureHrJobhistory => 'Quá trình công tác';
+
+  @override
+  String get featureHrManagerApproval => 'Duyệt 2 cấp (quản lý → nhân sự)';
+
+  @override
+  String get featureRptOverview => 'Báo cáo nhân sự & chấm công';
+
+  @override
+  String get featureRptPayroll => 'Báo cáo lương';
+
+  @override
+  String get featureRptInsurance => 'Báo cáo bảo hiểm & người phụ thuộc';
+
+  @override
+  String get featureDataExcel => 'Nhập / xuất Excel';
 }

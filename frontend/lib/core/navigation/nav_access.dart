@@ -39,11 +39,24 @@ const Map<String, List<String>> routeAnyOf = {
   AppRoutes.editRequests: ['EMPLOYEE_UPDATE'],
 };
 
-/// V24: màn thuộc gói chức năng nhưng chỉ kiểm quyền gói khác (backend chặn theo gói) → ẩn khi công ty tắt gói.
-/// Màn khác tự ẩn vì backend đã bỏ quyền thuộc gói tắt khỏi tài khoản.
-const Map<String, String> routeModule = {
-  AppRoutes.selfPayroll: 'PAYROLL',
-  AppRoutes.shiftSwaps: 'SHIFT',
+/// V26: màn thuộc tính năng của công ty (khớp backend core/FeatureRoutes) → ẩn khi công ty tắt tính năng đó.
+/// Cần cả khi quyền đã bị gỡ theo tính năng: nhiều màn dùng quyền chung / quyền lõi (vd. ATTENDANCE_SELF, EMPLOYEE_VIEW).
+const Map<String, String> routeFeature = {
+  AppRoutes.attendance: 'ATT_SHEET',
+  AppRoutes.checkInOut: 'ATT_SELF',
+  AppRoutes.attendanceRequests: 'ATT_REQUEST',
+  AppRoutes.shifts: 'SHIFT_BASIC',
+  AppRoutes.shiftSwaps: 'SHIFT_SWAP',
+  AppRoutes.shiftRegistration: 'SHIFT_REGISTRATION',
+  AppRoutes.leaves: 'LEAVE_BASIC',
+  AppRoutes.payroll: 'PAY_BASIC',
+  AppRoutes.selfPayroll: 'PAY_BASIC',
+  AppRoutes.contracts: 'HR_CONTRACT',
+  AppRoutes.documents: 'HR_DOCUMENT',
+  AppRoutes.orgChart: 'HR_ORGCHART',
+  AppRoutes.teamApprovals: 'HR_MANAGER_APPROVAL',
+  AppRoutes.reports: 'RPT_OVERVIEW',
+  AppRoutes.excelImportExport: 'DATA_EXCEL',
 };
 
 /// Màn chỉ dành cho bản thân nhân viên — ẩn khi system admin đang impersonate.
@@ -57,8 +70,8 @@ const Set<String> selfOnlyRoutes = {
 bool canAccessRoute(AuthUser? user, String route) {
   if (user == null) return false;
   if (user.isSystemAdmin) return true;
-  final module = routeModule[route];
-  if (module != null && !user.hasModule(module)) return false;
+  final feature = routeFeature[route];
+  if (feature != null && !user.hasFeature(feature)) return false;
   final anyOf = routeAnyOf[route];
   if (anyOf == null) return true;
   return anyOf.any(user.can);

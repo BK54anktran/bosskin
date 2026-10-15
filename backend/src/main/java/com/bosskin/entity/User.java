@@ -111,28 +111,34 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
             .collect(Collectors.toSet());
 
         directPermissions.forEach(p -> perms.add(p.getCode()));
-        // V24: gói chức năng công ty đang tắt → bỏ quyền thuộc gói đó
-        return com.bosskin.core.CompanyModules.filter(perms, companyDisabledModules());
+        // V24/V26: tính năng công ty đang tắt → bỏ quyền thuộc tính năng đó
+        return com.bosskin.core.CompanyFeatures.filter(perms, companyDisabledFeatures());
     }
 
-    /** V24: gói đang tắt, do JwtAuthFilter nạp sẵn (user được nạp ngoài phiên JPA, company là proxy lazy). */
+    /** V26: tính năng đang tắt, do JwtAuthFilter nạp sẵn (user được nạp ngoài phiên JPA, company là proxy lazy). */
     @Transient
-    private java.util.Set<String> disabledModulesLoaded;
+    private java.util.Set<String> disabledFeaturesLoaded;
 
-    public void setDisabledModulesLoaded(java.util.Set<String> disabled) {
-        this.disabledModulesLoaded = disabled;
+    public void setDisabledFeaturesLoaded(java.util.Set<String> disabled) {
+        this.disabledFeaturesLoaded = disabled;
     }
 
-    /** V24: gói chức năng (core/CompanyModules) của công ty đang tắt. */
+    /** V26: tính năng (core/CompanyFeatures) của công ty đang tắt. */
+    public boolean isFeatureDisabled(String feature) {
+        return companyDisabledFeatures().contains(feature);
+    }
+
+    /** V24 (tương thích): gói cũ coi là tắt khi tính năng gốc của nó tắt. */
     public boolean isModuleDisabled(String module) {
-        return companyDisabledModules().contains(module);
+        String base = com.bosskin.core.CompanyFeatures.baseOf(module);
+        return base != null && isFeatureDisabled(base);
     }
 
-    /** Gói đang tắt của công ty; chưa nạp sẵn và công ty chưa nạp được → coi như bật hết. */
-    private java.util.Set<String> companyDisabledModules() {
-        if (disabledModulesLoaded != null) return disabledModulesLoaded;
+    /** Tính năng đang tắt của công ty; chưa nạp sẵn và công ty chưa nạp được → coi như bật hết. */
+    protected java.util.Set<String> companyDisabledFeatures() {
+        if (disabledFeaturesLoaded != null) return disabledFeaturesLoaded;
         try {
-            return company != null ? company.disabledModuleSet() : java.util.Set.of();
+            return company != null ? company.disabledFeatureSet() : java.util.Set.of();
         } catch (org.hibernate.LazyInitializationException e) {
             return java.util.Set.of();
         }

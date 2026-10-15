@@ -103,6 +103,7 @@ public class CompanyController {
                         .companyCode(company.getCode())
                         .companyDomain(company.getDomain())
                         .modules(company.getModules())
+                        .features(company.getFeatures())
                         .permissions(allPermissions)
                         .build())
                 .build());

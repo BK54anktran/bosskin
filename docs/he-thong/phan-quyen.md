@@ -7,16 +7,29 @@
 3. **Quy tắc riêng của nghiệp vụ** — chính chủ (xem phiếu lương của mình), không tự duyệt (đơn / phiếu lương của chính mình),
    quản lý trực tiếp (duyệt bước 1), kỳ công đã khoá, dữ liệu nhạy cảm bị che.
 
-## Gói chức năng theo công ty (V24)
+## Tính năng theo công ty (V26, thay gói chức năng V24)
 
-System admin bật / tắt gói cho từng công ty (`core/CompanyModules`, cột `companies.disabled_modules`, NULL = bật hết):
-`ATTENDANCE` (quyền `ATTENDANCE_*`), `SHIFT` (`SHIFT_*`), `LEAVE` (`LEAVE_*`), `PAYROLL` (`PAYROLL_*`), `CONTRACT` (`CONTRACT_*`),
-`DOCUMENT` (`EMPLOYEE_DOCUMENT_*`), `REPORT` (`REPORT_*`). Mã quyền khác là phần lõi, luôn có. `ATTENDANCE` cần `SHIFT`.
-- `User.getPermissions()` bỏ quyền thuộc gói tắt → mọi kiểm `hasPermission` / `can` tự chặn, đăng nhập trả quyền đã lọc + `modules` (gói đang bật).
-  `JwtAuthFilter` nạp sẵn tập gói tắt vào user (user nạp ngoài phiên JPA). Đăng nhập thay của system admin cũng bị lọc.
-- API thuộc gói nhưng chỉ kiểm quyền lõi / gói khác phải tự chặn: `CompanyModules.requireEnabled(user, gói)` → 403 `error.company.module_disabled`
-  (đang dùng ở `GET /payrolls/self`, duyệt cho nhóm). FE: `AuthUser.hasModule`, `routeModule` trong `nav_access.dart`.
-- Sửa ở `PUT /admin/companies/{id}` `{modules: [...]}` (gói BẬT; không gửi = giữ), nhật ký `COMPANY_MODULES`. Test `CompanyModulesTest`.
+System admin bật / tắt **33 tính năng** cho từng công ty (`core/CompanyFeatures`, cột `companies.disabled_features` = danh sách mã TẮT,
+NULL = bật hết; có hiệu lực ngay, không lập lịch). Phần nền — nhân viên, phòng ban, phân quyền, cài đặt, tổng quan, nhật ký, bảo mật — luôn có.
+Danh mục + lý do chia: `docs/thiet-ke/goi-chuc-nang.md`. Tiền tính ngoài app (app chỉ giữ công tắc).
+- **Danh mục** theo nhóm: Chấm công (`ATT_SHEET`, `ATT_SELF`, `ATT_GEOFENCE`, `ATT_DEVICE`, `ATT_NOSHIFT`, `ATT_REQUEST`), Ca làm (`SHIFT_BASIC`,
+  `SHIFT_ADVANCED`, `SHIFT_ROTATION`, `SHIFT_SWAP`, `SHIFT_REGISTRATION`, `SHIFT_REMINDER`), Lịch (`CAL_WORKCAL`, `CAL_HOLIDAY`), Nghỉ phép
+  (`LEAVE_BASIC`, `LEAVE_BALANCE`, `LEAVE_ACCRUAL`), Tính lương (`PAY_BASIC`, `PAY_FORMULA`, `PAY_TAX_INS`, `PAY_DEPENDENT`, `PAY_EMPLOYER_COST`),
+  Nhân sự (`HR_CONTRACT`, `HR_CONTRACT_ALERT`, `HR_DOCUMENT`, `HR_DOCUMENT_ALERT`, `HR_ORGCHART`, `HR_JOBHISTORY`, `HR_MANAGER_APPROVAL`),
+  Báo cáo & dữ liệu (`RPT_OVERVIEW`, `RPT_PAYROLL`, `RPT_INSURANCE`, `DATA_EXCEL`). Mỗi tính năng có "cần": bật con phải bật cha, tắt cha tắt con
+  (`PAY_BASIC` → `PAY_FORMULA` / `PAY_TAX_INS` → `PAY_DEPENDENT` → `RPT_INSURANCE`…). Ràng buộc riêng: tự chấm công (`ATT_SELF`) cần `SHIFT_BASIC` **hoặc** `ATT_NOSHIFT`.
+- **Ba lớp chặn**: (1) `User.getPermissions()` bỏ mã quyền thuộc tính năng tắt (`CompanyFeatures.featureOfPermission`: mã riêng của tính năng như
+  `SHIFT_REGISTRATION_*`, `LEAVE_ACCRUAL_*`; quyền chung như `ATTENDANCE_SELF` thuộc tính năng gốc của gói); (2) `FeatureRouteInterceptor` +
+  bảng `core/FeatureRoutes` (đường dẫn → tính năng) trả 403 `error.company.feature_disabled` — một chỗ duy nhất cho mọi API; (3) hành vi trong nghiệp vụ /
+  job nền kiểm `CompanyFeatures.require(user|company, F)` / `User.isFeatureDisabled(F)`. `JwtAuthFilter` nạp sẵn tập tắt vào user; đăng nhập thay của system admin cũng bị chặn.
+- **Tương thích V24**: đăng nhập / làm mới token trả `features` (mới) và `modules` (7 gói cũ = tính năng gốc còn bật) vì app điện thoại đã cài chỉ đọc `modules`;
+  `PUT /admin/companies/{id}` nhận `features` (ưu tiên) hoặc `modules` (cũ). Migration V26 chuyển đúng: gói cũ tắt ⇒ mọi tính năng con tắt, rồi bỏ `disabled_modules`.
+- **Giai đoạn**: 1 (xong) = danh mục, lưu trữ, bảng đường dẫn, ẩn màn / cài đặt ở app, hộp "Sửa công ty" chia nhóm. 2 (chưa làm) = hành vi nghiệp vụ trong tính năng
+  (`ATT_GEOFENCE`, `ATT_DEVICE`, `ATT_NOSHIFT`, `SHIFT_ADVANCED`, `PAY_TAX_INS`, `PAY_EMPLOYER_COST`, `CAL_*`), job nền (`SHIFT_REMINDER`, `LEAVE_ACCRUAL`, `HR_*_ALERT`, `HR_JOBHISTORY`),
+  thẻ Tổng quan, sheet Excel / báo cáo gộp theo tính năng. Tính năng chưa gắn hành vi vẫn bật / tắt được ở mức API + màn hình.
+- Sửa ở `PUT /admin/companies/{id}` `{features: [...]}` (tính năng BẬT; không gửi = giữ), nhật ký `COMPANY_FEATURES` (`turnedOn` / `turnedOff`).
+  Thêm tính năng mới → thêm vào `CompanyFeatures.CATALOG` + `company_feature_utils.dart` + nhãn vi / en; `tools/ci/check_features.py` kiểm hai bên khớp.
+  Test: `CompanyFeaturesCatalogTest`, `CompanyFeaturesTest`, `CompanyModulesTest` (tương thích).
 
 ## Vai trò và quyền
 

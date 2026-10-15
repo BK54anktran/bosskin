@@ -140,12 +140,12 @@ public class Company extends BaseEntity {
     @Builder.Default
     private ApprovalMode approvalMode = ApprovalMode.PERMISSION;
 
-    /** V24: gói chức năng đang tắt (core/CompanyModules), cách nhau dấu phẩy; NULL = bật hết. */
-    @Column(name = "disabled_modules", length = 200)
-    private String disabledModules;
+    /** V26: tính năng đang tắt (core/CompanyFeatures), cách nhau dấu phẩy; NULL = bật hết. Thay disabled_modules của V24. */
+    @Column(name = "disabled_features", length = 1000)
+    private String disabledFeatures;
 
-    public java.util.Set<String> disabledModuleSet() {
-        return com.bosskin.core.CompanyModules.parse(disabledModules);
+    public java.util.Set<String> disabledFeatureSet() {
+        return com.bosskin.core.CompanyFeatures.parse(disabledFeatures);
     }
 
     /** V23: cho nhân viên đăng ký lịch làm việc theo đợt (ẩn menu / tab và chặn API khi tắt). */
