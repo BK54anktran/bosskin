@@ -226,5 +226,11 @@ class ShiftTypesTest extends IntegrationTest {
         assertThat(api.put(token, "/api/v1/shift-swaps/" + swapId + "/approve", Map.of()).status()).isEqualTo(403);
         assertThat(api.put(token, "/api/v1/shift-swaps/" + swapId + "/reject", Map.of()).status()).isEqualTo(403);
         api.put(c.adminToken, "/api/v1/shift-swaps/" + swapId + "/reject", Map.of()).expectOk();
+
+        // Đơn mà người duyệt là người nhận thì vẫn thấy dù ngoài phạm vi phòng
+        long aTue = c.assign(a, "HC", MON.plusDays(1));
+        api.post(c.tokenOf(a), "/api/v1/shift-swaps", Map.of(
+            "requesterAssignmentId", aTue, "targetEmployeeId", approver.id())).expectOk();
+        assertThat(api.get(token, "/api/v1/shift-swaps").expectOk().body().size()).as("thấy đơn của chính mình").isEqualTo(1);
     }
 }

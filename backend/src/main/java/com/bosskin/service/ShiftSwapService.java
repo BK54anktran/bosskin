@@ -49,7 +49,8 @@ public class ShiftSwapService {
         Long onlyEmployee = canApprove(user) ? null : selfEmployee(user).getId();
         var all = swapRepo.search(user.getCompany().getId(), status, onlyEmployee).stream();
         // Người duyệt chỉ thấy đơn trong phạm vi xem ca của mình (phạm vi của SHIFT_VIEW)
-        if (onlyEmployee == null) all = all.filter(r -> inApproverScope(user, r));
+        // (đơn mà chính mình là người xin / người nhận luôn thấy được)
+        if (onlyEmployee == null) all = all.filter(r -> inApproverScope(user, r) || involvesMe(user, r));
         return all.map(this::toResponse).toList();
     }
 
@@ -224,6 +225,11 @@ public class ShiftSwapService {
         if (scope.isEmpty()) return true;
         if (scope.contains(DeptScopeService.SCOPE_SELF_ONLY)) return false;
         return deptIn(scope, r.getRequester()) && deptIn(scope, r.getTargetEmployee());
+    }
+
+    private boolean involvesMe(User user, ShiftSwapRequest r) {
+        Long me = employeeRepo.findByUserIdFetch(user.getId()).map(Employee::getId).orElse(null);
+        return me != null && (r.getRequester().getId().equals(me) || r.getTargetEmployee().getId().equals(me));
     }
 
     private static boolean deptIn(java.util.Set<Long> scope, Employee e) {

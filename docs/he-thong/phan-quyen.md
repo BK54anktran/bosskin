@@ -76,10 +76,21 @@ phòng nào (vd. "phòng của tôi" mà tài khoản chưa gắn nhân viên) t
 - `MANAGER_THEN_HR`: đơn nghỉ, yêu cầu chấm công, đổi ca của nhân viên có quản lý trực tiếp đi qua **bước 1** quản lý (màn *Duyệt cho nhóm*,
   `/api/v1/team-approvals`, không cần mã quyền) rồi **bước 2** người có quyền duyệt. Quản lý từ chối → kết thúc, hoàn phép.
 
+Quyền sửa / duyệt / xoá kế thừa phạm vi của quyền xem tương ứng (`ATTENDANCE_VIEW` cho công, `SHIFT_VIEW` cho đổi ca):
+- Xoá công (`DELETE /attendances/{id}`): cần `ATTENDANCE_MANAGE` **và** dòng công nằm trong phạm vi xem; ngoài phạm vi trả 403.
+- Duyệt đổi ca (`SHIFT_SWAP_APPROVE`): người duyệt chỉ thấy / duyệt / từ chối đơn mà cả người xin và người nhận thuộc phạm vi `SHIFT_VIEW` của mình
+  (đơn mà chính họ là người xin hoặc người nhận vẫn thấy được; tự duyệt vẫn bị chặn).
+- Báo cáo tổng quan năm (`/reports/yearly-overview`) gồm số liệu lương, nhân sự và nghỉ phép nên cần đủ `PAYROLL_VIEW`, `EMPLOYEE_VIEW`, `LEAVE_VIEW`
+  (công ty tắt tính năng nghỉ phép thì mất `LEAVE_VIEW` nên không xuất được); app ẩn báo cáo này khi thiếu một trong ba.
+- Danh sách phòng ban dạng phẳng (`/departments/flat?permission=X_VIEW`) chỉ cần quyền `X_VIEW` đó (không đòi `DEPARTMENT_VIEW`);
+  danh sách chọn nhân viên ở bảng công (`/attendances/employees`) theo phạm vi `ATTENDANCE_VIEW`, không đòi `EMPLOYEE_VIEW`.
+- Màn Chấm công ẩn nút Sửa / Xoá / Sửa hàng loạt khi thiếu `ATTENDANCE_MANAGE`, nút Duyệt / Bỏ duyệt khi thiếu `ATTENDANCE_APPROVE`.
+
 ## Dữ liệu nhạy cảm
 
 CCCD, số tài khoản ngân hàng, mã số thuế, số sổ BHXH (và của người phụ thuộc) chỉ trả nguyên văn cho người có `EMPLOYEE_SENSITIVE_VIEW`;
 người khác nhận dạng che `****1234` (`core/SensitiveData`). Khi lưu, giá trị che gửi lại được hiểu là "không đổi".
+Tỷ lệ bảo hiểm công ty đóng (`payroll.employer*Percent` ở `GET /company-settings`) chỉ trả cho người có `PAYROLL_VIEW` hoặc `COMPANY_SETTING_MANAGE`.
 
 ## Quản trị hệ thống
 

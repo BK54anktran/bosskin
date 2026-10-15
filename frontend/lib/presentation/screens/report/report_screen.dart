@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import '../../../data/services/auth_service.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
@@ -118,6 +119,12 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  bool get _canViewYearly {
+    final u = AuthService.instance.currentUser;
+    if (u == null) return false;
+    return u.isSystemAdmin || (u.can('PAYROLL_VIEW') && u.can('EMPLOYEE_VIEW') && u.can('LEAVE_VIEW'));
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
@@ -166,16 +173,19 @@ class _ReportScreenState extends State<ReportScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _ReportGroup(
-                  title: s.reportGroupYearly,
-                  color: const Color(0xFF059669),
-                  icon: Icons.analytics_outlined,
-                  reports: [
-                    item('yearly_overview', s.reportYearlyOverview, s.reportYearlyOverviewDesc,
-                        Icons.auto_graph_outlined, [_FT.year, _FT.department]),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                // Báo cáo tổng quan năm gồm cả số liệu lương, nhân sự và nghỉ phép: cần đủ quyền xem của cả ba
+                if (_canViewYearly) ...[
+                  _ReportGroup(
+                    title: s.reportGroupYearly,
+                    color: const Color(0xFF059669),
+                    icon: Icons.analytics_outlined,
+                    reports: [
+                      item('yearly_overview', s.reportYearlyOverview, s.reportYearlyOverviewDesc,
+                          Icons.auto_graph_outlined, [_FT.year, _FT.department]),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 _ReportGroup(
                   title: s.reportGroupAttendance,
                   color: AppTheme.secondary,

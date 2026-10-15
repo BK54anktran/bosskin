@@ -1237,7 +1237,7 @@ public class AttendanceController {
         requirePermission(user, "ATTENDANCE_MANAGE");
         var att = attendanceRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.attendance.not_found"));
-        requireViewScope(user, att.getEmployee().getDepartment().getId());
+        requireViewScope(user, att.getEmployee().getDepartment() != null ? att.getEmployee().getDepartment().getId() : 0L);
         periodLockService.requireOpen(user.getCompany().getId(), att.getDate());
         if (att.isApproved())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_approved");

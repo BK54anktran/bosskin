@@ -27,7 +27,7 @@ Những trường hợp không chấm được:
 
 > **Mẹo:** Trên điện thoại, bật *Thông báo check-in / check-out nhanh* ở Thông tin cá nhân để chấm ngay từ thông báo nhắc.
 
-Phần **Lịch sử chấm công** cuối trang hiện các ngày trong tháng kèm giờ vào / ra.
+Phần **Lịch sử chấm công** cuối trang hiện các ngày trong tháng kèm giờ vào / ra. Lượt chưa được quản lý duyệt hiện nhãn **Chờ duyệt**.
 
 ## Gửi yêu cầu chấm công (quên chấm, sửa giờ, tăng ca)
 
