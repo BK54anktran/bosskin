@@ -87,6 +87,15 @@ public class Attendance extends BaseEntity {
     @Column(name = "override_check_out")
     private LocalTime overrideCheckOut;
 
+    /** Số ngày lệch của giờ sửa tay so với ngày công (V27): 0 = cùng ngày, 1 = hôm sau… Tự tính khi lưu ({@link #normalizeOverrideDays()}). */
+    @Column(name = "override_check_in_day", nullable = false)
+    @Builder.Default
+    private int overrideCheckInDay = 0;
+
+    @Column(name = "override_check_out_day", nullable = false)
+    @Builder.Default
+    private int overrideCheckOutDay = 0;
+
     @Column(name = "override_break_minutes")
     private Integer overrideBreakMinutes;
 
