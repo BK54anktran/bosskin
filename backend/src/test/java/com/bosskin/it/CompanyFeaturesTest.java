@@ -115,4 +115,24 @@ class CompanyFeaturesTest extends IntegrationTest {
         assertThat(api.get(c.adminToken, "/api/v1/contracts").status()).isEqualTo(403);
         assertThat(api.get(other.adminToken, "/api/v1/contracts").status()).isEqualTo(200);
     }
+
+    @Test
+    @DisplayName("Màn Phân quyền: quyền của tính năng đã tắt không hiện; lưu vai trò không làm mất quyền đó, bật lại là dùng được")
+    void rolesScreenHidesAndPreservesDisabledFeaturePermissions() {
+        var c = fixture.standardCompany();
+        String sys = sys();
+        long roleId = c.createRole("HR đặc biệt", List.of("EMPLOYEE_VIEW", "CONTRACT_VIEW", "CONTRACT_EDIT"));
+        assertThat(api.get(c.adminToken, "/api/v1/roles/permissions").expectOk().body().toString()).contains("CONTRACT_VIEW");
+
+        api.put(sys, "/admin/companies/" + c.id, Map.of("features", allExcept("HR_CONTRACT", "HR_CONTRACT_ALERT"))).expectOk();
+        String listed = api.get(c.adminToken, "/api/v1/roles/permissions").expectOk().body().toString();
+        assertThat(listed).doesNotContain("CONTRACT_VIEW").doesNotContain("CONTRACT_EDIT").contains("EMPLOYEE_VIEW");
+
+        // Admin lưu lại vai trò (chỉ thấy EMPLOYEE_VIEW) → quyền hợp đồng đang có vẫn được giữ
+        api.put(c.adminToken, "/api/v1/roles/" + roleId + "/permissions", Map.of("permissions", List.of("EMPLOYEE_VIEW"))).expectOk();
+        api.put(sys, "/admin/companies/" + c.id, Map.of("features", CompanyFeatures.ALL)).expectOk();
+        String roles = api.get(c.adminToken, "/api/v1/roles").expectOk().body().toString();
+        assertThat(roles).contains("CONTRACT_VIEW").contains("CONTRACT_EDIT");
+        assertThat(api.get(c.adminToken, "/api/v1/roles/permissions").expectOk().body().toString()).contains("CONTRACT_VIEW");
+    }
 }

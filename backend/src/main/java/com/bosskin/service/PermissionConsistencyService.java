@@ -86,6 +86,32 @@ public class PermissionConsistencyService {
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /**
+     * V26: quyền của tính năng công ty đã tắt không hiện ở màn Phân quyền, nên người dùng không thể gửi lên. Khi lưu, giữ nguyên
+     * những quyền đó đang có (bật lại tính năng không bị mất quyền đã cấp).
+     */
+    public Set<String> keepHiddenFeaturePermissions(Collection<String> submitted, Collection<String> existing, Set<String> disabledFeatures) {
+        Set<String> result = new LinkedHashSet<>(submitted == null ? Set.<String>of() : submitted);
+        if (disabledFeatures == null || disabledFeatures.isEmpty() || existing == null) return result;
+        for (String code : existing) {
+            String feature = com.bosskin.core.CompanyFeatures.featureOfPermission(code);
+            if (feature != null && disabledFeatures.contains(feature)) result.add(code);
+        }
+        return result;
+    }
+
+    /** V26: như trên cho phạm vi phòng ban — giữ phạm vi của quyền đang bị ẩn. */
+    public Map<String, List<Long>> keepHiddenFeatureScopes(Map<String, List<Long>> submitted,
+                                                            Map<String, ? extends Collection<Long>> existing, Set<String> disabledFeatures) {
+        Map<String, List<Long>> result = new LinkedHashMap<>(submitted == null ? Map.<String, List<Long>>of() : submitted);
+        if (disabledFeatures == null || disabledFeatures.isEmpty() || existing == null) return result;
+        existing.forEach((code, ids) -> {
+            String feature = com.bosskin.core.CompanyFeatures.featureOfPermission(code);
+            if (feature != null && disabledFeatures.contains(feature)) result.put(code, new java.util.ArrayList<>(ids));
+        });
+        return result;
+    }
+
     public Map<String, List<Long>> filterScopesByPermissionCodes(
         Map<String, ? extends Collection<Long>> rawScopes,
         Collection<String> allowedCodes

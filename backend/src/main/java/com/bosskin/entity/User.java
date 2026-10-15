@@ -128,6 +128,11 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
         return companyDisabledFeatures().contains(feature);
     }
 
+    /** V26: tập tính năng công ty đang tắt (tên không có tiền tố get để khỏi thành thuộc tính JSON). */
+    public java.util.Set<String> disabledFeatureSet() {
+        return companyDisabledFeatures();
+    }
+
     /** V24 (tương thích): gói cũ coi là tắt khi tính năng gốc của nó tắt. */
     public boolean isModuleDisabled(String module) {
         String base = com.bosskin.core.CompanyFeatures.baseOf(module);

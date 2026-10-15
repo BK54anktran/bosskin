@@ -242,8 +242,11 @@ public class UserController {
         @SuppressWarnings("unchecked")
         List<String> codes = (List<String>) body.getOrDefault("permissionCodes", Collections.emptyList());
         grantGuard.requireNotSelf(caller, user.getId());
-        Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(codes);
-        grantGuard.requireCanGrant(caller, normalizedCodes);
+        Set<String> submittedCodes = permissionConsistencyService.normalizePermissionCodes(codes);
+        grantGuard.requireCanGrant(caller, submittedCodes);
+        // V26: giữ quyền riêng của tính năng đang tắt (bị ẩn ở màn Phân quyền)
+        Set<String> normalizedCodes = permissionConsistencyService.keepHiddenFeaturePermissions(submittedCodes,
+            user.getDirectPermissions().stream().map(Permission::getCode).toList(), caller.disabledFeatureSet());
         Set<Permission> perms = new HashSet<>();
         for (String code : normalizedCodes) {
             permissionRepository.findByCode(code).ifPresent(perms::add);
@@ -286,9 +289,11 @@ public class UserController {
             ids.stream().map(Integer::longValue).collect(Collectors.toList())));
         deptScopeService.requireValidScopeIds(caller.getCompany().getId(), converted);
         var beforeScopes = deptScopeRepo.findScopesMap(id);
+        // V26: giữ phạm vi của quyền thuộc tính năng đang tắt (bị ẩn ở màn Phân quyền)
         deptScopeRepo.replaceAll(
             id,
-            permissionConsistencyService.filterScopesByPermissionCodes(converted, directCodes)
+            permissionConsistencyService.filterScopesByPermissionCodes(
+                permissionConsistencyService.keepHiddenFeatureScopes(converted, beforeScopes, caller.disabledFeatureSet()), directCodes)
         );
         audit.log("USER_DEPT_SCOPES").entity("USER", id).summary(targetUser.getEmail())
             .detail(com.bosskin.audit.AuditService.map("before", beforeScopes, "after", deptScopeRepo.findScopesMap(id))).save();

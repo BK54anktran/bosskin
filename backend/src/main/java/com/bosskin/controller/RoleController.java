@@ -50,11 +50,17 @@ public class RoleController {
 
     @GetMapping("/permissions")
     @Transactional
-    public ResponseEntity<List<Permission>> getAllPermissions() {
+    public ResponseEntity<List<Permission>> getAllPermissions(@AuthenticationPrincipal User user) {
         ensurePermission("DASHBOARD_VIEW", "Hiển thị mục Tổng quan trên menu", "DASHBOARD");
         ensurePermission("SHIFT_VIEW", "Xem ca làm", "SHIFT");
         ensurePermission("SHIFT_MANAGE", "Quản lý ca làm", "SHIFT");
-        return ResponseEntity.ok(permissionRepository.findAll());
+        // V26: quyền của tính năng công ty đã tắt không hiện để cấp (cấp cũng vô nghĩa vì bị gỡ khỏi tài khoản)
+        Set<String> off = user != null ? user.disabledFeatureSet() : Set.of();
+        return ResponseEntity.ok(permissionRepository.findAll().stream()
+            .filter(p -> {
+                String feature = com.bosskin.core.CompanyFeatures.featureOfPermission(p.getCode());
+                return feature == null || !off.contains(feature);
+            }).toList());
     }
 
     @GetMapping("/{id}/dept-scopes")
@@ -146,6 +152,14 @@ public class RoleController {
         @SuppressWarnings("unchecked")
         Map<String, List<Integer>> rawScopes = (Map<String, List<Integer>>) body.get("deptScopes");
         Map<String, Object> before = roleSnapshot(id);
+        // V26: quyền của tính năng tắt bị ẩn ở màn Phân quyền → giữ nguyên những quyền (và phạm vi) vai trò đang có
+        Set<String> off = user.disabledFeatureSet();
+        List<String> existingCodes = roleRepository.findById(id)
+            .map(r -> r.getPermissions().stream().map(Permission::getCode).toList()).orElse(List.of());
+        if (normalizedCodes != null) {
+            normalizedCodes = permissionConsistencyService.keepHiddenFeaturePermissions(normalizedCodes, existingCodes, off);
+        }
+        Map<String, Set<Long>> existingScopes = rolePermDeptScopeRepo.findScopesMap(id);
         Role role = roleService.update(
             id,
             user.getCompany().getId(),
@@ -164,7 +178,8 @@ public class RoleController {
                 : role.getPermissions().stream().map(Permission::getCode).collect(java.util.stream.Collectors.toSet());
             rolePermDeptScopeRepo.replaceAll(
                 role.getId(),
-                permissionConsistencyService.filterScopesByPermissionCodes(scopes, allowedCodes)
+                permissionConsistencyService.filterScopesByPermissionCodes(
+                    permissionConsistencyService.keepHiddenFeatureScopes(scopes, existingScopes, off), allowedCodes)
             );
         } else if (normalizedCodes != null) {
             Map<String, Set<Long>> currentScopes = rolePermDeptScopeRepo.findScopesMap(role.getId());
@@ -184,9 +199,13 @@ public class RoleController {
         @RequestBody Map<String, List<String>> body
     ) {
         requirePermission(user, "ROLE_MANAGE");
-        Set<String> normalizedCodes = permissionConsistencyService.normalizePermissionCodes(body.get("permissions"));
-        grantGuard.requireCanGrant(user, normalizedCodes);
+        Set<String> submittedCodes = permissionConsistencyService.normalizePermissionCodes(body.get("permissions"));
+        grantGuard.requireCanGrant(user, submittedCodes);
         Map<String, Object> before = roleSnapshot(id);
+        // V26: giữ quyền của tính năng đang tắt (bị ẩn ở màn Phân quyền)
+        Set<String> normalizedCodes = permissionConsistencyService.keepHiddenFeaturePermissions(submittedCodes,
+            roleRepository.findById(id).map(r -> r.getPermissions().stream().map(Permission::getCode).toList()).orElse(List.of()),
+            user.disabledFeatureSet());
         Role role = roleService.updatePermissions(id, user.getCompany().getId(), List.copyOf(normalizedCodes));
         Map<String, Set<Long>> currentScopes = rolePermDeptScopeRepo.findScopesMap(role.getId());
         rolePermDeptScopeRepo.replaceAll(

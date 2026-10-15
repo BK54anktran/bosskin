@@ -24,6 +24,9 @@ Danh mục + lý do chia: `docs/thiet-ke/goi-chuc-nang.md`. Tiền tính ngoài 
   job nền kiểm `CompanyFeatures.require(user|company, F)` / `User.isFeatureDisabled(F)`. `JwtAuthFilter` nạp sẵn tập tắt vào user; đăng nhập thay của system admin cũng bị chặn.
 - **Tương thích V24**: đăng nhập / làm mới token trả `features` (mới) và `modules` (7 gói cũ = tính năng gốc còn bật) vì app điện thoại đã cài chỉ đọc `modules`;
   `PUT /admin/companies/{id}` nhận `features` (ưu tiên) hoặc `modules` (cũ). Migration V26 chuyển đúng: gói cũ tắt ⇒ mọi tính năng con tắt, rồi bỏ `disabled_modules`.
+- **Màn Phân quyền** (`GET /roles/permissions`, dùng cho cả hộp vai trò lẫn quyền riêng của người dùng) **không liệt kê quyền của tính năng đã tắt**. Khi lưu vai trò /
+  quyền riêng / phạm vi phòng ban, backend **giữ nguyên** những quyền (và phạm vi) đó đang có (`PermissionConsistencyService.keepHiddenFeaturePermissions` / `keepHiddenFeatureScopes`),
+  nên bật lại tính năng thì quyền đã cấp dùng được ngay. Quyền dùng chung kiểu `ATTENDANCE_SELF` thuộc tính năng gốc của gói nên chỉ ẩn khi gói gốc tắt.
 - **Cài đặt của tính năng tắt = tắt** (`Company.locationCheckActive()`, `deviceBindingActive()`, `checkInWithoutShiftActive()`, `shiftRegistrationActive()`,
   `effectiveApprovalMode()`): màn Cài đặt ẩn mục thì backend không áp giá trị cũ. Lương: `PAY_TAX_INS` tắt → không trừ thuế / BH, `PAY_DEPENDENT` tắt → 0 người phụ thuộc,
   `PAY_EMPLOYER_COST` tắt → BH công ty đóng = 0. Job: nhắc ca / chấm công (`SHIFT_REMINDER`), cộng phép (`LEAVE_ACCRUAL`), báo hợp đồng / tài liệu (`HR_*_ALERT`).

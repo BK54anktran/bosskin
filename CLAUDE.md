@@ -571,6 +571,7 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
 - Chặn 3 lớp: `User.getPermissions()` bỏ quyền gắn riêng tính năng tắt; `security/FeatureRouteInterceptor` + `core/FeatureRoutes` (đường dẫn → tính năng) trả 403
   `error.company.feature_disabled`; nghiệp vụ / job tự kiểm `CompanyFeatures.require(user|company, F)`. **Thêm API mới thuộc tính năng → thêm dòng vào `FeatureRoutes`**;
   thêm tính năng → `CATALOG` + `company_feature_utils.dart` + nhãn vi / en (CI `tools/ci/check_features.py` kiểm khớp). `ATTENDANCE_SELF` là quyền chung, thuộc `ATT_SHEET`.
+- Màn Phân quyền ẩn quyền của tính năng tắt (`GET /roles/permissions` lọc theo công ty); lưu vai trò / quyền riêng giữ nguyên quyền + phạm vi đang bị ẩn (`keepHiddenFeaturePermissions`).
 - Tương thích app cũ: đăng nhập / làm mới trả `features` và `modules` (7 gói V24 = tính năng gốc còn bật); `PUT /admin/companies/{id}` nhận `features` hoặc `modules`.
 - FE: `AuthUser.hasFeature`, `routeFeature` (nav_access), Cài đặt công ty ẩn mục của tính năng tắt, app lấy lại quyền + tính năng (`AuthService.syncPermissions`, qua refresh token)
   khi mở app và khi API trả 403 `error.permission.denied` / `module_disabled` / `feature_disabled` (tối đa 1 lần / phút). Màn lõi không gọi API của tính năng khi thiếu quyền
