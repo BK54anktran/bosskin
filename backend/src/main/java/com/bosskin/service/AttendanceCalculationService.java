@@ -356,6 +356,15 @@ public class AttendanceCalculationService {
         LocalTime effectiveCheckOut = resolveEffectiveCheckOut(att, req, shift);
         LocalTime roundedCheckIn    = roundUp  (effectiveCheckIn,  policy.roundingCheckInMinutes());
         LocalTime roundedCheckOut   = roundDown(effectiveCheckOut, policy.roundingCheckOutMinutes());
+        // Bộ tính giờ chỉ có giờ trong ngày nên coi "giờ ra ≤ giờ vào" là qua đêm (+24 giờ). Vào rồi ra ngay (hoặc sau làm tròn
+        // giờ vào được làm lên, giờ ra làm xuống nên đảo chiều) mà thời gian thực tế ngắn thì phải ra 0 giờ, không phải ~24 giờ.
+        if (req.appliedCheckInRequest() == null && req.appliedCheckOutRequest() == null && att != null
+            && att.getCheckIn() != null && att.getCheckOut() != null && roundedCheckIn != null && roundedCheckOut != null) {
+            long elapsedMin = java.time.Duration.between(att.getCheckIn(), att.getCheckOut()).toMinutes();
+            if (elapsedMin >= 0 && elapsedMin < 12 * 60 && !roundedCheckOut.isAfter(roundedCheckIn)) {
+                roundedCheckOut = roundedCheckIn;
+            }
+        }
         LocalTime flagCheckIn       = roundUp  (req.appliedCheckInRequest()  != null ? req.appliedCheckInRequest().getRequestedCheckIn()   : actualCheckIn,  policy.roundingCheckInMinutes());
         LocalTime flagCheckOut      = roundDown(req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : actualCheckOut, policy.roundingCheckOutMinutes());
 

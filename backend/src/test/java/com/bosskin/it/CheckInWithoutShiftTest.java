@@ -158,4 +158,24 @@ class CheckInWithoutShiftTest extends IntegrationTest {
         // ca HC hôm sau không bị dính: chưa có công nào cho ca đó
         assertThat(attendanceRepository.findByEmployeeIdAndDate(e.id(), MON.plusDays(1))).isEmpty();
     }
+
+    @Test
+    @DisplayName("Vào rồi ra ngay trong cùng một phút → 0 giờ làm (không bị tính 24 giờ như ca qua đêm)")
+    void sameMinuteCheckInOut_isZeroHours() {
+        var c = fixture.standardCompany();
+        enable(c);
+        var e = c.emp(6);
+        String token = c.tokenOf(e);
+        assertThat(post(token, "/api/v1/attendances/self/check-in", MON.atTime(10, 0, 5)).status()).isEqualTo(201);
+        assertThat(post(token, "/api/v1/attendances/self/check-out", MON.atTime(10, 0, 40)).status()).isEqualTo(200);
+        var rows = api.get(c.adminToken, "/api/v1/attendances/timesheet?employeeId=" + e.id() + "&year=2026&month=11").expectOk().body();
+        boolean found = false;
+        for (var row : rows) {
+            if (MON.toString().equals(row.path("date").asText()) && !row.path("checkIn").asText("").isEmpty()) {
+                found = true;
+                assertThat(row.path("actualHours").asDouble()).as("giờ làm").isEqualTo(0.0);
+            }
+        }
+        assertThat(found).isTrue();
+    }
 }

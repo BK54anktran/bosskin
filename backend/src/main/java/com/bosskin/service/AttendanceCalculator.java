@@ -42,6 +42,10 @@ public class AttendanceCalculator {
         LocalTime leaveFrom,  LocalTime leaveTo
     ) {
         if (checkIn == null || checkOut == null) return Result.ZERO;
+        // Vào và ra cùng một phút = chưa làm được giờ nào (không phải ca qua đêm 24 giờ)
+        if (checkIn.truncatedTo(java.time.temporal.ChronoUnit.MINUTES).equals(checkOut.truncatedTo(java.time.temporal.ChronoUnit.MINUTES))) {
+            return Result.ZERO;
+        }
 
         int[] actual = range(checkIn, checkOut);
 
