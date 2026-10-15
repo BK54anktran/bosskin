@@ -1,5 +1,6 @@
 package com.bosskin.controller;
 
+import com.bosskin.core.AttendanceTimes;
 import com.bosskin.core.PayrollPeriod;
 import com.bosskin.core.WorkFlagCalculator;
 import com.bosskin.dto.AttendanceDTO;
@@ -428,6 +429,10 @@ public class AttendanceController {
             .breakMinutes(data.breakMinutes())
             .checkIn(roundedCheckIn)
             .checkOut(roundedCheckOut)
+            .checkInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckIn()) : 0)
+            .checkOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckOut()) : 0)
+            .overrideCheckInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckInAt()) : 0)
+            .overrideCheckOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckOutAt()) : 0)
             .checkInRaw(data.effectiveCheckIn())
             .checkOutRaw(data.effectiveCheckOut())
             .checkInRounded(data.checkIn() != null && !data.checkIn().equals(roundedCheckIn))
@@ -565,6 +570,10 @@ public class AttendanceController {
             .breakMinutes(data.breakMinutes())
             .checkIn(roundedCheckIn)
             .checkOut(roundedCheckOut)
+            .checkInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckIn()) : 0)
+            .checkOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckOut()) : 0)
+            .overrideCheckInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckInAt()) : 0)
+            .overrideCheckOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckOutAt()) : 0)
             .checkInRaw(data.effectiveCheckIn())
             .checkOutRaw(data.effectiveCheckOut())
             .checkInRounded(data.checkIn() != null && !data.checkIn().equals(roundedCheckIn))
@@ -1100,8 +1109,12 @@ public class AttendanceController {
             "otNightMinutes", att.getOverrideOtNightMinutes(), "note", att.getOverrideNote(),
             "approved", att.isApproved());
 
-        att.setOverrideCheckIn(req.getOverrideCheckIn());
-        att.setOverrideCheckOut(req.getOverrideCheckOut());
+        // Giờ nhận vào là HH:mm; backend chọn ngày (giờ ra nhỏ hơn giờ vào → +1 ngày) và lưu ngày giờ đầy đủ
+        applyShiftHint(att);
+        att.setOverrideTimes(req.getOverrideCheckIn(), req.getOverrideCheckOut());
+        if (!att.overrideSpanValid()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.override_range_invalid");
+        }
         att.setOverrideBreakMinutes(req.getOverrideBreakMinutes());
         att.setOverrideOtDayMinutes(req.getOverrideOtDayMinutes());
         att.setOverrideOtNightMinutes(req.getOverrideOtNightMinutes());
@@ -1122,6 +1135,14 @@ public class AttendanceController {
                 "breakMinutes", req.getOverrideBreakMinutes(), "otDayMinutes", req.getOverrideOtDayMinutes(),
                 "otNightMinutes", req.getOverrideOtNightMinutes(), "note", req.getOverrideNote())));
         return ResponseEntity.ok().build();
+    }
+
+    /** Bản ghi chưa gắn ca mà ngày đó nhân viên có đúng một ca → dùng ca đó để chọn ngày cho giờ sửa tay. */
+    private void applyShiftHint(Attendance att) {
+        if (att.getShiftAssignment() != null) return;
+        List<ShiftAssignment> day = shiftAssignmentRepository.findByEmployeeIdAndWorkDate(att.getEmployee().getId(), att.getDate())
+            .stream().filter(x -> !x.isDeleted()).toList();
+        if (day.size() == 1) att.setShiftHint(day.get(0).effectiveStartTime(), day.get(0).effectiveEndTime());
     }
 
     @PostMapping("/override")

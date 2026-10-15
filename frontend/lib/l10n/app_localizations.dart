@@ -11056,6 +11056,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhập / xuất Excel'**
   String get featureDataExcel;
+
+  /// No description provided for @attendanceDayOffsetTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lệch {days} ngày so với ngày công'**
+  String attendanceDayOffsetTooltip(String days);
 }
 
 class _AppLocalizationsDelegate

@@ -2042,4 +2042,6 @@
   ,"featureRptPayroll": "Báo cáo lương"
   ,"featureRptInsurance": "Báo cáo bảo hiểm & người phụ thuộc"
   ,"featureDataExcel": "Nhập / xuất Excel"
+  ,"attendanceDayOffsetTooltip": "Lệch {days} ngày so với ngày công"
+  ,"@attendanceDayOffsetTooltip": {"placeholders": {"days": {"type": "String"}}}
 }

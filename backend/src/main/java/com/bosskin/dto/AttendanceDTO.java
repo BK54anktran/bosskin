@@ -164,6 +164,12 @@ public class AttendanceDTO {
         @JsonFormat(pattern = "HH:mm")
         private LocalTime leaveToTime;
 
+        /** Số ngày lệch của giờ so với ngày công (0 = cùng ngày, 1 = hôm sau, -1 = hôm trước); app hiện "+N" nhỏ phía trên giờ. */
+        private int checkInDayOffset;
+        private int checkOutDayOffset;
+        private int overrideCheckInDayOffset;
+        private int overrideCheckOutDayOffset;
+
         // Admin override
         @JsonFormat(pattern = "HH:mm")
         private LocalTime overrideCheckIn;
@@ -248,6 +254,12 @@ public class AttendanceDTO {
         private LocalTime leaveFromTime;
         @JsonFormat(pattern = "HH:mm")
         private LocalTime leaveToTime;
+
+        /** Số ngày lệch của giờ so với ngày công (0 = cùng ngày, 1 = hôm sau, -1 = hôm trước); app hiện "+N" nhỏ phía trên giờ. */
+        private int checkInDayOffset;
+        private int checkOutDayOffset;
+        private int overrideCheckInDayOffset;
+        private int overrideCheckOutDayOffset;
 
         // Admin override fields
         @JsonFormat(pattern = "HH:mm")

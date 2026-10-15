@@ -5993,4 +5993,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get featureDataExcel => 'Excel import / export';
+
+  @override
+  String attendanceDayOffsetTooltip(String days) {
+    return '$days day(s) from the work date';
+  }
 }

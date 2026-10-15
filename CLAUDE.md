@@ -360,15 +360,15 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V26** (`V26__company_features.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V27** (`V27__attendance_override_datetime.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
 V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ),
 V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản),
 V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc, V24 gói chức năng theo công ty (đã thay bằng V26),
-V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`)
-→ Migration tiếp theo phải là **V27**
+V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`), V27 giờ sửa tay chấm công lưu datetime
+→ Migration tiếp theo phải là **V28**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -577,6 +577,14 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
   khi mở app và khi API trả 403 `error.permission.denied` / `module_disabled` / `feature_disabled` (tối đa 1 lần / phút). Màn lõi không gọi API của tính năng khi thiếu quyền
   (vd. Nhân viên chỉ tải bậc lương khi có `PAYROLL_VIEW`).
 - Cài đặt của tính năng tắt = tắt: backend dùng `Company.xxxActive()` / `effectiveApprovalMode()` thay vì đọc cờ thô; lương, job nền, thẻ Tổng quan nhắc hợp đồng / tài liệu đã theo tính năng. Còn lại (giai đoạn 2): lịch + ngày lễ khi `CAL_*` tắt, thẻ Tổng quan khác, lọc Excel theo tính năng, ẩn nút / tab trong các màn còn lại — xem `docs/thiet-ke/goi-chuc-nang.md`.
+
+## Giờ chấm công dạng datetime (V27, 15/10/2026)
+- `attendances.override_check_in/out` là `datetime(6)` (trước là `time`): giờ sửa tay lưu đủ ngày. Giờ công tính trên trục phút tuyệt đối từ 00:00 ngày công
+  (`AttendanceCalculator.calculate(…, int checkIn, int checkOut, …)`), hợp lệ khi 0 < ra − vào < 24 giờ; không còn đoán "ra nhỏ hơn vào là qua đêm".
+- `core/AttendanceTimes` chọn ngày cho giờ chỉ có HH:mm (`resolveIn/resolveOut`: có ca theo khung ca; không ca ra ≤ vào → +1 ngày). Entity giữ getter/setter
+  `LocalTime` tương thích; JSON vẫn `HH:mm`, thêm `checkInDayOffset/checkOutDayOffset/overrideCheckInDayOffset/overrideCheckOutDayOffset` (additive).
+  FE hiện "+N" nhỏ phía trên giờ bằng `widgets/day_offset_text.dart`. Lỗi `error.attendance.override_range_invalid`.
+- V27 xoá cột cũ → quay lại bản API cũ cần khôi phục DB: **sao lưu DB trước khi deploy**. Test: `AttendanceTimesTest`, `AttendanceCalculatorTest`, `AttendanceDateTimeTest`.
 
 ## Chấm công không cần xếp ca (V25, 15/10/2026)
 - Cài đặt công ty `attendance.checkInWithoutShift` (`companies.check_in_without_shift`, mặc định tắt). Bật → ngày NV không có ca (và không đang trong

@@ -13,6 +13,7 @@ import '../../../../data/repositories/company_setting_repository.dart';
 import '../../../../data/repositories/leave_repository.dart';
 import '../../../../data/repositories/employee_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../../widgets/day_offset_text.dart';
 import '../../../../data/services/department_service.dart';
 import '../../../widgets/department_picker_field.dart';
 import '../../../widgets/import_preview_dialog.dart';
@@ -1026,6 +1027,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     required String displayVal, required String? overrideVal,
     required double width, required Color bg,
     bool isTime = true, bool rounded = false, String? roundedRawVal,
+    int displayOffset = 0, int overrideOffset = 0,
   }) {
     if (_editingRows.contains(dateKey)) {
       final ctrl = _editCtrls['$dateKey:$col'] ?? TextEditingController(text: overrideVal ?? displayVal);
@@ -1041,7 +1043,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       child: overrideVal != null
           ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(overrideVal, style: const TextStyle(fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
+                DayOffsetText(overrideVal, dayOffset: overrideOffset,
+                    style: const TextStyle(fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 2),
                 const Icon(Icons.edit, size: 9, color: AppTheme.error),
                 if (rounded) ...[
@@ -1051,11 +1054,13 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                 ],
               ]),
               if (showActual)
-                Text('($displayVal)', style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                DayOffsetText('($displayVal)', dayOffset: displayOffset,
+                    style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
             ])
           : Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(displayVal, style: TextStyle(fontSize: 12,
-                  color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+              DayOffsetText(displayVal, dayOffset: displayOffset,
+                  style: TextStyle(fontSize: 12,
+                      color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
               if (rounded && displayVal.isNotEmpty) ...[
                 const SizedBox(width: 2),
                 Tooltip(message: roundedRawVal ?? displayVal,
@@ -1095,12 +1100,14 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     // Check-in
     cells.add(_inlineCellT(dateKey: dateKey, col: 'checkIn',
         displayVal: row.checkIn ?? attEmpty, overrideVal: row.overrideCheckIn,
+        displayOffset: row.checkInDayOffset, overrideOffset: row.overrideCheckInDayOffset,
         width: cw[idx++], bg: bg,
         rounded: row.overrideCheckIn == null && row.checkInRounded,
         roundedRawVal: row.checkInRaw));
     // Check-out
     cells.add(_inlineCellT(dateKey: dateKey, col: 'checkOut',
         displayVal: row.checkOut ?? attEmpty, overrideVal: row.overrideCheckOut,
+        displayOffset: row.checkOutDayOffset, overrideOffset: row.overrideCheckOutDayOffset,
         width: cw[idx++], bg: bg,
         rounded: row.overrideCheckOut == null && row.checkOutRounded,
         roundedRawVal: row.checkOutRaw));

@@ -10,6 +10,7 @@ import com.bosskin.entity.LeaveRequest;
 import com.bosskin.entity.ShiftAssignment;
 import org.springframework.stereotype.Service;
 
+import com.bosskin.core.AttendanceTimes;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -221,8 +222,8 @@ public class AttendanceCalculationService {
      */
     public ComputedHours computeWorkHours(
         ShiftTimes shift,
-        LocalTime roundedCheckIn,
-        LocalTime roundedCheckOut,
+        Integer checkInMin,
+        Integer checkOutMin,
         LocalTime dayStart,
         LocalTime dayEnd,
         LocalTime leaveFrom,
@@ -231,9 +232,13 @@ public class AttendanceCalculationService {
         boolean otEnabled,
         AttendancePolicy policy
     ) {
-        var calc = AttendanceCalculator.calculate(
-            shift.start(), shift.end(), shift.breakStart(), shift.breakEnd(),
-            roundedCheckIn, roundedCheckOut, dayStart, dayEnd, leaveFrom, leaveTo);
+        ShiftAbs sa = ShiftAbs.of(shift);
+        Integer[] leave = sa.leaveAbs(leaveFrom, leaveTo);
+        var calc = (checkInMin == null || checkOutMin == null)
+            ? AttendanceCalculator.Result.ZERO
+            : AttendanceCalculator.calculate(
+                sa.start(), sa.end(), sa.breakStart(), sa.breakEnd(),
+                checkInMin, checkOutMin, minuteOfDay(dayStart), minuteOfDay(dayEnd), leave[0], leave[1]);
 
         int actualMin   = hoursToMinutes(calc.actualHours());
         int regDayMin   = hoursToMinutes(calc.regularDayHours());
@@ -354,21 +359,16 @@ public class AttendanceCalculationService {
 
         LocalTime effectiveCheckIn  = resolveEffectiveCheckIn(att, req, shift);
         LocalTime effectiveCheckOut = resolveEffectiveCheckOut(att, req, shift);
-        LocalTime roundedCheckIn    = roundUp  (effectiveCheckIn,  policy.roundingCheckInMinutes());
-        LocalTime roundedCheckOut   = roundDown(effectiveCheckOut, policy.roundingCheckOutMinutes());
-        // Bộ tính giờ chỉ có giờ trong ngày nên coi "giờ ra ≤ giờ vào" là qua đêm (+24 giờ). Vào rồi ra ngay (hoặc sau làm tròn
-        // giờ vào được làm lên, giờ ra làm xuống nên đảo chiều) mà thời gian thực tế ngắn thì phải ra 0 giờ, không phải ~24 giờ.
-        if (req.appliedCheckInRequest() == null && req.appliedCheckOutRequest() == null && att != null
-            && att.getCheckIn() != null && att.getCheckOut() != null && roundedCheckIn != null && roundedCheckOut != null) {
-            long elapsedMin = java.time.Duration.between(att.getCheckIn(), att.getCheckOut()).toMinutes();
-            if (elapsedMin >= 0 && elapsedMin < 12 * 60 && !roundedCheckOut.isAfter(roundedCheckIn)) {
-                roundedCheckOut = roundedCheckIn;
-            }
-        }
+        // Giờ làm tính trên ngày giờ thật (hiệu số), làm tròn trên số phút tuyệt đối từ 00:00 ngày công
+        LocalDateTime[] span = resolveEffectiveSpan(att, req, shift);
+        Integer checkInMin  = span[0] == null ? null
+            : roundUpMinutes(AttendanceTimes.minutesFrom(att.getDate(), span[0]), policy.roundingCheckInMinutes());
+        Integer checkOutMin = span[1] == null ? null
+            : roundDownMinutesAbs(AttendanceTimes.minutesFrom(att.getDate(), span[1]), policy.roundingCheckOutMinutes());
         LocalTime flagCheckIn       = roundUp  (req.appliedCheckInRequest()  != null ? req.appliedCheckInRequest().getRequestedCheckIn()   : actualCheckIn,  policy.roundingCheckInMinutes());
         LocalTime flagCheckOut      = roundDown(req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : actualCheckOut, policy.roundingCheckOutMinutes());
 
-        ComputedHours workHours = capFlexible(computeWorkHours(shift, roundedCheckIn, roundedCheckOut,
+        ComputedHours workHours = capFlexible(computeWorkHours(shift, checkInMin, checkOutMin,
             dayStart, dayEnd, leaveFrom, leaveTo, req, otEnabled, policy),
             assignment != null ? assignment.flexibleRequiredMinutes() : null);
 
@@ -414,15 +414,19 @@ public class AttendanceCalculationService {
         boolean hasOverride = att != null && (att.getOverrideCheckIn() != null || att.getOverrideCheckOut() != null
             || att.getOverrideOtDayMinutes() != null || att.getOverrideOtNightMinutes() != null);
         if (hasOverride) {
-            LocalTime ovCI = roundUp  (att.getOverrideCheckIn()  != null ? att.getOverrideCheckIn()  : data.checkIn(),  policy.roundingCheckInMinutes());
-            LocalTime ovCO = roundDown(att.getOverrideCheckOut() != null ? att.getOverrideCheckOut() : data.checkOut(), policy.roundingCheckOutMinutes());
+            // Giờ sửa tay là ngày giờ đầy đủ; đầu không sửa lấy giờ thật. Hiệu số thật, không đoán qua đêm.
+            LocalDateTime ovInAt  = att.getOverrideCheckInAt()  != null ? att.getOverrideCheckInAt()  : att.getCheckIn();
+            LocalDateTime ovOutAt = att.getOverrideCheckOutAt() != null ? att.getOverrideCheckOutAt() : att.getCheckOut();
             int ovBreakMin = att.getOverrideBreakMinutes() != null ? att.getOverrideBreakMinutes() : data.breakMinutes();
             double actual, regDay, regNight;
-            if (ovCI != null && ovCO != null) {
-                LocalTime brkStart = ovCI.plusMinutes(((ovCO.toSecondOfDay()/60 - ovCI.toSecondOfDay()/60 + 1440) % 1440 - ovBreakMin) / 2);
-                LocalTime brkEnd   = ovBreakMin > 0 ? brkStart.plusMinutes(ovBreakMin) : null;
-                var c = AttendanceCalculator.calculate(data.shiftStart(), data.shiftEnd(),
-                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkEnd : null, ovCI, ovCO, dayStart, dayEnd);
+            if (ovInAt != null && ovOutAt != null) {
+                int ovCI = roundUpMinutes(AttendanceTimes.minutesFrom(att.getDate(), ovInAt), policy.roundingCheckInMinutes());
+                int ovCO = roundDownMinutesAbs(AttendanceTimes.minutesFrom(att.getDate(), ovOutAt), policy.roundingCheckOutMinutes());
+                int brkStart = ovCI + (Math.max(0, ovCO - ovCI) - ovBreakMin) / 2;
+                ShiftAbs sa = ShiftAbs.of(data.shiftStart(), data.shiftEnd(), null, null);
+                var c = AttendanceCalculator.calculate(sa.start(), sa.end(),
+                    ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkStart + ovBreakMin : null,
+                    ovCI, ovCO, minuteOfDay(dayStart), minuteOfDay(dayEnd), null, null);
                 actual = c.actualHours(); regDay = c.regularDayHours(); regNight = c.regularNightHours();
             } else { actual = regDay = regNight = 0; }
             double otDay   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
@@ -555,6 +559,66 @@ public class AttendanceCalculationService {
     public boolean isAbsent(Attendance a, boolean hasShift) {
         if (a.isApproved()) return Attendance.Status.ABSENT == a.getStatus();
         return hasShift && a.getCheckIn() == null && a.getOverrideCheckIn() == null;
+    }
+
+    // ── Trục thời gian tuyệt đối ──────────────────────────────────────────────
+
+    /** Giờ vào / ra hiệu quả bằng ngày giờ thật: đơn đã duyệt thay giờ thật (A16); giờ trong đơn chỉ có HH:mm nên ghép ngày theo ca / giờ vào. */
+    LocalDateTime[] resolveEffectiveSpan(Attendance att, ResolvedRequests req, ShiftTimes shift) {
+        if (att == null || att.getDate() == null) return new LocalDateTime[]{null, null};
+        LocalDateTime in = att.getCheckIn();
+        LocalTime reqIn = req.appliedCheckInRequest() != null ? req.appliedCheckInRequest().getRequestedCheckIn() : null;
+        if (reqIn != null) in = AttendanceTimes.resolveIn(att.getDate(), reqIn, shift.start());
+        LocalDateTime out = att.getCheckOut();
+        LocalTime reqOut = req.appliedCheckOutRequest() != null ? req.appliedCheckOutRequest().getRequestedCheckOut() : null;
+        if (reqOut != null) out = AttendanceTimes.resolveOut(att.getDate(), reqOut, in, shift.start(), shift.end());
+        return new LocalDateTime[]{in, out};
+    }
+
+    private static int minuteOfDay(LocalTime t) {
+        return t.getHour() * 60 + t.getMinute();
+    }
+
+    /** Ca + giờ nghỉ + giờ nghỉ phép quy về số phút tuyệt đối từ 00:00 ngày công (ca qua đêm: kết thúc &gt; 1440). */
+    private record ShiftAbs(Integer start, Integer end, Integer breakStart, Integer breakEnd) {
+        static ShiftAbs of(ShiftTimes s) {
+            return of(s.start(), s.end(), s.breakStart(), s.breakEnd());
+        }
+
+        static ShiftAbs of(LocalTime start, LocalTime end, LocalTime bs, LocalTime be) {
+            if (start == null || end == null) return new ShiftAbs(null, null, null, null);
+            int ss = minuteOfDay(start), se = minuteOfDay(end);
+            if (se <= ss) se += AttendanceTimes.DAY_MINUTES;
+            Integer b1 = null, b2 = null;
+            if (bs != null && be != null) {
+                int x = minuteOfDay(bs);
+                int dur = (minuteOfDay(be) - x + AttendanceTimes.DAY_MINUTES) % AttendanceTimes.DAY_MINUTES;
+                if (x < ss) x += AttendanceTimes.DAY_MINUTES; // nghỉ sau nửa đêm của ca qua đêm
+                if (dur > 0) { b1 = x; b2 = x + dur; }
+            }
+            return new ShiftAbs(ss, se, b1, b2);
+        }
+
+        Integer[] leaveAbs(LocalTime from, LocalTime to) {
+            if (from == null || to == null) return new Integer[]{null, null};
+            int lf = minuteOfDay(from);
+            int dur = (minuteOfDay(to) - lf + AttendanceTimes.DAY_MINUTES) % AttendanceTimes.DAY_MINUTES;
+            if (dur == 0) return new Integer[]{null, null};
+            if (start != null && end != null && end > AttendanceTimes.DAY_MINUTES && lf < start) lf += AttendanceTimes.DAY_MINUTES;
+            return new Integer[]{lf, lf + dur};
+        }
+    }
+
+    /** Làm tròn LÊN theo bước phút trên số phút tuyệt đối (không quấn qua nửa đêm như LocalTime). */
+    static int roundUpMinutes(int minutes, Integer step) {
+        if (step == null || step <= 1) return minutes;
+        return Math.floorDiv(minutes + step - 1, step) * step;
+    }
+
+    /** Làm tròn XUỐNG theo bước phút trên số phút tuyệt đối. */
+    static int roundDownMinutesAbs(int minutes, Integer step) {
+        if (step == null || step <= 1) return minutes;
+        return Math.floorDiv(minutes, step) * step;
     }
 
     // ── Time helpers ──────────────────────────────────────────────────────────

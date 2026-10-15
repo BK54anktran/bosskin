@@ -128,6 +128,12 @@ class TimesheetRow {
   final int? overrideOtNightMinutes;
   final String? overrideNote;
 
+  /// Số ngày lệch của giờ so với ngày công (0 = cùng ngày, 1 = hôm sau…): app hiện "+N" nhỏ phía trên giờ.
+  final int checkInDayOffset;
+  final int checkOutDayOffset;
+  final int overrideCheckInDayOffset;
+  final int overrideCheckOutDayOffset;
+
   bool get hasOverride =>
       overrideCheckIn != null || overrideCheckOut != null ||
       overrideOtDayMinutes != null || overrideOtNightMinutes != null;
@@ -180,6 +186,10 @@ class TimesheetRow {
     this.approvedByName,
     this.workFlags = const [],
     this.overrideCheckIn,
+    this.checkInDayOffset = 0,
+    this.checkOutDayOffset = 0,
+    this.overrideCheckInDayOffset = 0,
+    this.overrideCheckOutDayOffset = 0,
     this.overrideCheckOut,
     this.overrideBreakMinutes,
     this.overrideOtDayMinutes,
@@ -240,6 +250,10 @@ class TimesheetRow {
         approvedByName: j['approvedByName'] as String?,
         workFlags: (j['workFlags'] as String?)?.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList() ?? const [],
         overrideCheckIn: j['overrideCheckIn'] as String?,
+        checkInDayOffset: (j['checkInDayOffset'] as num?)?.toInt() ?? 0,
+        checkOutDayOffset: (j['checkOutDayOffset'] as num?)?.toInt() ?? 0,
+        overrideCheckInDayOffset: (j['overrideCheckInDayOffset'] as num?)?.toInt() ?? 0,
+        overrideCheckOutDayOffset: (j['overrideCheckOutDayOffset'] as num?)?.toInt() ?? 0,
         overrideCheckOut: j['overrideCheckOut'] as String?,
         overrideBreakMinutes: (j['overrideBreakMinutes'] as num?)?.toInt(),
         overrideOtDayMinutes: (j['overrideOtDayMinutes'] as num?)?.toInt(),
@@ -320,6 +334,12 @@ class DayViewRow {
   final int? overrideOtNightMinutes;
   final String? overrideNote;
 
+  /// Số ngày lệch của giờ so với ngày công (0 = cùng ngày, 1 = hôm sau…): app hiện "+N" nhỏ phía trên giờ.
+  final int checkInDayOffset;
+  final int checkOutDayOffset;
+  final int overrideCheckInDayOffset;
+  final int overrideCheckOutDayOffset;
+
   bool get hasOverride =>
       overrideCheckIn != null || overrideCheckOut != null ||
       overrideOtDayMinutes != null || overrideOtNightMinutes != null;
@@ -380,6 +400,10 @@ class DayViewRow {
     this.leaves = const [],
     this.workFlags = const [],
     this.overrideCheckIn,
+    this.checkInDayOffset = 0,
+    this.checkOutDayOffset = 0,
+    this.overrideCheckInDayOffset = 0,
+    this.overrideCheckOutDayOffset = 0,
     this.overrideCheckOut,
     this.overrideBreakMinutes,
     this.overrideOtDayMinutes,
@@ -450,6 +474,10 @@ class DayViewRow {
             .toList() ?? const [],
         workFlags: (j['workFlags'] as String?)?.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList() ?? const [],
         overrideCheckIn: j['overrideCheckIn'] as String?,
+        checkInDayOffset: (j['checkInDayOffset'] as num?)?.toInt() ?? 0,
+        checkOutDayOffset: (j['checkOutDayOffset'] as num?)?.toInt() ?? 0,
+        overrideCheckInDayOffset: (j['overrideCheckInDayOffset'] as num?)?.toInt() ?? 0,
+        overrideCheckOutDayOffset: (j['overrideCheckOutDayOffset'] as num?)?.toInt() ?? 0,
         overrideCheckOut: j['overrideCheckOut'] as String?,
         overrideBreakMinutes: (j['overrideBreakMinutes'] as num?)?.toInt(),
         overrideOtDayMinutes: (j['overrideOtDayMinutes'] as num?)?.toInt(),

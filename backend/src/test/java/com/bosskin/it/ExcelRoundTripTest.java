@@ -266,6 +266,32 @@ class ExcelRoundTripTest extends IntegrationTest {
     }
 
     @Test
+    @DisplayName("V27 · Giờ sửa tay ca đêm (ra +1 ngày) và đến muộn qua nửa đêm: xuất → nhập lại nguyên file không đổi, ngày giờ không bị đổi")
+    void overnightOverrideRoundTrip() throws Exception {
+        var c = fixture.standardCompany();
+        var night = c.emp(6);
+        var late = c.emp(7);
+        c.assign(night, "DEM", D1);
+        c.assign(late, "DEM", D1);
+        long idNight = api.post(c.adminToken, "/api/v1/attendances/override",
+            Map.of("employeeId", night.id(), "date", D1.toString())).expectOk().body().path("attendanceId").asLong();
+        long idLate = api.post(c.adminToken, "/api/v1/attendances/override",
+            Map.of("employeeId", late.id(), "date", D1.toString())).expectOk().body().path("attendanceId").asLong();
+        api.patch(c.adminToken, "/api/v1/attendances/" + idNight + "/override",
+            Map.of("overrideCheckIn", "22:00", "overrideCheckOut", "06:00")).expectOk();
+        api.patch(c.adminToken, "/api/v1/attendances/" + idLate + "/override",
+            Map.of("overrideCheckIn", "00:30", "overrideCheckOut", "06:00")).expectOk();
+
+        for (var e : new Fixture.Emp[]{night, late}) {
+            exportAndCheckUnchanged(c, "/api/v1/attendances/export-timesheet?employeeId=" + e.id()
+                + "&from=2026-11-01&to=2026-11-30", "/api/v1/attendances/preview-import-timesheet");
+        }
+        // sau khi nhập lại (không đổi) ngày giờ vẫn giữ nguyên
+        assertThat(one("SELECT override_check_out FROM attendances WHERE id = ?", idNight).toString()).startsWith("2026-11-03 06:00");
+        assertThat(one("SELECT override_check_in FROM attendances WHERE id = ?", idLate).toString()).startsWith("2026-11-03 00:30");
+    }
+
+    @Test
     @DisplayName("Chấm công + bảng công: nhập lại nguyên file không đổi; in giá trị ô để kiểm định dạng")
     void attendanceFormats() throws Exception {
         var c = fixture.standardCompany();

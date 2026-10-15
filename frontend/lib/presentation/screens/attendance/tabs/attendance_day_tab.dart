@@ -12,6 +12,7 @@ import '../../../../data/repositories/attendance_repository.dart';
 import '../../../../data/repositories/company_setting_repository.dart';
 import '../../../../data/repositories/leave_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../../widgets/day_offset_text.dart';
 import '../../../../data/services/department_service.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../widgets/department_picker_field.dart';
@@ -362,6 +363,8 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     bool isTime = true,
     bool rounded = false,
     String? roundedRawVal,
+    int displayOffset = 0,
+    int overrideOffset = 0,
   }) {
     final slotKey = _daySlotKey(slot);
     if (_editingDaySlotKeys.contains(slotKey)) {
@@ -380,7 +383,8 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
       child: overrideVal != null
           ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(overrideVal, style: const TextStyle(fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
+                DayOffsetText(overrideVal, dayOffset: overrideOffset,
+                    style: const TextStyle(fontSize: 11, color: AppTheme.error, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 2),
                 const Icon(Icons.edit, size: 9, color: AppTheme.error),
                 if (rounded) ...[
@@ -390,11 +394,13 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
                 ],
               ]),
               if (showActual)
-                Text('($displayVal)', style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
+                DayOffsetText('($displayVal)', dayOffset: displayOffset,
+                    style: TextStyle(fontSize: 9, color: AppTheme.textSecondary)),
             ])
           : Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(displayVal, style: TextStyle(fontSize: 12,
-                  color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
+              DayOffsetText(displayVal, dayOffset: displayOffset,
+                  style: TextStyle(fontSize: 12,
+                      color: displayVal.isEmpty ? AppTheme.textSecondary : AppTheme.textPrimary)),
               if (rounded && displayVal.isNotEmpty) ...[
                 const SizedBox(width: 2),
                 Tooltip(message: roundedRawVal ?? displayVal,
@@ -980,12 +986,14 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     cells.add(_inlineCell(
       key: (employeeId: slot.employeeId, date: dateStr, col: 'checkIn'),
       displayVal: slot.checkIn ?? '', overrideVal: slot.overrideCheckIn,
+      displayOffset: slot.checkInDayOffset, overrideOffset: slot.overrideCheckInDayOffset,
       width: cw[idx++], bg: bg, slot: slot, rounded: slot.checkInRounded, roundedRawVal: slot.checkInRaw,
     ));
     // Check-out
     cells.add(_inlineCell(
       key: (employeeId: slot.employeeId, date: dateStr, col: 'checkOut'),
       displayVal: slot.checkOut ?? '', overrideVal: slot.overrideCheckOut,
+      displayOffset: slot.checkOutDayOffset, overrideOffset: slot.overrideCheckOutDayOffset,
       width: cw[idx++], bg: bg, slot: slot, rounded: slot.checkOutRounded, roundedRawVal: slot.checkOutRaw,
     ));
     cells.add(_dayRequestCell(attFormatRequestTimeOrDuration(checkInRequest), checkInRequest?.status,

@@ -318,7 +318,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
           AND a.date = :date
           AND a.checkIn IS NOT NULL
           AND a.checkOut IS NULL
-          AND a.overrideCheckOut IS NULL
+          AND a.overrideCheckOutAt IS NULL
           AND a.deleted = false
           AND (:deptId IS NULL OR d.id = :deptId)
         ORDER BY a.checkIn

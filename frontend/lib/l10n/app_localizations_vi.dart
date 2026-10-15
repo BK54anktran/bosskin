@@ -5976,4 +5976,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get featureDataExcel => 'Nhập / xuất Excel';
+
+  @override
+  String attendanceDayOffsetTooltip(String days) {
+    return 'Lệch $days ngày so với ngày công';
+  }
 }

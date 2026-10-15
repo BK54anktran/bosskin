@@ -8,6 +8,7 @@ import com.bosskin.entity.ExcelHistory.HistoryType;
 import com.bosskin.repository.AttendanceRepository;
 import com.bosskin.repository.DepartmentRepository;
 import com.bosskin.repository.EmployeeRepository;
+import com.bosskin.entity.ShiftAssignment;
 import com.bosskin.repository.ShiftAssignmentRepository;
 import com.bosskin.util.ExcelI18n;
 import com.bosskin.util.ExcelUtils;
@@ -227,6 +228,7 @@ public class AttendanceExcelService {
             a.setCheckOut(date.atTime(parseTimeStr(row.getCheckOut())));
         if (hasCol(presentColumns, "excel.col.attendance.note") && row.getNote() != null)
             a.setNote(row.getNote());
+        applyShiftHint(a);
         if (hasCol(presentColumns, "excel.col.attendance.overrideCheckIn") && notBlank(row.getOverrideCheckIn()))
             a.setOverrideCheckIn(parseTimeStr(row.getOverrideCheckIn()));
         if (hasCol(presentColumns, "excel.col.attendance.overrideCheckOut") && notBlank(row.getOverrideCheckOut()))
@@ -1054,7 +1056,9 @@ public class AttendanceExcelService {
                         .deleted(false)
                         .approved(false);
                     applyParsed(b, parsed);
-                    toSave.add(b.build());
+                    Attendance built = b.build();
+                    applyParsedToExisting(built, parsed); // giờ sửa tay cần ngày công + ca → đặt sau khi dựng
+                    toSave.add(built);
                     created++;
                 } else {
                     applyParsedToExisting(att, parsed);
@@ -1190,12 +1194,11 @@ public class AttendanceExcelService {
 
     private void applyParsed(Attendance.AttendanceBuilder b, ParsedCell p) {
         b.status(p.status != null ? p.status : Attendance.Status.PRESENT);
-        if (p.checkIn  != null) b.overrideCheckIn(p.checkIn);
-        if (p.checkOut != null) b.overrideCheckOut(p.checkOut);
     }
 
     private void applyParsedToExisting(Attendance att, ParsedCell p) {
         if (p.status != null) att.setStatus(p.status);
+        applyShiftHint(att);
         if (p.checkIn  != null) att.setOverrideCheckIn(p.checkIn);
         if (p.checkOut != null) att.setOverrideCheckOut(p.checkOut);
     }
@@ -1606,7 +1609,9 @@ public class AttendanceExcelService {
                         .employee(emp).date(row.date).deleted(false).approved(false)
                         .status(null);
                     applyTimesheetRow(b, row);
-                    toSave.add(b.build());
+                    Attendance built = b.build();
+                    applyTimesheetOverrideTimes(built, row); // giờ sửa tay cần ngày công + ca → đặt sau khi dựng
+                    toSave.add(built);
                     approveFlags.add(row.approved != null && row.approved);
                     created++;
                 } else {
@@ -1642,11 +1647,25 @@ public class AttendanceExcelService {
         return result;
     }
 
-    private void applyTimesheetRow(Attendance.AttendanceBuilder b, TimesheetImportRow row) {
-        if (row.checkIn  != null && !row.checkIn.isBlank())
-            try { b.overrideCheckIn(LocalTime.parse(row.checkIn, TIME_FMT)); } catch (Exception ignored) {}
+    /** Bản ghi chưa gắn ca mà ngày đó nhân viên có đúng một ca → dùng ca đó để chọn ngày cho giờ sửa tay. */
+    private void applyShiftHint(Attendance att) {
+        if (att.getShiftAssignment() != null || att.getEmployee() == null || att.getDate() == null) return;
+        List<ShiftAssignment> day = shiftAssignmentRepo.findByEmployeeIdAndWorkDate(att.getEmployee().getId(), att.getDate())
+            .stream().filter(x -> !x.isDeleted()).toList();
+        if (day.size() == 1) att.setShiftHint(day.get(0).effectiveStartTime(), day.get(0).effectiveEndTime());
+    }
+
+    private void applyTimesheetOverrideTimes(Attendance att, TimesheetImportRow row) {
+        applyShiftHint(att);
+        LocalTime in = null, out = null;
+        if (row.checkIn != null && !row.checkIn.isBlank())
+            try { in = LocalTime.parse(row.checkIn, TIME_FMT); } catch (Exception ignored) {}
         if (row.checkOut != null && !row.checkOut.isBlank())
-            try { b.overrideCheckOut(LocalTime.parse(row.checkOut, TIME_FMT)); } catch (Exception ignored) {}
+            try { out = LocalTime.parse(row.checkOut, TIME_FMT); } catch (Exception ignored) {}
+        att.setOverrideTimes(in, out);
+    }
+
+    private void applyTimesheetRow(Attendance.AttendanceBuilder b, TimesheetImportRow row) {
         if (row.breakMinutes != null && !row.breakMinutes.isBlank())
             try { b.overrideBreakMinutes(parseDurationToMinutes(row.breakMinutes)); } catch (Exception ignored) {}
         if (row.otDayMinutes != null && !row.otDayMinutes.isBlank())
@@ -1657,6 +1676,7 @@ public class AttendanceExcelService {
 
     private void applyTimesheetRowToExisting(Attendance att, TimesheetImportRow row) {
         // approved được xử lý riêng qua doApprove() trong controller — không set ở đây
+        applyShiftHint(att);
         if (row.checkIn != null) {
             if (row.checkIn.isBlank()) att.setOverrideCheckIn(null);
             else try { att.setOverrideCheckIn(LocalTime.parse(row.checkIn, TIME_FMT)); } catch (Exception ignored) {}

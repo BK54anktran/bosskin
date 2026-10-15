@@ -2035,4 +2035,6 @@
   ,"featureRptPayroll": "Payroll reports"
   ,"featureRptInsurance": "Insurance & dependents reports"
   ,"featureDataExcel": "Excel import / export"
+  ,"attendanceDayOffsetTooltip": "{days} day(s) from the work date"
+  ,"@attendanceDayOffsetTooltip": {"placeholders": {"days": {"type": "String"}}}
 }

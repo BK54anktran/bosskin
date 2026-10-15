@@ -27,6 +27,8 @@ Trạng thái thường gặp: *Đúng giờ*, *Đi muộn*, *Về sớm* (theo 
 Mỗi dòng có nút **sửa** (bút chì) để nhập / chỉnh giờ vào, giờ ra, ghi chú; nút **xoá**; và nút **duyệt** (dấu tích). Công phải được
 duyệt mới vào bảng lương. Mọi lần sửa / duyệt / xoá đều ghi vào Nhật ký thao tác.
 
+> **Giờ qua đêm:** Giờ lệch sang ngày khác so với ngày công hiện kèm số **+1** nhỏ phía trên (vd. vào 22:00, ra 06:00 hôm sau). Khi sửa tay chỉ cần nhập giờ; nếu giờ ra nhỏ hơn giờ vào, hệ thống hiểu là ngày hôm sau. Khoảng vào – ra phải dưới 24 giờ.
+
 > **Lưu ý:** Không duyệt được ngày không có ca mà cũng không có dữ liệu chấm (tránh tạo bản ghi vắng sai).
 
 ## Duyệt cả kỳ
