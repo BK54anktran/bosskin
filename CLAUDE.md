@@ -24,6 +24,8 @@
 5. **Giới hạn sử dụng.** Mỗi đợt làm việc, kiểm tra thời điểm reset hạn mức tiếp theo.
    Khi mức dùng chạm ~99%: dừng, commit/push phần đã xong, tổng hợp tiến độ, và hẹn lịch
    tiếp tục đúng giờ reset (được tạo phiên mới nếu cần).
+6. **Hỏi advisor (Opus) ở 3 thời điểm:** trước khi chốt kế hoạch, khi gặp cùng một lỗi lần thứ hai,
+   và trước khi báo một việc là xong.
 
 ## Chạy & quản lý server dev (khi chủ dự án yêu cầu)
 - Script ở `dev/` (Windows PowerShell): `dev\start.cmd [backend|frontend]`, `dev\status.cmd`, `dev\stop.cmd [-Force]`,
