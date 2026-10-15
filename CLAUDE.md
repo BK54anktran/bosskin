@@ -582,8 +582,9 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
 - `attendances.override_check_in/out` là `datetime(6)` (trước là `time`): giờ sửa tay lưu đủ ngày. Giờ công tính trên trục phút tuyệt đối từ 00:00 ngày công
   (`AttendanceCalculator.calculate(…, int checkIn, int checkOut, …)`), hợp lệ khi 0 < ra − vào < 24 giờ; không còn đoán "ra nhỏ hơn vào là qua đêm".
 - `core/AttendanceTimes` chọn ngày cho giờ chỉ có HH:mm (`resolveIn/resolveOut`: có ca theo khung ca; không ca ra ≤ vào → +1 ngày). Entity giữ getter/setter
-  `LocalTime` tương thích; JSON vẫn `HH:mm`, thêm `checkInDayOffset/checkOutDayOffset/overrideCheckInDayOffset/overrideCheckOutDayOffset` (additive).
-  FE hiện "+N" nhỏ phía trên giờ bằng `widgets/day_offset_text.dart`. Lỗi `error.attendance.override_range_invalid`.
+  `LocalTime` tương thích; dòng bảng công / theo ngày trả `checkIn/checkOut/checkInRaw/checkOutRaw/overrideCheckIn/overrideCheckOut` dạng
+  `yyyy-MM-ddTHH:mm` (đủ ngày, không có trường offset riêng). FE (`data/models/attendance.dart`) tách "HH:mm" + số ngày lệch so với ngày công và hiện "+N"
+  nhỏ phía trên giờ bằng `widgets/day_offset_text.dart`. Lỗi `error.attendance.override_range_invalid`.
 - V27 xoá cột cũ → quay lại bản API cũ cần khôi phục DB: **sao lưu DB trước khi deploy**. Test: `AttendanceTimesTest`, `AttendanceCalculatorTest`, `AttendanceDateTimeTest`.
 
 ## Chấm công không cần xếp ca (V25, 15/10/2026)

@@ -62,8 +62,8 @@ class AttendanceDateTimeTest extends IntegrationTest {
         JsonNode r = row(c, e, MON);
         assertThat(r.path("actualHours").asDouble()).isEqualTo(8.0);
         assertThat(r.path("totalHours").asDouble()).isEqualTo(8.0);
-        assertThat(r.path("checkInDayOffset").asInt()).isZero();
-        assertThat(r.path("checkOutDayOffset").asInt()).isEqualTo(1);
+        assertThat(r.path("checkIn").asText()).isEqualTo(MON + "T21:55");
+        assertThat(r.path("checkOut").asText()).isEqualTo(MON.plusDays(1) + "T06:03");
     }
 
     @Test
@@ -79,10 +79,8 @@ class AttendanceDateTimeTest extends IntegrationTest {
         assertThat(a.getOverrideCheckInAt()).isEqualTo(LocalDateTime.of(MON, java.time.LocalTime.of(22, 0)));
         assertThat(a.getOverrideCheckOutAt()).isEqualTo(LocalDateTime.of(MON.plusDays(1), java.time.LocalTime.of(6, 0)));
         JsonNode r = row(c, e, MON);
-        assertThat(r.path("overrideCheckIn").asText()).isEqualTo("22:00");
-        assertThat(r.path("overrideCheckOut").asText()).isEqualTo("06:00");
-        assertThat(r.path("overrideCheckInDayOffset").asInt()).isZero();
-        assertThat(r.path("overrideCheckOutDayOffset").asInt()).isEqualTo(1);
+        assertThat(r.path("overrideCheckIn").asText()).isEqualTo(MON + "T22:00");
+        assertThat(r.path("overrideCheckOut").asText()).isEqualTo(MON.plusDays(1) + "T06:00");
         assertThat(r.path("actualHours").asDouble()).isEqualTo(8.0);
     }
 
@@ -99,8 +97,8 @@ class AttendanceDateTimeTest extends IntegrationTest {
         assertThat(a.getOverrideCheckInAt()).isEqualTo(LocalDateTime.of(MON.plusDays(1), java.time.LocalTime.of(0, 30)));
         assertThat(a.getOverrideCheckOutAt()).isEqualTo(LocalDateTime.of(MON.plusDays(1), java.time.LocalTime.of(6, 0)));
         JsonNode r = row(c, e, MON);
-        assertThat(r.path("overrideCheckInDayOffset").asInt()).isEqualTo(1);
-        assertThat(r.path("overrideCheckOutDayOffset").asInt()).isEqualTo(1);
+        assertThat(r.path("overrideCheckIn").asText()).isEqualTo(MON.plusDays(1) + "T00:30");
+        assertThat(r.path("overrideCheckOut").asText()).isEqualTo(MON.plusDays(1) + "T06:00");
         assertThat(r.path("actualHours").asDouble()).isEqualTo(5.5);
     }
 
@@ -115,7 +113,7 @@ class AttendanceDateTimeTest extends IntegrationTest {
         Attendance a = attendanceRepository.findById(id).orElseThrow();
         assertThat(a.getOverrideCheckOutAt()).isEqualTo(LocalDateTime.of(MON.plusDays(1), java.time.LocalTime.of(3, 0)));
         JsonNode r = row(c, e, MON);
-        assertThat(r.path("overrideCheckOutDayOffset").asInt()).isEqualTo(1);
+        assertThat(r.path("overrideCheckOut").asText()).isEqualTo(MON.plusDays(1) + "T03:00");
         assertThat(r.path("actualHours").asDouble()).isEqualTo(8.0);
     }
 

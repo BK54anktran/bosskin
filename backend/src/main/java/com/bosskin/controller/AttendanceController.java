@@ -427,14 +427,10 @@ public class AttendanceController {
             .shiftStart(data.shiftStart())
             .shiftEnd(data.shiftEnd())
             .breakMinutes(data.breakMinutes())
-            .checkIn(roundedCheckIn)
-            .checkOut(roundedCheckOut)
-            .checkInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckIn()) : 0)
-            .checkOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckOut()) : 0)
-            .overrideCheckInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckInAt()) : 0)
-            .overrideCheckOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckOutAt()) : 0)
-            .checkInRaw(data.effectiveCheckIn())
-            .checkOutRaw(data.effectiveCheckOut())
+            .checkIn(withDay(date, roundedCheckIn, att == null ? null : att.getCheckIn()))
+            .checkOut(withDay(date, roundedCheckOut, att == null ? null : att.getCheckOut()))
+            .checkInRaw(withDay(date, data.effectiveCheckIn(), att == null ? null : att.getCheckIn()))
+            .checkOutRaw(withDay(date, data.effectiveCheckOut(), att == null ? null : att.getCheckOut()))
             .checkInRounded(data.checkIn() != null && !data.checkIn().equals(roundedCheckIn))
             .checkOutRounded(data.checkOut() != null && !data.checkOut().equals(roundedCheckOut))
             .status(data.status())
@@ -471,8 +467,8 @@ public class AttendanceController {
             .approvedByName(att != null && att.getApprovedBy() != null && att.getApprovedBy().getEmployee() != null
                 ? att.getApprovedBy().getEmployee().getFullName() : null)
             .workFlags(resolveWorkFlags(att, data, leave, policy))
-            .overrideCheckIn(att != null ? att.getOverrideCheckIn() : null)
-            .overrideCheckOut(att != null ? att.getOverrideCheckOut() : null)
+            .overrideCheckIn(att != null ? att.getOverrideCheckInAt() : null)
+            .overrideCheckOut(att != null ? att.getOverrideCheckOutAt() : null)
             .overrideBreakMinutes(att != null ? att.getOverrideBreakMinutes() : null)
             .overrideOtDayMinutes(att != null ? att.getOverrideOtDayMinutes() : null)
             .overrideOtNightMinutes(att != null ? att.getOverrideOtNightMinutes() : null)
@@ -568,14 +564,10 @@ public class AttendanceController {
             .shiftStart(data.shiftStart())
             .shiftEnd(data.shiftEnd())
             .breakMinutes(data.breakMinutes())
-            .checkIn(roundedCheckIn)
-            .checkOut(roundedCheckOut)
-            .checkInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckIn()) : 0)
-            .checkOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getCheckOut()) : 0)
-            .overrideCheckInDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckInAt()) : 0)
-            .overrideCheckOutDayOffset(att != null ? AttendanceTimes.dayOffset(att.getDate(), att.getOverrideCheckOutAt()) : 0)
-            .checkInRaw(data.effectiveCheckIn())
-            .checkOutRaw(data.effectiveCheckOut())
+            .checkIn(withDay(date, roundedCheckIn, att == null ? null : att.getCheckIn()))
+            .checkOut(withDay(date, roundedCheckOut, att == null ? null : att.getCheckOut()))
+            .checkInRaw(withDay(date, data.effectiveCheckIn(), att == null ? null : att.getCheckIn()))
+            .checkOutRaw(withDay(date, data.effectiveCheckOut(), att == null ? null : att.getCheckOut()))
             .checkInRounded(data.checkIn() != null && !data.checkIn().equals(roundedCheckIn))
             .checkOutRounded(data.checkOut() != null && !data.checkOut().equals(roundedCheckOut))
             .status(data.status())
@@ -607,8 +599,8 @@ public class AttendanceController {
             .leaveAmount(leave != null ? leave.getRequestedAmount() : null)
             .leaveFromTime(leave != null && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getFromTime() : null)
             .leaveToTime(leave != null && leave.getMode() == LeaveRequest.Mode.HOUR_RANGE ? leave.getToTime() : null)
-            .overrideCheckIn(att != null ? att.getOverrideCheckIn() : null)
-            .overrideCheckOut(att != null ? att.getOverrideCheckOut() : null)
+            .overrideCheckIn(att != null ? att.getOverrideCheckInAt() : null)
+            .overrideCheckOut(att != null ? att.getOverrideCheckOutAt() : null)
             .overrideBreakMinutes(att != null ? att.getOverrideBreakMinutes() : null)
             .overrideOtDayMinutes(att != null ? att.getOverrideOtDayMinutes() : null)
             .overrideOtNightMinutes(att != null ? att.getOverrideOtNightMinutes() : null)
@@ -2202,5 +2194,11 @@ public class AttendanceController {
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    /** Ghép giờ đã làm tròn / hiệu lực với ngày thật của mốc gốc (cùng ngày công hoặc lệch +N); thiếu mốc gốc thì coi là cùng ngày công. */
+    private static java.time.LocalDateTime withDay(LocalDate workDate, LocalTime time, java.time.LocalDateTime original) {
+        if (time == null) return null;
+        return AttendanceTimes.at(workDate, AttendanceTimes.dayOffset(workDate, original), time);
     }
 }

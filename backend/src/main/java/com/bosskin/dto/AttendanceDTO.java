@@ -108,14 +108,14 @@ public class AttendanceDTO {
         private int breakMinutes;
 
         // Actual attendance
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkIn;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkOut;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkInRaw;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkOutRaw;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkIn;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkOut;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkInRaw;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkOutRaw;
         private boolean checkInRounded;
         private boolean checkOutRounded;
         private Attendance.Status status;
@@ -164,17 +164,11 @@ public class AttendanceDTO {
         @JsonFormat(pattern = "HH:mm")
         private LocalTime leaveToTime;
 
-        /** Số ngày lệch của giờ so với ngày công (0 = cùng ngày, 1 = hôm sau, -1 = hôm trước); app hiện "+N" nhỏ phía trên giờ. */
-        private int checkInDayOffset;
-        private int checkOutDayOffset;
-        private int overrideCheckInDayOffset;
-        private int overrideCheckOutDayOffset;
-
         // Admin override
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime overrideCheckIn;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime overrideCheckOut;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime overrideCheckIn;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime overrideCheckOut;
         private Integer overrideBreakMinutes;
         private Integer overrideOtDayMinutes;
         private Integer overrideOtNightMinutes;
@@ -206,14 +200,14 @@ public class AttendanceDTO {
         private int breakMinutes;
 
         // Actual attendance
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkIn;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkOut;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkInRaw;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime checkOutRaw;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkIn;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkOut;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkInRaw;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime checkOutRaw;
         private boolean checkInRounded;
         private boolean checkOutRounded;
         private Attendance.Status status;
@@ -255,17 +249,11 @@ public class AttendanceDTO {
         @JsonFormat(pattern = "HH:mm")
         private LocalTime leaveToTime;
 
-        /** Số ngày lệch của giờ so với ngày công (0 = cùng ngày, 1 = hôm sau, -1 = hôm trước); app hiện "+N" nhỏ phía trên giờ. */
-        private int checkInDayOffset;
-        private int checkOutDayOffset;
-        private int overrideCheckInDayOffset;
-        private int overrideCheckOutDayOffset;
-
         // Admin override fields
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime overrideCheckIn;
-        @JsonFormat(pattern = "HH:mm")
-        private LocalTime overrideCheckOut;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime overrideCheckIn;
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime overrideCheckOut;
         private Integer overrideBreakMinutes;
         private Integer overrideOtDayMinutes;
         private Integer overrideOtNightMinutes;

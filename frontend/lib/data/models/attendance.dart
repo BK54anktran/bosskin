@@ -65,6 +65,15 @@ class Attendance {
       );
 }
 
+/// Server trả giờ dạng "yyyy-MM-ddTHH:mm" (đủ ngày); app hiện "HH:mm" và dùng số ngày lệch so với ngày công để vẽ "+N".
+String? _hm(dynamic v) => v is String && v.length >= 5 ? v.substring(v.length - 5) : null;
+
+int _dayOffset(dynamic workDate, dynamic v) {
+  if (workDate is! String || v is! String || v.length < 16) return 0;
+  final w = DateTime.tryParse(workDate), t = DateTime.tryParse(v.substring(0, 10));
+  return (w == null || t == null) ? 0 : DateTime.utc(t.year, t.month, t.day).difference(DateTime.utc(w.year, w.month, w.day)).inDays;
+}
+
 class TimesheetRow {
   final DateTime date;
   final String dayLabel;
@@ -207,10 +216,10 @@ class TimesheetRow {
         shiftStart: j['shiftStart'],
         shiftEnd: j['shiftEnd'],
         breakMinutes: j['breakMinutes'] ?? 0,
-        checkIn: j['checkIn'],
-        checkOut: j['checkOut'],
-        checkInRaw: j['checkInRaw'] as String?,
-        checkOutRaw: j['checkOutRaw'] as String?,
+        checkIn: _hm(j['checkIn']),
+        checkOut: _hm(j['checkOut']),
+        checkInRaw: _hm(j['checkInRaw']),
+        checkOutRaw: _hm(j['checkOutRaw']),
         checkInRounded: j['checkInRounded'] as bool? ?? false,
         checkOutRounded: j['checkOutRounded'] as bool? ?? false,
         status: j['status'] != null ? _parseStatus(j['status']) : null,
@@ -249,12 +258,12 @@ class TimesheetRow {
         approvedAt: j['approvedAt'] != null ? DateTime.tryParse(j['approvedAt'] as String) : null,
         approvedByName: j['approvedByName'] as String?,
         workFlags: (j['workFlags'] as String?)?.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList() ?? const [],
-        overrideCheckIn: j['overrideCheckIn'] as String?,
-        checkInDayOffset: (j['checkInDayOffset'] as num?)?.toInt() ?? 0,
-        checkOutDayOffset: (j['checkOutDayOffset'] as num?)?.toInt() ?? 0,
-        overrideCheckInDayOffset: (j['overrideCheckInDayOffset'] as num?)?.toInt() ?? 0,
-        overrideCheckOutDayOffset: (j['overrideCheckOutDayOffset'] as num?)?.toInt() ?? 0,
-        overrideCheckOut: j['overrideCheckOut'] as String?,
+        overrideCheckIn: _hm(j['overrideCheckIn']),
+        checkInDayOffset: _dayOffset(j['date'], j['checkIn']),
+        checkOutDayOffset: _dayOffset(j['date'], j['checkOut']),
+        overrideCheckInDayOffset: _dayOffset(j['date'], j['overrideCheckIn']),
+        overrideCheckOutDayOffset: _dayOffset(j['date'], j['overrideCheckOut']),
+        overrideCheckOut: _hm(j['overrideCheckOut']),
         overrideBreakMinutes: (j['overrideBreakMinutes'] as num?)?.toInt(),
         overrideOtDayMinutes: (j['overrideOtDayMinutes'] as num?)?.toInt(),
         overrideOtNightMinutes: (j['overrideOtNightMinutes'] as num?)?.toInt(),
@@ -426,10 +435,10 @@ class DayViewRow {
         shiftStart: j['shiftStart'] as String?,
         shiftEnd: j['shiftEnd'] as String?,
         breakMinutes: j['breakMinutes'] as int? ?? 0,
-        checkIn: j['checkIn'] as String?,
-        checkOut: j['checkOut'] as String?,
-        checkInRaw: j['checkInRaw'] as String?,
-        checkOutRaw: j['checkOutRaw'] as String?,
+        checkIn: _hm(j['checkIn']),
+        checkOut: _hm(j['checkOut']),
+        checkInRaw: _hm(j['checkInRaw']),
+        checkOutRaw: _hm(j['checkOutRaw']),
         checkInRounded: j['checkInRounded'] as bool? ?? false,
         checkOutRounded: j['checkOutRounded'] as bool? ?? false,
         status: j['status'] != null ? _parseStatus(j['status'] as String?) : null,
@@ -473,12 +482,12 @@ class DayViewRow {
             ?.map((e) => DayViewLeaveInfo.fromJson(e as Map<String, dynamic>))
             .toList() ?? const [],
         workFlags: (j['workFlags'] as String?)?.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList() ?? const [],
-        overrideCheckIn: j['overrideCheckIn'] as String?,
-        checkInDayOffset: (j['checkInDayOffset'] as num?)?.toInt() ?? 0,
-        checkOutDayOffset: (j['checkOutDayOffset'] as num?)?.toInt() ?? 0,
-        overrideCheckInDayOffset: (j['overrideCheckInDayOffset'] as num?)?.toInt() ?? 0,
-        overrideCheckOutDayOffset: (j['overrideCheckOutDayOffset'] as num?)?.toInt() ?? 0,
-        overrideCheckOut: j['overrideCheckOut'] as String?,
+        overrideCheckIn: _hm(j['overrideCheckIn']),
+        checkInDayOffset: _dayOffset(j['date'], j['checkIn']),
+        checkOutDayOffset: _dayOffset(j['date'], j['checkOut']),
+        overrideCheckInDayOffset: _dayOffset(j['date'], j['overrideCheckIn']),
+        overrideCheckOutDayOffset: _dayOffset(j['date'], j['overrideCheckOut']),
+        overrideCheckOut: _hm(j['overrideCheckOut']),
         overrideBreakMinutes: (j['overrideBreakMinutes'] as num?)?.toInt(),
         overrideOtDayMinutes: (j['overrideOtDayMinutes'] as num?)?.toInt(),
         overrideOtNightMinutes: (j['overrideOtNightMinutes'] as num?)?.toInt(),
