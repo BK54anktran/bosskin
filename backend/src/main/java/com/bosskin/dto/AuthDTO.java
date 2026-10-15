@@ -45,6 +45,8 @@ public class AuthDTO {
         /** V22: mã công ty (tiền tố mã NV) và đuôi email bắt buộc của tài khoản trong công ty. */
         private String      companyCode;
         private String      companyDomain;
+        /** V24: gói chức năng công ty đang bật (core/CompanyModules) — FE ẩn menu của gói tắt. */
+        private java.util.List<String> modules;
         private String      fullName;
         private String      avatar;
         private Long        employeeId;

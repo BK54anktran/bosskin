@@ -1987,4 +1987,16 @@
   ,"auditActShiftRegSubmit": "Submit schedule registration"
   ,"auditActShiftRegApprove": "Approve registration → shift assignment"
   ,"auditActShiftRegReject": "Reject schedule registration"
+  ,"companyModulesTitle": "Feature modules"
+  ,"companyModulesHelper": "A disabled module is unavailable to the company (menus hidden, permissions removed; existing data is kept). Employees, departments, roles and settings are always available."
+  ,"companyModuleNeeds": "Requires {name}"
+  ,"@companyModuleNeeds": {"placeholders": {"name": {"type": "String"}}}
+  ,"companyModuleAttendance": "Attendance"
+  ,"companyModuleShift": "Shifts (assignment, swaps, registration)"
+  ,"companyModuleLeave": "Leave"
+  ,"companyModulePayroll": "Payroll"
+  ,"companyModuleContract": "Labor contracts"
+  ,"companyModuleDocument": "HR documents"
+  ,"companyModuleReport": "Reports"
+  ,"auditActCompanyModules": "Change company feature modules"
 }

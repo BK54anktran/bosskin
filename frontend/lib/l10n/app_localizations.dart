@@ -10774,6 +10774,72 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Từ chối đăng ký lịch'**
   String get auditActShiftRegReject;
+
+  /// No description provided for @companyModulesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gói chức năng'**
+  String get companyModulesTitle;
+
+  /// No description provided for @companyModulesHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt gói nào thì công ty không dùng được chức năng đó (menu ẩn, quyền bị gỡ; dữ liệu cũ giữ nguyên). Nhân viên, phòng ban, phân quyền, cài đặt luôn có.'**
+  String get companyModulesHelper;
+
+  /// No description provided for @companyModuleNeeds.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần {name}'**
+  String companyModuleNeeds(String name);
+
+  /// No description provided for @companyModuleAttendance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công'**
+  String get companyModuleAttendance;
+
+  /// No description provided for @companyModuleShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca làm (phân ca, đổi ca, đăng ký lịch)'**
+  String get companyModuleShift;
+
+  /// No description provided for @companyModuleLeave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghỉ phép'**
+  String get companyModuleLeave;
+
+  /// No description provided for @companyModulePayroll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính lương'**
+  String get companyModulePayroll;
+
+  /// No description provided for @companyModuleContract.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng lao động'**
+  String get companyModuleContract;
+
+  /// No description provided for @companyModuleDocument.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu nhân sự'**
+  String get companyModuleDocument;
+
+  /// No description provided for @companyModuleReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo'**
+  String get companyModuleReport;
+
+  /// No description provided for @auditActCompanyModules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi gói chức năng công ty'**
+  String get auditActCompanyModules;
 }
 
 class _AppLocalizationsDelegate

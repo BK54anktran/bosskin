@@ -5846,4 +5846,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auditActShiftRegReject => 'Reject schedule registration';
+
+  @override
+  String get companyModulesTitle => 'Feature modules';
+
+  @override
+  String get companyModulesHelper =>
+      'A disabled module is unavailable to the company (menus hidden, permissions removed; existing data is kept). Employees, departments, roles and settings are always available.';
+
+  @override
+  String companyModuleNeeds(String name) {
+    return 'Requires $name';
+  }
+
+  @override
+  String get companyModuleAttendance => 'Attendance';
+
+  @override
+  String get companyModuleShift => 'Shifts (assignment, swaps, registration)';
+
+  @override
+  String get companyModuleLeave => 'Leave';
+
+  @override
+  String get companyModulePayroll => 'Payroll';
+
+  @override
+  String get companyModuleContract => 'Labor contracts';
+
+  @override
+  String get companyModuleDocument => 'HR documents';
+
+  @override
+  String get companyModuleReport => 'Reports';
+
+  @override
+  String get auditActCompanyModules => 'Change company feature modules';
 }

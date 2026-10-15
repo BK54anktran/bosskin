@@ -5829,4 +5829,40 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auditActShiftRegReject => 'Từ chối đăng ký lịch';
+
+  @override
+  String get companyModulesTitle => 'Gói chức năng';
+
+  @override
+  String get companyModulesHelper =>
+      'Tắt gói nào thì công ty không dùng được chức năng đó (menu ẩn, quyền bị gỡ; dữ liệu cũ giữ nguyên). Nhân viên, phòng ban, phân quyền, cài đặt luôn có.';
+
+  @override
+  String companyModuleNeeds(String name) {
+    return 'Cần $name';
+  }
+
+  @override
+  String get companyModuleAttendance => 'Chấm công';
+
+  @override
+  String get companyModuleShift => 'Ca làm (phân ca, đổi ca, đăng ký lịch)';
+
+  @override
+  String get companyModuleLeave => 'Nghỉ phép';
+
+  @override
+  String get companyModulePayroll => 'Tính lương';
+
+  @override
+  String get companyModuleContract => 'Hợp đồng lao động';
+
+  @override
+  String get companyModuleDocument => 'Tài liệu nhân sự';
+
+  @override
+  String get companyModuleReport => 'Báo cáo';
+
+  @override
+  String get auditActCompanyModules => 'Đổi gói chức năng công ty';
 }

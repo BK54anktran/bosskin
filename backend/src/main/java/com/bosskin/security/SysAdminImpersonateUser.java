@@ -37,24 +37,35 @@ public class SysAdminImpersonateUser extends User {
         return overrideCompany;
     }
 
+    /** V24: toàn quyền trừ quyền thuộc gói chức năng công ty đang tắt. */
+    private Set<String> disabledModules() {
+        return overrideCompany != null ? overrideCompany.disabledModuleSet() : Set.of();
+    }
+
+    @Override
+    public boolean isModuleDisabled(String module) {
+        return disabledModules().contains(module);
+    }
+
     @Override
     public Set<String> getPermissions() {
-        return allPermissions;
+        return com.bosskin.core.CompanyModules.filter(allPermissions, disabledModules());
     }
 
     @Override
     public boolean can(String permissionCode) {
-        return true;
+        return permissionCode != null && hasPermission(permissionCode.trim().toUpperCase().replace('.', '_'));
     }
 
     @Override
     public boolean hasPermission(String permissionCode) {
-        return true;
+        String module = com.bosskin.core.CompanyModules.moduleOf(permissionCode);
+        return module == null || !disabledModules().contains(module);
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return allPermissions.stream()
+        return getPermissions().stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }

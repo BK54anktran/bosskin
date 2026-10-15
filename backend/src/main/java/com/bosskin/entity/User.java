@@ -111,7 +111,31 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
             .collect(Collectors.toSet());
 
         directPermissions.forEach(p -> perms.add(p.getCode()));
-        return perms;
+        // V24: gói chức năng công ty đang tắt → bỏ quyền thuộc gói đó
+        return com.bosskin.core.CompanyModules.filter(perms, companyDisabledModules());
+    }
+
+    /** V24: gói đang tắt, do JwtAuthFilter nạp sẵn (user được nạp ngoài phiên JPA, company là proxy lazy). */
+    @Transient
+    private java.util.Set<String> disabledModulesLoaded;
+
+    public void setDisabledModulesLoaded(java.util.Set<String> disabled) {
+        this.disabledModulesLoaded = disabled;
+    }
+
+    /** V24: gói chức năng (core/CompanyModules) của công ty đang tắt. */
+    public boolean isModuleDisabled(String module) {
+        return companyDisabledModules().contains(module);
+    }
+
+    /** Gói đang tắt của công ty; chưa nạp sẵn và công ty chưa nạp được → coi như bật hết. */
+    private java.util.Set<String> companyDisabledModules() {
+        if (disabledModulesLoaded != null) return disabledModulesLoaded;
+        try {
+            return company != null ? company.disabledModuleSet() : java.util.Set.of();
+        } catch (org.hibernate.LazyInitializationException e) {
+            return java.util.Set.of();
+        }
     }
 
     public boolean hasPermission(String permissionCode) {

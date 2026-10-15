@@ -37,6 +37,7 @@ public class CompanyService {
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder      passwordEncoder;
     private final DocumentService      documentService;
+    private final com.bosskin.audit.AuditService audit;
 
     public List<CompanyResponse> findAll() {
         return companyRepository.findAll().stream().map(this::toResponse).toList();
@@ -157,6 +158,19 @@ public class CompanyService {
         if (req.getAddress()      != null) company.setAddress(req.getAddress());
         if (req.getPhone()        != null) company.setPhone(req.getPhone());
         if (req.getCompanyEmail() != null) company.setEmail(req.getCompanyEmail());
+        if (req.getModules() != null) {
+            java.util.Set<String> before = company.disabledModuleSet();
+            java.util.Set<String> disabled = com.bosskin.core.CompanyModules.disabledFromEnabled(req.getModules());
+            company.setDisabledModules(com.bosskin.core.CompanyModules.format(disabled));
+            if (!disabled.equals(before)) {
+                audit.log("COMPANY_MODULES").company(id).entity("COMPANY", id)
+                    .summary(company.getCode() + ": " + String.join(", ", com.bosskin.core.CompanyModules.enabledOf(disabled)))
+                    .detail(com.bosskin.audit.AuditService.map(
+                        "before", com.bosskin.core.CompanyModules.enabledOf(before),
+                        "after", com.bosskin.core.CompanyModules.enabledOf(disabled)))
+                    .save();
+            }
+        }
         return toResponse(companyRepository.save(company));
     }
 
@@ -196,6 +210,7 @@ public class CompanyService {
             .active(c.isActive())
             .requireAdmin2fa(c.isRequireAdmin2fa())
             .selfAttendanceEnabled(c.isSelfAttendanceEnabled())
+            .modules(com.bosskin.core.CompanyModules.enabledOf(c.disabledModuleSet()))
             .employeeCount(empCount)
             .adminEmail(adminEmail)
             .createdAt(c.getCreatedAt())

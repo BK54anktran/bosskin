@@ -1994,4 +1994,16 @@
   ,"auditActShiftRegSubmit": "Gửi đăng ký lịch"
   ,"auditActShiftRegApprove": "Duyệt đăng ký lịch → phân ca"
   ,"auditActShiftRegReject": "Từ chối đăng ký lịch"
+  ,"companyModulesTitle": "Gói chức năng"
+  ,"companyModulesHelper": "Tắt gói nào thì công ty không dùng được chức năng đó (menu ẩn, quyền bị gỡ; dữ liệu cũ giữ nguyên). Nhân viên, phòng ban, phân quyền, cài đặt luôn có."
+  ,"companyModuleNeeds": "Cần {name}"
+  ,"@companyModuleNeeds": {"placeholders": {"name": {"type": "String"}}}
+  ,"companyModuleAttendance": "Chấm công"
+  ,"companyModuleShift": "Ca làm (phân ca, đổi ca, đăng ký lịch)"
+  ,"companyModuleLeave": "Nghỉ phép"
+  ,"companyModulePayroll": "Tính lương"
+  ,"companyModuleContract": "Hợp đồng lao động"
+  ,"companyModuleDocument": "Tài liệu nhân sự"
+  ,"companyModuleReport": "Báo cáo"
+  ,"auditActCompanyModules": "Đổi gói chức năng công ty"
 }

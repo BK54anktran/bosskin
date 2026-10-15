@@ -84,6 +84,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 "{\"status\":403,\"message\":\"error.auth.password_change_required\"}");
                             return;
                         }
+                        companyRepository.findById(user.getCompanyId())
+                            .ifPresent(co -> user.setDisabledModulesLoaded(co.disabledModuleSet()));
                         setAuth(user, request);
                     }
                 }

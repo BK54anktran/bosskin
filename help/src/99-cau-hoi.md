@@ -8,7 +8,8 @@ summary: Các tình huống hay gặp và cách xử lý nhanh.
 ## Tôi không thấy một mục trên menu
 
 Menu chỉ hiện mục bạn có quyền. Nhờ quản trị công ty kiểm tra vai trò của bạn ở **Phân quyền**. Một số mục còn phụ thuộc cài đặt:
-*Duyệt cho nhóm* chỉ có khi bật duyệt 2 bước và bạn có cấp dưới trực tiếp.
+*Duyệt cho nhóm* chỉ có khi bật duyệt 2 bước và bạn có cấp dưới trực tiếp. Cả nhóm chức năng (chấm công, ca làm, nghỉ phép, lương, hợp đồng,
+tài liệu, báo cáo) có thể chưa được bật cho công ty bạn — liên hệ nhà cung cấp BossKin.
 
 ## Không chấm công được
 

@@ -15,4 +15,6 @@ public class UpdateCompanyRequest {
     private String address;
     private String phone;
     private String companyEmail;
+    /** V24: gói chức năng BẬT (core/CompanyModules.ALL); không gửi = giữ nguyên. */
+    private java.util.List<String> modules;
 }

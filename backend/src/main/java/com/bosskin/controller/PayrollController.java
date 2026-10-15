@@ -239,6 +239,7 @@ public class PayrollController {
         @RequestParam(required = false) Integer year
     ) {
         requirePermission(user, "ATTENDANCE_SELF");
+        com.bosskin.core.CompanyModules.requireEnabled(user, com.bosskin.core.CompanyModules.PAYROLL);
         if (user.getEmployee() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.employee_not_linked");
         }

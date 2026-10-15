@@ -22,6 +22,12 @@ Khi tạo công ty:
 - **Đuôi email** bắt buộc (ví dụ `th.com`), không trùng công ty khác. Mọi tài khoản trong công ty — admin đầu tiên, nhân viên tạo
   bằng form hay nhập Excel, tài khoản tạo thêm — phải có email `…@th.com`. Đổi đuôi chỉ được khi không còn tài khoản nào dùng đuôi cũ.
 
+**Gói chức năng:** trong hộp sửa công ty (nút bút chì), tích các gói công ty được dùng — *Chấm công*, *Ca làm*, *Nghỉ phép*, *Tính lương*,
+*Hợp đồng lao động*, *Tài liệu nhân sự*, *Báo cáo*. Ví dụ công ty chỉ mua chấm công + ca làm + tính lương thì bỏ tích ba gói còn lại.
+Gói bị tắt: menu ẩn với mọi người trong công ty (kể cả admin), API trả lỗi, dữ liệu cũ vẫn giữ — bật lại là dùng tiếp. Chấm công cần Ca làm
+(tích Chấm công tự tích Ca làm). Nhân viên, phòng ban, phân quyền, cài đặt công ty luôn có. Mỗi lần đổi ghi nhật ký `COMPANY_MODULES`.
+Người đang đăng nhập thấy thay đổi sau khi đăng nhập lại (hoặc khi phiên tự làm mới, tối đa 30 phút).
+
 ![Danh sách công ty](img:admin-tab-2)
 
 ## Yêu cầu dùng thử

@@ -42,6 +42,10 @@ class AuthUser {
   /// V22: mã công ty (tiền tố mã NV) và đuôi email bắt buộc của tài khoản trong công ty.
   final String? companyCode;
   final String? companyDomain;
+
+  /// V24: gói chức năng công ty đang bật (ATTENDANCE, SHIFT, LEAVE, PAYROLL, CONTRACT, DOCUMENT, REPORT).
+  /// null = phiên cũ / không rõ → coi như bật hết. Quyền thuộc gói tắt đã bị backend bỏ khỏi [permissions].
+  final Set<String>? modules;
   final int? employeeId;
   final Set<String> permissions;
 
@@ -58,6 +62,7 @@ class AuthUser {
     this.companyName,
     this.companyCode,
     this.companyDomain,
+    this.modules,
     this.employeeId,
     this.permissions = const {},
     this.deptScopes = const {},
@@ -69,6 +74,9 @@ class AuthUser {
 
   bool can(String permission) => permissions.contains(permission);
 
+  /// V24: gói chức năng có bật cho công ty không (system admin / phiên cũ → có).
+  bool hasModule(String module) => modules == null || modules!.contains(module);
+
   Map<String, dynamic> toJson() => {
         'email': email,
         'fullName': fullName,
@@ -79,6 +87,7 @@ class AuthUser {
         'companyName': companyName,
         'companyCode': companyCode,
         'companyDomain': companyDomain,
+        'modules': modules?.toList(),
         'employeeId': employeeId,
         'permissions': permissions.toList(),
         'deptScopes': deptScopes.map(
@@ -97,6 +106,7 @@ class AuthUser {
         companyName: m['companyName'] as String?,
         companyCode: m['companyCode'] as String?,
         companyDomain: m['companyDomain'] as String?,
+        modules: (m['modules'] as List?)?.map((e) => e.toString()).toSet(),
         employeeId: m['employeeId'] as int?,
         permissions: (m['permissions'] as List?)
                 ?.map((e) => e.toString())
@@ -449,6 +459,7 @@ class AuthService extends ChangeNotifier {
           userMap['companyName'] as String?,
       companyCode: userMap['companyCode'] as String?,
       companyDomain: userMap['companyDomain'] as String?,
+      modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
       employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
@@ -492,6 +503,7 @@ class AuthService extends ChangeNotifier {
         companyName: _currentUser!.companyName,
         companyCode: _currentUser!.companyCode,
         companyDomain: _currentUser!.companyDomain,
+      modules: _currentUser!.modules,
         employeeId: _currentUser!.employeeId,
         permissions: _currentUser!.permissions,
         deptScopes: _currentUser!.deptScopes,
@@ -523,6 +535,7 @@ class AuthService extends ChangeNotifier {
       companyName: _currentUser!.companyName,
       companyCode: _currentUser!.companyCode,
       companyDomain: _currentUser!.companyDomain,
+      modules: _currentUser!.modules,
       employeeId: _currentUser!.employeeId,
       permissions: _currentUser!.permissions,
       deptScopes: _currentUser!.deptScopes,
@@ -607,6 +620,7 @@ class AuthService extends ChangeNotifier {
             userMap['companyName'] as String?,
         companyCode: userMap['companyCode'] as String?,
         companyDomain: userMap['companyDomain'] as String?,
+      modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
         employeeId:
             userMap['employeeId'] as int?,
         permissions: perms,
@@ -734,6 +748,7 @@ class AuthService extends ChangeNotifier {
       companyName: userMap['companyName'] as String?,
       companyCode: userMap['companyCode'] as String?,
       companyDomain: userMap['companyDomain'] as String?,
+      modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
       employeeId: userMap['employeeId'] as int?,
       permissions: perms,
     );
@@ -768,6 +783,7 @@ class AuthService extends ChangeNotifier {
       companyName: _currentUser!.companyName,
       companyCode: _currentUser!.companyCode,
       companyDomain: _currentUser!.companyDomain,
+      modules: _currentUser!.modules,
       employeeId: _currentUser!.employeeId,
       permissions: newPermissions,
       deptScopes:

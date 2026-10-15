@@ -39,6 +39,13 @@ const Map<String, List<String>> routeAnyOf = {
   AppRoutes.editRequests: ['EMPLOYEE_UPDATE'],
 };
 
+/// V24: màn thuộc gói chức năng nhưng chỉ kiểm quyền gói khác (backend chặn theo gói) → ẩn khi công ty tắt gói.
+/// Màn khác tự ẩn vì backend đã bỏ quyền thuộc gói tắt khỏi tài khoản.
+const Map<String, String> routeModule = {
+  AppRoutes.selfPayroll: 'PAYROLL',
+  AppRoutes.shiftSwaps: 'SHIFT',
+};
+
 /// Màn chỉ dành cho bản thân nhân viên — ẩn khi system admin đang impersonate.
 const Set<String> selfOnlyRoutes = {
   AppRoutes.checkInOut,
@@ -50,6 +57,8 @@ const Set<String> selfOnlyRoutes = {
 bool canAccessRoute(AuthUser? user, String route) {
   if (user == null) return false;
   if (user.isSystemAdmin) return true;
+  final module = routeModule[route];
+  if (module != null && !user.hasModule(module)) return false;
   final anyOf = routeAnyOf[route];
   if (anyOf == null) return true;
   return anyOf.any(user.can);

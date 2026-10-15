@@ -7,6 +7,17 @@
 3. **Quy tắc riêng của nghiệp vụ** — chính chủ (xem phiếu lương của mình), không tự duyệt (đơn / phiếu lương của chính mình),
    quản lý trực tiếp (duyệt bước 1), kỳ công đã khoá, dữ liệu nhạy cảm bị che.
 
+## Gói chức năng theo công ty (V24)
+
+System admin bật / tắt gói cho từng công ty (`core/CompanyModules`, cột `companies.disabled_modules`, NULL = bật hết):
+`ATTENDANCE` (quyền `ATTENDANCE_*`), `SHIFT` (`SHIFT_*`), `LEAVE` (`LEAVE_*`), `PAYROLL` (`PAYROLL_*`), `CONTRACT` (`CONTRACT_*`),
+`DOCUMENT` (`EMPLOYEE_DOCUMENT_*`), `REPORT` (`REPORT_*`). Mã quyền khác là phần lõi, luôn có. `ATTENDANCE` cần `SHIFT`.
+- `User.getPermissions()` bỏ quyền thuộc gói tắt → mọi kiểm `hasPermission` / `can` tự chặn, đăng nhập trả quyền đã lọc + `modules` (gói đang bật).
+  `JwtAuthFilter` nạp sẵn tập gói tắt vào user (user nạp ngoài phiên JPA). Đăng nhập thay của system admin cũng bị lọc.
+- API thuộc gói nhưng chỉ kiểm quyền lõi / gói khác phải tự chặn: `CompanyModules.requireEnabled(user, gói)` → 403 `error.company.module_disabled`
+  (đang dùng ở `GET /payrolls/self`, duyệt cho nhóm). FE: `AuthUser.hasModule`, `routeModule` trong `nav_access.dart`.
+- Sửa ở `PUT /admin/companies/{id}` `{modules: [...]}` (gói BẬT; không gửi = giữ), nhật ký `COMPANY_MODULES`. Test `CompanyModulesTest`.
+
 ## Vai trò và quyền
 
 - Vai trò (`roles`) thuộc từng công ty, gom một tập quyền (`role_permissions`) và phạm vi cho từng quyền (`role_permission_dept_scopes`).

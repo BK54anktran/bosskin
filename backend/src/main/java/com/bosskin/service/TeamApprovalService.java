@@ -42,13 +42,16 @@ public class TeamApprovalService {
             return TeamApprovalDTO.Response.builder().enabled(enabled).reportCount(reports.size())
                 .leaves(List.of()).attendances(List.of()).swaps(List.of()).build();
         }
+        // V24: gói chức năng công ty đang tắt → bỏ loại đơn đó
+        java.util.Set<String> off = companyRepository.findById(user.getCompany().getId())
+            .map(com.bosskin.entity.Company::disabledModuleSet).orElse(java.util.Set.of());
         return TeamApprovalDTO.Response.builder()
             .enabled(true).reportCount(reports.size())
-            .leaves(leaveService.pendingForEmployees(reports).stream()
+            .leaves(off.contains(com.bosskin.core.CompanyModules.LEAVE) ? List.of() : leaveService.pendingForEmployees(reports).stream()
                 .filter(r -> r.getManagerApprovedAt() == null).toList())
-            .attendances(attendanceRequestService.pendingForEmployees(reports).stream()
+            .attendances(off.contains(com.bosskin.core.CompanyModules.ATTENDANCE) ? List.of() : attendanceRequestService.pendingForEmployees(reports).stream()
                 .filter(r -> r.getManagerApprovedAt() == null).toList())
-            .swaps(shiftSwapService.pendingForEmployees(reports).stream()
+            .swaps(off.contains(com.bosskin.core.CompanyModules.SHIFT) ? List.of() : shiftSwapService.pendingForEmployees(reports).stream()
                 .filter(r -> r.getManagerApprovedAt() == null).toList())
             .build();
     }
@@ -63,6 +66,11 @@ public class TeamApprovalService {
     @Transactional
     public Object process(User user, String kindStr, Long id, boolean approve, String note) {
         Kind kind = parseKind(kindStr);
+        com.bosskin.core.CompanyModules.requireEnabled(companyRepository.findById(user.getCompany().getId()).orElse(null), switch (kind) {
+            case LEAVE -> com.bosskin.core.CompanyModules.LEAVE;
+            case ATTENDANCE -> com.bosskin.core.CompanyModules.ATTENDANCE;
+            case SWAP -> com.bosskin.core.CompanyModules.SHIFT;
+        });
         Object result = switch (kind) {
             case LEAVE -> approve ? leaveService.managerApprove(id, user, note) : leaveService.managerReject(id, user, note);
             case ATTENDANCE -> approve ? attendanceRequestService.managerApprove(id, user, note)

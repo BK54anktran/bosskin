@@ -5,6 +5,7 @@ import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/dialog_utils.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/company_identity_utils.dart';
+import '../../../core/utils/company_module_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
@@ -345,6 +346,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final phoneCtrl = TextEditingController(text: company['phone'] as String? ?? '');
     final emailCtrl = TextEditingController(text: company['email'] as String? ?? '');
     final addressCtrl = TextEditingController(text: company['address'] as String? ?? '');
+    // V24: gói chức năng đang bật (thiếu trường = bật hết)
+    final modules = <String>{...((company['modules'] as List?)?.map((e) => e.toString()) ?? companyModuleKeys)};
     bool isLoading = false;
 
     showInstantDialog(
@@ -385,6 +388,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     ]),
                     const SizedBox(height: 10),
                     _DialogField(ctrl: addressCtrl, label: s.address),
+                    const SizedBox(height: 16),
+                    Text(s.companyModulesTitle, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(s.companyModulesHelper, style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.6))),
+                    for (final m in companyModuleKeys)
+                      CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        value: modules.contains(m),
+                        title: Text(companyModuleLabel(s, m)),
+                        subtitle: companyModuleRequires[m] != null
+                            ? Text(s.companyModuleNeeds(companyModuleLabel(s, companyModuleRequires[m]!)),
+                                style: const TextStyle(fontSize: 11))
+                            : null,
+                        onChanged: (v) => setS(() => toggleCompanyModule(modules, m, v == true)),
+                      ),
                   ],
                 ),
               ),
@@ -406,6 +426,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     'phone': phoneCtrl.text.trim(),
                     'companyEmail': emailCtrl.text.trim(),
                     'address': addressCtrl.text.trim(),
+                    'modules': companyModuleKeys.where(modules.contains).toList(),
                   });
                   if (ctx.mounted) Navigator.pop(ctx);
                   _loadCompanies();
