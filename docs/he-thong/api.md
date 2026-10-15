@@ -81,7 +81,7 @@
 | PATCH | `/api/v1/attendances/{attendanceId}/override` | ATTENDANCE_MANAGE, ATTENDANCE_VIEW | `override` |
 | POST | `/api/v1/attendances/override` | ATTENDANCE_MANAGE, ATTENDANCE_VIEW | `createOverride` |
 | POST | `/api/v1/attendances/unapprove` | ATTENDANCE_APPROVE, ATTENDANCE_VIEW | `unapprove` |
-| DELETE | `/api/v1/attendances/{id}` | ATTENDANCE_MANAGE | `delete` |
+| DELETE | `/api/v1/attendances/{id}` | ATTENDANCE_MANAGE, ATTENDANCE_VIEW | `delete` |
 | POST | `/api/v1/attendances/check-in` | ATTENDANCE_MANAGE, ATTENDANCE_VIEW | `checkIn` |
 | GET | `/api/v1/attendances/self/today` | ATTENDANCE_SELF | `getSelfToday` |
 | GET | `/api/v1/attendances/self/history` | ATTENDANCE_SELF | `getSelfHistory` |
