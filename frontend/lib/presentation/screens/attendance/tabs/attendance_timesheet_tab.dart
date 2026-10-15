@@ -799,7 +799,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
               if (_bulkLoading)
                 const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
               else ...[
-                OutlinedButton.icon(
+                if (canManageAttendance()) OutlinedButton.icon(
                   onPressed: _selectedDates.isEmpty ? null : _bulkEnterEdit,
                   icon: const Icon(Icons.edit_outlined, size: 16), label: Text(s.bulkEdit),
                   style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary,
@@ -808,7 +808,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                       textStyle: const TextStyle(fontSize: 12)),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.icon(
+                if (canApproveAttendance()) FilledButton.icon(
                   onPressed: _selectedDates.isEmpty ? null : _bulkApprove,
                   icon: const Icon(Icons.check_circle_outline, size: 16), label: Text(s.bulkApprove),
                   style: FilledButton.styleFrom(backgroundColor: AppTheme.secondary,
@@ -816,7 +816,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                       textStyle: const TextStyle(fontSize: 12)),
                 ),
                 const SizedBox(width: 8),
-                OutlinedButton.icon(
+                if (canApproveAttendance()) OutlinedButton.icon(
                   onPressed: _selectedDates.isEmpty ? null : _bulkUnapprove,
                   icon: const Icon(Icons.lock_open_outlined, size: 16), label: Text(s.bulkUnapprove),
                   style: OutlinedButton.styleFrom(foregroundColor: AppTheme.warning,
@@ -1340,10 +1340,11 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
                     icon: const Icon(Icons.close, color: AppTheme.error),
                     tooltip: s.cancel, onPressed: () => _cancelEditRow(dk))),
               ] else ...[
-                SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
-                    icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
-                    tooltip: s.edit, onPressed: () => _enterEditRow(dk, row))),
-                if (row.attendanceId != null) ...[
+                if (canManageAttendance())
+                  SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
+                      icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
+                      tooltip: s.edit, onPressed: () => _enterEditRow(dk, row))),
+                if (row.attendanceId != null && canManageAttendance()) ...[
                   const SizedBox(width: 2),
                   SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
                       icon: const Icon(Icons.delete_outline, color: AppTheme.error),

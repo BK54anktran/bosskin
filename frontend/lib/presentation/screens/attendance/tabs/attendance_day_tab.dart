@@ -670,7 +670,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
               if (_dayBulkLoading)
                 const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
               else ...[
-                OutlinedButton.icon(
+                if (canManageAttendance()) OutlinedButton.icon(
                   onPressed: _selectedEmployeeIds.isEmpty ? null : _dayBulkEnterEdit,
                   icon: const Icon(Icons.edit_outlined, size: 16), label: Text(s.bulkEdit),
                   style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary,
@@ -679,7 +679,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
                       textStyle: const TextStyle(fontSize: 12)),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.icon(
+                if (canApproveAttendance()) FilledButton.icon(
                   onPressed: _selectedEmployeeIds.isEmpty ? null : _dayBulkApprove,
                   icon: const Icon(Icons.check_circle_outline, size: 16), label: Text(s.bulkApprove),
                   style: FilledButton.styleFrom(backgroundColor: AppTheme.secondary,
@@ -687,7 +687,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
                       textStyle: const TextStyle(fontSize: 12)),
                 ),
                 const SizedBox(width: 8),
-                OutlinedButton.icon(
+                if (canApproveAttendance()) OutlinedButton.icon(
                   onPressed: _selectedEmployeeIds.isEmpty ? null : _dayBulkUnapprove,
                   icon: const Icon(Icons.lock_open_outlined, size: 16), label: Text(s.bulkUnapprove),
                   style: OutlinedButton.styleFrom(foregroundColor: AppTheme.warning,
@@ -1211,10 +1211,11 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
               icon: const Icon(Icons.close, color: AppTheme.error),
               tooltip: s.cancel, onPressed: () => _cancelDayEditSlot(slotKey))),
         ] else ...[
-          SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
-              icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
-              tooltip: s.edit, onPressed: () => _enterDayEditSlot(slot))),
-          if (slot.attendanceId != null) ...[
+          if (canManageAttendance())
+            SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
+                icon: const Icon(Icons.edit_outlined, color: AppTheme.primary),
+                tooltip: s.edit, onPressed: () => _enterDayEditSlot(slot))),
+          if (slot.attendanceId != null && canManageAttendance()) ...[
             const SizedBox(width: 2),
             SizedBox(width: 24, height: 24, child: IconButton(padding: EdgeInsets.zero, iconSize: 16,
                 icon: const Icon(Icons.delete_outline, color: AppTheme.error),

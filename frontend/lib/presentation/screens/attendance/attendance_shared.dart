@@ -883,3 +883,9 @@ bool canApproveAttendance() {
   final user = AuthService.instance.currentUser;
   return (user?.isSystemAdmin ?? false) || (user?.can('ATTENDANCE_APPROVE') ?? false);
 }
+
+/// Quyền sửa / xoá công (BE: ATTENDANCE_MANAGE) — tách riêng khỏi quyền xem và duyệt.
+bool canManageAttendance() {
+  final user = AuthService.instance.currentUser;
+  return (user?.isSystemAdmin ?? false) || (user?.can('ATTENDANCE_MANAGE') ?? false);
+}
