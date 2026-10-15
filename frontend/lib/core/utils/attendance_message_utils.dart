@@ -13,6 +13,8 @@ String attendanceMessage(AppLocalizations s, String? raw) {
       return s.attendanceNoShiftsOnDate;
     case 'attendanceNoShiftsToday':
       return s.noShiftsToday;
+    case 'attendanceNoShiftFreeCheckIn':
+      return s.attendanceNoShiftFreeCheckIn;
     default:
       return value;
   }

@@ -96,7 +96,7 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `PAYROLL_VIEW` | Xem bảng lương |  | 20 | nav_access, payroll_screen, permission_labels, roles_screen |
+| `PAYROLL_VIEW` | Xem bảng lương |  | 20 | employee_form_screen, employee_screen, nav_access, payroll_screen, permission_la |
 | `PAYROLL_CREATE` | Tạo bảng lương | `PAYROLL_VIEW` | 17 | employee_screen, payroll_screen, permission_labels, salary_formula_tab, salary_g |
 | `PAYROLL_APPROVE` | Phê duyệt bảng lương | `PAYROLL_VIEW` | 1 | audit_log_screen, payroll_screen, permission_labels |
 | `PAYROLL_PAY` | Đánh dấu đã thanh toán lương | `PAYROLL_VIEW` | 1 | audit_log_screen, payroll_screen, permission_labels |

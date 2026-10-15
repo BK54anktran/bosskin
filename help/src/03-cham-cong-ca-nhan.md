@@ -23,6 +23,7 @@ Những trường hợp không chấm được:
 | Vị trí giả | Máy đang bật ứng dụng giả vị trí. Tắt đi rồi chấm lại. |
 | Tài khoản đã gắn máy khác | Công ty bật "chỉ chấm trên thiết bị đã gắn". Nhờ nhân sự gỡ thiết bị cũ khi bạn đổi điện thoại. |
 | Ngoài khung giờ | Chưa tới / đã quá khung giờ chấm của ca. Gửi **Yêu cầu chấm công** (mục dưới). |
+| Hôm nay bạn chưa được xếp ca | Ngày này bạn không có ca. Nếu công ty bật "cho chấm khi không được xếp ca", màn hình báo vẫn chấm được: chấm vào / ra một lần trong ngày, giờ làm tính theo giờ thực tế. |
 
 > **Mẹo:** Trên điện thoại, bật *Thông báo check-in / check-out nhanh* ở Thông tin cá nhân để chấm ngay từ thông báo nhắc.
 

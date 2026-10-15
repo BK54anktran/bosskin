@@ -302,7 +302,28 @@ class AuthService extends ChangeNotifier {
         // Refresh cũng hết hạn → logout
         await logout();
       }
+    } else {
+      // Quyền / gói chức năng lưu từ lần đăng nhập trước có thể đã cũ → lấy lại để menu khớp backend.
+      await syncPermissions(force: true);
     }
+  }
+
+  DateTime? _lastPermissionSync;
+
+  /// Lấy lại quyền + gói chức năng (V24) qua refresh token: system admin tắt gói / admin đổi vai trò khi người dùng
+  /// đang đăng nhập thì menu ẩn theo mà không cần đăng xuất. Không force → tối đa 1 lần / phút (gọi khi API trả 403).
+  /// Lỗi bỏ qua (không đăng xuất); impersonate / system admin không có refresh token của công ty nên bỏ qua.
+  Future<void> syncPermissions({bool force = false}) async {
+    final user = _currentUser;
+    if (user == null || user.isSystemAdmin || isImpersonating) return;
+    final now = DateTime.now();
+    if (!force &&
+        _lastPermissionSync != null &&
+        now.difference(_lastPermissionSync!) < const Duration(minutes: 1)) {
+      return;
+    }
+    _lastPermissionSync = now;
+    await refreshToken();
   }
 
   Future<bool> _verifyToken() async {

@@ -35,6 +35,7 @@ Mở **Cài đặt công ty** (cuối menu). Hai tab: **Chung** và **Lịch là
 |---|---|
 | Bật kiểm tra vị trí check-in | Bắt nhân viên đứng trong bán kính quanh vị trí công ty (hoặc vị trí riêng của phòng ban) |
 | Chỉ chấm công trên thiết bị đã gắn | Lần chấm đầu tự gắn máy; máy khác bị chặn. Đổi máy: nhân sự gỡ thiết bị ở hồ sơ nhân viên |
+| Cho chấm vào / ra khi không được xếp ca | Ngày nhân viên không có ca vẫn chấm vào / ra được một lần: công không gắn ca, không xét đi muộn, giờ làm theo giờ thực tế, vẫn cần duyệt. Ngày có ca vẫn chấm theo khung giờ ca |
 | Phạm vi giờ check-in / out | Được chấm sớm / muộn bao nhiêu phút quanh giờ ca |
 
 Nhớ bấm **Lưu** cuối trang.

@@ -77,6 +77,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
 
   bool _locationCheckEnabled = false;
   bool _deviceBindingEnabled = false;
+  bool _checkInWithoutShift = false;
   double? _checkInLat;
   double? _checkInLng;
   int _checkInRadius = 100;
@@ -154,6 +155,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
             (((data['contract'] as Map?)?['expiryWarningDays'] as num?)?.toInt() ?? 30).toString();
         _locationCheckEnabled = attendance['locationCheckEnabled'] == true;
         _deviceBindingEnabled = attendance['deviceBindingEnabled'] == true;
+        _checkInWithoutShift = attendance['checkInWithoutShift'] == true;
         _checkInLat = (attendance['checkInLatitude'] as num?)?.toDouble();
         _checkInLng = (attendance['checkInLongitude'] as num?)?.toDouble();
         _checkInRadius = (attendance['checkInRadiusMeters'] as num?)?.toInt() ?? 100;
@@ -265,6 +267,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
           'dayEndTime': _formatTime(_dayEnd),
           'locationCheckEnabled': _locationCheckEnabled,
           'deviceBindingEnabled': _deviceBindingEnabled,
+          'checkInWithoutShift': _checkInWithoutShift,
           'checkInLatitude': _checkInLat,
           'checkInLongitude': _checkInLng,
           'checkInRadiusMeters': _checkInRadius,
@@ -549,6 +552,13 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                             onChanged: (v) => setState(() => _deviceBindingEnabled = v),
                             title: Text(s.deviceBindingEnabled),
                             subtitle: Text(s.deviceBindingHint, style: const TextStyle(fontSize: 12)),
+                          ),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _checkInWithoutShift,
+                            onChanged: (v) => setState(() => _checkInWithoutShift = v),
+                            title: Text(s.checkInWithoutShiftEnabled),
+                            subtitle: Text(s.checkInWithoutShiftHint, style: const TextStyle(fontSize: 12)),
                           ),
                           if (_locationCheckEnabled) ...[
                             const SizedBox(height: 8),

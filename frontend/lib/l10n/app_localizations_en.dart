@@ -3792,6 +3792,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'The first check-in binds the phone in use; when an employee changes phones, a manager unbinds it in the employee profile.';
 
   @override
+  String get checkInWithoutShiftEnabled =>
+      'Allow check-in / check-out without a scheduled shift';
+
+  @override
+  String get checkInWithoutShiftHint =>
+      'On days without a shift, employees can still check in and out once; the record has no shift, lateness is not checked, hours follow actual times and still need approval.';
+
+  @override
+  String get attendanceNoShiftFreeCheckIn =>
+      'You have no shift today — you can still check in / out; hours follow your actual times.';
+
+  @override
   String get deviceBoundLabel => 'Check-in device bound';
 
   @override

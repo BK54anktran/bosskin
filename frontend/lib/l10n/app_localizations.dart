@@ -7144,6 +7144,24 @@ abstract class AppLocalizations {
   /// **'Lần chấm công đầu tiên tự gắn điện thoại đang dùng; đổi máy thì quản lý gỡ gắn trong hồ sơ nhân viên.'**
   String get deviceBindingHint;
 
+  /// No description provided for @checkInWithoutShiftEnabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho chấm vào / ra khi không được xếp ca'**
+  String get checkInWithoutShiftEnabled;
+
+  /// No description provided for @checkInWithoutShiftHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày nhân viên không có ca vẫn chấm vào / ra được một lần; công không gắn ca, không xét đi muộn, giờ làm tính theo giờ thực tế và vẫn cần duyệt.'**
+  String get checkInWithoutShiftHint;
+
+  /// No description provided for @attendanceNoShiftFreeCheckIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay bạn không có ca — vẫn chấm vào / ra được, công tính theo giờ thực tế.'**
+  String get attendanceNoShiftFreeCheckIn;
+
   /// No description provided for @deviceBoundLabel.
   ///
   /// In vi, this message translates to:

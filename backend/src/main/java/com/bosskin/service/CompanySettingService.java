@@ -78,6 +78,9 @@ public class CompanySettingService {
         if (req.getAttendance().getLocationCheckEnabled() != null) {
             c.setLocationCheckEnabled(req.getAttendance().getLocationCheckEnabled());
         }
+        if (req.getAttendance().getCheckInWithoutShift() != null) {
+            c.setCheckInWithoutShift(req.getAttendance().getCheckInWithoutShift());
+        }
         c.setCheckInLatitude(req.getAttendance().getCheckInLatitude());
         c.setCheckInLongitude(req.getAttendance().getCheckInLongitude());
         if (req.getAttendance().getCheckInRadiusMeters() != null) {
@@ -163,6 +166,7 @@ public class CompanySettingService {
                 .dayEndTime(c.getDayEndTime())
                 .locationCheckEnabled(c.isLocationCheckEnabled())
                 .deviceBindingEnabled(c.isDeviceBindingEnabled())
+                .checkInWithoutShift(c.isCheckInWithoutShift())
                 .checkInLatitude(c.getCheckInLatitude())
                 .checkInLongitude(c.getCheckInLongitude())
                 .checkInRadiusMeters(c.getCheckInRadiusMeters())

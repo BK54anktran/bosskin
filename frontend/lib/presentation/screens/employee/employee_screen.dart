@@ -62,6 +62,8 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   Future<void> _loadGrades() async {
+    // Bậc lương thuộc gói Tính lương (PAYROLL_VIEW) — không có quyền / gói tắt thì không gọi API.
+    if (AuthService.instance.currentUser?.can('PAYROLL_VIEW') != true) return;
     try {
       final grades = await _gradeRepo.getAll();
       if (mounted) setState(() => _cachedGrades = grades);

@@ -20,6 +20,7 @@ public class CompanySettingDTO {
         private LocalTime dayEndTime;
         private boolean locationCheckEnabled;
         private boolean deviceBindingEnabled;
+        private boolean checkInWithoutShift;
         private Double checkInLatitude;
         private Double checkInLongitude;
         private int checkInRadiusMeters;
@@ -92,6 +93,7 @@ public class CompanySettingDTO {
         private LocalTime dayEndTime;
         private Boolean locationCheckEnabled;
         private Boolean deviceBindingEnabled;
+        private Boolean checkInWithoutShift;
         private Double checkInLatitude;
         private Double checkInLongitude;
         private Integer checkInRadiusMeters;

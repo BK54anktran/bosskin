@@ -72,6 +72,11 @@ public class Company extends BaseEntity {
     @Builder.Default
     private boolean deviceBindingEnabled = false;
 
+    /** V25: ngày không được xếp ca vẫn được chấm vào / ra (công không gắn ca, tính giờ theo giờ thực tế). */
+    @Column(name = "check_in_without_shift", nullable = false)
+    @Builder.Default
+    private boolean checkInWithoutShift = false;
+
     /** Bước C — bắt buộc 2FA với người có quyền ROLE_MANAGE (system admin bật). */
     @Column(name = "require_admin_2fa", nullable = false)
     @Builder.Default

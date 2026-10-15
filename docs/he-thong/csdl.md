@@ -2,7 +2,7 @@
 
 # Cơ sở dữ liệu
 
-MySQL 8, utf8mb4. Lược đồ tại migration **V24 – company modules**, 53 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
+MySQL 8, utf8mb4. Lược đồ tại migration **V25 – check in without shift**, 53 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
 
 Ký hiệu: 🔑 khoá chính · ↗ khoá ngoại (bảng.cột, hành vi khi xoá) · `∅` không có mặc định.
 
@@ -69,6 +69,7 @@ Duy nhất: (code) · (domain)
 | `employer_unemployment_rate` | decimal(6,4) |  | 0.0100 |  |
 | `shift_registration_enabled` | tinyint(1) |  | 0 |  |
 | `disabled_modules` | varchar(200) | có | ∅ |  |
+| `check_in_without_shift` | tinyint(1) |  | 0 |  |
 
 ### fcm_notification_logs
 

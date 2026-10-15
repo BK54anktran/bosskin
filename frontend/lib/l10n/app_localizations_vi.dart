@@ -3790,6 +3790,18 @@ class AppLocalizationsVi extends AppLocalizations {
       'Lần chấm công đầu tiên tự gắn điện thoại đang dùng; đổi máy thì quản lý gỡ gắn trong hồ sơ nhân viên.';
 
   @override
+  String get checkInWithoutShiftEnabled =>
+      'Cho chấm vào / ra khi không được xếp ca';
+
+  @override
+  String get checkInWithoutShiftHint =>
+      'Ngày nhân viên không có ca vẫn chấm vào / ra được một lần; công không gắn ca, không xét đi muộn, giờ làm tính theo giờ thực tế và vẫn cần duyệt.';
+
+  @override
+  String get attendanceNoShiftFreeCheckIn =>
+      'Hôm nay bạn không có ca — vẫn chấm vào / ra được, công tính theo giờ thực tế.';
+
+  @override
   String get deviceBoundLabel => 'Đã gắn thiết bị chấm công';
 
   @override

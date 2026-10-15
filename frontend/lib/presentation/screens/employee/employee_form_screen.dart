@@ -123,6 +123,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   }
 
   Future<void> _loadGrades() async {
+    if (AuthService.instance.currentUser?.can('PAYROLL_VIEW') != true) return;
     try {
       final list = await _gradeRepo.getAll();
       if (mounted) setState(() => _grades = list);

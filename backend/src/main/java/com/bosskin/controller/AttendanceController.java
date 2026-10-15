@@ -1405,7 +1405,9 @@ public class AttendanceController {
         if (!enabled) {
             message = localizedCheckInOutDisabledMessage(locale);
         } else if (shift == null) {
-            message = localizedNoShiftMessage(locale, isToday);
+            // V25: không có ca nhưng công ty cho chấm không cần ca → báo công tính theo giờ thực tế
+            message = isToday && company.isCheckInWithoutShift()
+                ? "attendanceNoShiftFreeCheckIn" : localizedNoShiftMessage(locale, isToday);
         }
 
         List<AttendanceDTO.AllowedLocation> allowedLocations = resolveAllowedLocations(employee);
@@ -1631,6 +1633,39 @@ public class AttendanceController {
             Attendance att = getOrCreateAttendanceForShift(employee, sl.workDate(), sl.sa());
             if (att.getCheckIn() == null) return new ShiftTarget(att, sl.sa(), sl.sw(), sl.start());
         }
+        if (isFreeCheckInDay(employee, company, now)) {
+            Attendance att = getOrCreateAttendanceForShift(employee, now.toLocalDate(), null);
+            if (att.getCheckIn() == null) return new ShiftTarget(att, null, null, null);
+        }
+        return null;
+    }
+
+    /** Giờ tối đa từ lúc chấm vào không theo ca tới lúc chấm ra (quá thì coi như quên chấm ra, quản lý sửa công). */
+    private static final int MAX_NO_SHIFT_HOURS = 24;
+
+    /**
+     * V25: công ty bật "chấm công không cần xếp ca", hôm nay nhân viên không có ca nào và không đang trong khung
+     * của ca qua đêm hôm qua → được chấm vào / ra một lần trong ngày, công không gắn ca.
+     */
+    private boolean isFreeCheckInDay(Employee employee, Company company, LocalDateTime now) {
+        if (company == null || !company.isCheckInWithoutShift()) return false;
+        if (!shiftAssignmentRepository.findByEmployeeIdAndWorkDateWithShift(employee.getId(), now.toLocalDate()).isEmpty()) {
+            return false;
+        }
+        return candidateSlots(employee, company, now.toLocalDate()).stream()
+            .noneMatch(sl -> !now.isBefore(sl.checkInFrom()) && !now.isAfter(sl.checkOutTo()));
+    }
+
+    /** Công không theo ca (hôm nay hoặc hôm qua) đã chấm vào, chưa chấm ra, trong {@link #MAX_NO_SHIFT_HOURS} giờ. */
+    private ShiftTarget findNoShiftCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
+        if (company == null || !company.isCheckInWithoutShift()) return null;
+        for (LocalDate d : List.of(now.toLocalDate(), now.toLocalDate().minusDays(1))) {
+            Attendance att = findExistingAttendance(employee, d, null);
+            if (att != null && att.getCheckIn() != null && att.getCheckOut() == null
+                && !now.isBefore(att.getCheckIn()) && !now.isAfter(att.getCheckIn().plusHours(MAX_NO_SHIFT_HOURS))) {
+                return new ShiftTarget(att, null, null, null);
+            }
+        }
         return null;
     }
 
@@ -1647,12 +1682,15 @@ public class AttendanceController {
                 return new ShiftTarget(att, sl.sa(), sl.sw(), sl.start());
             }
         }
-        return null;
+        return findNoShiftCheckOutTarget(employee, company, now);
     }
 
     private ShiftTarget requireCheckInTarget(Employee employee, Company company, LocalDateTime now) {
         ShiftTarget t = findCheckInTarget(employee, company, now);
         if (t != null) return t;
+        if (isFreeCheckInDay(employee, company, now)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.already_checked_in");
+        }
         if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.no_shift_today");
         }
@@ -1662,6 +1700,11 @@ public class AttendanceController {
     private ShiftTarget requireCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
         ShiftTarget t = findCheckOutTarget(employee, company, now);
         if (t != null) return t;
+        if (isFreeCheckInDay(employee, company, now)) {
+            Attendance att = findExistingAttendance(employee, now.toLocalDate(), null);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, att != null && att.getCheckOut() != null
+                ? "error.attendance.already_checked_out" : "error.attendance.not_checked_in");
+        }
         if (candidateSlots(employee, company, now.toLocalDate()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.no_shift_today");
         }
@@ -1670,6 +1713,8 @@ public class AttendanceController {
 
     /** Đi muộn khi check-in sau giờ bắt đầu ca + dung sai (phòng ban → công ty → mặc định 15 phút) (A13). */
     private Attendance.Status checkInStatus(Employee employee, ShiftTarget target, LocalDateTime now) {
+        // Công không theo ca (V25): không có giờ bắt đầu để xét đi muộn
+        if (target.shiftStart() == null) return Attendance.Status.PRESENT;
         // Ca linh hoạt: vào lúc nào trong khung cũng đúng giờ; thiếu giờ xét khi duyệt (Mốc 2b)
         if (target.shiftAssignment() != null && target.shiftAssignment().flexibleRequiredMinutes() != null) {
             return Attendance.Status.PRESENT;

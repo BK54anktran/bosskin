@@ -118,6 +118,14 @@ class ApiService {
             AuthService.instance.markPasswordChangeRequired();
             rootNavigatorKey.currentContext?.go(AppRoutes.changePassword);
           }
+          if (statusCode == 403 &&
+              errData is Map &&
+              (errData['message'] == 'error.permission.denied' ||
+                  errData['message'] == 'error.company.module_disabled') &&
+              !_isAuthEndpoint(error.requestOptions.path)) {
+            // Quyền / gói có thể vừa bị đổi → lấy lại để menu ẩn màn không còn dùng được.
+            AuthService.instance.syncPermissions();
+          }
           final isUnauthorized = statusCode == 401;
           final alreadyRetried =
               error.requestOptions.extra['__refreshed_after_permission_error'] ==
