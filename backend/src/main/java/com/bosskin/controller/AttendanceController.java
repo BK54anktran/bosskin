@@ -2198,7 +2198,6 @@ public class AttendanceController {
 
     /** Ghép giờ đã làm tròn / hiệu lực với ngày thật của mốc gốc (cùng ngày công hoặc lệch +N); thiếu mốc gốc thì coi là cùng ngày công. */
     private static java.time.LocalDateTime withDay(LocalDate workDate, LocalTime time, java.time.LocalDateTime original) {
-        if (time == null) return null;
-        return AttendanceTimes.at(workDate, AttendanceTimes.dayOffset(workDate, original), time);
+        return AttendanceTimes.placeNear(workDate, time, original);
     }
 }

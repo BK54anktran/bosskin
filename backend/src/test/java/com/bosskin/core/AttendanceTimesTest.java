@@ -82,4 +82,16 @@ class AttendanceTimesTest {
         assertThat(AttendanceTimes.dayOffset(D, D.minusDays(1).atTime(23, 50))).isEqualTo(-1);
         assertThat(AttendanceTimes.dayOffset(D, null)).isZero();
     }
+
+    @org.junit.jupiter.api.Test
+    void placeNear_roundingAcrossMidnightMovesToNextDay() {
+        var d = java.time.LocalDate.of(2026, 10, 14);
+        var raw = d.minusDays(1).atTime(23, 55);
+        org.assertj.core.api.Assertions.assertThat(AttendanceTimes.placeNear(d, java.time.LocalTime.of(0, 0), raw))
+            .isEqualTo(d.atTime(0, 0));
+        org.assertj.core.api.Assertions.assertThat(AttendanceTimes.placeNear(d, java.time.LocalTime.of(6, 0), d.plusDays(1).atTime(5, 58)))
+            .isEqualTo(d.plusDays(1).atTime(6, 0));
+        org.assertj.core.api.Assertions.assertThat(AttendanceTimes.placeNear(d, java.time.LocalTime.of(9, 0), null))
+            .isEqualTo(d.atTime(9, 0));
+    }
 }

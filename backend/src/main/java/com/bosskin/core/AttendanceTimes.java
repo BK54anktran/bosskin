@@ -27,6 +27,23 @@ public final class AttendanceTimes {
         return workDate.plusDays(dayOffset).atTime(time);
     }
 
+    /**
+     * Đặt giờ đã làm tròn / hiệu lực lên ngày gần nhất với mốc gốc (cùng ngày, hôm trước hoặc hôm sau của mốc đó):
+     * làm tròn có thể đẩy 23:55 thành 00:00 thì phải sang ngày kế, không giữ nguyên ngày cũ. Không có mốc gốc → ngày công.
+     */
+    public static LocalDateTime placeNear(LocalDate workDate, LocalTime time, LocalDateTime original) {
+        if (time == null) return null;
+        if (original == null) return workDate.atTime(time);
+        LocalDateTime best = null;
+        long bestGap = Long.MAX_VALUE;
+        for (int k = -1; k <= 1; k++) {
+            LocalDateTime c = original.toLocalDate().plusDays(k).atTime(time);
+            long gap = Math.abs(Duration.between(original, c).toMinutes());
+            if (gap < bestGap) { bestGap = gap; best = c; }
+        }
+        return best;
+    }
+
     public static int dayOffset(LocalDate workDate, LocalDateTime t) {
         return t == null ? 0 : (int) ChronoUnit.DAYS.between(workDate, t.toLocalDate());
     }
