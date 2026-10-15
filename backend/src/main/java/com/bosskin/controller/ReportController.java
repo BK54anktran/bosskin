@@ -152,7 +152,10 @@ public class ReportController {
             @RequestParam(required = false) Long deptId,
             @AuthenticationPrincipal User user,
             Locale locale) {
+        // File gồm cả số liệu nhân sự và nghỉ phép nên cần đủ quyền xem của cả ba module
         checkModule(user, "PAYROLL_VIEW", deptId);
+        checkModule(user, "EMPLOYEE_VIEW", deptId);
+        checkModule(user, "LEAVE_VIEW", deptId);
         return reportService.reportYearlyOverview(user.getCompanyId(), user.getId(),
                 year, deptId, locale);
     }

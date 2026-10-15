@@ -41,7 +41,7 @@ public class JobHistoryService {
     /** Bốn thông tin theo dõi trong lịch sử. */
     public record Snapshot(Long departmentId, Long positionId, Long salaryGradeId, Long managerId) {
         public static Snapshot of(Employee e) {
-            return new Snapshot(e.getDepartment() != null ? e.getDepartment().getId() : null,
+            return new Snapshot(e.getDepartment() != null ? deptIdOf(e) : null,
                 e.getPosition() != null ? e.getPosition().getId() : null,
                 e.getSalaryGrade() != null ? e.getSalaryGrade().getId() : null,
                 e.getManager() != null ? e.getManager().getId() : null);
@@ -60,7 +60,7 @@ public class JobHistoryService {
     @Transactional(readOnly = true)
     public List<JobHistoryDTO.Response> list(Long companyId, Long userId, Long employeeId) {
         Employee e = employee(employeeId, companyId);
-        requireViewScope(userId, e.getDepartment().getId());
+        requireViewScope(userId, deptIdOf(e));
         List<EmployeeJobHistory> rows = repository.findByEmployee(employeeId);
         Long currentId = rows.stream().filter(h -> !h.getEffectiveFrom().isAfter(today()))
             .findFirst().map(EmployeeJobHistory::getId).orElse(null);
@@ -90,11 +90,11 @@ public class JobHistoryService {
             .filter(d -> d.getManager() != null).map(d -> d.getManager().getId()).collect(Collectors.toSet());
         return employeeRepository.findAllByCompanyIdFetchDepartment(companyId).stream()
             .filter(e -> e.getStatus() != Employee.Status.INACTIVE)
-            .filter(e -> scope.isEmpty() || scope.contains(e.getDepartment().getId()))
+            .filter(e -> scope.isEmpty() || scope.contains(deptIdOf(e)))
             .sorted(Comparator.comparing(Employee::getFullName))
             .map(e -> JobHistoryDTO.OrgNode.builder()
                 .id(e.getId()).employeeCode(e.getEmployeeCode()).fullName(e.getFullName()).avatar(e.getAvatar())
-                .departmentId(e.getDepartment().getId()).departmentName(e.getDepartment().getName())
+                .departmentId(e.getDepartment() != null ? e.getDepartment().getId() : null).departmentName(e.getDepartment() != null ? e.getDepartment().getName() : null)
                 .positionName(e.getPosition() != null ? e.getPosition().getName() : null)
                 .managerId(e.getManager() != null ? e.getManager().getId() : null)
                 .departmentHead(heads.contains(e.getId()))
@@ -107,7 +107,7 @@ public class JobHistoryService {
     @Transactional
     public JobHistoryDTO.Response create(Long companyId, User user, Long employeeId, JobHistoryDTO.Upsert req) {
         Employee e = employee(employeeId, companyId);
-        requireViewScope(user.getId(), e.getDepartment().getId());
+        requireViewScope(user.getId(), deptIdOf(e));
         Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         requireViewScope(user.getId(), dept.getId());
@@ -152,7 +152,7 @@ public class JobHistoryService {
         EmployeeJobHistory h = repository.findByIdAndCompanyIdAndDeletedFalse(id, companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.job_history.not_found"));
         Employee e = h.getEmployee();
-        requireViewScope(user.getId(), e.getDepartment().getId());
+        requireViewScope(user.getId(), deptIdOf(e));
         if (!h.getEffectiveFrom().isAfter(today())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.job_history.past_readonly");
         }
@@ -283,5 +283,10 @@ public class JobHistoryService {
             .note(h.getNote()).applied(h.isApplied()).current(current)
             .createdByName(createdByName).createdAt(h.getCreatedAt())
             .build();
+    }
+
+    /** Mã phòng của nhân viên; chưa có phòng → 0 (không thuộc phạm vi nào, tránh NPE khi lọc theo phạm vi). */
+    private static long deptIdOf(Employee e) {
+        return e == null || e.getDepartment() == null ? 0L : e.getDepartment().getId();
     }
 }

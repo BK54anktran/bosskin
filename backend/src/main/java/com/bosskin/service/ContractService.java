@@ -66,7 +66,7 @@ public class ContractService {
         Set<Long> scope = deptScopeService.resolvedScopes(userId, "CONTRACT_VIEW");
         List<LaborContract> all = repository.findByCompany(companyId).stream()
             .filter(c -> employeeId == null || c.getEmployee().getId().equals(employeeId))
-            .filter(c -> scope.isEmpty() || scope.contains(c.getEmployee().getDepartment().getId()))
+            .filter(c -> scope.isEmpty() || scope.contains(deptIdOf(c.getEmployee())))
             .toList();
         return toResponses(all, all);
     }
@@ -101,7 +101,7 @@ public class ContractService {
         Set<Long> scope = deptScopeService.resolvedScopes(userId, "CONTRACT_VIEW");
         List<LaborContract> ending = repository.findActiveEndingBy(companyId, today().plusDays(d)).stream()
             .filter(c -> c.getEmployee().getStatus() != Employee.Status.INACTIVE)
-            .filter(c -> scope.isEmpty() || scope.contains(c.getEmployee().getDepartment().getId()))
+            .filter(c -> scope.isEmpty() || scope.contains(deptIdOf(c.getEmployee())))
             .toList();
         if (ending.isEmpty()) return List.of();
         List<LaborContract> siblings = repository.findByCompany(companyId);
@@ -637,7 +637,7 @@ public class ContractService {
             String display = c.isExpired(t) ? "EXPIRED" : c.getStatus().name();
             out.add(ContractDTO.Response.builder()
                 .id(c.getId()).employeeId(e.getId()).employeeCode(e.getEmployeeCode()).employeeName(e.getFullName())
-                .departmentId(e.getDepartment() != null ? e.getDepartment().getId() : null)
+                .departmentId(e.getDepartment() != null ? deptIdOf(e) : null)
                 .departmentName(e.getDepartment() != null ? e.getDepartment().getName() : null)
                 .contractNo(c.getContractNo()).contractType(c.getContractType().name())
                 .status(c.getStatus().name()).displayStatus(display)
@@ -817,7 +817,7 @@ public class ContractService {
     private void requireScope(Long userId, Employee e) {
         if (userId == null) return;
         Set<Long> scope = deptScopeService.resolvedScopes(userId, "CONTRACT_VIEW");
-        if (!scope.isEmpty() && (e.getDepartment() == null || !scope.contains(e.getDepartment().getId()))) {
+        if (!scope.isEmpty() && (e.getDepartment() == null || !scope.contains(deptIdOf(e)))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
         }
     }
@@ -915,5 +915,10 @@ public class ContractService {
     private static void addChange(List<DepartmentDTO.FieldChange> list, String field, String oldV, String newV) {
         if (Objects.equals(oldV, newV)) return;
         list.add(DepartmentDTO.FieldChange.builder().field(field).oldValue(oldV).newValue(newV).build());
+    }
+
+    /** Mã phòng của nhân viên; chưa có phòng → 0 (không thuộc phạm vi nào, tránh NPE khi lọc theo phạm vi). */
+    private static long deptIdOf(Employee e) {
+        return e == null || e.getDepartment() == null ? 0L : e.getDepartment().getId();
     }
 }

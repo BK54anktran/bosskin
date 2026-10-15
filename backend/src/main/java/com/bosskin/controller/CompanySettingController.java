@@ -23,7 +23,14 @@ public class CompanySettingController {
         if (user == null || user.getCompany() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        return ResponseEntity.ok(companySettingService.getByCompanyId(user.getCompany().getId()));
+        var res = companySettingService.getByCompanyId(user.getCompany().getId());
+        // Tỷ lệ bảo hiểm công ty đóng là số liệu lương: chỉ người xem lương hoặc quản lý cài đặt mới thấy
+        if (res.getPayroll() != null && !user.hasPermission("PAYROLL_VIEW") && !user.hasPermission("COMPANY_SETTING_MANAGE")) {
+            res.getPayroll().setEmployerSocialPercent(null);
+            res.getPayroll().setEmployerHealthPercent(null);
+            res.getPayroll().setEmployerUnemploymentPercent(null);
+        }
+        return ResponseEntity.ok(res);
     }
 
     @PutMapping
