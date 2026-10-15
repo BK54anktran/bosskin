@@ -158,7 +158,7 @@
 
 | Method | Đường dẫn | Quyền | Hàm |
 |---|---|---|---|
-| GET | `/api/v1/company-settings` | — | `get` |
+| GET | `/api/v1/company-settings` | PAYROLL_VIEW, COMPANY_SETTING_MANAGE | `get` |
 | PUT | `/api/v1/company-settings` | COMPANY_SETTING_MANAGE | `update` |
 
 ## ContractController
@@ -422,7 +422,7 @@
 | GET | `/api/v1/reports/insured-employees` | EMPLOYEE_VIEW, REPORT_VIEW | `insuredEmployees` |
 | GET | `/api/v1/reports/dependents` | EMPLOYEE_VIEW, REPORT_VIEW | `dependents` |
 | GET | `/api/v1/reports/payroll-summary` | PAYROLL_VIEW, REPORT_VIEW | `payrollSummary` |
-| GET | `/api/v1/reports/yearly-overview` | PAYROLL_VIEW, REPORT_VIEW | `yearlyOverview` |
+| GET | `/api/v1/reports/yearly-overview` | PAYROLL_VIEW, EMPLOYEE_VIEW, LEAVE_VIEW, REPORT_VIEW | `yearlyOverview` |
 | GET | `/api/v1/reports/leave-balance` | LEAVE_VIEW, REPORT_VIEW | `leaveBalance` |
 | GET | `/api/v1/reports/leave-usage` | LEAVE_VIEW, REPORT_VIEW | `leaveUsage` |
 
