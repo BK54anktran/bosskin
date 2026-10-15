@@ -36,6 +36,10 @@ public final class AttendanceTimes {
         return (int) Duration.between(workDate.atStartOfDay(), t.truncatedTo(ChronoUnit.MINUTES)).toMinutes();
     }
 
+    private static long distance(LocalDateTime a, LocalDateTime b) {
+        return Math.abs(Duration.between(a, b).toMinutes());
+    }
+
     /** Khoảng vào → ra hợp lệ: ra sau vào và dưới 24 giờ. */
     public static boolean validSpan(LocalDateTime in, LocalDateTime out) {
         if (in == null || out == null) return true;
