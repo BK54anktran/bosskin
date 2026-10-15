@@ -24,7 +24,6 @@ public final class FeatureRoutes {
         any("/api/v1/attendance-periods/**", CompanyFeatures.ATT_SHEET),
         any("/api/v1/attendances/**", CompanyFeatures.ATT_SHEET),
         any("/api/v1/employees/*/locations/**", CompanyFeatures.ATT_GEOFENCE),
-        any("/api/v1/map-tiles/**", CompanyFeatures.ATT_GEOFENCE),
         // Ca làm
         any("/api/v1/shift-rotations/**", CompanyFeatures.SHIFT_ROTATION),
         any("/api/v1/shift-swaps/**", CompanyFeatures.SHIFT_SWAP),
@@ -49,7 +48,10 @@ public final class FeatureRoutes {
         any("/api/v1/salary-grades/**", CompanyFeatures.PAY_BASIC),
         any("/api/v1/salary-histories/**", CompanyFeatures.PAY_BASIC),
         // Nhân sự mở rộng
+        any("/api/v1/contracts/expiring", CompanyFeatures.HR_CONTRACT_ALERT),
         any("/api/v1/contracts/**", CompanyFeatures.HR_CONTRACT),
+        any("/api/v1/employee-documents/expiring", CompanyFeatures.HR_DOCUMENT_ALERT),
+        any("/api/v1/employee-documents/missing", CompanyFeatures.HR_DOCUMENT_ALERT),
         any("/api/v1/document-types/**", CompanyFeatures.HR_DOCUMENT),
         any("/api/v1/employee-documents/**", CompanyFeatures.HR_DOCUMENT),
         any("/api/v1/org-chart", CompanyFeatures.HR_ORGCHART),

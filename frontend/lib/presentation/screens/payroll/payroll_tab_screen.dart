@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/services/auth_service.dart';
+
 import 'payroll_screen.dart';
 import 'salary_grade_tab.dart';
 import 'salary_formula_tab.dart';
@@ -17,10 +19,14 @@ class _PayrollTabScreenState extends State<PayrollTabScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tab;
 
+  /// V26: tab Biến & Công thức thuộc tính năng PAY_FORMULA; tắt thì chỉ còn Bảng lương + Bậc lương.
+  late final bool _withFormula =
+      AuthService.instance.currentUser?.hasFeature('PAY_FORMULA') ?? true;
+
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 4, vsync: this, animationDuration: Duration.zero);
+    _tab = TabController(length: _withFormula ? 4 : 2, vsync: this, animationDuration: Duration.zero);
   }
 
   @override
@@ -42,19 +48,19 @@ class _PayrollTabScreenState extends State<PayrollTabScreen>
             tabs: [
               Tab(text: s.formulaTabPayroll),
               Tab(text: s.formulaTabGrade),
-              Tab(text: s.formulaTabVariables),
-              Tab(text: s.formulaTabFormula),
+              if (_withFormula) Tab(text: s.formulaTabVariables),
+              if (_withFormula) Tab(text: s.formulaTabFormula),
             ],
           ),
         ),
         Expanded(
           child: TabBarView(
             controller: _tab,
-            children: const [
-              PayrollScreen(),
-              SalaryGradeTab(),
-              VariablesTab(),
-              SalaryFormulaTab(),
+            children: [
+              const PayrollScreen(),
+              const SalaryGradeTab(),
+              if (_withFormula) const VariablesTab(),
+              if (_withFormula) const SalaryFormulaTab(),
             ],
           ),
         ),

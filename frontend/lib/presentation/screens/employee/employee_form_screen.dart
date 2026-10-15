@@ -499,15 +499,22 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                 )),
               ]),
             ]),
-            if (widget.employee != null) ...[
+            // V26: vị trí chấm công thuộc ATT_GEOFENCE (API vị trí bị chặn khi tắt); gắn thiết bị thuộc ATT_DEVICE
+            if (widget.employee != null &&
+                ((AuthService.instance.currentUser?.hasFeature('ATT_GEOFENCE') ?? true) ||
+                    (AuthService.instance.currentUser?.hasFeature('ATT_DEVICE') ?? true))) ...[
               const SizedBox(height: 28),
               _section(s.checkInRadius, [
-                _EmployeeLocationsPreview(
-                  employeeId: widget.employee!.id,
-                  employeeName: widget.employee!.fullName,
-                ),
-                const SizedBox(height: 12),
-                _DeviceBindingTile(employee: widget.employee!),
+                if (AuthService.instance.currentUser?.hasFeature('ATT_GEOFENCE') ?? true)
+                  _EmployeeLocationsPreview(
+                    employeeId: widget.employee!.id,
+                    employeeName: widget.employee!.fullName,
+                  ),
+                if ((AuthService.instance.currentUser?.hasFeature('ATT_GEOFENCE') ?? true) &&
+                    (AuthService.instance.currentUser?.hasFeature('ATT_DEVICE') ?? true))
+                  const SizedBox(height: 12),
+                if (AuthService.instance.currentUser?.hasFeature('ATT_DEVICE') ?? true)
+                  _DeviceBindingTile(employee: widget.employee!),
               ]),
             ],
           ],

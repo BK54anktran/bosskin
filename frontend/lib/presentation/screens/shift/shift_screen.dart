@@ -62,7 +62,10 @@ class _ShiftScreenState extends State<ShiftScreen>
         (u?.can('SHIFT_VIEW') ?? false);
   }
 
-  int get _tabCount => _showRegistration ? 4 : 3;
+  /// V26: tab "Xoay ca" thuộc tính năng SHIFT_ROTATION.
+  bool get _showRotation => AuthService.instance.currentUser?.hasFeature('SHIFT_ROTATION') ?? true;
+
+  int get _tabCount => 2 + (_showRotation ? 1 : 0) + (_showRegistration ? 1 : 0);
 
   void _onFeaturesChanged() {
     if (!mounted || _tab.length == _tabCount) return;
@@ -323,8 +326,8 @@ class _ShiftScreenState extends State<ShiftScreen>
                 tabs: [
                   Tab(text: s.shiftAssignmentsTab),
                   Tab(text: s.shiftListTab),
-                  Tab(text: s.rotationTab),
-                  if (_tab.length == 4) Tab(text: s.shiftRegTab),
+                  if (_showRotation) Tab(text: s.rotationTab),
+                  if (_showRegistration) Tab(text: s.shiftRegTab),
                 ],
                 onTap: (_) => setState(() {}),
               ),
@@ -421,12 +424,13 @@ class _ShiftScreenState extends State<ShiftScreen>
                 onDelete: _deleteShift,
                 onRetry: _loadShifts,
               ),
-              ShiftRotationTab(
-                shifts: _shifts,
-                canManage: canManage,
-                onGenerated: _assignTabKey.reload,
-              ),
-              if (_tab.length == 4)
+              if (_showRotation)
+                ShiftRotationTab(
+                  shifts: _shifts,
+                  canManage: canManage,
+                  onGenerated: _assignTabKey.reload,
+                ),
+              if (_showRegistration)
                 ShiftRegistrationTab(
                   departments: _allDepartments,
                   onApproved: _assignTabKey.reload,

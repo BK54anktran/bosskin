@@ -24,9 +24,10 @@ Danh mục + lý do chia: `docs/thiet-ke/goi-chuc-nang.md`. Tiền tính ngoài 
   job nền kiểm `CompanyFeatures.require(user|company, F)` / `User.isFeatureDisabled(F)`. `JwtAuthFilter` nạp sẵn tập tắt vào user; đăng nhập thay của system admin cũng bị chặn.
 - **Tương thích V24**: đăng nhập / làm mới token trả `features` (mới) và `modules` (7 gói cũ = tính năng gốc còn bật) vì app điện thoại đã cài chỉ đọc `modules`;
   `PUT /admin/companies/{id}` nhận `features` (ưu tiên) hoặc `modules` (cũ). Migration V26 chuyển đúng: gói cũ tắt ⇒ mọi tính năng con tắt, rồi bỏ `disabled_modules`.
-- **Giai đoạn**: 1 (xong) = danh mục, lưu trữ, bảng đường dẫn, ẩn màn / cài đặt ở app, hộp "Sửa công ty" chia nhóm. 2 (chưa làm) = hành vi nghiệp vụ trong tính năng
-  (`ATT_GEOFENCE`, `ATT_DEVICE`, `ATT_NOSHIFT`, `SHIFT_ADVANCED`, `PAY_TAX_INS`, `PAY_EMPLOYER_COST`, `CAL_*`), job nền (`SHIFT_REMINDER`, `LEAVE_ACCRUAL`, `HR_*_ALERT`, `HR_JOBHISTORY`),
-  thẻ Tổng quan, sheet Excel / báo cáo gộp theo tính năng. Tính năng chưa gắn hành vi vẫn bật / tắt được ở mức API + màn hình.
+- **Cài đặt của tính năng tắt = tắt** (`Company.locationCheckActive()`, `deviceBindingActive()`, `checkInWithoutShiftActive()`, `shiftRegistrationActive()`,
+  `effectiveApprovalMode()`): màn Cài đặt ẩn mục thì backend không áp giá trị cũ. Lương: `PAY_TAX_INS` tắt → không trừ thuế / BH, `PAY_DEPENDENT` tắt → 0 người phụ thuộc,
+  `PAY_EMPLOYER_COST` tắt → BH công ty đóng = 0. Job: nhắc ca / chấm công (`SHIFT_REMINDER`), cộng phép (`LEAVE_ACCRUAL`), báo hợp đồng / tài liệu (`HR_*_ALERT`).
+  Bảng đầy đủ + phần còn lại: `docs/thiet-ke/goi-chuc-nang.md`.
 - Sửa ở `PUT /admin/companies/{id}` `{features: [...]}` (tính năng BẬT; không gửi = giữ), nhật ký `COMPANY_FEATURES` (`turnedOn` / `turnedOff`).
   Thêm tính năng mới → thêm vào `CompanyFeatures.CATALOG` + `company_feature_utils.dart` + nhãn vi / en; `tools/ci/check_features.py` kiểm hai bên khớp.
   Test: `CompanyFeaturesCatalogTest`, `CompanyFeaturesTest`, `CompanyModulesTest` (tương thích).

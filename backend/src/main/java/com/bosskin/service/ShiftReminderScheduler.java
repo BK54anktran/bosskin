@@ -36,6 +36,7 @@ public class ShiftReminderScheduler {
 
         for (User user : users) {
             if (user.getEmployeeId() == null) continue;
+            if (user.getCompany() != null && !user.getCompany().hasFeature(com.bosskin.core.CompanyFeatures.SHIFT_REMINDER)) continue;
             int minutes = user.getShiftReminderMinutes();
             LocalTime targetShiftStart = nowMinute.plusMinutes(minutes);
 

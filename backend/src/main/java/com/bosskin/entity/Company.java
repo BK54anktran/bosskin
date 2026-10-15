@@ -148,6 +148,34 @@ public class Company extends BaseEntity {
         return com.bosskin.core.CompanyFeatures.parse(disabledFeatures);
     }
 
+    /** V26: tính năng còn bật cho công ty này. */
+    public boolean hasFeature(String feature) {
+        return !disabledFeatureSet().contains(feature);
+    }
+
+    // "Hiệu lực" = cài đặt đang bật VÀ tính năng của công ty còn bật. Cài đặt của tính năng tắt bị ẩn ở màn Cài đặt nên
+    // không được áp lên người dùng (kẹt giá trị cũ không sửa được) và không được hưởng tính năng chưa đăng ký.
+    public boolean locationCheckActive() {
+        return locationCheckEnabled && hasFeature(com.bosskin.core.CompanyFeatures.ATT_GEOFENCE);
+    }
+
+    public boolean deviceBindingActive() {
+        return deviceBindingEnabled && hasFeature(com.bosskin.core.CompanyFeatures.ATT_DEVICE);
+    }
+
+    public boolean checkInWithoutShiftActive() {
+        return checkInWithoutShift && hasFeature(com.bosskin.core.CompanyFeatures.ATT_NOSHIFT);
+    }
+
+    public boolean shiftRegistrationActive() {
+        return shiftRegistrationEnabled && hasFeature(com.bosskin.core.CompanyFeatures.SHIFT_REGISTRATION);
+    }
+
+    /** Chế độ duyệt hiệu lực: tính năng duyệt 2 cấp tắt → duyệt theo quyền như thường (tránh đơn kẹt chờ quản lý). */
+    public ApprovalMode effectiveApprovalMode() {
+        return hasFeature(com.bosskin.core.CompanyFeatures.HR_MANAGER_APPROVAL) ? approvalMode : ApprovalMode.PERMISSION;
+    }
+
     /** V23: cho nhân viên đăng ký lịch làm việc theo đợt (ẩn menu / tab và chặn API khi tắt). */
     @Column(name = "shift_registration_enabled", nullable = false)
     @Builder.Default

@@ -28,7 +28,7 @@ public class LeaveAccrualScheduler {
     public void runDaily() {
         LocalDate today = LocalDate.now(clock);
         for (Company company : companyRepository.findAll()) {
-            if (!company.isActive()) continue;
+            if (!company.isActive() || !company.hasFeature(com.bosskin.core.CompanyFeatures.LEAVE_ACCRUAL)) continue;
             try {
                 var result = leaveService.runAccrualForCompany(company.getId(), today);
                 if (result.getOrDefault("created", 0) > 0) {

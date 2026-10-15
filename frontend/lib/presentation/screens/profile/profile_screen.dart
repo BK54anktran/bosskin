@@ -627,8 +627,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTest: NotificationService.instance.available ? _sendTestNotification : null,
               ),
               const SizedBox(height: 16),
-              const MyDependentsCard(),
-              const MyDocumentsCard(),
+              // V26: thẻ của tính năng công ty đã tắt không hiện (khỏi gọi API bị chặn mỗi lần mở Hồ sơ)
+              if (AuthService.instance.currentUser?.hasFeature('PAY_DEPENDENT') ?? true) const MyDependentsCard(),
+              if (AuthService.instance.currentUser?.hasFeature('HR_DOCUMENT') ?? true) const MyDocumentsCard(),
               const AppearanceCard(),
               const TwoFactorCard(),
               const SizedBox(height: 16),

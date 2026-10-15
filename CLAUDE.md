@@ -575,7 +575,7 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
 - FE: `AuthUser.hasFeature`, `routeFeature` (nav_access), Cài đặt công ty ẩn mục của tính năng tắt, app lấy lại quyền + tính năng (`AuthService.syncPermissions`, qua refresh token)
   khi mở app và khi API trả 403 `error.permission.denied` / `module_disabled` / `feature_disabled` (tối đa 1 lần / phút). Màn lõi không gọi API của tính năng khi thiếu quyền
   (vd. Nhân viên chỉ tải bậc lương khi có `PAYROLL_VIEW`).
-- Chưa làm (giai đoạn 2): hành vi nghiệp vụ bên trong tính năng (xem bảng cuối `goi-chuc-nang.md`), job nền, thẻ Tổng quan, ẩn nút / tab trong màn theo tính năng.
+- Cài đặt của tính năng tắt = tắt: backend dùng `Company.xxxActive()` / `effectiveApprovalMode()` thay vì đọc cờ thô; lương, job nền, thẻ Tổng quan nhắc hợp đồng / tài liệu đã theo tính năng. Còn lại (giai đoạn 2): lịch + ngày lễ khi `CAL_*` tắt, thẻ Tổng quan khác, lọc Excel theo tính năng, ẩn nút / tab trong các màn còn lại — xem `docs/thiet-ke/goi-chuc-nang.md`.
 
 ## Chấm công không cần xếp ca (V25, 15/10/2026)
 - Cài đặt công ty `attendance.checkInWithoutShift` (`companies.check_in_without_shift`, mặc định tắt). Bật → ngày NV không có ca (và không đang trong

@@ -48,6 +48,7 @@ public class CheckInOutReminderScheduler {
 
         for (User user : users) {
             if (user.getEmployeeId() == null) continue;
+            if (user.getCompany() != null && !user.getCompany().hasFeature(com.bosskin.core.CompanyFeatures.SHIFT_REMINDER)) continue;
             int minutes = user.getCheckInOutNotifMinutes();
 
             for (LocalDate day : List.of(today.minusDays(1), today, today.plusDays(1))) {

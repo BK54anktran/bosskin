@@ -20,7 +20,8 @@ class CompanyFeatureService extends ChangeNotifier {
     if (user != null && !user.isSystemAdmin) {
       try {
         final data = await _repo.get();
-        enabled = (data['shiftRegistration'] as Map?)?['enabled'] == true;
+        // V26: cài đặt bật nhưng tính năng đăng ký lịch của công ty tắt → coi như tắt
+        enabled = (data['shiftRegistration'] as Map?)?['enabled'] == true && user.hasFeature('SHIFT_REGISTRATION');
       } catch (_) {}
     }
     if (enabled != _shiftRegistration) {

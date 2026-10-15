@@ -1406,7 +1406,7 @@ public class AttendanceController {
             message = localizedCheckInOutDisabledMessage(locale);
         } else if (shift == null) {
             // V25: không có ca nhưng công ty cho chấm không cần ca → báo công tính theo giờ thực tế
-            message = isToday && company.isCheckInWithoutShift()
+            message = isToday && company.checkInWithoutShiftActive()
                 ? "attendanceNoShiftFreeCheckIn" : localizedNoShiftMessage(locale, isToday);
         }
 
@@ -1594,7 +1594,7 @@ public class AttendanceController {
      * tự gắn thiết bị đang dùng; khác thiết bị → 403, quản lý gỡ gắn khi nhân viên đổi máy.
      */
     private void requireBoundDevice(Employee employee, String deviceId) {
-        if (!employee.getCompany().isDeviceBindingEnabled()) return;
+        if (!employee.getCompany().deviceBindingActive()) return;
         if (deviceId == null || deviceId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.device_missing");
         }
@@ -1622,7 +1622,7 @@ public class AttendanceController {
         }
         Double accuracy = numberOrNull(body, "accuracy");
         if (accuracy != null && accuracy > MAX_GPS_ACCURACY_METERS
-            && employee.getCompany().isLocationCheckEnabled()) {
+            && employee.getCompany().locationCheckActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.gps_inaccurate");
         }
     }
@@ -1648,7 +1648,7 @@ public class AttendanceController {
      * của ca qua đêm hôm qua → được chấm vào / ra một lần trong ngày, công không gắn ca.
      */
     private boolean isFreeCheckInDay(Employee employee, Company company, LocalDateTime now) {
-        if (company == null || !company.isCheckInWithoutShift()) return false;
+        if (company == null || !company.checkInWithoutShiftActive()) return false;
         if (!shiftAssignmentRepository.findByEmployeeIdAndWorkDateWithShift(employee.getId(), now.toLocalDate()).isEmpty()) {
             return false;
         }
@@ -1658,7 +1658,7 @@ public class AttendanceController {
 
     /** Công không theo ca (hôm nay hoặc hôm qua) đã chấm vào, chưa chấm ra, trong {@link #MAX_NO_SHIFT_HOURS} giờ. */
     private ShiftTarget findNoShiftCheckOutTarget(Employee employee, Company company, LocalDateTime now) {
-        if (company == null || !company.isCheckInWithoutShift()) return null;
+        if (company == null || !company.checkInWithoutShiftActive()) return null;
         for (LocalDate d : List.of(now.toLocalDate(), now.toLocalDate().minusDays(1))) {
             Attendance att = findExistingAttendance(employee, d, null);
             if (att != null && att.getCheckIn() != null && att.getCheckOut() == null
@@ -1825,7 +1825,7 @@ public class AttendanceController {
 
     /** Trả về danh sách vị trí cho phép theo thứ tự ưu tiên. null = tự do (không cấu hình hoặc tắt). */
     private List<AttendanceDTO.AllowedLocation> resolveAllowedLocations(Employee employee) {
-        if (!employee.getCompany().isLocationCheckEnabled()) return null;
+        if (!employee.getCompany().locationCheckActive()) return null;
         // 1. Employee locations
         List<EmployeeLocation> empLocs = employeeLocationRepository.findByEmployeeId(employee.getId());
         if (!empLocs.isEmpty()) {
@@ -1863,7 +1863,7 @@ public class AttendanceController {
     }
 
     private void validateCheckInLocation(Employee employee, Double lat, Double lng) {
-        if (!employee.getCompany().isLocationCheckEnabled()) return; // tính năng tắt → không cần GPS
+        if (!employee.getCompany().locationCheckActive()) return; // cài đặt tắt hoặc tính năng GPS của công ty tắt → không cần GPS
         if (lat == null || lng == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.location_required");
 

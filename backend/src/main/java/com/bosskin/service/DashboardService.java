@@ -551,7 +551,8 @@ public class DashboardService {
 
         // 4. Active employees without salary grade (payroll not configured)
         List<DashboardDTO.NoSalaryGradeRisk> noSalaryGrade = new ArrayList<>();
-        for (Employee emp : employeeRepository.findActiveMissingSalaryGrade(companyId, departmentId)) {
+        for (Employee emp : user.isFeatureDisabled(com.bosskin.core.CompanyFeatures.PAY_BASIC)
+                ? List.<Employee>of() : employeeRepository.findActiveMissingSalaryGrade(companyId, departmentId)) {
             noSalaryGrade.add(DashboardDTO.NoSalaryGradeRisk.builder()
                 .employeeId(emp.getId())
                 .employeeCode(emp.getEmployeeCode())
@@ -562,7 +563,7 @@ public class DashboardService {
 
         // 5. Bước L: hợp đồng cần gia hạn (theo số ngày báo trước của công ty)
         List<DashboardDTO.ContractExpiringRisk> contractExpiring = new ArrayList<>();
-        if (user.hasPermission("CONTRACT_VIEW")) {
+        if (user.hasPermission("CONTRACT_VIEW") && !user.isFeatureDisabled(com.bosskin.core.CompanyFeatures.HR_CONTRACT_ALERT)) {
             for (var c : contractService.expiring(companyId, user.getId(), null)) {
                 if (departmentId != null && !departmentId.equals(c.getDepartmentId())) continue;
                 contractExpiring.add(DashboardDTO.ContractExpiringRisk.builder()
@@ -576,7 +577,7 @@ public class DashboardService {
 
         // 6. Bước N: tài liệu nhân sự sắp / đã hết hạn
         List<DashboardDTO.DocumentExpiringRisk> documentExpiring = new ArrayList<>();
-        if (user.hasPermission(DocumentService.VIEW)) {
+        if (user.hasPermission(DocumentService.VIEW) && !user.isFeatureDisabled(com.bosskin.core.CompanyFeatures.HR_DOCUMENT_ALERT)) {
             for (var d : documentService.expiring(companyId, user.getId(), null)) {
                 if (departmentId != null && !departmentId.equals(d.getDepartmentId())) continue;
                 documentExpiring.add(DashboardDTO.DocumentExpiringRisk.builder()

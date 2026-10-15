@@ -21,7 +21,9 @@ class CompanySettingsScreen extends StatelessWidget {
     final u = AuthService.instance.currentUser;
     final sys = u?.isSystemAdmin ?? false;
     final canGeneral = sys || (u?.can('COMPANY_SETTING_VIEW') ?? false);
-    final canCalendar = sys || (u?.can('CALENDAR_VIEW') ?? false);
+    // V26: tab Lịch làm việc gồm cả lịch tuần và ngày lễ → cần cả hai tính năng (thiếu một thì tab sẽ gọi API bị chặn)
+    final canCalendar = sys ||
+        ((u?.can('CALENDAR_VIEW') ?? false) && (u?.hasFeature('CAL_WORKCAL') ?? true) && (u?.hasFeature('CAL_HOLIDAY') ?? true));
     final tabs = <(String, Widget)>[
       if (canGeneral) (s.companySettingsGeneralTab, const CompanySettingsGeneralTab()),
       if (canCalendar) (s.workCalendarTab, const WorkCalendarTab()),

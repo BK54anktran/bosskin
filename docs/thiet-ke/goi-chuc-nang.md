@@ -96,17 +96,35 @@ ATT_OT / ATT_POLICY (là cài đặt trong ATT_SHEET), LEAVE_HOURLY (gộp LEAVE
   app tự lấy lại tính năng khi mở và khi API trả 403 `feature_disabled`. Menu đã tự ẩn tiêu đề nhóm khi mọi mục con ẩn.
 - Thay đổi hành vi so với V24 (đã chấp nhận): báo cáo bảo hiểm / người phụ thuộc (`RPT_INSURANCE`) nay cần `PAY_DEPENDENT`; công ty đã tắt gói Tính lương nên tự tắt hai báo cáo đó.
 
-## Giai đoạn 2 (chưa làm) — hành vi bên trong tính năng
-| Tính năng | Tắt thì phải |
+## Tắt tính năng thì hệ thống làm gì (đã làm)
+Nguyên tắc: **cài đặt mà màn Cài đặt ẩn vì tính năng tắt thì backend coi như TẮT** (không kẹt giá trị cũ không sửa được, không hưởng tính năng chưa đăng ký).
+Dữ liệu cũ luôn giữ nguyên, không xoá.
+| Tính năng | Khi tắt |
 |---|---|
-| ATT_GEOFENCE / ATT_DEVICE / ATT_NOSHIFT | bỏ qua cài đặt vị trí / thiết bị / chấm không ca khi chấm công (hiện chỉ ẩn mục cài đặt + chặn API vị trí) |
-| SHIFT_ADVANCED | không tạo ca linh hoạt / gãy / qua đêm mới; ca đã phân vẫn tính công |
-| SHIFT_REMINDER | job `CheckInOutReminderScheduler`, `ShiftReminderScheduler` bỏ qua công ty |
-| CAL_WORKCAL / CAL_HOLIDAY | dùng lịch mặc định `FFFFFOO` / coi mọi ngày là thường |
-| LEAVE_ACCRUAL | job `LeaveAccrualScheduler` bỏ qua |
-| PAY_TAX_INS | lương không trừ thuế / BH (cần chốt cách tính khi tắt) |
-| PAY_DEPENDENT / PAY_EMPLOYER_COST | số người phụ thuộc = 0; ẩn phần công ty đóng |
-| HR_CONTRACT_ALERT / HR_DOCUMENT_ALERT | job 07:30 / 07:35 bỏ phần báo; ẩn thẻ Tổng quan `contractExpiring` / `documentExpiring` |
-| HR_JOBHISTORY | job `applyDue` bỏ qua |
-| Tổng quan, Excel, báo cáo năm | thẻ và sheet gộp theo tính năng (12 mô tả Excel: Department / Position / Employee → nền; SalaryGrade / SalaryFormula / FormulaVariable / Payroll → PAY_*; Shift / ShiftAssignment → SHIFT_BASIC; LeaveType / LeaveGrant → LEAVE_*; Attendance → ATT_SHEET) |
-Ngoài ra app còn ẩn nút / tab trong màn (vd. nút "Quá trình công tác" ở danh sách nhân viên khi tắt `HR_JOBHISTORY`) — hiện bấm vào mới gặp 403.
+| ATT_SHEET, ATT_SELF, ATT_REQUEST | API chặn (403), ẩn màn; `ATT_SELF` tắt: nhắc chấm công vẫn theo `SHIFT_REMINDER` |
+| ATT_GEOFENCE / ATT_DEVICE / ATT_NOSHIFT | không kiểm vị trí / thiết bị; ngày không ca không chấm được; ẩn công tắc ở Cài đặt (`Company.locationCheckActive()` …) |
+| SHIFT_BASIC / ROTATION / SWAP / REGISTRATION | API chặn, ẩn màn / tab; đăng ký lịch tắt thì job tự đóng đợt vẫn chạy trên đợt đã có |
+| SHIFT_ADVANCED | không tạo / sửa thành ca linh hoạt hoặc ca qua đêm; ca đã tạo vẫn dùng. (Ca gãy / nhiều ca một ngày vẫn là ca thường) |
+| SHIFT_REMINDER | 2 job nhắc ca / nhắc chấm công bỏ qua công ty |
+| CAL_WORKCAL / CAL_HOLIDAY | chặn API quản lý lịch / ngày lễ (`/work-calendars/view` luôn đọc được). **Chưa làm**: lương, nghỉ phép vẫn dùng lịch + ngày lễ đã có |
+| LEAVE_BASIC / BALANCE / ACCRUAL | API chặn, ẩn màn; job cộng phép bỏ qua công ty |
+| PAY_BASIC / FORMULA | API chặn, ẩn màn; thẻ "NV chưa có bậc lương" ở Tổng quan ẩn |
+| PAY_TAX_INS | phiếu lương **không trừ** thuế TNCN / BHXH / BHYT / BHTN (cả khi công thức riêng có đặt) |
+| PAY_DEPENDENT | API người phụ thuộc chặn; số người phụ thuộc trong lương = 0; ẩn nút ở danh sách nhân viên |
+| PAY_EMPLOYER_COST | phần BH công ty đóng trên phiếu = 0; ẩn 3 ô tỷ lệ ở Cài đặt |
+| HR_CONTRACT | API chặn, ẩn màn |
+| HR_CONTRACT_ALERT / HR_DOCUMENT_ALERT | chặn danh sách sắp hết hạn / thiếu; job 07:30 / 07:35 không gửi thông báo; thẻ Tổng quan ẩn; ẩn ô số ngày báo trước ở Cài đặt |
+| HR_ORGCHART / HR_JOBHISTORY | API chặn, ẩn màn / nút. Job `applyDue` vẫn chạy (mốc công tác tương lai là dữ liệu nhân viên cốt lõi) |
+| HR_MANAGER_APPROVAL | chế độ duyệt hiệu lực = theo quyền (đơn chờ quản lý duyệt được ngay, không kẹt); ẩn màn + ô chọn chế độ |
+| RPT_* / DATA_EXCEL | API báo cáo / Excel chặn, ẩn màn |
+
+## Còn lại (giai đoạn 2)
+- Lương / nghỉ phép vẫn dùng lịch làm việc và ngày lễ khi `CAL_*` tắt (hiện chỉ chặn API quản lý).
+- Thẻ Tổng quan khác (chấm công, lương, nghỉ) chưa lọc theo tính năng; sheet Excel / báo cáo năm gộp nhiều gói chưa lọc theo từng tính năng.
+- Mô tả Excel theo tính năng (12 mô tả): Department / Position / Employee → nền; SalaryGrade / SalaryFormula / FormulaVariable / Payroll → PAY_*;
+  Shift / ShiftAssignment → SHIFT_BASIC; LeaveType / LeaveGrant → LEAVE_*; Attendance → ATT_SHEET — hiện lọc theo quyền đã gỡ.
+- Ẩn nút / tab bên trong các màn vẫn hiển thị theo `hasFeature` — **đã làm**: thẻ nhân viên (quá trình công tác, người phụ thuộc), Hồ sơ cá nhân (người phụ thuộc, tài liệu),
+  Bảng lương (tab Biến / Công thức), Ca làm (tab Xoay ca / Đăng ký lịch), Nghỉ phép (quỹ phép, quy tắc cộng phép không gọi khi tắt), Cài đặt công ty (từng mục),
+  form nhân viên (vị trí / thiết bị chấm công), menu. Tab "Lịch làm việc" ở Cài đặt cần cả `CAL_WORKCAL` lẫn `CAL_HOLIDAY` (tab gọi cả hai API). Bản đồ nền (`/api/v1/map-tiles`) dùng chung nên không gắn tính năng.
+- Ô "gói hiệu lực khi triển khai": app điện thoại đã cài chỉ đọc `modules` nên vẫn thấy menu con của tính năng nhỏ đã tắt và thấy mã lỗi `error.company.feature_disabled` chưa dịch
+  cho tới khi cập nhật app.

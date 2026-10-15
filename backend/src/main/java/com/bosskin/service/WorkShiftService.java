@@ -24,6 +24,7 @@ public class WorkShiftService {
     private final WorkShiftRepository     shiftRepo;
     private final PeriodLockService periodLockService;
     private final ShiftAssignmentRepository assignRepo;
+    private final CompanyRepository       companyRepo;
     private final DepartmentRepository    deptRepo;
     private final EmployeeRepository      employeeRepo;
     private final AttendanceRepository    attendanceRepository;
@@ -77,6 +78,7 @@ public class WorkShiftService {
 
     @Transactional
     public ShiftDTO.ShiftResponse createShift(Long companyId, ShiftDTO.ShiftRequest req) {
+        requireAdvancedFeatureIfNeeded(companyId, req);
         boolean codeExists = shiftRepo.findByCompanyIdAndActiveTrue(companyId).stream().anyMatch(s ->
             s.getCode() != null
                 && s.getCode().equalsIgnoreCase(req.getCode()));
@@ -104,6 +106,7 @@ public class WorkShiftService {
 
     @Transactional
     public ShiftDTO.ShiftResponse updateShift(Long id, Long companyId, ShiftDTO.ShiftRequest req) {
+        requireAdvancedFeatureIfNeeded(companyId, req);
         WorkShift shift = shiftRepo.findById(id)
             .filter(s -> s.isActive() && s.getCompany() != null && companyId.equals(s.getCompany().getId()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.shift.not_found"));
@@ -566,6 +569,19 @@ public class WorkShiftService {
             .shiftType(s.getShiftType() != null ? s.getShiftType().name() : "FIXED")
             .requiredMinutes(s.getRequiredMinutes())
             .build();
+    }
+
+    /**
+     * V26: tính năng "ca đặc biệt" (SHIFT_ADVANCED) tắt → không tạo / sửa thành ca linh hoạt hoặc ca qua đêm (giờ kết thúc ≤ giờ bắt đầu).
+     * Ca đã tạo trước đó vẫn dùng và tính công bình thường.
+     */
+    private void requireAdvancedFeatureIfNeeded(Long companyId, ShiftDTO.ShiftRequest req) {
+        boolean flexible = "FLEXIBLE".equalsIgnoreCase(req.getShiftType());
+        boolean overnight = req.getStartTime() != null && req.getEndTime() != null && !req.getEndTime().isAfter(req.getStartTime());
+        if (flexible || overnight) {
+            com.bosskin.core.CompanyFeatures.require(companyRepo.findById(companyId).orElse(null),
+                com.bosskin.core.CompanyFeatures.SHIFT_ADVANCED);
+        }
     }
 
     /**

@@ -383,6 +383,8 @@ public class ContractService {
 
     /** Gửi thông báo cho tài khoản có CONTRACT_VIEW khi có hợp đồng còn đúng 0 / 7 / {@code warningDays} ngày. */
     void notifyExpiring(Long companyId) {
+        // V26: tính năng cảnh báo hợp đồng tắt → không gửi thông báo
+        if (!companyRepository.findById(companyId).map(c -> c.hasFeature(com.bosskin.core.CompanyFeatures.HR_CONTRACT_ALERT)).orElse(false)) return;
         int days = warningDays(companyId);
         LocalDate t = today();
         Set<Long> marks = new HashSet<>(List.of(0L, 7L, (long) days));

@@ -300,6 +300,8 @@ public class DocumentService {
     }
 
     void notifyExpiring(Long companyId) {
+        // V26: tính năng cảnh báo tài liệu tắt → không gửi thông báo
+        if (!companyRepository.findById(companyId).map(c -> c.hasFeature(com.bosskin.core.CompanyFeatures.HR_DOCUMENT_ALERT)).orElse(false)) return;
         int days = warningDays(companyId);
         LocalDate t = today();
         Set<Long> marks = new HashSet<>(List.of(0L, 7L, (long) days));

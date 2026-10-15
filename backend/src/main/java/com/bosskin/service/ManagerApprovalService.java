@@ -31,7 +31,7 @@ public class ManagerApprovalService {
     private final Clock clock;
 
     public boolean enabled(Company company) {
-        return company != null && company.getApprovalMode() == Company.ApprovalMode.MANAGER_THEN_HR;
+        return company != null && company.effectiveApprovalMode() == Company.ApprovalMode.MANAGER_THEN_HR;
     }
 
     /** Quản lý trực tiếp còn làm việc của nhân viên; null nếu không có. */

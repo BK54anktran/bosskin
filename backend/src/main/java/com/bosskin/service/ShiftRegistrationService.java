@@ -543,7 +543,7 @@ public class ShiftRegistrationService {
     private Long requireEnabled(User user) {
         if (user == null || user.getCompany() == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         Long companyId = user.getCompany().getId();
-        boolean enabled = companyRepo.findById(companyId).map(Company::isShiftRegistrationEnabled).orElse(false);
+        boolean enabled = companyRepo.findById(companyId).map(Company::shiftRegistrationActive).orElse(false);
         if (!enabled) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.shift_registration.disabled");
         return companyId;
     }

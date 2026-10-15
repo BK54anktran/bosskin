@@ -121,11 +121,15 @@ class _LeavesScreenState extends State<LeavesScreen>
       _error = null;
     });
     try {
-      final futures = await Future.wait([
+      // V26: quỹ phép / quy tắc cộng phép thuộc tính năng riêng — tắt thì không gọi (một lệnh 403 sẽ làm hỏng cả màn)
+      final user = AuthService.instance.currentUser;
+      final withBalance = user?.hasFeature('LEAVE_BALANCE') ?? true;
+      final withAccrual = user?.hasFeature('LEAVE_ACCRUAL') ?? true;
+      final futures = await Future.wait<dynamic>([
         _fetchRequests(),
-        _repo.getGrants(departmentId: _filterDeptId),
+        withBalance ? _repo.getGrants(departmentId: _filterDeptId) : Future<dynamic>.value(<dynamic>[]),
         _repo.getTypes(),
-        _repo.getAccrualRules(),
+        withAccrual ? _repo.getAccrualRules() : Future<dynamic>.value(<dynamic>[]),
         _companySettingRepo.get(),
       ]);
       if (!mounted) return;

@@ -177,7 +177,9 @@ public class PayrollService {
             effectiveDeptId);
         putContractVars(vars, contractService.payTerms(employee, period, calendar, effectiveDeptId), baseSalary);
         // Bước M: số người phụ thuộc được giảm trừ trong tháng của kỳ
-        int dependents = dependentService.countDeductible(employeeId, java.time.YearMonth.of(year, month));
+        // V26: tính năng người phụ thuộc tắt → coi như không có người phụ thuộc
+        int dependents = employee.getCompany().hasFeature(com.bosskin.core.CompanyFeatures.PAY_DEPENDENT)
+            ? dependentService.countDeductible(employeeId, java.time.YearMonth.of(year, month)) : 0;
         putTaxPolicyVars(vars, policy, employee, dependents);
 
         List<FormulaVariable> globalVarList = formulaVariableRepository
@@ -240,6 +242,11 @@ public class PayrollService {
                     taxableIncome.compareTo(BigDecimal.ZERO) > 0
                         ? FormulaEngine.pitVN(taxableIncome) : BigDecimal.ZERO);
 
+            // V26: tính năng thuế & bảo hiểm tắt → lương không trừ thuế TNCN / BHXH / BHYT / BHTN (kể cả khi công thức riêng có đặt)
+            if (!employee.getCompany().hasFeature(com.bosskin.core.CompanyFeatures.PAY_TAX_INS)) {
+                socialInsurance = healthInsurance = unemploymentInsurance = personalIncomeTax = BigDecimal.ZERO.setScale(2);
+            }
+
             // L5: đưa bảo hiểm/thuế vào biến để công thức NET dùng đúng các số đã lưu
             vars.put("SOCIAL_INS", socialInsurance);
             vars.put("HEALTH_INS", healthInsurance);
@@ -289,9 +296,9 @@ public class PayrollService {
             .familyDeduction(vars.get("FAMILY_DEDUCTION"))
             .insuranceBase(vars.get("INSURANCE_BASE"))
             .dependents(dependents)
-            .employerSocialIns(employerShare(vars.get("INSURANCE_BASE"), employee.getCompany().getEmployerSocialRate()))
-            .employerHealthIns(employerShare(vars.get("INSURANCE_BASE"), employee.getCompany().getEmployerHealthRate()))
-            .employerUnemploymentIns(employerShare(vars.get("UNEMPLOYMENT_BASE"), employee.getCompany().getEmployerUnemploymentRate()))
+            .employerSocialIns(employerShare(employee.getCompany(), vars.get("INSURANCE_BASE"), employee.getCompany().getEmployerSocialRate()))
+            .employerHealthIns(employerShare(employee.getCompany(), vars.get("INSURANCE_BASE"), employee.getCompany().getEmployerHealthRate()))
+            .employerUnemploymentIns(employerShare(employee.getCompany(), vars.get("UNEMPLOYMENT_BASE"), employee.getCompany().getEmployerUnemploymentRate()))
             .periodFrom(period.from())
             .periodTo(period.to())
             .presentDays((int) presentDays)
@@ -533,6 +540,12 @@ public class PayrollService {
      * {@code unemployment_cap_multiplier} × lương tối thiểu vùng của công ty. Người phụ thuộc: bước M (hiện 0).
      */
     /** Bước M: phần BH công ty đóng = lương đóng BH (sau sàn / trần) × tỷ lệ công ty. */
+    /** V26: tính năng BH công ty đóng tắt → 0 (không hiện phần công ty đóng trên phiếu). */
+    private static BigDecimal employerShare(com.bosskin.entity.Company company, BigDecimal base, BigDecimal rate) {
+        if (!company.hasFeature(com.bosskin.core.CompanyFeatures.PAY_EMPLOYER_COST)) return BigDecimal.ZERO;
+        return employerShare(base, rate);
+    }
+
     private static BigDecimal employerShare(BigDecimal base, BigDecimal rate) {
         if (base == null || rate == null) return BigDecimal.ZERO;
         return base.multiply(rate).setScale(2, RoundingMode.HALF_UP);
