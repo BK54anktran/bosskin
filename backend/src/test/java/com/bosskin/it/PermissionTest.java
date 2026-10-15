@@ -176,4 +176,28 @@ class PermissionTest extends IntegrationTest {
         assertThat(denied.status()).as(denied.raw()).isEqualTo(403);
         assertThat(api.delete(c.adminToken, "/api/v1/attendances/" + attId).status()).isIn(200, 204);
     }
+
+    @Test
+    @DisplayName("Cài đặt công ty: tỷ lệ BH công ty đóng chỉ hiện cho người có quyền xem lương / quản lý cài đặt")
+    void companySettings_hideEmployerRatesFromPlainEmployee() {
+        var c = fixture.standardCompany();
+        c.createRole("Chỉ xem tổng quan", List.of("DASHBOARD_VIEW"));
+        var e = c.emp(9);
+        c.setRole(e, "Chỉ xem tổng quan");
+        var plain = api.get(c.tokenOf(e), "/api/v1/company-settings").expectOk().body();
+        assertThat(plain.path("payroll").path("employerSocialPercent").isNull()).isTrue();
+        var admin = api.get(c.adminToken, "/api/v1/company-settings").expectOk().body();
+        assertThat(admin.path("payroll").path("employerSocialPercent").isNumber()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Báo cáo tổng quan năm: chỉ có quyền xem lương thì bị từ chối, đủ quyền 3 module thì tải được")
+    void yearlyOverview_needsPayrollEmployeeAndLeaveView() {
+        var c = fixture.standardCompany();
+        c.createRole("Chỉ xem lương", List.of("REPORT_VIEW", "PAYROLL_VIEW"));
+        var e = c.emp(9);
+        c.setRole(e, "Chỉ xem lương");
+        assertThat(api.get(c.tokenOf(e), "/api/v1/reports/yearly-overview?year=2026").status()).isEqualTo(403);
+        assertThat(api.get(c.adminToken, "/api/v1/reports/yearly-overview?year=2026").status()).isEqualTo(200);
+    }
 }
