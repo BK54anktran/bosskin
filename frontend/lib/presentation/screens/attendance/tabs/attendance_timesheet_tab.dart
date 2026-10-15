@@ -11,7 +11,6 @@ import '../../../../data/models/employee.dart';
 import '../../../../data/repositories/attendance_repository.dart';
 import '../../../../data/repositories/company_setting_repository.dart';
 import '../../../../data/repositories/leave_repository.dart';
-import '../../../../data/repositories/employee_repository.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../widgets/day_offset_text.dart';
 import '../../../../data/services/department_service.dart';
@@ -46,7 +45,6 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   bool get wantKeepAlive => true;
   final _repo = AttendanceRepository();
   final _leaveRepo = LeaveRepository();
-  final _empRepo = EmployeeRepository();
   final _settingRepo = CompanySettingRepository();
 
   List<Employee> _employees = [];
@@ -411,27 +409,21 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   // ── Data loading ───────────────────────────────────────────────────────────
 
   Future<void> _init() async {
-    try {
-      final results = await Future.wait([
-        DepartmentService.instance.getFlat(permission: 'ATTENDANCE_VIEW'),
-        _empRepo.getAllForPicker(),
-        _settingRepo.get(),
-      ]);
-      if (!mounted) return;
-      final depts = results[0] as List<DepartmentFlat>;
-      final emps = results[1] as List<Employee>;
-      final settings = results[2] as Map<String, dynamic>;
-      final att = settings['attendance'] as Map<String, dynamic>? ?? {};
-      final payroll = settings['payroll'] as Map<String, dynamic>? ?? {};
-      setState(() {
-        _depts = depts;
-        _employees = emps;
-        _dayNightMode = att['dayNightMode'] == true;
-        _otEnabled = att['otEnabled'] != false;
-        _cutoffDay = (payroll['payrollCutoffDay'] as num?)?.toInt() ?? 1;
-      });
-      if (emps.isNotEmpty) _selectEmployee(emps.first);
-    } catch (_) {}
+    // Mỗi nguồn tải riêng: một nguồn lỗi (vd. thiếu quyền xem phòng ban) không được làm trống cả màn.
+    final depts = await DepartmentService.instance.getFlat(permission: 'ATTENDANCE_VIEW').catchError((_) => <DepartmentFlat>[]);
+    final emps = await _repo.getPickerEmployees().catchError((_) => <Employee>[]);
+    final settings = await _settingRepo.get().catchError((_) => <String, dynamic>{});
+    if (!mounted) return;
+    final att = settings['attendance'] as Map<String, dynamic>? ?? {};
+    final payroll = settings['payroll'] as Map<String, dynamic>? ?? {};
+    setState(() {
+      _depts = depts;
+      _employees = emps;
+      _dayNightMode = att['dayNightMode'] == true;
+      _otEnabled = att['otEnabled'] != false;
+      _cutoffDay = (payroll['payrollCutoffDay'] as num?)?.toInt() ?? 1;
+    });
+    if (emps.isNotEmpty) _selectEmployee(emps.first);
   }
 
   void _selectEmployee(Employee e) {

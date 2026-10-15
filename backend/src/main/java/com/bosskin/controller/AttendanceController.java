@@ -69,6 +69,7 @@ public class AttendanceController {
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final LeaveRequestRepository leaveRequestV2Repository;
     private final DeptScopeService deptScopeService;
+    private final com.bosskin.service.EmployeeService employeeService;
     private final EmployeeLocationRepository employeeLocationRepository;
     private final AttendanceExcelService attendanceExcelService;
     private final AttendanceCalculationService calc;
@@ -265,6 +266,13 @@ public class AttendanceController {
         }
         markCalendar(rows, employee, from, to);
         return ResponseEntity.ok(rows);
+    }
+
+    /** Danh sách nhân viên để chọn ở bảng công (theo phạm vi ATTENDANCE_VIEW, không cần quyền xem nhân viên). */
+    @GetMapping("/employees")
+    public ResponseEntity<List<com.bosskin.dto.EmployeeDTO.Response>> getPickerEmployees(@AuthenticationPrincipal User user) {
+        requirePermission(user, "ATTENDANCE_VIEW");
+        return ResponseEntity.ok(employeeService.findAllForScope(user.getCompany().getId(), user.getId(), "ATTENDANCE_VIEW"));
     }
 
     @GetMapping("/day-view")

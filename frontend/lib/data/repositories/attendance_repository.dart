@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 
 import '../models/attendance.dart';
+import '../models/employee.dart';
 import '../models/attendance_period.dart';
 export '../models/attendance_period.dart';
 export '../models/attendance.dart' show DayViewRow, TimesheetRow;
@@ -100,6 +101,14 @@ class AttendanceRepository {
       '/attendances/check-out',
       (data) => Attendance.fromJson(data as Map<String, dynamic>),
       {'employeeId': employeeId},
+    );
+  }
+
+  /// Nhân viên để chọn ở bảng công — theo phạm vi quyền xem chấm công, không cần quyền xem nhân viên.
+  Future<List<Employee>> getPickerEmployees() async {
+    return _api.get(
+      '/attendances/employees',
+      (data) => (data as List).map((e) => Employee.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
 

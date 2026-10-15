@@ -2,13 +2,13 @@
 
 # Danh sách API
 
-41 controller, 325 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+41 controller, 326 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
 | [AuditLogController](#auditlogcontroller) | `/` | 2 |
 | [AdminStatsController](#adminstatscontroller) | `/admin/stats` | 1 |
-| [AttendanceController](#attendancecontroller) | `/api/v1/attendances` | 24 |
+| [AttendanceController](#attendancecontroller) | `/api/v1/attendances` | 25 |
 | [AttendancePeriodController](#attendanceperiodcontroller) | `/api/v1/attendance-periods` | 3 |
 | [AttendanceRequestController](#attendancerequestcontroller) | `/api/v1/attendance-requests` | 8 |
 | [AuthController](#authcontroller) | `/` | 10 |
@@ -74,6 +74,7 @@
 | GET | `/api/v1/attendances` | ATTENDANCE_VIEW | `getByMonth` |
 | GET | `/api/v1/attendances/timesheet` | ATTENDANCE_VIEW | `getTimesheet` |
 | GET | `/api/v1/attendances/timesheet-range` | ATTENDANCE_VIEW | `getTimesheetRange` |
+| GET | `/api/v1/attendances/employees` | ATTENDANCE_VIEW | `getPickerEmployees` |
 | GET | `/api/v1/attendances/day-view` | ATTENDANCE_VIEW | `getDayView` |
 | POST | `/api/v1/attendances/approve` | ATTENDANCE_APPROVE, ATTENDANCE_VIEW | `approve` |
 | POST | `/api/v1/attendances/approve-bulk` | ATTENDANCE_APPROVE, ATTENDANCE_VIEW | `approveBulk` |

@@ -140,6 +140,12 @@ class CheckInWithoutShiftTest extends IntegrationTest {
             }
         }
         assertThat(found).as("dòng công không ca có trên bảng công").isTrue();
+
+        boolean inDay = false;
+        for (var row : api.get(c.adminToken, "/api/v1/attendances/day-view?date=" + MON).expectOk().body()) {
+            if (row.path("employeeId").asLong() == e.id() && row.path("checkIn").asText("").endsWith("T09:00")) inDay = true;
+        }
+        assertThat(inDay).as("dòng công không ca có trên bảng công theo ngày").isTrue();
     }
 
     @Test
@@ -177,5 +183,21 @@ class CheckInWithoutShiftTest extends IntegrationTest {
             }
         }
         assertThat(found).isTrue();
+    }
+
+    @Test
+    @DisplayName("Danh sách chọn nhân viên ở bảng công chỉ cần ATTENDANCE_VIEW (không cần EMPLOYEE_VIEW)")
+    void attendancePicker_needsOnlyAttendanceView() {
+        var c = fixture.standardCompany();
+        c.createRole("Chỉ xem công", java.util.List.of("ATTENDANCE_VIEW"));
+        var viewer = c.emp(8);
+        c.setRole(viewer, "Chỉ xem công");
+        String token = c.tokenOf(viewer);
+        assertThat(api.get(token, "/api/v1/employees?page=0&size=5").status()).isEqualTo(403);
+        var list = api.get(token, "/api/v1/attendances/employees").expectOk().body();
+        assertThat(list.size()).isGreaterThan(1);
+        c.createRole("Không xem công", java.util.List.of("DASHBOARD_VIEW"));
+        c.setRole(c.emp(9), "Không xem công");
+        assertThat(api.get(c.tokenOf(c.emp(9)), "/api/v1/attendances/employees").status()).isEqualTo(403);
     }
 }

@@ -413,22 +413,17 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   // ── Data loading ───────────────────────────────────────────────────────────
 
   Future<void> _init() async {
-    try {
-      final results = await Future.wait([
-        DepartmentService.instance.getFlat(permission: 'ATTENDANCE_VIEW'),
-        _settingRepo.get(),
-      ]);
-      if (!mounted) return;
-      final depts = results[0] as List<DepartmentFlat>;
-      final settings = results[1] as Map<String, dynamic>;
-      final att = settings['attendance'] as Map<String, dynamic>? ?? {};
-      setState(() {
-        _depts = depts;
-        _dayNightMode = att['dayNightMode'] == true;
-        _otEnabled = att['otEnabled'] != false;
-      });
-      _loadRows();
-    } catch (_) {}
+    // Mỗi nguồn tải riêng; dữ liệu công luôn được tải dù phòng ban / cài đặt lỗi.
+    final depts = await DepartmentService.instance.getFlat(permission: 'ATTENDANCE_VIEW').catchError((_) => <DepartmentFlat>[]);
+    final settings = await _settingRepo.get().catchError((_) => <String, dynamic>{});
+    if (!mounted) return;
+    final att = settings['attendance'] as Map<String, dynamic>? ?? {};
+    setState(() {
+      _depts = depts;
+      _dayNightMode = att['dayNightMode'] == true;
+      _otEnabled = att['otEnabled'] != false;
+    });
+    _loadRows();
   }
 
   Future<void> _loadRows() async {

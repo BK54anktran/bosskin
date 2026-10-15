@@ -112,7 +112,12 @@ public class EmployeeService {
     }
 
     public List<EmployeeDTO.Response> findAllForShiftScope(Long companyId, Long userId) {
-        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, "SHIFT_VIEW");
+        return findAllForScope(companyId, userId, "SHIFT_VIEW");
+    }
+
+    /** Danh sách chọn nhân viên theo phạm vi của một quyền xem (không đòi EMPLOYEE_VIEW): chấm công, ca làm… */
+    public List<EmployeeDTO.Response> findAllForScope(Long companyId, Long userId, String permission) {
+        Set<Long> scopeIds = deptScopeService.resolvedScopes(userId, permission);
 
         if (scopeIds.isEmpty()) {
             return employeeRepository.findAllByCompanyIdFetchDepartment(companyId).stream()
