@@ -513,7 +513,7 @@ class _KpiStrip extends StatelessWidget {
     if (d == null) return const SizedBox.shrink();
 
     final hiresChange = d.newHiresThisMonth - d.newHiresLastMonth;
-    final fmtCompact = NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final fmtCompact = NumberFormat.compactCurrency(locale: localeCode(context), symbol: '₫', decimalDigits: 0);
     final attrPct = '${d.attritionRate.toStringAsFixed(1)}%';
     final attendPct = '${d.todayAttendanceRate.toStringAsFixed(0)}%';
 
@@ -1594,7 +1594,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
                 ),
                 child: Center(
                   child: Text(
-                    DateFormat.MMM().format(DateTime(2000, m)),
+                    DateFormat.MMM(localeCode(context)).format(DateTime(2000, m)),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
@@ -1729,7 +1729,7 @@ class _SalaryTrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (trend.isEmpty) return const SizedBox.shrink();
-    final fmt = NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '', decimalDigits: 0);
+    final fmt = NumberFormat.compactCurrency(locale: localeCode(context), symbol: '', decimalDigits: 0);
     final maxY = trend.map((e) => e.totalNetSalary).fold(0.0, (a, b) => a > b ? a : b);
     if (maxY == 0) return const SizedBox.shrink();
 
@@ -1759,7 +1759,7 @@ class _SalaryTrendChart extends StatelessWidget {
                     getTitlesWidget: (v, _) {
                       final month = v.toInt();
                       if (month < 1 || month > 12) return const SizedBox.shrink();
-                      return Text(DateFormat.MMM().format(DateTime(2000, month)),
+                      return Text(DateFormat.MMM(localeCode(context)).format(DateTime(2000, month)),
                           style: TextStyle(fontSize: 10, color: AppTheme.textSecondary));
                     },
                   )),
@@ -1840,7 +1840,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
           radius: 3, color: Colors.purple.shade400, strokeColor: Colors.white, strokeWidth: 1.5)),
     );
 
-    final fmtCompact  = NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final fmtCompact  = NumberFormat.compactCurrency(locale: localeCode(context), symbol: '₫', decimalDigits: 0);
     final fmtCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
 
     return Card(

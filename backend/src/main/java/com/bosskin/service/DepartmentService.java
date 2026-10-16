@@ -531,7 +531,7 @@ public class DepartmentService {
     private Integer validateRounding(Integer value) {
         if (value == null) return null;
         if (!ALLOWED_ROUNDING.contains(value)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rounding phai la 1/5/15/30/60");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.department.rounding_invalid");
         }
         return value;
     }
@@ -539,7 +539,7 @@ public class DepartmentService {
     private Integer validateTolerance(Integer value) {
         if (value == null) return null;
         if (value < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tolerance phai >= 0");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.department.tolerance_invalid");
         }
         return value;
     }
