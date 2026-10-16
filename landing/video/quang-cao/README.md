@@ -1,5 +1,6 @@
 # Video quảng cáo BossKin (9:16, 25 giây)
 Remotion (React) → `bosskin-quang-cao.mp4` (1080×1920, 30 fps, không có tiếng). Cảnh: mở đầu → chấm công → xếp ca → tổng quan → lương → giá từ 5.000đ/NV/tháng + dùng thử 1 tháng + hỗ trợ 24/24 + QR.
+Âm thanh: `python3 make_audio.py` (nhạc nền tự tạo; giọng đọc tuỳ chọn — xem `vo/loi-doc.txt`).
 Nội dung giá khớp mục Bảng giá trên landing và poster (`docs/thiet-ke/bang-gia-landing.md`) — đổi giá thì sửa `src/Quangcao.tsx` (cảnh cuối) rồi dựng lại.
 
 ```

@@ -1,0 +1,8 @@
+Lời đọc từng cảnh — tạo vo/N.mp3 bằng:  python3 ../tts_edge.py "<lời>" vo/N.mp3 --voice vi-VN-HoaiMyNeural --rate +8%
+(tts_edge.py chạy được trên máy có mạng tới dịch vụ giọng Microsoft; trong môi trường cloud hiện bị chặn 403)
+1 (0–3,5s): Cuối tháng vẫn ngồi đối chiếu Excel? BossKin làm hết cho bạn.
+2 (3,5–8s): Chấm công bằng điện thoại, không thể chấm hộ.
+3 (8–12s):  Xếp ca cả xưởng, chỉ trong vài phút.
+4 (12–16s): Biết ngay hôm nay ai đi làm, duyệt công một chạm.
+5 (16–20s): Tính lương tự động, đúng quy định.
+6 (20–25s): Chỉ từ năm nghìn đồng mỗi nhân viên. Dùng thử miễn phí một tháng, hỗ trợ hai mươi bốn trên hai mươi bốn.
