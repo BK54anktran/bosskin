@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Đổi ca với đồng nghiệp",
+  "ai đồng ý?!"
+ ],
+ "result": [
+  "Đổi ca bằng miệng",
+  "dễ thành rắc rối"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em đổi ca với bạn Hồng được không?"
+  },
+  {
+   "who": "sep",
+   "text": "Hai đứa tự đổi à? Anh đâu biết!"
+  },
+  {
+   "who": "nv",
+   "text": "Em nhắn bạn rồi, bạn đồng ý rồi mà."
+  },
+  {
+   "who": "sep",
+   "text": "Anh không biết thì tính vắng đấy."
+  },
+  {
+   "who": "dan",
+   "text": "Tự đổi ca không qua quản lý, dễ tính nhầm công."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin cho nhân viên gửi yêu cầu đổi ca ngay trên ứng dụng."
+  },
+  {
+   "who": "dan",
+   "text": "Quản lý thấy và duyệt, lịch ca cập nhật rõ ràng."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "shot-d_swaps.webp",
+   "title": [
+    "Gửi yêu cầu",
+    "đổi ca"
+   ],
+   "cap": [
+    "Ngay trên ứng dụng",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-xep-ca.webp",
+   "title": [
+    "Lịch ca",
+    "cập nhật rõ ràng"
+   ],
+   "cap": [
+    "Quản lý duyệt, nhân viên thấy ngay",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "doi-ca",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em đổi ca với bạn Hồng được không?",
+   "start": 0.0,
+   "voice": 3.109,
+   "len": 3.409
+  },
+  {
+   "who": "sep",
+   "text": "Hai đứa tự đổi à? Anh đâu biết!",
+   "start": 3.609,
+   "voice": 2.612,
+   "len": 2.912
+  },
+  {
+   "who": "nv",
+   "text": "Em nhắn bạn rồi, bạn đồng ý rồi mà.",
+   "start": 6.721,
+   "voice": 2.769,
+   "len": 3.069
+  },
+  {
+   "who": "sep",
+   "text": "Anh không biết thì tính vắng đấy.",
+   "start": 9.99,
+   "voice": 1.985,
+   "len": 2.285
+  },
+  {
+   "who": "dan",
+   "text": "Tự đổi ca không qua quản lý, dễ tính nhầm công.",
+   "start": 12.475,
+   "voice": 3.762,
+   "len": 4.062
+  },
+  {
+   "who": "dan",
+   "text": "BossKin cho nhân viên gửi yêu cầu đổi ca ngay trên ứng dụng.",
+   "start": 16.737,
+   "voice": 4.153,
+   "len": 4.453
+  },
+  {
+   "who": "dan",
+   "text": "Quản lý thấy và duyệt, lịch ca cập nhật rõ ràng.",
+   "start": 21.39,
+   "voice": 3.657,
+   "len": 3.957
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 25.547,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 32.234
+}

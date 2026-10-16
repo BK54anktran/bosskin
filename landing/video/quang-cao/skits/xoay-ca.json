@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Xếp ca lại",
+  "mỗi tuần?!"
+ ],
+ "result": [
+  "Xếp lại bằng tay",
+  "mất cả buổi mỗi tuần"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, tuần này em làm ca sáng hay ca chiều?"
+  },
+  {
+   "who": "sep",
+   "text": "Để anh xếp lại cả xưởng đã."
+  },
+  {
+   "who": "nv",
+   "text": "Tuần nào cũng xếp lại mất cả buổi ạ."
+  },
+  {
+   "who": "sep",
+   "text": "Chứ biết làm sao, nhiều người thế này."
+  },
+  {
+   "who": "dan",
+   "text": "Xếp ca lặp lại bằng tay, mất cả buổi mỗi tuần."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin có mẫu xoay ca, tự sinh lịch cả kỳ chỉ một lần."
+  },
+  {
+   "who": "dan",
+   "text": "Tự bỏ qua ngày lễ, nhân viên xem lịch trên điện thoại."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "shot-d_shift_rotation.webp",
+   "title": [
+    "Mẫu",
+    "xoay ca"
+   ],
+   "cap": [
+    "Tự sinh lịch cả kỳ",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-xep-ca.webp",
+   "title": [
+    "Lịch ca",
+    "đầy đủ"
+   ],
+   "cap": [
+    "Tự bỏ qua ngày lễ",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "xoay-ca",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, tuần này em làm ca sáng hay ca chiều?",
+   "start": 0.0,
+   "voice": 3.997,
+   "len": 4.297
+  },
+  {
+   "who": "sep",
+   "text": "Để anh xếp lại cả xưởng đã.",
+   "start": 4.497,
+   "voice": 2.22,
+   "len": 2.52
+  },
+  {
+   "who": "nv",
+   "text": "Tuần nào cũng xếp lại mất cả buổi ạ.",
+   "start": 7.217,
+   "voice": 2.456,
+   "len": 2.756
+  },
+  {
+   "who": "sep",
+   "text": "Chứ biết làm sao, nhiều người thế này.",
+   "start": 10.173,
+   "voice": 2.56,
+   "len": 2.86
+  },
+  {
+   "who": "dan",
+   "text": "Xếp ca lặp lại bằng tay, mất cả buổi mỗi tuần.",
+   "start": 13.233,
+   "voice": 3.814,
+   "len": 4.114
+  },
+  {
+   "who": "dan",
+   "text": "BossKin có mẫu xoay ca, tự sinh lịch cả kỳ chỉ một lần.",
+   "start": 17.547,
+   "voice": 4.545,
+   "len": 4.845
+  },
+  {
+   "who": "dan",
+   "text": "Tự bỏ qua ngày lễ, nhân viên xem lịch trên điện thoại.",
+   "start": 22.592,
+   "voice": 3.944,
+   "len": 4.244
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 27.036,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 33.723
+}

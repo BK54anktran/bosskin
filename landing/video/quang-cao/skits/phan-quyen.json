@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Ai cũng xem được",
+  "bảng lương?!"
+ ],
+ "result": [
+  "Không phân quyền",
+  "dữ liệu dễ lộ"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em mở được cả bảng lương công ty!"
+  },
+  {
+   "who": "sep",
+   "text": "Ai cho em xem? Anh chưa phân quyền gì cả!"
+  },
+  {
+   "who": "nv",
+   "text": "File dùng chung, ai cũng mở được ạ."
+  },
+  {
+   "who": "sep",
+   "text": "Thế thì lộ hết lương rồi!"
+  },
+  {
+   "who": "dan",
+   "text": "Dữ liệu nhạy cảm mà ai cũng xem được thì rất rủi ro."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin phân quyền theo vai trò và theo phòng ban."
+  },
+  {
+   "who": "dan",
+   "text": "Ai xem gì, sửa gì đều được kiểm soát."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "shot-d_roles.webp",
+   "title": [
+    "Phân quyền",
+    "theo vai trò"
+   ],
+   "cap": [
+    "Và theo từng phòng ban",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-nhat-ky.webp",
+   "title": [
+    "Mọi thao tác",
+    "đều có nhật ký"
+   ],
+   "cap": [
+    "Kiểm soát chặt chẽ",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "phan-quyen",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em mở được cả bảng lương công ty!",
+   "start": 0.0,
+   "voice": 3.135,
+   "len": 3.435
+  },
+  {
+   "who": "sep",
+   "text": "Ai cho em xem? Anh chưa phân quyền gì cả!",
+   "start": 3.635,
+   "voice": 3.082,
+   "len": 3.382
+  },
+  {
+   "who": "nv",
+   "text": "File dùng chung, ai cũng mở được ạ.",
+   "start": 7.217,
+   "voice": 2.508,
+   "len": 2.808
+  },
+  {
+   "who": "sep",
+   "text": "Thế thì lộ hết lương rồi!",
+   "start": 10.225,
+   "voice": 2.011,
+   "len": 2.311
+  },
+  {
+   "who": "dan",
+   "text": "Dữ liệu nhạy cảm mà ai cũng xem được thì rất rủi ro.",
+   "start": 12.736,
+   "voice": 3.866,
+   "len": 4.166
+  },
+  {
+   "who": "dan",
+   "text": "BossKin phân quyền theo vai trò và theo phòng ban.",
+   "start": 17.102,
+   "voice": 3.265,
+   "len": 3.565
+  },
+  {
+   "who": "dan",
+   "text": "Ai xem gì, sửa gì đều được kiểm soát.",
+   "start": 20.868,
+   "voice": 2.847,
+   "len": 3.147
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 24.215,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 30.902
+}

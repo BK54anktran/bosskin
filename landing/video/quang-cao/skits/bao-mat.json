@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Mật khẩu bị lộ",
+  "làm sao đây?!"
+ ],
+ "result": [
+  "Chỉ một mật khẩu lộ",
+  "là mất an toàn"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, hình như có người dùng tài khoản của em!"
+  },
+  {
+   "who": "sep",
+   "text": "Em cho ai mật khẩu à?"
+  },
+  {
+   "who": "nv",
+   "text": "Em đâu có, chắc bị lộ rồi ạ."
+  },
+  {
+   "who": "sep",
+   "text": "Giờ biết ai đăng nhập đâu mà kiểm tra."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ cần lộ một mật khẩu là mất an toàn."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin có xác thực hai lớp, đăng nhập cần thêm mã trên điện thoại."
+  },
+  {
+   "who": "dan",
+   "text": "Quản trị có thể bật bắt buộc cho tài khoản quan trọng."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "shot-d_profile_2fa.webp",
+   "title": [
+    "Xác thực",
+    "hai lớp"
+   ],
+   "cap": [
+    "Thêm mã trên điện thoại",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-nhat-ky.webp",
+   "title": [
+    "Thao tác nhạy cảm",
+    "đều có nhật ký"
+   ],
+   "cap": [
+    "Dễ truy vết khi cần",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "bao-mat",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, hình như có người dùng tài khoản của em!",
+   "start": 0.0,
+   "voice": 3.814,
+   "len": 4.114
+  },
+  {
+   "who": "sep",
+   "text": "Em cho ai mật khẩu à?",
+   "start": 4.314,
+   "voice": 1.829,
+   "len": 2.129
+  },
+  {
+   "who": "nv",
+   "text": "Em đâu có, chắc bị lộ rồi ạ.",
+   "start": 6.642,
+   "voice": 2.403,
+   "len": 2.703
+  },
+  {
+   "who": "sep",
+   "text": "Giờ biết ai đăng nhập đâu mà kiểm tra.",
+   "start": 9.546,
+   "voice": 2.586,
+   "len": 2.886
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ cần lộ một mật khẩu là mất an toàn.",
+   "start": 12.632,
+   "voice": 2.821,
+   "len": 3.121
+  },
+  {
+   "who": "dan",
+   "text": "BossKin có xác thực hai lớp, đăng nhập cần thêm mã trên điện thoại.",
+   "start": 15.953,
+   "voice": 4.754,
+   "len": 5.054
+  },
+  {
+   "who": "dan",
+   "text": "Quản trị có thể bật bắt buộc cho tài khoản quan trọng.",
+   "start": 21.207,
+   "voice": 3.527,
+   "len": 3.827
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 25.234,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 31.921
+}
