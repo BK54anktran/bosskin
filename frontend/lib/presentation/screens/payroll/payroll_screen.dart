@@ -596,28 +596,23 @@ class _FilterBar extends StatelessWidget {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    monthField,
-                    const SizedBox(width: 8),
-                    yearField,
-                    const SizedBox(width: 8),
-                    statusField,
-                  ],
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [monthField, yearField, statusField],
                 ),
                 if (deptField != null) ...[
                   const SizedBox(height: 8),
                   deptField,
                 ],
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     exportPayslipsBtn,
-                    if (generateBtn != null) ...[
-                      const SizedBox(width: 8),
-                      generateBtn,
-                    ],
+                    if (generateBtn != null) generateBtn,
                   ],
                 ),
               ],

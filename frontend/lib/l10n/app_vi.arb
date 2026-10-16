@@ -2067,4 +2067,7 @@
   ,"mapsLinkNotFound": "Không tìm thấy tọa độ trong nội dung này"
   ,"roleSystemLocked": "Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được"
   ,"roleSystemBadge": "Hệ thống"
+  ,"navCheckInShort": "Chấm công"
+  ,"navRequestsShort": "Yêu cầu"
+  ,"navProfileShort": "Cá nhân"
 }

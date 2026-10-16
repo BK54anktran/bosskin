@@ -534,17 +534,32 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
         ],
       );
 
+  // Điện thoại (< 600px): mỗi ô một hàng, không chia cột để ô không bị bóp hẹp.
   Widget _row(List<Widget> children) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          children: children
-              .expand((w) => [Expanded(child: w), const SizedBox(width: 16)])
-              .toList()
-            ..removeLast(),
-        ),
+        child: LayoutBuilder(builder: (ctx, c) {
+          if (c.maxWidth < 600 && children.length > 1) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < children.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  children[i],
+                ],
+              ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: children
+                .expand((w) => [Expanded(child: w), const SizedBox(width: 16)])
+                .toList()
+              ..removeLast(),
+          );
+        }),
       );
 
-  Expanded _field(Widget child) => Expanded(child: child);
+  Widget _field(Widget child) => child;
 
   Widget _datePicker(String label, DateTime? value, VoidCallback onTap) =>
       InkWell(

@@ -2060,4 +2060,7 @@
   ,"mapsLinkNotFound": "No coordinates found in this text"
   ,"roleSystemLocked": "The default Admin role is locked — its permissions, name and deletion cannot be changed"
   ,"roleSystemBadge": "System"
+  ,"navCheckInShort": "Check-in"
+  ,"navRequestsShort": "Requests"
+  ,"navProfileShort": "Profile"
 }

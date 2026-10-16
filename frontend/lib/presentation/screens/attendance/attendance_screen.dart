@@ -64,9 +64,9 @@ class _AttendanceScreenState extends State<AttendanceScreen>
           color: AppTheme.background,
           child: Padding(
             padding: const EdgeInsets.only(top: 8, right: 12),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Flexible(
-                child: TabBar(
+            child: LayoutBuilder(builder: (context, c) {
+              final narrow = c.maxWidth < 760;
+              final tabBar = TabBar(
                   controller: _tab,
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
@@ -78,13 +78,8 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                     Tab(text: s.viewRangeCustom),
                   ],
                   onTap: (_) => setState(() {}),
-                ),
-              ),
-              if (canView || canManage) ...[
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                );
+              final actions = Row(mainAxisSize: MainAxisSize.min, children: [
                     if (canApprove) ...[
                       OutlinedButton.icon(
                         onPressed: () async {
@@ -143,10 +138,28 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                         label: Text(s.importExcel),
                       ),
                     ],
-                  ]),
-                ),
-              ],
-            ]),
+                  ]);
+              final hasActions = canView || canManage;
+              if (narrow) {
+                // Điện thoại: tab một hàng, các nút thao tác cuộn ngang ở hàng dưới (không tràn, không bị cắt)
+                return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  tabBar,
+                  if (hasActions)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(left: 12, bottom: 6),
+                      child: actions,
+                    ),
+                ]);
+              }
+              return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Flexible(child: tabBar),
+                if (hasActions) ...[
+                  const SizedBox(width: 8),
+                  Padding(padding: const EdgeInsets.only(bottom: 4), child: actions),
+                ],
+              ]);
+            }),
           ),
         ),
         Expanded(

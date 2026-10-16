@@ -708,6 +708,9 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
   ở thanh dưới; nội dung cuộn mới là phần lớn màn hình. Cỡ chữ hệ thống chặn 1.3 (< 600 dp) / 1.4 (rộng) ở `main.dart`.
 - Hộp thoại: lề `insetPadding` 16 (`AppTheme` → `dialogTheme`); nội dung `SizedBox(width: N)` trong `AlertDialog` tự bị cắt theo bề rộng khả dụng, nhưng bên trong
   đừng xếp nhiều ô rộng cố định cạnh nhau — dùng `Wrap` hoặc `Expanded`.
+- Thanh công cụ nhiều nút (Chấm công, Nghỉ phép, Lương): `LayoutBuilder` → hẹp thì xếp cột / hàng nút cuộn ngang; form nhiều cột (`employee_form_screen.dart` `_row`) dưới 600 dp xếp một cột;
+  `Row` chứa `Flexible`/`Expanded` phải có bề rộng giới hạn; ô chứa nhiều nút nhỏ cố định dùng `FittedBox(scaleDown)`. Nhãn thanh dưới dùng khoá `nav*Short`.
+- Kiểm tra: Flutter debug web + Playwright 390×844, bật `FlutterError.dumpErrorToConsole(forceReport: true)` tạm để thấy dòng `RenderFlex overflowed` kèm vị trí (không commit).
 
 ### Hover cursor
 - Widget có `onTap`/`onPressed` trên desktop → thêm `MouseRegion(cursor: SystemMouseCursors.click)` để hiện bàn tay khi hover.

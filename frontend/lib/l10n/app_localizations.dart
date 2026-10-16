@@ -1851,60 +1851,6 @@ abstract class AppLocalizations {
   /// **'Xóa vị trí'**
   String get clearLocation;
 
-  /// No description provided for @roleSystemLocked.
-  ///
-  /// In vi, this message translates to:
-  /// **'Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được'**
-  String get roleSystemLocked;
-
-  /// No description provided for @roleSystemBadge.
-  ///
-  /// In vi, this message translates to:
-  /// **'Hệ thống'**
-  String get roleSystemBadge;
-
-  /// No description provided for @pasteMapsLink.
-  ///
-  /// In vi, this message translates to:
-  /// **'Dán link Google Maps'**
-  String get pasteMapsLink;
-
-  /// No description provided for @mapsLinkTitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lấy tọa độ từ link Google Maps'**
-  String get mapsLinkTitle;
-
-  /// No description provided for @mapsLinkHint.
-  ///
-  /// In vi, this message translates to:
-  /// **'Dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc tọa độ dạng 10.77, 106.70'**
-  String get mapsLinkHint;
-
-  /// No description provided for @mapsLinkField.
-  ///
-  /// In vi, this message translates to:
-  /// **'Link hoặc tọa độ'**
-  String get mapsLinkField;
-
-  /// No description provided for @mapsLinkApply.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lấy tọa độ'**
-  String get mapsLinkApply;
-
-  /// No description provided for @mapsLinkPaste.
-  ///
-  /// In vi, this message translates to:
-  /// **'Dán từ bộ nhớ tạm'**
-  String get mapsLinkPaste;
-
-  /// No description provided for @mapsLinkNotFound.
-  ///
-  /// In vi, this message translates to:
-  /// **'Không tìm thấy tọa độ trong nội dung này'**
-  String get mapsLinkNotFound;
-
   /// No description provided for @add.
   ///
   /// In vi, this message translates to:
@@ -11188,6 +11134,78 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhân viên'**
   String get defaultRoleEmployeeName;
+
+  /// No description provided for @pasteMapsLink.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán link Google Maps'**
+  String get pasteMapsLink;
+
+  /// No description provided for @mapsLinkTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy tọa độ từ link Google Maps'**
+  String get mapsLinkTitle;
+
+  /// No description provided for @mapsLinkHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc tọa độ dạng 10.77, 106.70'**
+  String get mapsLinkHint;
+
+  /// No description provided for @mapsLinkField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Link hoặc tọa độ'**
+  String get mapsLinkField;
+
+  /// No description provided for @mapsLinkApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy tọa độ'**
+  String get mapsLinkApply;
+
+  /// No description provided for @mapsLinkPaste.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán từ bộ nhớ tạm'**
+  String get mapsLinkPaste;
+
+  /// No description provided for @mapsLinkNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy tọa độ trong nội dung này'**
+  String get mapsLinkNotFound;
+
+  /// No description provided for @roleSystemLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được'**
+  String get roleSystemLocked;
+
+  /// No description provided for @roleSystemBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống'**
+  String get roleSystemBadge;
+
+  /// No description provided for @navCheckInShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công'**
+  String get navCheckInShort;
+
+  /// No description provided for @navRequestsShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu'**
+  String get navRequestsShort;
+
+  /// No description provided for @navProfileShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cá nhân'**
+  String get navProfileShort;
 }
 
 class _AppLocalizationsDelegate

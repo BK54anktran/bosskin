@@ -1381,7 +1381,7 @@ class _StatsGridRaw extends StatelessWidget {
 
   Widget _buildCard(_StatItem item) => Card(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Container(
@@ -1393,15 +1393,19 @@ class _StatsGridRaw extends StatelessWidget {
                 child: Icon(item.icon, color: item.color, size: 22),
               ),
               const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(item.value,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: item.color)),
-                  Text(item.label,
-                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(item.value,
+                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: item.color)),
+                    Text(item.label,
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                  ],
+                ),
               ),
             ],
           ),

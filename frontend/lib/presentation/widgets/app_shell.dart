@@ -217,14 +217,14 @@ class _AppShellState extends State<AppShell>
   static List<_NavItem> _bottomNavItems(AppLocalizations s) => [
         _NavItem(s.dashboard, Icons.dashboard_outlined, AppRoutes.dashboard,
             requiredPermission: 'DASHBOARD_VIEW'),
-        _NavItem(s.checkInOut, Icons.login_outlined, AppRoutes.checkInOut,
+        _NavItem(s.navCheckInShort, Icons.login_outlined, AppRoutes.checkInOut,
             requiredPermission: 'ATTENDANCE_SELF'),
-        _NavItem(s.attendanceRequests, Icons.note_add_outlined,
+        _NavItem(s.navRequestsShort, Icons.note_add_outlined,
             AppRoutes.attendanceRequests,
             requiredPermission: 'ATTENDANCE_SELF'),
         _NavItem(s.leaves, Icons.beach_access_outlined, AppRoutes.leaves,
             requiredPermission: 'LEAVE_VIEW'),
-        _NavItem(s.profile, Icons.person_outline, AppRoutes.profile),
+        _NavItem(s.navProfileShort, Icons.person_outline, AppRoutes.profile),
       ];
 
   static String _titleFor(String path, AppLocalizations s) {

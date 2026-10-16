@@ -664,6 +664,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                               Expanded(
                                 child: DropdownButtonFormField<int?>(
                                   initialValue: _roundCheckInMinutes,
+                                  isExpanded: true,
                                   decoration: InputDecoration(labelText: s.uiRoundCheckIn),
                                   items: const [null, 1, 5, 15, 30, 60]
                                       .map((v) => DropdownMenuItem<int?>(
@@ -678,6 +679,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                               Expanded(
                                 child: DropdownButtonFormField<int?>(
                                   initialValue: _roundCheckOutMinutes,
+                                  isExpanded: true,
                                   decoration: InputDecoration(labelText: s.uiRoundCheckOut),
                                   items: const [null, 1, 5, 15, 30, 60]
                                       .map((v) => DropdownMenuItem<int?>(
@@ -693,6 +695,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                           const SizedBox(height: 12),
                           DropdownButtonFormField<int?>(
                             initialValue: _roundWorkMinutes,
+                            isExpanded: true,
                             decoration: InputDecoration(labelText: s.uiRoundWorkHours),
                             items: const [null, 1, 5, 15, 30, 60]
                                 .map((v) => DropdownMenuItem<int?>(

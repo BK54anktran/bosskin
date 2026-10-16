@@ -915,33 +915,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearLocation => 'Clear location';
 
   @override
-  String get roleSystemLocked => 'The default Admin role is locked — its permissions, name and deletion cannot be changed';
-
-  @override
-  String get roleSystemBadge => 'System';
-
-  @override
-  String get pasteMapsLink => 'Paste Google Maps link';
-
-  @override
-  String get mapsLinkTitle => 'Get coordinates from a Google Maps link';
-
-  @override
-  String get mapsLinkHint => 'Paste a Google Maps link (short maps.app.goo.gl links work too) or coordinates like 10.77, 106.70';
-
-  @override
-  String get mapsLinkField => 'Link or coordinates';
-
-  @override
-  String get mapsLinkApply => 'Get coordinates';
-
-  @override
-  String get mapsLinkPaste => 'Paste from clipboard';
-
-  @override
-  String get mapsLinkNotFound => 'No coordinates found in this text';
-
-  @override
   String get add => 'Add';
 
   @override
@@ -6062,4 +6035,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get defaultRoleEmployeeName => 'Employee';
+
+  @override
+  String get pasteMapsLink => 'Paste Google Maps link';
+
+  @override
+  String get mapsLinkTitle => 'Get coordinates from a Google Maps link';
+
+  @override
+  String get mapsLinkHint =>
+      'Paste a Google Maps link (short maps.app.goo.gl links work too) or coordinates like 10.77, 106.70';
+
+  @override
+  String get mapsLinkField => 'Link or coordinates';
+
+  @override
+  String get mapsLinkApply => 'Get coordinates';
+
+  @override
+  String get mapsLinkPaste => 'Paste from clipboard';
+
+  @override
+  String get mapsLinkNotFound => 'No coordinates found in this text';
+
+  @override
+  String get roleSystemLocked =>
+      'The default Admin role is locked — its permissions, name and deletion cannot be changed';
+
+  @override
+  String get roleSystemBadge => 'System';
+
+  @override
+  String get navCheckInShort => 'Check-in';
+
+  @override
+  String get navRequestsShort => 'Requests';
+
+  @override
+  String get navProfileShort => 'Profile';
 }

@@ -917,33 +917,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get clearLocation => 'Xóa vị trí';
 
   @override
-  String get roleSystemLocked => 'Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được';
-
-  @override
-  String get roleSystemBadge => 'Hệ thống';
-
-  @override
-  String get pasteMapsLink => 'Dán link Google Maps';
-
-  @override
-  String get mapsLinkTitle => 'Lấy tọa độ từ link Google Maps';
-
-  @override
-  String get mapsLinkHint => 'Dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc tọa độ dạng 10.77, 106.70';
-
-  @override
-  String get mapsLinkField => 'Link hoặc tọa độ';
-
-  @override
-  String get mapsLinkApply => 'Lấy tọa độ';
-
-  @override
-  String get mapsLinkPaste => 'Dán từ bộ nhớ tạm';
-
-  @override
-  String get mapsLinkNotFound => 'Không tìm thấy tọa độ trong nội dung này';
-
-  @override
   String get add => 'Thêm';
 
   @override
@@ -6045,4 +6018,42 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get defaultRoleEmployeeName => 'Nhân viên';
+
+  @override
+  String get pasteMapsLink => 'Dán link Google Maps';
+
+  @override
+  String get mapsLinkTitle => 'Lấy tọa độ từ link Google Maps';
+
+  @override
+  String get mapsLinkHint =>
+      'Dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc tọa độ dạng 10.77, 106.70';
+
+  @override
+  String get mapsLinkField => 'Link hoặc tọa độ';
+
+  @override
+  String get mapsLinkApply => 'Lấy tọa độ';
+
+  @override
+  String get mapsLinkPaste => 'Dán từ bộ nhớ tạm';
+
+  @override
+  String get mapsLinkNotFound => 'Không tìm thấy tọa độ trong nội dung này';
+
+  @override
+  String get roleSystemLocked =>
+      'Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được';
+
+  @override
+  String get roleSystemBadge => 'Hệ thống';
+
+  @override
+  String get navCheckInShort => 'Chấm công';
+
+  @override
+  String get navRequestsShort => 'Yêu cầu';
+
+  @override
+  String get navProfileShort => 'Cá nhân';
 }

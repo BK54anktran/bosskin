@@ -1200,7 +1200,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     }
     final slotKey = _daySlotKey(slot);
     final isEditing = _editingDaySlotKeys.contains(slotKey);
-    return _dayCell(width: width, bg: bg, child: Row(
+    return _dayCell(width: width, bg: bg, child: FittedBox(fit: BoxFit.scaleDown, child: Row(
       mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min,
       children: [
         if (isEditing) ...[
@@ -1230,7 +1230,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
           ],
         ],
       ],
-    ));
+    )));
   }
 
   Widget _dayNumCell(double val, double width, Color bg,

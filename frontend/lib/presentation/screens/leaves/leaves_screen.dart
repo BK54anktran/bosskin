@@ -405,10 +405,8 @@ class _LeavesScreenState extends State<LeavesScreen>
         // ── Header: dept filter + buttons ──
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 12, 0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              DepartmentPickerField(
+          child: LayoutBuilder(builder: (context, c) {
+            final deptPicker = DepartmentPickerField(
                 compact: true,
                 departments: _depts,
                 value: _filterDeptId,
@@ -418,10 +416,10 @@ class _LeavesScreenState extends State<LeavesScreen>
                   setState(() => _filterDeptId = v);
                   _loadAll();
                 },
-              ),
-              const Spacer(),
-              if (_canCreate || _canManualGrant)
-                Wrap(
+              );
+            final hasButtons = _canCreate || _canManualGrant;
+            final buttons = hasButtons
+                ? Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   crossAxisAlignment: WrapCrossAlignment.end,
@@ -439,9 +437,20 @@ class _LeavesScreenState extends State<LeavesScreen>
                         label: Text(s.leaveCreateRequest),
                       ),
                   ],
-                ),
-            ],
-          ),
+                )
+                : null;
+            // Điện thoại: bộ lọc một hàng, nút thao tác xuống hàng dưới (không tràn ngang)
+            if (c.maxWidth < 600) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [deptPicker, if (buttons != null) ...[const SizedBox(height: 8), buttons]],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [deptPicker, const Spacer(), if (buttons != null) buttons],
+            );
+          }),
         ),
         const SizedBox(height: 8),
         // ── Body ──
@@ -2313,7 +2322,9 @@ class _EmployeeGrantHistoryDialogState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
+                    Flexible(
+                      child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Flexible(child: Text(sourceLabel, overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -2343,6 +2354,8 @@ class _EmployeeGrantHistoryDialogState
                         ],
                       ],
                     ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(_fmtDate(g['grantedAt']),
                         style: TextStyle(
                             fontSize: 12, color: AppTheme.textSecondary)),
