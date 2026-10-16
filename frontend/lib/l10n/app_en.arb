@@ -2037,4 +2037,9 @@
   ,"featureDataExcel": "Excel import / export"
   ,"attendanceDayOffsetTooltip": "{days} day(s) from the work date"
   ,"@attendanceDayOffsetTooltip": {"placeholders": {"days": {"type": "String"}}}
+  ,"unitDay": "Day"
+  ,"unitHour": "Hour"
+  ,"freqMonthly": "Monthly"
+  ,"freqYearly": "Yearly"
+  ,"scopeSystemLabel": "System"
 }

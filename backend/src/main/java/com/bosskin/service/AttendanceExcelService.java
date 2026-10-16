@@ -431,7 +431,7 @@ public class AttendanceExcelService {
                 boolean weekend = calendar.isOff(null, d);
                 int dow = d.getDayOfWeek().getValue() % 7;
                 Cell cell = hRow.createCell(fixedCols.length + c);
-                cell.setCellValue(d.getDayOfMonth() + "/" + d.getMonthValue() + "\n" + WEEKDAY_VI[dow] + "\n*");
+                cell.setCellValue(d.getDayOfMonth() + "/" + d.getMonthValue() + "\n" + weekdayLabel(dow, locale) + "\n*");
                 cell.setCellStyle(weekend ? wStyle : dayStyle);
                 sheet.setColumnWidth(fixedCols.length + c, 12 * 256);
             }
@@ -612,32 +612,16 @@ public class AttendanceExcelService {
                 String trangThai = "";
                 if (r.getWorkFlags() != null && !r.getWorkFlags().isEmpty()) {
                     trangThai = java.util.Arrays.stream(r.getWorkFlags().split(","))
-                        .map(f -> switch (f.trim()) {
-                            case "ON_TIME"   -> "Đúng giờ";
-                            case "LATE_IN"   -> "Đi trễ";
-                            case "EARLY_OUT" -> "Về sớm";
-                            case "EARLY_IN"  -> "Vào sớm";
-                            case "LATE_OUT"  -> "Về muộn";
-                            case "OVERTIME"  -> "Tăng ca";
-                            case "LEAVE"     -> "Nghỉ phép";
-                            default          -> f.trim();
-                        })
+                        .map(f -> workFlagLabel(f.trim(), locale))
                         .collect(java.util.stream.Collectors.joining(", "));
                 } else if (r.getStatus() != null && r.getAttendanceId() != null) {
                     // Chỉ hiện status khi có record chấm công thực (tránh hiện "Vắng" ngày không có ca)
-                    trangThai = switch (r.getStatus().name()) {
-                        case "PRESENT"  -> "Có mặt";
-                        case "ABSENT"   -> "Vắng";
-                        case "LATE"     -> "Đi trễ";
-                        case "HALF_DAY" -> "Nửa ngày";
-                        case "LEAVE"    -> "Nghỉ phép";
-                        default -> r.getStatus().name();
-                    };
+                    trangThai = attendanceStatusLabel(r.getStatus().name(), locale);
                 }
 
                 int ci = 0;
                 setCell(row, ci++, r.getDate() != null ? String.valueOf(r.getDate().getDayOfMonth()) : "", cs);
-                setCell(row, ci++, r.getDayLabel() != null ? r.getDayLabel() : "", cs);
+                setCell(row, ci++, r.getDate() != null ? weekdayLabel(r.getDate().getDayOfWeek().getValue() % 7, locale) : "", cs);
                 setCell(row, ci++, r.getLeaveCode() != null ? r.getLeaveCode() : "", cs);
                 setCell(row, ci++, caLam, cs);
                 setCell(row, ci++, r.getBreakMinutes() > 0 ? formatMins(r.getBreakMinutes()) : "", cs);
@@ -805,26 +789,10 @@ public class AttendanceExcelService {
                     String trangThai = "";
                     if (r.getWorkFlags() != null && !r.getWorkFlags().isEmpty()) {
                         trangThai = java.util.Arrays.stream(r.getWorkFlags().split(","))
-                            .map(f -> switch (f.trim()) {
-                                case "ON_TIME"   -> "Đúng giờ";
-                                case "LATE_IN"   -> "Đi trễ";
-                                case "EARLY_OUT" -> "Về sớm";
-                                case "EARLY_IN"  -> "Vào sớm";
-                                case "LATE_OUT"  -> "Về muộn";
-                                case "OVERTIME"  -> "Tăng ca";
-                                case "LEAVE"     -> "Nghỉ phép";
-                                default          -> f.trim();
-                            })
+                            .map(f -> workFlagLabel(f.trim(), locale))
                             .collect(java.util.stream.Collectors.joining(", "));
                     } else if (r.getStatus() != null && r.getAttendanceId() != null) {
-                        trangThai = switch (r.getStatus().name()) {
-                            case "PRESENT"  -> "Có mặt";
-                            case "ABSENT"   -> "Vắng";
-                            case "LATE"     -> "Đi trễ";
-                            case "HALF_DAY" -> "Nửa ngày";
-                            case "LEAVE"    -> "Nghỉ phép";
-                            default -> r.getStatus().name();
-                        };
+                        trangThai = attendanceStatusLabel(r.getStatus().name(), locale);
                     }
 
                     String checkInVal = r.getOverrideCheckIn() != null ? r.getOverrideCheckIn().format(TIME_FMT)
@@ -1719,5 +1687,25 @@ public class AttendanceExcelService {
 
     private static byte[] readBytes(MultipartFile file) {
         try { return file.getBytes(); } catch (IOException e) { return new byte[0]; }
+    }
+
+    /** Nhãn cờ công (đúng giờ, đi trễ…) theo ngôn ngữ người xuất file; cờ lạ giữ nguyên mã. */
+    private String workFlagLabel(String flag, Locale locale) {
+        String key = "excel.enum.attFlag." + flag;
+        String v = excelI18n.resolve(key, locale);
+        return v == null || v.equals(key) ? flag : v;
+    }
+
+    private String attendanceStatusLabel(String status, Locale locale) {
+        String key = "excel.enum.attStatus." + status;
+        String v = excelI18n.resolve(key, locale);
+        return v == null || v.equals(key) ? status : v;
+    }
+
+    /** Thứ viết tắt theo ngôn ngữ; [dow] 0 = chủ nhật … 6 = thứ bảy. */
+    private String weekdayLabel(int dow, Locale locale) {
+        String key = "excel.enum.weekday." + dow;
+        String v = excelI18n.resolve(key, locale);
+        return v == null || v.equals(key) ? WEEKDAY_VI[dow] : v;
     }
 }

@@ -2711,10 +2711,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get dashboardAttendancePeriodCustom => 'Khoảng tùy chọn';
 
   @override
-  String get unitHour => 'giờ';
+  String get unitHour => 'Giờ';
 
   @override
-  String get unitDay => 'ngày';
+  String get unitDay => 'Ngày';
 
   @override
   String get adminTabCompanies => 'Công ty';
@@ -5981,4 +5981,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String attendanceDayOffsetTooltip(String days) {
     return 'Lệch $days ngày so với ngày công';
   }
+
+  @override
+  String get freqMonthly => 'Hàng tháng';
+
+  @override
+  String get freqYearly => 'Hàng năm';
+
+  @override
+  String get scopeSystemLabel => 'Hệ thống';
 }

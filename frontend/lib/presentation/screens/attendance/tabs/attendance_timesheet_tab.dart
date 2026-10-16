@@ -11,6 +11,7 @@ import '../../../../data/models/employee.dart';
 import '../../../../data/repositories/attendance_repository.dart';
 import '../../../../data/repositories/company_setting_repository.dart';
 import '../../../../data/repositories/leave_repository.dart';
+import '../../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../widgets/day_offset_text.dart';
 import '../../../../data/services/department_service.dart';
@@ -979,7 +980,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text('${row.date.day}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
             color: dayColor ?? (isToday ? AppTheme.primary : AppTheme.textPrimary))),
-        Text(row.dayLabel, style: TextStyle(fontSize: 10,
+        Text(weekdayShort(context, row.date.weekday), style: TextStyle(fontSize: 10,
             color: dayColor ?? AppTheme.textSecondary)),
       ]),
     );
@@ -1006,7 +1007,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text('${first.date.day}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
             color: dayColor ?? (isToday ? AppTheme.primary : AppTheme.textPrimary))),
-        Text(first.dayLabel, style: TextStyle(fontSize: 10,
+        Text(weekdayShort(context, first.date.weekday), style: TextStyle(fontSize: 10,
             color: dayColor ?? AppTheme.textSecondary)),
       ]),
     );

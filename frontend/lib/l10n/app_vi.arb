@@ -2044,4 +2044,9 @@
   ,"featureDataExcel": "Nhập / xuất Excel"
   ,"attendanceDayOffsetTooltip": "Lệch {days} ngày so với ngày công"
   ,"@attendanceDayOffsetTooltip": {"placeholders": {"days": {"type": "String"}}}
+  ,"unitDay": "Ngày"
+  ,"unitHour": "Giờ"
+  ,"freqMonthly": "Hàng tháng"
+  ,"freqYearly": "Hàng năm"
+  ,"scopeSystemLabel": "Hệ thống"
 }

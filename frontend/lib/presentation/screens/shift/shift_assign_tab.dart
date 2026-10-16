@@ -1,3 +1,4 @@
+import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -950,8 +951,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
         child: child,
       );
 
-  String _dowLabel(int dow) =>
-      const ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][dow - 1];
+  String _dowLabel(int dow) => weekdayShort(context, dow);
 }
 
 // ── Shift badge ───────────────────────────────────────────────────────────────
@@ -1336,20 +1336,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    const monthLabels = [
-      'T1',
-      'T2',
-      'T3',
-      'T4',
-      'T5',
-      'T6',
-      'T7',
-      'T8',
-      'T9',
-      'T10',
-      'T11',
-      'T12',
-    ];
+    final monthLabels = [for (var m = 1; m <= 12; m++) monthShort(context, m)];
 
     return Dialog(
       insetPadding: const EdgeInsets.all(20),

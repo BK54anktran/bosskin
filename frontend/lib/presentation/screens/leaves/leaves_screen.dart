@@ -1581,9 +1581,9 @@ class _LeaveTypeDialogState extends State<_LeaveTypeDialog> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _unit,
-                items: const [
-                  DropdownMenuItem(value: 'DAY', child: Text('DAY')),
-                  DropdownMenuItem(value: 'HOUR', child: Text('HOUR')),
+                items: [
+                  DropdownMenuItem(value: 'DAY', child: Text(s.unitDay)),
+                  DropdownMenuItem(value: 'HOUR', child: Text(s.unitHour)),
                 ],
                 onChanged: (v) => setState(() => _unit = v ?? 'DAY'),
                 decoration: InputDecoration(labelText: s.leaveUnit),
@@ -1772,9 +1772,9 @@ class _AccrualRuleDialogState extends State<_AccrualRuleDialog> {
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _freq,
-                  items: const [
-                    DropdownMenuItem(value: 'MONTHLY', child: Text('MONTHLY')),
-                    DropdownMenuItem(value: 'YEARLY', child: Text('YEARLY')),
+                  items: [
+                    DropdownMenuItem(value: 'MONTHLY', child: Text(s.freqMonthly)),
+                    DropdownMenuItem(value: 'YEARLY', child: Text(s.freqYearly)),
                   ],
                   onChanged: (v) => setState(() => _freq = v ?? 'MONTHLY'),
                   decoration: InputDecoration(labelText: s.leaveFrequency),

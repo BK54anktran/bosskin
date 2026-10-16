@@ -5268,13 +5268,13 @@ abstract class AppLocalizations {
   /// No description provided for @unitHour.
   ///
   /// In vi, this message translates to:
-  /// **'giờ'**
+  /// **'Giờ'**
   String get unitHour;
 
   /// No description provided for @unitDay.
   ///
   /// In vi, this message translates to:
-  /// **'ngày'**
+  /// **'Ngày'**
   String get unitDay;
 
   /// No description provided for @adminTabCompanies.
@@ -11062,6 +11062,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Lệch {days} ngày so với ngày công'**
   String attendanceDayOffsetTooltip(String days);
+
+  /// No description provided for @freqMonthly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng tháng'**
+  String get freqMonthly;
+
+  /// No description provided for @freqYearly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng năm'**
+  String get freqYearly;
+
+  /// No description provided for @scopeSystemLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống'**
+  String get scopeSystemLabel;
 }
 
 class _AppLocalizationsDelegate

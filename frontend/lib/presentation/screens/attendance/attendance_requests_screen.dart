@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
@@ -751,7 +752,7 @@ class _RequestForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final dateLabel = DateFormat('EEEE, dd/MM/yyyy', 'vi').format(requestDate);
+    final dateLabel = fullDayLabel(context, requestDate);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1268,7 +1269,7 @@ class _FilterPanelState extends State<_FilterPanel> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final dateFmt = DateFormat('dd/MM/yyyy', 'vi');
+    final dateFmt = DateFormat('dd/MM/yyyy', localeCode(context));
     final hasFilters = widget.searchCtrl.text.trim().isNotEmpty ||
         widget.filterType != 'ALL' ||
         widget.filterFrom != null ||
@@ -1325,9 +1326,9 @@ class _FilterPanelState extends State<_FilterPanel> {
               child: DropdownButtonFormField<String>(
                 initialValue: widget.filterType,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Type',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: s.requestType,
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 items: [

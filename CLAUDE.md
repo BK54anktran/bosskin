@@ -114,7 +114,8 @@ frontend/lib/l10n/
 
 ### 2. Hàm dùng chung
 - Format tiền, ngày, giờ, số → đặt trong `core/utils/`
-- Các utils hiện có: `error_utils.dart`, `dialog_utils.dart`, `text_utils.dart`, `attendance_message_utils.dart`
+- Các utils hiện có: `error_utils.dart`, `dialog_utils.dart`, `text_utils.dart`, `attendance_message_utils.dart`, `locale_utils.dart`
+  (`localeCode`, `weekdayShort`, `monthShort`, `fullDayLabel`, nhãn trạng thái công / lương — **không** viết cứng locale `'vi'`, thứ `T2…CN` hay hiện `enum.name` ra giao diện)
 - Không copy-paste cùng một hàm vào nhiều file — tạo util mới nếu chưa có
 
 ### 3. Đa ngôn ngữ — BẮT BUỘC
@@ -635,6 +636,7 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
 - Tên sheet tối đa **31 ký tự**.
 - Bỏ dấu tiếng Việt trong tên sheet nếu dùng ký tự đặc biệt.
 - Đầu cột xuất theo ngôn ngữ người dùng → khi đọc phải khớp **mọi bản dịch** (`excelI18n.allValues(key)`), không so chuỗi tiếng Việt cứng.
+  Giá trị hiển thị trong file (cờ công, trạng thái công, thứ) lấy từ `excel.enum.attFlag.* / attStatus.* / weekday.*` theo ngôn ngữ người xuất, không viết cứng chữ Việt trong code.
 - Nhập lại nguyên file vừa xuất phải là "không đổi" ở cả xem trước lẫn nhập thật (không ghi đè, không tạo dòng rỗng). Bảng công /
   chấm công theo ngày so với chính dòng bảng công như file xuất (`TimesheetSource`, giờ làm tròn, giờ nghỉ ca, tăng ca tính sẵn)
   và chỉ ghi ô đã đổi. Kiểm thử vòng xuất → sửa → nhập: `ExcelRoundTripTest` (thêm luồng Excel mới → thêm ca test ở đó).

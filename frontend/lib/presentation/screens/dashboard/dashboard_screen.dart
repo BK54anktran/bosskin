@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/dashboard.dart';
@@ -2007,7 +2008,7 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(DateFormat('EEEE, dd/MM/yyyy', 'vi_VN').format(day.date), style: titleStyle),
+              Text(fullDayLabel(context, day.date), style: titleStyle),
               const SizedBox(height: 4),
               Text('${day.totalHours.toStringAsFixed(1)}h', style: bodyStyle),
               const SizedBox(height: 2),

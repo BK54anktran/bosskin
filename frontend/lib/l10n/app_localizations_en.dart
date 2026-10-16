@@ -2708,10 +2708,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardAttendancePeriodCustom => 'Custom range';
 
   @override
-  String get unitHour => 'hour';
+  String get unitHour => 'Hour';
 
   @override
-  String get unitDay => 'day';
+  String get unitDay => 'Day';
 
   @override
   String get adminTabCompanies => 'Companies';
@@ -5998,4 +5998,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String attendanceDayOffsetTooltip(String days) {
     return '$days day(s) from the work date';
   }
+
+  @override
+  String get freqMonthly => 'Monthly';
+
+  @override
+  String get freqYearly => 'Yearly';
+
+  @override
+  String get scopeSystemLabel => 'System';
 }

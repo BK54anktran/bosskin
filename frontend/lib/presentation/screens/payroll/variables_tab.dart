@@ -609,7 +609,13 @@ class _ScopeChip extends StatelessWidget {
         Icon(icon, size: 13, color: color),
         const SizedBox(width: 4),
         Flexible(
-          child: Text(label,
+          child: Text(
+              // Nhãn hệ thống / toàn công ty dịch theo ngôn ngữ app; biến riêng giữ tên người sở hữu từ server
+              switch (scope) {
+                VariableScope.system => AppLocalizations.of(context).scopeSystemLabel,
+                VariableScope.global => AppLocalizations.of(context).scopeCompanyLabel,
+                VariableScope.private => label,
+              },
               style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
               overflow: TextOverflow.ellipsis),
         ),

@@ -11,6 +11,7 @@ import '../../../../data/models/department_model.dart';
 import '../../../../data/repositories/attendance_repository.dart';
 import '../../../../data/repositories/company_setting_repository.dart';
 import '../../../../data/repositories/leave_repository.dart';
+import '../../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../widgets/day_offset_text.dart';
 import '../../../../data/services/department_service.dart';
@@ -523,7 +524,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
     _loadRows();
   }
 
-  String _dayLabel(DateTime date) => DateFormat('EEEE, dd/MM/yyyy', 'vi').format(date);
+  String _dayLabel(DateTime date) => fullDayLabel(context, date);
 
   bool get _isToday {
     final now = DateTime.now();

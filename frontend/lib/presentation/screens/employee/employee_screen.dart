@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/dialog_utils.dart';
@@ -1009,7 +1010,7 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
           ),
           subtitle: Text(
             '${s.baseSalary}: ${currFmt.format(p.baseSalary)}đ'
-            '  •  Net: ${currFmt.format(p.netSalary)}đ',
+            '  •  ${s.netSalary}: ${currFmt.format(p.netSalary)}đ',
           ),
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -1018,7 +1019,7 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              p.status.name.toUpperCase(),
+              payrollStatusLabel(s, p.status),
               style: TextStyle(fontSize: 11, color: statusColor, fontWeight: FontWeight.w600),
             ),
           ),

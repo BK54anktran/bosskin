@@ -15,6 +15,7 @@ import '../../../data/models/attendance.dart';
 import '../../../data/repositories/attendance_repository.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/notification_service.dart';
+import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
 class CheckInOutScreen extends StatefulWidget {
@@ -681,7 +682,7 @@ class _HistorySection extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      a.approved ? a.status.name.toUpperCase() : s.pending,
+                      a.approved ? attendanceStatusLabel(s, a.status) : s.pending,
                       style: TextStyle(
                           fontSize: 11,
                           color: a.approved ? AppTheme.primary : AppTheme.warning),

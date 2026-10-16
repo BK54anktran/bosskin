@@ -49,6 +49,7 @@ void main() async {
   await ServerConfig.load();
   usePathUrlStrategy();
   await initializeDateFormatting('vi', null);
+  await initializeDateFormatting('en', null);
   await LanguageService.instance.load();
   await ThemeController.instance.load();
   await DeviceService.instance.getOrCreateDeviceId();

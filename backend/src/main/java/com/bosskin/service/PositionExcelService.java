@@ -77,7 +77,7 @@ public class PositionExcelService {
                 List<String> warnings = new ArrayList<>();
                 long count = empCount.getOrDefault(pos.getId(), 0L);
                 if (count > 0)
-                    warnings.add("Có " + count + " nhân viên đang giữ chức vụ này");
+                    warnings.add("error.import.position_has_employees|" + count);
                 result.add(PositionDTO.ImportDiff.builder()
                     .action("DELETE").code(code).name(pos.getName())
                     .departmentCode(pos.getDepartment().getCode())
