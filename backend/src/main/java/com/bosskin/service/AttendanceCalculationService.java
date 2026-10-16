@@ -238,7 +238,7 @@ public class AttendanceCalculationService {
             ? AttendanceCalculator.Result.ZERO
             : AttendanceCalculator.calculate(
                 sa.start(), sa.end(), sa.breakStart(), sa.breakEnd(),
-                checkInMin, checkOutMin, minuteOfDay(dayStart), minuteOfDay(dayEnd), leave[0], leave[1]);
+                checkInMin, checkOutMin, minuteOfDay(dayStart), dayEndMinute(dayEnd), leave[0], leave[1]);
 
         int actualMin   = hoursToMinutes(calc.actualHours());
         int regDayMin   = hoursToMinutes(calc.regularDayHours());
@@ -426,7 +426,7 @@ public class AttendanceCalculationService {
                 ShiftAbs sa = ShiftAbs.of(data.shiftStart(), data.shiftEnd(), null, null);
                 var c = AttendanceCalculator.calculate(sa.start(), sa.end(),
                     ovBreakMin > 0 ? brkStart : null, ovBreakMin > 0 ? brkStart + ovBreakMin : null,
-                    ovCI, ovCO, minuteOfDay(dayStart), minuteOfDay(dayEnd), null, null);
+                    ovCI, ovCO, minuteOfDay(dayStart), dayEndMinute(dayEnd), null, null);
                 actual = c.actualHours(); regDay = c.regularDayHours(); regNight = c.regularNightHours();
             } else { actual = regDay = regNight = 0; }
             double otDay   = att.getOverrideOtDayMinutes()   != null ? att.getOverrideOtDayMinutes()   / 60.0 : data.otDayHours();
@@ -577,6 +577,11 @@ public class AttendanceCalculationService {
 
     private static int minuteOfDay(LocalTime t) {
         return t.getHour() * 60 + t.getMinute();
+    }
+
+    /** Giờ kết thúc "ban ngày": 23:59 nghĩa là hết ngày (24:00) — nếu không, phút 23:59–00:00 bị tính nhầm là giờ đêm (ca 22:00–06:00 ra 7h59 giờ ngày). */
+    private static int dayEndMinute(LocalTime t) {
+        return t.getHour() == 23 && t.getMinute() == 59 ? 24 * 60 : minuteOfDay(t);
     }
 
     /** Ca + giờ nghỉ + giờ nghỉ phép quy về số phút tuyệt đối từ 00:00 ngày công (ca qua đêm: kết thúc &gt; 1440). */

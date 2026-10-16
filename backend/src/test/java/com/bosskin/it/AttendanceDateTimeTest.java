@@ -82,6 +82,9 @@ class AttendanceDateTimeTest extends IntegrationTest {
         assertThat(r.path("overrideCheckIn").asText()).isEqualTo(MON + "T22:00");
         assertThat(r.path("overrideCheckOut").asText()).isEqualTo(MON.plusDays(1) + "T06:00");
         assertThat(r.path("actualHours").asDouble()).isEqualTo(8.0);
+        // Không bật chế độ ngày / đêm: cả 8 giờ là giờ ngày, phút 23:59–00:00 không bị tính nhầm là giờ đêm (từng ra 7h59 + 1 phút đêm)
+        assertThat(r.path("regularDayHours").asDouble()).isEqualTo(8.0);
+        assertThat(r.path("regularNightHours").asDouble()).isZero();
     }
 
     @Test
