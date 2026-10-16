@@ -414,7 +414,10 @@ class _RolesTabState extends State<_RolesTab> {
                       final r = filtered[_page * _pageSize + i];
                       return _RoleCard(
                         role: r,
-                        onTap: () => _openEditDialog(role: r),
+                        onTap: r.isSystem
+                            ? () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(s.roleSystemLocked)))
+                            : () => _openEditDialog(role: r),
                         onDelete: () => _delete(r),
                       );
                     },
@@ -467,6 +470,13 @@ class _RoleCard extends StatelessWidget {
                           style: const TextStyle(
                               fontWeight: FontWeight.w600, fontSize: 15),
                         ),
+                        if (role.isSystem) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.lock_outline, size: 14, color: AppTheme.textSecondary),
+                          const SizedBox(width: 4),
+                          Text(s.roleSystemBadge,
+                              style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                        ],
                         if (role.isDefault) ...[
                           const SizedBox(width: 8),
                           Container(
@@ -507,15 +517,17 @@ class _RoleCard extends StatelessWidget {
               ),
               PermissionGuard(
                 permission: 'ROLE_MANAGE',
-                child: IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  tooltip: AppLocalizations.of(context).edit,
-                  onPressed: onTap,
-                ),
+                child: role.isSystem
+                    ? const SizedBox(width: 40)
+                    : IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        tooltip: AppLocalizations.of(context).edit,
+                        onPressed: onTap,
+                      ),
               ),
               PermissionGuard(
                 permission: 'ROLE_MANAGE',
-                child: role.isDefault
+                child: (role.isDefault || role.isSystem)
                     ? const SizedBox(width: 40)
                     : IconButton(
                         icon: const Icon(Icons.delete_outline,

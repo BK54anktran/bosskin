@@ -1851,6 +1851,18 @@ abstract class AppLocalizations {
   /// **'Xóa vị trí'**
   String get clearLocation;
 
+  /// No description provided for @roleSystemLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được'**
+  String get roleSystemLocked;
+
+  /// No description provided for @roleSystemBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống'**
+  String get roleSystemBadge;
+
   /// No description provided for @pasteMapsLink.
   ///
   /// In vi, this message translates to:

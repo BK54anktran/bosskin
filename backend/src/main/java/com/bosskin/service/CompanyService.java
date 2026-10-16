@@ -92,6 +92,7 @@ public class CompanyService {
         adminRole.setDescription(com.bosskin.i18n.AppText.msgIn(seedLocale, "default.role.admin.desc"));
         // Admin KHÔNG phải vai trò mặc định: vai trò mặc định được gán tự động cho nhân viên mới (D1)
         adminRole.setDefault(false);
+        adminRole.setSystem(true); // V30: khoá — công ty không sửa quyền / xoá được
         adminRole.setPermissions(new HashSet<>(allPermissions));
         adminRole = roleRepository.save(adminRole);
 

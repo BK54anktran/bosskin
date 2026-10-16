@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailAndCompanyId(String email, Long companyId);
     Optional<User> findByEmployeeId(Long employeeId);
     Optional<User> findFirstByCompanyId(Long companyId);
+    /** V30: tài khoản đầu tiên của công ty (admin tạo cùng công ty). */
+    Optional<User> findFirstByCompanyIdOrderByIdAsc(Long companyId);
     List<User> findByCompanyId(Long companyId);
 
     /** V22: số tài khoản của công ty không theo đuôi email {@code @domain} (chặn đổi đuôi). */

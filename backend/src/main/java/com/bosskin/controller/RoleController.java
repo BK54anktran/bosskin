@@ -138,6 +138,7 @@ public class RoleController {
         @RequestBody Map<String, Object> body
     ) {
         requirePermission(user, "ROLE_MANAGE");
+        grantGuard.requireRoleEditable(user, roleRepository.findById(id).orElse(null));
         String name = (String) body.get("name");
         String desc = (String) body.get("description");
         @SuppressWarnings("unchecked")
@@ -199,6 +200,7 @@ public class RoleController {
         @RequestBody Map<String, List<String>> body
     ) {
         requirePermission(user, "ROLE_MANAGE");
+        grantGuard.requireRoleEditable(user, roleRepository.findById(id).orElse(null));
         Set<String> submittedCodes = permissionConsistencyService.normalizePermissionCodes(body.get("permissions"));
         grantGuard.requireCanGrant(user, submittedCodes);
         Map<String, Object> before = roleSnapshot(id);
@@ -219,6 +221,7 @@ public class RoleController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal User user) {
         requirePermission(user, "ROLE_MANAGE");
+        grantGuard.requireRoleEditable(user, roleRepository.findById(id).orElse(null));
         Map<String, Object> before = roleSnapshot(id);
         roleService.delete(id, user.getCompany().getId());
         audit.log("ROLE_DELETE").entity("ROLE", id)

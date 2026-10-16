@@ -2065,4 +2065,6 @@
   ,"mapsLinkApply": "Lấy tọa độ"
   ,"mapsLinkPaste": "Dán từ bộ nhớ tạm"
   ,"mapsLinkNotFound": "Không tìm thấy tọa độ trong nội dung này"
+  ,"roleSystemLocked": "Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được"
+  ,"roleSystemBadge": "Hệ thống"
 }

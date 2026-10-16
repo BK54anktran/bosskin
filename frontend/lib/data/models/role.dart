@@ -28,6 +28,7 @@ class AppRole {
   final String name;
   final String? description;
   final bool isDefault;
+  final bool isSystem; // V30: Admin mặc định — bị khoá, không sửa / xoá được
   final bool roleViewAllCompany;
   final int? roleViewDepartmentId;
   final List<AppPermission> permissions;
@@ -37,6 +38,7 @@ class AppRole {
     required this.name,
     this.description,
     required this.isDefault,
+    this.isSystem = false,
     required this.roleViewAllCompany,
     this.roleViewDepartmentId,
     required this.permissions,
@@ -48,6 +50,7 @@ class AppRole {
             isDefault: (json['default'] ?? json['isDefault']) as bool? ?? false),
         description: localizeDefaultTextOrNull(json['description'] as String?),
         isDefault: (json['default'] ?? json['isDefault']) as bool? ?? false,
+        isSystem: (json['system'] ?? json['isSystem']) as bool? ?? false,
         roleViewAllCompany: json['roleViewAllCompany'] as bool? ?? true,
         roleViewDepartmentId: (json['roleViewDepartmentId'] as num?)?.toInt(),
         permissions: (json['permissions'] as List<dynamic>? ?? [])

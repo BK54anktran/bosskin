@@ -917,6 +917,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get clearLocation => 'Xóa vị trí';
 
   @override
+  String get roleSystemLocked => 'Vai trò Admin mặc định được khoá — không sửa quyền, đổi tên hay xoá được';
+
+  @override
+  String get roleSystemBadge => 'Hệ thống';
+
+  @override
   String get pasteMapsLink => 'Dán link Google Maps';
 
   @override

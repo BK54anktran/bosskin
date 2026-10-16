@@ -915,6 +915,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearLocation => 'Clear location';
 
   @override
+  String get roleSystemLocked => 'The default Admin role is locked — its permissions, name and deletion cannot be changed';
+
+  @override
+  String get roleSystemBadge => 'System';
+
+  @override
   String get pasteMapsLink => 'Paste Google Maps link';
 
   @override

@@ -37,6 +37,11 @@ public class Role extends BaseEntity {
     @Builder.Default
     private boolean isDefault = false;
 
+    /** V30: vai trò hệ thống (Admin sinh sẵn cùng công ty): công ty không sửa quyền / đổi tên / xoá được, chỉ system admin. */
+    @Column(name = "is_system", nullable = false)
+    @Builder.Default
+    private boolean isSystem = false;
+
     @Column(name = "role_view_all_company", nullable = false)
     @Builder.Default
     private boolean roleViewAllCompany = true;

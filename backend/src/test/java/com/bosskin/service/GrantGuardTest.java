@@ -4,6 +4,7 @@ import com.bosskin.entity.Company;
 import com.bosskin.entity.Permission;
 import com.bosskin.entity.Role;
 import com.bosskin.entity.User;
+import com.bosskin.security.SysAdminImpersonateUser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
@@ -62,5 +63,28 @@ class GrantGuardTest {
         User admin = adminOfCompanyWithDisabledFeature();
         assertThatThrownBy(() -> guard.requireNotSelf(admin, 1L)).isInstanceOf(ResponseStatusException.class);
         guard.requireNotSelf(admin, 2L);
+    }
+
+    @Test
+    @DisplayName("V30: vai trò hệ thống (Admin mặc định) bị khoá với admin công ty, system admin vẫn sửa được; vai trò thường không bị chặn")
+    void systemRoleLockedForCompanyAdmin() {
+        User admin = adminOfCompanyWithDisabledFeature();
+        Role system = Role.builder().name("Admin").isSystem(true).build();
+        Role normal = Role.builder().name("Kế toán").build();
+        assertThatThrownBy(() -> guard.requireRoleEditable(admin, system))
+            .isInstanceOf(ResponseStatusException.class).hasMessageContaining("error.role.system_locked");
+        guard.requireRoleEditable(admin, normal);
+        guard.requireRoleEditable(admin, null);
+        guard.requireRoleEditable(new SysAdminImpersonateUser("sys@bosskin", 1L, new Company(), Set.of()), system);
+    }
+
+    @Test
+    @DisplayName("V30: không đổi vai trò / quyền / trạng thái của tài khoản admin đầu tiên; system admin vẫn được")
+    void firstAdminLockedForCompanyAdmin() {
+        User admin = adminOfCompanyWithDisabledFeature();
+        assertThatThrownBy(() -> guard.requireNotFirstAdmin(admin, true))
+            .isInstanceOf(ResponseStatusException.class).hasMessageContaining("error.user.first_admin_locked");
+        guard.requireNotFirstAdmin(admin, false);
+        guard.requireNotFirstAdmin(new SysAdminImpersonateUser("sys@bosskin", 1L, new Company(), Set.of()), true);
     }
 }
