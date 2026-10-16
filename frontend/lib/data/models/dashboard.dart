@@ -1,3 +1,4 @@
+import '../../core/utils/default_text_utils.dart';
 class DashboardTodayStats {
   final int totalEmployees;
   final int present;
@@ -615,7 +616,7 @@ class DashboardDocumentExpiringRisk {
   factory DashboardDocumentExpiringRisk.fromJson(Map<String, dynamic> j) => DashboardDocumentExpiringRisk(
         documentId: (j['documentId'] as num).toInt(),
         employeeName: (j['employeeName'] ?? '').toString(),
-        typeName: (j['typeName'] ?? '').toString(),
+        typeName: localizeDefaultText((j['typeName'] ?? '').toString()),
         daysLeft: (j['daysLeft'] as num?)?.toInt() ?? 0,
       );
 }

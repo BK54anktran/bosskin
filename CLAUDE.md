@@ -599,7 +599,9 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
   cập nhật khi app gọi API kèm `Accept-Language` khác giá trị đã lưu (người đổi ngôn ngữ nhận đúng ngôn ngữ từ lần gọi API kế tiếp). Người gửi lấy
   `AppText.localeOf(user.getLanguage())`.
 - Dữ liệu mặc định của công ty mới (vai trò "Admin" / "Nhân viên", 6 loại tài liệu) theo `CreateCompanyRequest.language` (hộp tạo công ty ở /admin có ô Ngôn ngữ,
-  mặc định theo ngôn ngữ app; trống = vi). Công ty đã có giữ nguyên tên (dữ liệu người dùng sửa được). Vai trò mặc định tìm bằng cờ `is_default`, không theo tên.
+  mặc định theo ngôn ngữ app; trống = vi). Công ty đã có giữ nguyên chữ trong DB nhưng **app dịch lúc hiển thị** các tên / mô tả mặc định còn nguyên bản
+  (`core/utils/default_text_utils.dart`, áp ở `AppRole` / `DocumentType` / `EmployeeDocument.typeName`; tên người dùng đã sửa giữ nguyên) — bảng cặp vi / en phải khớp `default.*` trong
+  `messages_*.properties`. Vai trò mặc định tìm bằng cờ `is_default`, không theo tên.
 - FE: `core/utils/locale_utils.dart` (thứ / tháng / ngày theo ngôn ngữ, nhãn trạng thái), `moneyNumberFormat()` ở `text_utils.dart` (vi `12.000.000`, en `12,000,000`).
 
 ## Chấm công không cần xếp ca (V25, 15/10/2026)

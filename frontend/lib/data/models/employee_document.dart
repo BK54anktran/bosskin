@@ -1,3 +1,4 @@
+import '../../core/utils/default_text_utils.dart';
 /// Bước N — loại tài liệu nhân sự do công ty cấu hình.
 class DocumentType {
   final int id;
@@ -19,7 +20,7 @@ class DocumentType {
   factory DocumentType.fromJson(Map<String, dynamic> j) => DocumentType(
         id: (j['id'] as num).toInt(),
         code: j['code'] ?? '',
-        name: j['name'] ?? '',
+        name: localizeDefaultText(j['name'] ?? ''),
         required: j['required'] == true,
         hasExpiry: j['hasExpiry'] == true,
         sortOrder: (j['sortOrder'] as num?)?.toInt() ?? 0,
@@ -85,7 +86,7 @@ class EmployeeDocument {
         departmentName: j['departmentName'] as String?,
         typeId: (j['typeId'] as num).toInt(),
         typeCode: j['typeCode'] ?? '',
-        typeName: j['typeName'] ?? '',
+        typeName: localizeDefaultText(j['typeName'] ?? ''),
         title: j['title'] as String?,
         fileName: j['fileName'] ?? '',
         contentType: j['contentType'] ?? '',
