@@ -361,15 +361,15 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V29** (`V29__user_language.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V30** (`V30__role_system_flag.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
 V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 khôi phục bậc lương / chức vụ bị xoá nhầm khi NV còn dùng (sửa dữ liệu, không đổi lược đồ),
 V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản),
 V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc, V24 gói chức năng theo công ty (đã thay bằng V26),
-V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`), V27 giờ sửa tay chấm công lưu datetime, V28 nhiều lượt chấm không ca (`punch_no`), V29 ngôn ngữ người dùng (`users.language`)
-→ Migration tiếp theo phải là **V30**
+V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`), V27 giờ sửa tay chấm công lưu datetime, V28 nhiều lượt chấm không ca (`punch_no`), V29 ngôn ngữ người dùng (`users.language`), V30 cờ vai trò hệ thống (`roles.is_system`: Admin sinh sẵn bị khoá, tài khoản admin đầu tiên không bị đổi vai trò / quyền / khoá)
+→ Migration tiếp theo phải là **V31**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
