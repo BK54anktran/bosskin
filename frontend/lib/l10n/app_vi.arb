@@ -2049,4 +2049,13 @@
   ,"freqMonthly": "Hàng tháng"
   ,"freqYearly": "Hàng năm"
   ,"scopeSystemLabel": "Hệ thống"
+  ,"defaultRoleEmployeeDesc": "Vai trò mặc định của nhân viên mới — tự chấm công, xin nghỉ phép"
+  ,"defaultRoleAdminDesc": "Quản trị viên công ty — toàn quyền"
+  ,"defaultDocCCCD": "Căn cước công dân (2 mặt)"
+  ,"defaultDocSYLL": "Sơ yếu lý lịch"
+  ,"defaultDocBangCap": "Bằng cấp"
+  ,"defaultDocChungChi": "Chứng chỉ"
+  ,"defaultDocHdDaKy": "Hợp đồng / phụ lục đã ký"
+  ,"defaultDocKhamSk": "Giấy khám sức khoẻ"
+  ,"defaultRoleEmployeeName": "Nhân viên"
 }

@@ -5990,4 +5990,32 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get scopeSystemLabel => 'Hệ thống';
+
+  @override
+  String get defaultRoleEmployeeDesc =>
+      'Vai trò mặc định của nhân viên mới — tự chấm công, xin nghỉ phép';
+
+  @override
+  String get defaultRoleAdminDesc => 'Quản trị viên công ty — toàn quyền';
+
+  @override
+  String get defaultDocCCCD => 'Căn cước công dân (2 mặt)';
+
+  @override
+  String get defaultDocSYLL => 'Sơ yếu lý lịch';
+
+  @override
+  String get defaultDocBangCap => 'Bằng cấp';
+
+  @override
+  String get defaultDocChungChi => 'Chứng chỉ';
+
+  @override
+  String get defaultDocHdDaKy => 'Hợp đồng / phụ lục đã ký';
+
+  @override
+  String get defaultDocKhamSk => 'Giấy khám sức khoẻ';
+
+  @override
+  String get defaultRoleEmployeeName => 'Nhân viên';
 }

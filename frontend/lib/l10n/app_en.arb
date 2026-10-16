@@ -2042,4 +2042,13 @@
   ,"freqMonthly": "Monthly"
   ,"freqYearly": "Yearly"
   ,"scopeSystemLabel": "System"
+  ,"defaultRoleEmployeeDesc": "Default role for new employees — self check-in, leave requests"
+  ,"defaultRoleAdminDesc": "Company administrator — full access"
+  ,"defaultDocCCCD": "National ID card (both sides)"
+  ,"defaultDocSYLL": "Curriculum vitae"
+  ,"defaultDocBangCap": "Degrees"
+  ,"defaultDocChungChi": "Certificates"
+  ,"defaultDocHdDaKy": "Signed contract / appendix"
+  ,"defaultDocKhamSk": "Health check certificate"
+  ,"defaultRoleEmployeeName": "Employee"
 }

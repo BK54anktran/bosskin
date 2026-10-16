@@ -11080,6 +11080,60 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Hệ thống'**
   String get scopeSystemLabel;
+
+  /// No description provided for @defaultRoleEmployeeDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vai trò mặc định của nhân viên mới — tự chấm công, xin nghỉ phép'**
+  String get defaultRoleEmployeeDesc;
+
+  /// No description provided for @defaultRoleAdminDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị viên công ty — toàn quyền'**
+  String get defaultRoleAdminDesc;
+
+  /// No description provided for @defaultDocCCCD.
+  ///
+  /// In vi, this message translates to:
+  /// **'Căn cước công dân (2 mặt)'**
+  String get defaultDocCCCD;
+
+  /// No description provided for @defaultDocSYLL.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sơ yếu lý lịch'**
+  String get defaultDocSYLL;
+
+  /// No description provided for @defaultDocBangCap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bằng cấp'**
+  String get defaultDocBangCap;
+
+  /// No description provided for @defaultDocChungChi.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chứng chỉ'**
+  String get defaultDocChungChi;
+
+  /// No description provided for @defaultDocHdDaKy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hợp đồng / phụ lục đã ký'**
+  String get defaultDocHdDaKy;
+
+  /// No description provided for @defaultDocKhamSk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giấy khám sức khoẻ'**
+  String get defaultDocKhamSk;
+
+  /// No description provided for @defaultRoleEmployeeName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên'**
+  String get defaultRoleEmployeeName;
 }
 
 class _AppLocalizationsDelegate

@@ -6007,4 +6007,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scopeSystemLabel => 'System';
+
+  @override
+  String get defaultRoleEmployeeDesc =>
+      'Default role for new employees — self check-in, leave requests';
+
+  @override
+  String get defaultRoleAdminDesc => 'Company administrator — full access';
+
+  @override
+  String get defaultDocCCCD => 'National ID card (both sides)';
+
+  @override
+  String get defaultDocSYLL => 'Curriculum vitae';
+
+  @override
+  String get defaultDocBangCap => 'Degrees';
+
+  @override
+  String get defaultDocChungChi => 'Certificates';
+
+  @override
+  String get defaultDocHdDaKy => 'Signed contract / appendix';
+
+  @override
+  String get defaultDocKhamSk => 'Health check certificate';
+
+  @override
+  String get defaultRoleEmployeeName => 'Employee';
 }
