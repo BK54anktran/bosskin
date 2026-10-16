@@ -13,5 +13,6 @@ FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY . /usr/share/nginx/html
 COPY --from=help /out /usr/share/nginx/html/help
-RUN cd /usr/share/nginx/html && rm -f Dockerfile nginx.conf
+RUN cd /usr/share/nginx/html && rm -f Dockerfile nginx.conf \
+ && chmod -R a+rX /usr/share/nginx/html
 EXPOSE 8080 3000
