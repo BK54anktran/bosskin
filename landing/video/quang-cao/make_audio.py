@@ -4,8 +4,8 @@
 Giọng đọc: đặt vo/1.mp3 … vo/6.mp3 (mỗi cảnh một file, tạo bằng ../tts_edge.py — xem lời đọc ở vo/loi-doc.txt);
 có file nào thì tự chèn đúng đầu cảnh đó và hạ nhạc nền khi đọc."""
 import os, subprocess, wave, numpy as np
-HERE = os.path.dirname(os.path.abspath(__file__)); SR = 44100; DUR = 25
-SCENE_START = [0, 3.5, 8, 12, 16, 20]
+HERE = os.path.dirname(os.path.abspath(__file__)); SR = 44100; DUR = 27
+SCENE_START = [0, 5.4, 9.3, 12.8, 16.8, 20.2]
 t = np.arange(int(SR * DUR)) / SR
 
 def env(x, a=.4, r=.6):  # tai nghe êm: vào / ra chậm
@@ -14,8 +14,8 @@ def env(x, a=.4, r=.6):  # tai nghe êm: vào / ra chậm
 # Pad hợp âm Am – F – C – G, mỗi hợp âm 3,125 s, vào / ra mượt
 chords = [(220, 261.63, 329.63), (174.61, 220, 261.63), (261.63, 329.63, 392), (196, 246.94, 293.66)]
 pad = np.zeros_like(t)
-for i in range(8):
-    s, e = i * 3.125, (i + 1) * 3.125
+for i in range(9):
+    s, e = i * 3.0, (i + 1) * 3.0
     m = (t >= s) & (t < e + .3)
     tt = t[m] - s
     g = np.clip(tt / .5, 0, 1) * np.clip((e + .3 - t[m]) / .5, 0, 1)

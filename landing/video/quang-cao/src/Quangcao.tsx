@@ -3,7 +3,8 @@ import { AbsoluteFill, Img, Sequence, interpolate, spring, staticFile, useCurren
 // Video quảng cáo BossKin 9:16, 25 giây. Nội dung khớp landing (mục Bảng giá) và poster giá.
 const FPS = 30;
 const S = (sec: number) => Math.round(sec * FPS);
-export const DURATION = S(25);
+// Cảnh co giãn theo giọng đọc (vo/1..6.mp3): bắt đầu 0 / 5,4 / 9,3 / 12,8 / 16,8 / 20,2 → 27 s
+export const DURATION = S(27);
 
 const C = { navy: '#0b1630', navy2: '#16306a', blue: '#2563eb', sky: '#7cc4ff', amber: '#f59e0b', green: '#10b981', white: '#fff' };
 
@@ -88,16 +89,16 @@ export const Quangcao = () => {
       </div>
 
       {/* 1. Mở đầu 0–3,5s */}
-      <Sequence from={0} durationInFrames={S(3.5)}>
-        <Scene len={S(3.5)}>
+      <Sequence from={0} durationInFrames={S(5.4)}>
+        <Scene len={S(5.4)}>
           <Title size={104}>Cuối tháng vẫn <Em color={C.amber}>ngồi đối chiếu Excel</Em>?</Title>
           <Title delay={14} size={64}><Em>BossKin</Em> làm hết cho bạn.</Title>
         </Scene>
       </Sequence>
 
       {/* 2. Chấm công 3,5–8s */}
-      <Sequence from={S(3.5)} durationInFrames={S(4.5)}>
-        <Scene len={S(4.5)}>
+      <Sequence from={S(5.4)} durationInFrames={S(3.9)}>
+        <Scene len={S(3.9)}>
           <Title>Chấm công bằng <Em>điện thoại</Em></Title>
           <Phone src="dt-cham-cong.webp" />
           <Title delay={20} size={46}>GPS + đúng một máy, không chấm hộ</Title>
@@ -105,8 +106,8 @@ export const Quangcao = () => {
       </Sequence>
 
       {/* 3. Xếp ca 8–12s */}
-      <Sequence from={S(8)} durationInFrames={S(4)}>
-        <Scene len={S(4)}>
+      <Sequence from={S(9.3)} durationInFrames={S(3.5)}>
+        <Scene len={S(3.5)}>
           <Title>Xếp ca cả xưởng <Em>trong vài phút</Em></Title>
           <Screen src="man-xep-ca.webp" />
           <Title delay={20} size={46}>Ca đêm · ca gãy · xoay ca · đổi ca</Title>
@@ -114,7 +115,7 @@ export const Quangcao = () => {
       </Sequence>
 
       {/* 4. Duyệt công 12–16s */}
-      <Sequence from={S(12)} durationInFrames={S(4)}>
+      <Sequence from={S(12.8)} durationInFrames={S(4)}>
         <Scene len={S(4)}>
           <Title>Biết ngay hôm nay <Em>ai đi làm</Em></Title>
           <Screen src="man-tong-quan.webp" />
@@ -123,8 +124,8 @@ export const Quangcao = () => {
       </Sequence>
 
       {/* 5. Lương 16–20s */}
-      <Sequence from={S(16)} durationInFrames={S(4)}>
-        <Scene len={S(4)}>
+      <Sequence from={S(16.8)} durationInFrames={S(3.4)}>
+        <Scene len={S(3.4)}>
           <Title>Tính lương <Em color={C.green}>tự động</Em></Title>
           <Phone src="dt-phieu-luong.webp" />
           <Title delay={20} size={46}>BHXH, thuế TNCN đúng quy định</Title>
@@ -132,8 +133,8 @@ export const Quangcao = () => {
       </Sequence>
 
       {/* 6. Giá + ưu đãi + CTA 20–25s */}
-      <Sequence from={S(20)} durationInFrames={S(5)}>
-        <Scene len={S(5)}>
+      <Sequence from={S(20.2)} durationInFrames={S(6.8)}>
+        <Scene len={S(6.8)}>
           <Price />
           <Pill bg={C.amber} color={C.navy} delay={20}>Dùng thử miễn phí 1 tháng</Pill>
           <Title delay={32} size={50}>Hỗ trợ cài đặt · xử lý sự cố <Em>24/24</Em></Title>
