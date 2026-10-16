@@ -11,7 +11,7 @@ import markdown
 from playwright.sync_api import sync_playwright
 
 HERE = pathlib.Path(__file__).resolve().parent
-DOCS = ['poster-a3', 'to-gioi-thieu-a4', 'phieu-dang-ky-a4', 'kich-ban-ban-hang']
+DOCS = ['poster-a3', 'poster-bang-gia-a3', 'to-gioi-thieu-a4', 'phieu-dang-ky-a4', 'kich-ban-ban-hang']
 (HERE / 'pdf').mkdir(exist_ok=True)
 (HERE / 'preview').mkdir(exist_ok=True)
 

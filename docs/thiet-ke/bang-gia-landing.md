@@ -6,6 +6,9 @@ Mục `#bang-gia` ở `landing/index.html`, nằm giữa "Cho ai" và "Hỏi đ�
 - Chỉ từ **5.000đ / nhân viên / tháng**.
 - Giá tính theo **cả số nhân viên và chức năng** bật (khớp `goi-chuc-nang.md`: app chỉ giữ công tắc, tiền tính ngoài app).
 
+- Dùng thử **miễn phí 1 tháng**; hỗ trợ **cài đặt** và **xử lý sự cố 24/24** (ghi ở chú thích mục giá, Hỏi đáp và poster).
+- Poster in A3 bản bảng giá: `docs/in-an/poster-bang-gia-a3.html` (+ `pdf/`, `anh/`).
+
 ## Bố cục
 Tiêu đề + dòng giá lớn "Chỉ từ 5.000đ" + công thức `số NV × đơn giá các chức năng đã bật`, rồi 3 thẻ gói (thẻ giữa nổi bật):
 

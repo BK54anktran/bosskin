@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>BossKin — Poster bảng giá A3</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  @page { size: 297mm 420mm; margin: 0; }
+  .page { width: 297mm; height: 420mm; display: flex; flex-direction: column; }
+  .hero { background: radial-gradient(120% 90% at 85% 0%, #2a56b8 0%, var(--navy-2) 40%, var(--navy) 85%); color: #fff; padding: 15mm 20mm 14mm; position: relative; }
+  .brand { display: flex; align-items: center; gap: 4mm; font-weight: 800; font-size: 11mm; }
+  .brand img { width: 15mm; height: 15mm; border-radius: 50%; background: #fff; }
+  .badge { position: absolute; right: 20mm; top: 13mm; background: var(--amber); color: var(--navy); font-weight: 800; font-size: 5mm; padding: 3mm 6mm; border-radius: 99mm; }
+  h1 { margin-top: 9mm; font-size: 12.5mm; line-height: 1.15; font-weight: 800; letter-spacing: -.3mm; }
+  h1 em { font-style: normal; color: #7cc4ff; }
+  .price { margin-top: 8mm; display: flex; align-items: baseline; gap: 5mm; flex-wrap: wrap; }
+  .price .from { font-size: 6mm; color: #b9cdf3; font-weight: 600; }
+  .price .num { font-size: 34mm; line-height: 1; font-weight: 800; color: #fff; letter-spacing: -1mm; }
+  .price .unit { font-size: 7mm; font-weight: 700; color: #d7e3fb; }
+  .formula { margin-top: 6mm; display: inline-block; background: rgba(255,255,255,.12); border: .4mm solid rgba(255,255,255,.3); border-radius: 3mm; padding: 3mm 6mm; font-size: 5mm; font-weight: 700; }
+  .body { padding: 11mm 20mm 0; flex: 1; }
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+  .plan { position: relative; border: .5mm solid var(--line); border-radius: 4mm; padding: 7mm; background: #fff; display: flex; flex-direction: column; }
+  .plan.hot { border: 1mm solid var(--blue); box-shadow: 0 3mm 9mm rgba(37,99,235,.22); }
+  .plan .ribbon { position: absolute; top: -3mm; left: 6mm; align-self: flex-start; background: var(--blue); color: #fff; font-size: 3.4mm; font-weight: 700; padding: 1mm 3mm; border-radius: 99mm; margin-bottom: 2mm; }
+  .plan h3 { font-size: 5.6mm; line-height: 1.25; font-weight: 800; min-height: 14mm; }
+  .plan .p { margin-top: 3mm; font-size: 6.2mm; white-space: nowrap; font-weight: 800; color: var(--blue-d); line-height: 1.1; }
+  .plan .p small { display: block; margin-top: 1mm; font-size: 3.6mm; font-weight: 600; color: var(--muted); }
+  .plan ul { margin-top: 4mm; padding-top: 4mm; border-top: .4mm solid var(--line); list-style: none; display: grid; gap: 3.4mm; }
+  .plan li { position: relative; padding-left: 6mm; font-size: 4.7mm; line-height: 1.45; }
+  .plan li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
+  .note { margin-top: 4mm; text-align: center; font-size: 3.8mm; color: var(--muted); }
+  .perks { margin-top: 14mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+  .perk { display: flex; gap: 4mm; align-items: center; background: var(--soft); border-radius: 4mm; padding: 8mm 6mm; }
+  .perk .ic { width: 17mm; height: 17mm; }
+  .perk b { display: block; font-size: 5.6mm; line-height: 1.25; }
+  .perk span { display: block; margin-top: 1.5mm; font-size: 4.1mm; color: var(--muted); line-height: 1.4; }
+  .cta { background: var(--navy); color: #fff; padding: 9mm 20mm; display: flex; align-items: center; gap: 9mm; margin-top: auto; }
+  .cta .txt { flex: 1; }
+  .cta h2 { font-size: 7.6mm; line-height: 1.2; font-weight: 800; }
+  .cta h2 em { font-style: normal; color: #ffd166; }
+  .cta p { margin-top: 3mm; font-size: 4.4mm; color: #c9d7f2; line-height: 1.5; }
+  .cta .contact { margin-top: 5mm; display: flex; gap: 8mm; font-size: 5.4mm; font-weight: 700; }
+  .cta .contact span { color: #7cc4ff; font-weight: 600; font-size: 4mm; display: block; }
+  .qrbox { text-align: center; width: 36mm; }
+  .qrbox .qr { width: 36mm; }
+  .qrbox small { display: block; margin-top: 2mm; font-size: 3.6mm; color: #c9d7f2; }
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="hero">
+    <div class="brand"><img src="img/logo-192.png" alt="">BossKin</div>
+    <div class="badge">Dùng thử miễn phí 1 tháng</div>
+    <h1>Chấm công, xếp ca, nghỉ phép và <em>tính lương</em> — trả theo số nhân viên và chức năng bạn dùng</h1>
+    <div class="price"><span class="from">Chỉ từ</span><span class="num">5.000đ</span><span class="unit">/ nhân viên / tháng</span></div>
+    <div class="formula">Chi phí tháng = số nhân viên × đơn giá các chức năng đã bật</div>
+  </section>
+
+  <section class="body">
+    <div class="plans">
+      <div class="plan">
+        <h3>Chấm công &amp; ca làm</h3>
+        <div class="p">Từ 5.000đ<small>/ nhân viên / tháng</small></div>
+        <ul>
+          <li>Chấm công GPS trên điện thoại, gắn đúng một thiết bị</li>
+          <li>Xếp ca: ca đêm, ca gãy, ca linh hoạt</li>
+          <li>Bảng công, duyệt công, sửa giờ</li>
+          <li>Xuất / nhập Excel</li>
+        </ul>
+      </div>
+      <div class="plan hot">
+        <span class="ribbon">Được chọn nhiều</span>
+        <h3>Thêm nghỉ phép &amp; tính lương</h3>
+        <div class="p">Báo giá theo quy mô<small>&nbsp;</small></div>
+        <ul>
+          <li>Mọi thứ của gói Chấm công &amp; ca làm</li>
+          <li>Đơn nghỉ, quỹ phép, đổi ca</li>
+          <li>Bảng lương, BHXH, thuế TNCN, công thức riêng</li>
+          <li>Phiếu lương cho từng nhân viên</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <h3>Đầy đủ nhân sự</h3>
+        <div class="p">Báo giá theo quy mô<small>&nbsp;</small></div>
+        <ul>
+          <li>Mọi thứ của các gói trên</li>
+          <li>Hợp đồng lao động, phụ lục, phụ cấp</li>
+          <li>Giấy tờ nhân sự, nhắc hết hạn</li>
+          <li>Sơ đồ tổ chức, quản lý duyệt đơn, báo cáo</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">Bật hoặc tắt từng chức năng bất cứ lúc nào. Không mua máy chấm công, không phí cài đặt ẩn.</p>
+
+    <div class="perks">
+      <div class="perk"><div class="ic" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+        <div><b>Dùng thử 1 tháng miễn phí</b><span>Với dữ liệu thật của công ty bạn, đủ một kỳ công.</span></div></div>
+      <div class="perk"><div class="ic" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div>
+        <div><b>Hỗ trợ cài đặt</b><span>Nhập nhân viên, tạo ca, xếp lịch cùng bạn.</span></div></div>
+      <div class="perk"><div class="ic" style="background:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div><b>Xử lý sự cố 24/24</b><span>Có người trực mọi giờ, kể cả ca đêm và cuối tuần.</span></div></div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="txt">
+      <h2>Đăng ký ngay — <em>dùng thử miễn phí 1 tháng</em></h2>
+      <p>Chúng tôi hỗ trợ cài đặt và xử lý sự cố 24/24 trong suốt thời gian dùng.</p>
+      <div class="contact">
+        <div><span>Điện thoại / Zalo</span>0865 854 002</div>
+        <div><span>Website</span>bosskin.io.vn</div>
+      </div>
+    </div>
+    <div class="qrbox"><div class="qr"><img src="img/qr-web.svg" alt=""></div><small>Đăng ký dùng thử</small></div>
+    <div class="qrbox"><div class="qr"><img src="img/qr-zalo.svg" alt=""></div><small>Nhắn Zalo</small></div>
+  </section>
+</div>
+</body>
+</html>
