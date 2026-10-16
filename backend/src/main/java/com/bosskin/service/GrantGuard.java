@@ -1,5 +1,6 @@
 package com.bosskin.service;
 
+import com.bosskin.core.CompanyFeatures;
 import com.bosskin.entity.Permission;
 import com.bosskin.entity.Role;
 import com.bosskin.entity.User;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -30,12 +32,19 @@ public class GrantGuard {
         }
     }
 
-    /** Mọi quyền trong {@code codes} phải nằm trong quyền hiện có của người gọi. */
+    /**
+     * Mọi quyền trong {@code codes} phải nằm trong quyền hiện có của người gọi.
+     * Quyền của tính năng công ty đang tắt không tính: {@link User#getPermissions()} đã bỏ chúng, còn vai trò (vd. Admin) vẫn giữ
+     * đủ quyền — nếu tính thì Admin không bao giờ cấp lại được vai trò Admin khi công ty tắt một tính năng.
+     */
     public void requireCanGrant(User caller, Collection<String> codes) {
         if (codes == null || codes.isEmpty()) return;
         Set<String> own = caller.getPermissions();
+        Set<String> wanted = new HashSet<>();
+        for (String code : codes) if (code != null) wanted.add(code);
+        wanted = CompanyFeatures.filter(wanted, caller.disabledFeatureSet());
         Set<String> missing = new TreeSet<>();
-        for (String code : codes) {
+        for (String code : wanted) {
             if (code != null && !own.contains(code)) missing.add(code);
         }
         if (!missing.isEmpty()) {

@@ -48,7 +48,7 @@ Danh mục + lý do chia: `docs/thiet-ke/goi-chuc-nang.md`. Tiền tính ngoài 
 - **Quyền phụ thuộc** (`permissions.required_rule`): vd. `CONTRACT_EDIT` cần `CONTRACT_VIEW`. Màn Phân quyền tự tích; khi lưu,
   `PermissionConsistencyService` chuẩn hoá danh sách mã: bỏ mã không tồn tại, có quyền thao tác của module nào thì tự thêm quyền `…_VIEW`
   của module đó.
-- `GrantGuard` chặn leo thang quyền: không tự sửa vai trò / quyền / phạm vi của chính mình, chỉ cấp được quyền mình đang có.
+- `GrantGuard` chặn leo thang quyền: không tự sửa vai trò / quyền / phạm vi của chính mình, chỉ cấp được quyền mình đang có (quyền của tính năng công ty đang tắt không tính — vai trò Admin vẫn giữ đủ quyền nên Admin vẫn cấp lại được vai trò Admin; test `GrantGuardTest`).
 
 > Ghi chú: các tên vai trò cố định cũ (`ADMIN`, `HR_MANAGER`, `HR_STAFF`, `EMPLOYEE`) không còn dùng trong code; mọi kiểm tra đi qua mã quyền.
 
