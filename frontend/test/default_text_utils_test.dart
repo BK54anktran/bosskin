@@ -11,13 +11,14 @@ void main() {
 
   test('Tên mặc định đổi theo ngôn ngữ app, tên người dùng tự đặt giữ nguyên', () async {
     await LanguageService.instance.setLocale(const Locale('en'));
-    expect(localizeDefaultText('Nhân viên'), 'Employee');
+    expect(localizeDefaultRoleName('Nhân viên', isDefault: true), 'Employee');
+    expect(localizeDefaultRoleName('Nhân viên', isDefault: false), 'Nhân viên', reason: 'vai trò tự tạo giữ nguyên');
     expect(localizeDefaultText('Sơ yếu lý lịch'), 'Curriculum vitae');
     expect(localizeDefaultText('Kế toán trưởng'), 'Kế toán trưởng');
 
     await LanguageService.instance.setLocale(const Locale('vi'));
-    expect(localizeDefaultText('Employee'), 'Nhân viên');
+    expect(localizeDefaultRoleName('Employee', isDefault: true), 'Nhân viên');
+    expect(localizeDefaultRoleName('Employee', isDefault: false), 'Employee');
     expect(localizeDefaultText('Curriculum vitae'), 'Sơ yếu lý lịch');
-    expect(localizeDefaultText('Nhân viên'), 'Nhân viên');
   });
 }

@@ -44,7 +44,8 @@ class AppRole {
 
   factory AppRole.fromJson(Map<String, dynamic> json) => AppRole(
         id: json['id'] as int,
-        name: localizeDefaultText(json['name'] as String),
+        name: localizeDefaultRoleName(json['name'] as String,
+            isDefault: (json['default'] ?? json['isDefault']) as bool? ?? false),
         description: localizeDefaultTextOrNull(json['description'] as String?),
         isDefault: (json['default'] ?? json['isDefault']) as bool? ?? false,
         roleViewAllCompany: json['roleViewAllCompany'] as bool? ?? true,

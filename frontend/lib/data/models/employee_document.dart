@@ -1,4 +1,6 @@
 import '../../core/utils/default_text_utils.dart';
+const _defaultDocTypeCodes = {'CCCD', 'SYLL', 'BANG_CAP', 'CHUNG_CHI', 'HD_DA_KY', 'KHAM_SK'};
+
 /// Bước N — loại tài liệu nhân sự do công ty cấu hình.
 class DocumentType {
   final int id;
@@ -20,7 +22,8 @@ class DocumentType {
   factory DocumentType.fromJson(Map<String, dynamic> j) => DocumentType(
         id: (j['id'] as num).toInt(),
         code: j['code'] ?? '',
-        name: localizeDefaultText(j['name'] ?? ''),
+        // chỉ dịch loại mặc định của hệ thống (đúng mã + còn nguyên tên mặc định); loại công ty tự tạo giữ nguyên
+        name: _defaultDocTypeCodes.contains(j['code']) ? localizeDefaultText(j['name'] ?? '') : (j['name'] ?? ''),
         required: j['required'] == true,
         hasExpiry: j['hasExpiry'] == true,
         sortOrder: (j['sortOrder'] as num?)?.toInt() ?? 0,
