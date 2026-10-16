@@ -41,12 +41,12 @@ public class DocumentService {
 
     /** Bộ loại tài liệu mặc định cho công ty mới (giống V18). */
     private static final List<Object[]> DEFAULT_TYPES = List.of(
-        new Object[]{"CCCD", "Căn cước công dân (2 mặt)", true, true},
-        new Object[]{"SYLL", "Sơ yếu lý lịch", true, false},
-        new Object[]{"BANG_CAP", "Bằng cấp", false, false},
-        new Object[]{"CHUNG_CHI", "Chứng chỉ", false, true},
-        new Object[]{"HD_DA_KY", "Hợp đồng / phụ lục đã ký", false, false},
-        new Object[]{"KHAM_SK", "Giấy khám sức khoẻ", false, true});
+        new Object[]{"CCCD", true, true},
+        new Object[]{"SYLL", true, false},
+        new Object[]{"BANG_CAP", false, false},
+        new Object[]{"CHUNG_CHI", false, true},
+        new Object[]{"HD_DA_KY", false, false},
+        new Object[]{"KHAM_SK", false, true});
 
     private final DocumentTypeRepository typeRepository;
     private final EmployeeDocumentRepository repository;
@@ -72,11 +72,13 @@ public class DocumentService {
     }
 
     @Transactional
-    public void createDefaultTypes(Long companyId) {
+    public void createDefaultTypes(Long companyId, java.util.Locale locale) {
         int order = 1;
         for (Object[] t : DEFAULT_TYPES) {
-            typeRepository.save(DocumentType.builder().companyId(companyId).code((String) t[0]).name((String) t[1])
-                .required((Boolean) t[2]).hasExpiry((Boolean) t[3]).sortOrder(order++).build());
+            // Tên theo ngôn ngữ được chọn khi tạo công ty (mã loại cố định, sửa tên sau tuỳ ý)
+            String name = com.bosskin.i18n.AppText.msgIn(locale, "default.docType." + t[0]);
+            typeRepository.save(DocumentType.builder().companyId(companyId).code((String) t[0]).name(name)
+                .required((Boolean) t[1]).hasExpiry((Boolean) t[2]).sortOrder(order++).build());
         }
     }
 

@@ -36,4 +36,29 @@ class UserLanguageTest extends IntegrationTest {
         api.call(org.springframework.http.HttpMethod.GET, token, "/api/v1/profile", null, Map.of("Accept-Language", "fr")).expectOk();
         assertThat(language(e.userId())).as("ngôn ngữ lạ → coi như vi").isEqualTo("vi");
     }
+
+    @Autowired com.bosskin.service.CompanyService companyService;
+
+    private com.bosskin.dto.CreateCompanyRequest request(String code, String language) {
+        var req = new com.bosskin.dto.CreateCompanyRequest();
+        req.setName("Seed " + code);
+        req.setCode(code);
+        req.setDomain(code.toLowerCase() + ".test");
+        req.setAdminEmail("admin@" + code.toLowerCase() + ".test");
+        req.setAdminPassword("Passw0rd!x");
+        req.setLanguage(language);
+        return req;
+    }
+
+    @Test
+    @DisplayName("Công ty mới tạo vai trò và loại tài liệu mặc định theo ngôn ngữ chọn (en → tiếng Anh, trống → tiếng Việt); vai trò mặc định tìm theo cờ, không theo tên")
+    void companyDefaultsFollowChosenLanguage() {
+        long en = companyService.create(request("SEEDEN" + System.nanoTime() % 100000, "en")).getId();
+        long vi = companyService.create(request("SEEDVI" + System.nanoTime() % 100000, null)).getId();
+
+        assertThat(jdbc.queryForList("SELECT name FROM roles WHERE company_id = ? AND is_default = 1", String.class, en)).containsExactly("Employee");
+        assertThat(jdbc.queryForList("SELECT name FROM document_types WHERE company_id = ? AND code = 'SYLL'", String.class, en)).containsExactly("Curriculum vitae");
+        assertThat(jdbc.queryForList("SELECT name FROM roles WHERE company_id = ? AND is_default = 1", String.class, vi)).containsExactly("Nhân viên");
+        assertThat(jdbc.queryForList("SELECT name FROM document_types WHERE company_id = ? AND code = 'SYLL'", String.class, vi)).containsExactly("Sơ yếu lý lịch");
+    }
 }

@@ -29,4 +29,7 @@ public class CreateCompanyRequest {
     private String adminPassword;
 
     private String adminFullName;
+
+    /** Ngôn ngữ của dữ liệu mặc định tạo sẵn (tên vai trò, loại tài liệu): "vi" | "en"; trống = vi. */
+    private String language;
 }

@@ -12,6 +12,7 @@ import '../../../core/constants/app_constants.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../core/localization/language_service.dart';
 import '../../../core/config/server_config.dart';
 import 'trial_requests_tab.dart';
 import 'system_admins_tab.dart';
@@ -225,6 +226,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final emailCtrl = TextEditingController();
     final adminEmailCtrl = TextEditingController();
     final adminPassCtrl = TextEditingController();
+    // Ngôn ngữ của dữ liệu mặc định tạo sẵn (tên vai trò, loại tài liệu) — mặc định theo ngôn ngữ app đang dùng
+    String seedLang = LanguageService.instance.isEnglish ? 'en' : 'vi';
     bool isLoading = false;
 
     showInstantDialog(
@@ -288,6 +291,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     const SizedBox(height: 10),
                     _DialogField(ctrl: adminPassCtrl, label: s.passwordLabel, obscureText: true,
                         validator: (v) => (v == null || !isStrongPassword(v)) ? s.passwordPolicyHint : null),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue: seedLang,
+                      decoration: InputDecoration(labelText: s.language),
+                      items: [
+                        DropdownMenuItem(value: 'vi', child: Text(s.vietnamese)),
+                        DropdownMenuItem(value: 'en', child: Text(s.english)),
+                      ],
+                      onChanged: (v) => setS(() => seedLang = v ?? 'vi'),
+                    ),
                   ],
                 ),
               ),
@@ -308,6 +321,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     'code': codeCtrl.text.trim().toUpperCase(),
                     'adminEmail': adminEmailCtrl.text.trim(),
                     'adminPassword': adminPassCtrl.text,
+                    'language': seedLang,
                     'domain': normalizeEmailDomain(domainCtrl.text),
                     if (phoneCtrl.text.isNotEmpty) 'phone': phoneCtrl.text.trim(),
                     if (emailCtrl.text.isNotEmpty) 'companyEmail': emailCtrl.text.trim(),

@@ -9,11 +9,11 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `ATTENDANCE_VIEW` | Xem dữ liệu chấm công |  | 21 | attendance_day_tab, attendance_requests_screen, attendance_screen, attendance_ti |
-| `ATTENDANCE_MANAGE` | Chỉnh sửa chấm công | `ATTENDANCE_VIEW` | 14 | attendance_screen, nav_access, permission_labels |
+| `ATTENDANCE_VIEW` | Xem dữ liệu chấm công |  | 22 | attendance_day_tab, attendance_requests_screen, attendance_screen, attendance_ti |
+| `ATTENDANCE_MANAGE` | Chỉnh sửa chấm công | `ATTENDANCE_VIEW` | 14 | attendance_screen, attendance_shared, nav_access, permission_labels |
 | `ATTENDANCE_SELF` | Tự check-in/check-out | `ATTENDANCE_VIEW` | 15 | app_shell, nav_access, permission_labels, shift_swap_screen |
 | `ATTENDANCE_REQUEST_APPROVE` | Duyệt yêu cầu chấm công | `ATTENDANCE_VIEW` | 8 | attendance_requests_screen, audit_log_screen, nav_access, permission_labels |
-| `ATTENDANCE_APPROVE` | Duyệt / bỏ duyệt bảng công | `ATTENDANCE_VIEW` | 4 | attendance_day_tab, attendance_screen, audit_log_screen, permission_labels |
+| `ATTENDANCE_APPROVE` | Duyệt / bỏ duyệt bảng công | `ATTENDANCE_VIEW` | 4 | attendance_screen, attendance_shared, audit_log_screen, permission_labels |
 | `ATTENDANCE_PERIOD_LOCK` | Khoá / mở lại kỳ công | `ATTENDANCE_VIEW` | 2 | attendance_screen, permission_labels |
 
 ## CALENDAR
@@ -35,7 +35,7 @@
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
 | `COMPANY_SETTING_VIEW` | Xem cài đặt chung công ty |  |  | company_settings_screen, nav_access, permission_labels |
-| `COMPANY_SETTING_MANAGE` | Quản lý cài đặt chung công ty |  | 1 | permission_labels |
+| `COMPANY_SETTING_MANAGE` | Quản lý cài đặt chung công ty |  | 2 | permission_labels |
 
 ## CONTRACT
 
@@ -63,7 +63,7 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `EMPLOYEE_VIEW` | Xem danh sách nhân viên |  | 17 | employee_screen, nav_access, permission_labels, roles_screen |
+| `EMPLOYEE_VIEW` | Xem danh sách nhân viên |  | 18 | employee_screen, nav_access, permission_labels, report_screen, roles_screen |
 | `EMPLOYEE_CREATE` | Thêm nhân viên mới | `EMPLOYEE_VIEW` | 3 | employee_screen, permission_labels |
 | `EMPLOYEE_UPDATE` | Cập nhật thông tin nhân viên | `EMPLOYEE_VIEW` | 10 | auth_service, dependents_dialog, edit_requests_screen, employee_screen, job_hist |
 | `EMPLOYEE_DELETE` | Xóa/vô hiệu hóa nhân viên | `EMPLOYEE_VIEW` | 3 | employee_screen, permission_labels |
@@ -82,7 +82,7 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `LEAVE_VIEW` | Xem đơn nghỉ và số phép |  | 9 | app_shell, leaves_screen, nav_access, permission_labels, roles_screen |
+| `LEAVE_VIEW` | Xem đơn nghỉ và số phép |  | 10 | app_shell, leaves_screen, nav_access, permission_labels, report_screen, roles_sc |
 | `LEAVE_REQUEST_CREATE` | Tạo đơn nghỉ | `LEAVE_VIEW` | 1 | leaves_screen, permission_labels |
 | `LEAVE_REQUEST_APPROVE` | Duyệt/Từ chối đơn nghỉ | `LEAVE_VIEW` | 3 | leaves_screen, permission_labels |
 | `LEAVE_TYPE_MANAGE` | Quản lý loại nghỉ | `LEAVE_TYPE_VIEW` | 3 | leaves_screen, permission_labels |
@@ -96,7 +96,7 @@
 
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
-| `PAYROLL_VIEW` | Xem bảng lương |  | 20 | employee_form_screen, employee_screen, nav_access, payroll_screen, permission_la |
+| `PAYROLL_VIEW` | Xem bảng lương |  | 21 | employee_form_screen, employee_screen, nav_access, payroll_screen, permission_la |
 | `PAYROLL_CREATE` | Tạo bảng lương | `PAYROLL_VIEW` | 17 | employee_screen, payroll_screen, permission_labels, salary_formula_tab, salary_g |
 | `PAYROLL_APPROVE` | Phê duyệt bảng lương | `PAYROLL_VIEW` | 1 | audit_log_screen, payroll_screen, permission_labels |
 | `PAYROLL_PAY` | Đánh dấu đã thanh toán lương | `PAYROLL_VIEW` | 1 | audit_log_screen, payroll_screen, permission_labels |

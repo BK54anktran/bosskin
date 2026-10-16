@@ -47,7 +47,6 @@ public class CompanyService {
         return toResponse(getOrThrow(id));
     }
 
-    public static final String DEFAULT_EMPLOYEE_ROLE_NAME = "Nhân viên";
     /** ATTENDANCE_VIEW / LEAVE_VIEW là quyền tiên quyết của module, giới hạn phạm vi "chỉ mình tôi". */
     public static final java.util.Set<String> DEFAULT_EMPLOYEE_PERMISSIONS = java.util.Set.of(
         "ATTENDANCE_VIEW", "ATTENDANCE_SELF", "LEAVE_VIEW", "LEAVE_REQUEST_CREATE", "SHIFT_REGISTRATION_SELF");
@@ -88,8 +87,9 @@ public class CompanyService {
         List<Permission> allPermissions = permissionRepository.findAll();
         Role adminRole = new Role();
         adminRole.setCompany(company);
-        adminRole.setName("Admin");
-        adminRole.setDescription("Quản trị viên công ty — toàn quyền");
+        var seedLocale = com.bosskin.i18n.AppText.localeOf(req.getLanguage());
+        adminRole.setName(com.bosskin.i18n.AppText.msgIn(seedLocale, "default.role.admin.name"));
+        adminRole.setDescription(com.bosskin.i18n.AppText.msgIn(seedLocale, "default.role.admin.desc"));
         // Admin KHÔNG phải vai trò mặc định: vai trò mặc định được gán tự động cho nhân viên mới (D1)
         adminRole.setDefault(false);
         adminRole.setPermissions(new HashSet<>(allPermissions));
@@ -98,8 +98,8 @@ public class CompanyService {
         // 2b. Vai trò mặc định cho nhân viên mới: chỉ tự chấm công và xin nghỉ
         Role employeeRole = new Role();
         employeeRole.setCompany(company);
-        employeeRole.setName(DEFAULT_EMPLOYEE_ROLE_NAME);
-        employeeRole.setDescription("Vai trò mặc định của nhân viên mới — tự chấm công, xin nghỉ phép");
+        employeeRole.setName(com.bosskin.i18n.AppText.msgIn(seedLocale, "default.role.employee.name"));
+        employeeRole.setDescription(com.bosskin.i18n.AppText.msgIn(seedLocale, "default.role.employee.desc"));
         employeeRole.setDefault(true);
         employeeRole.setPermissions(new HashSet<>(allPermissions.stream()
             .filter(p -> DEFAULT_EMPLOYEE_PERMISSIONS.contains(p.getCode()))
@@ -121,7 +121,7 @@ public class CompanyService {
         userRepository.save(admin);
 
         // 4. Danh mục loại tài liệu nhân sự mặc định (Bước N)
-        documentService.createDefaultTypes(company.getId());
+        documentService.createDefaultTypes(company.getId(), seedLocale);
 
         return toResponse(company);
     }
