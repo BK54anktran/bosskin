@@ -124,6 +124,25 @@
   @media (max-width: 860px) { .feature { grid-template-columns: 1fr; padding: 22px; gap: 22px; } .feature:nth-child(even) .feature-text { order: 0; } }
 
   /* ── roles ── */
+  /* ── bảng giá ── */
+  .price-hero { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin: 22px 0 6px; }
+  .price-hero .from { color: var(--muted); font-weight: 600; }
+  .price-hero .num { font-size: clamp(40px, 6vw, 60px); font-weight: 800; color: var(--accent); letter-spacing: -.02em; line-height: 1; }
+  .price-hero .unit { color: var(--ink-2); font-weight: 600; font-size: 18px; }
+  .price-formula { display: inline-block; margin: 14px 0 0; padding: 10px 16px; border-radius: 12px; background: var(--accent-bg); color: var(--accent); font-weight: 700; font-size: 15.5px; }
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; }
+  .plan.hot { border: 2px solid var(--blue); box-shadow: var(--shadow); }
+  .plan h3 { font-size: 20px; margin-bottom: 4px; }
+  .plan .p { font-size: 26px; font-weight: 800; color: var(--accent); margin: 8px 0 2px; }
+  .plan .p small { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .plan .d { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+  .plan ul { margin: 0 0 20px; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 15.5px; }
+  .plan li { padding-left: 24px; position: relative; }
+  .plan li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
+  .plan .btn { margin-top: auto; justify-content: center; }
+  .price-note { margin: 22px 0 0; color: var(--muted); font-size: 15px; }
+  @media (max-width: 900px) { .plans { grid-template-columns: 1fr; } }
   .roles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
   .role { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
   .role h3 { font-size: 19px; margin-bottom: 8px; }
@@ -219,7 +238,7 @@
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
     <nav class="links">
-      <a href="#cai-dat">Cài đặt</a><a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
+      <a href="#cai-dat">Cài đặt</a><a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#bang-gia">Bảng giá</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
     </nav>
     <div class="actions"><a class="btn btn-ghost js-app" href="/login">Đăng nhập</a></div>
     <button class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
@@ -493,10 +512,63 @@
   </div>
 </dialog>
 
+<section id="bang-gia">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Bảng giá</span>
+      <h2>Trả theo số nhân viên và chức năng bạn dùng</h2>
+    </div>
+    <p class="lead" style="margin:0">Chỉ bật chức năng doanh nghiệp cần, chỉ trả cho số nhân viên đang làm việc. Không mua máy chấm công, không phí cài đặt ẩn.</p>
+    <div class="price-hero"><span class="from">Chỉ từ</span><span class="num">5.000đ</span><span class="unit">/ nhân viên / tháng</span></div>
+    <span class="price-formula">Chi phí tháng = số nhân viên × đơn giá các chức năng đã bật</span>
+    <div class="plans">
+      <article class="plan">
+        <h3>Chấm công &amp; ca làm</h3>
+        <div class="p">Từ 5.000đ <small>/ NV / tháng</small></div>
+        <p class="d">Gói khởi đầu cho doanh nghiệp đang chấm công bằng giấy hoặc Excel.</p>
+        <ul>
+          <li>Chấm công GPS trên điện thoại, gắn thiết bị</li>
+          <li>Xếp ca, ca đêm, ca gãy, ca linh hoạt</li>
+          <li>Bảng công, duyệt công, sửa giờ</li>
+          <li>Xuất / nhập Excel</li>
+        </ul>
+        <a class="btn btn-primary" href="#lien-he">Dùng thử miễn phí</a>
+      </article>
+      <article class="plan hot">
+        <h3>Thêm nghỉ phép &amp; tính lương</h3>
+        <div class="p">Báo giá theo quy mô</div>
+        <p class="d">Chốt công đến phiếu lương trong một ứng dụng.</p>
+        <ul>
+          <li>Mọi thứ của gói Chấm công &amp; ca làm</li>
+          <li>Đơn nghỉ, quỹ phép, đổi ca</li>
+          <li>Bảng lương, bảo hiểm, thuế TNCN, công thức riêng</li>
+          <li>Phiếu lương cho từng nhân viên</li>
+        </ul>
+        <a class="btn btn-primary" href="#lien-he">Nhận báo giá</a>
+      </article>
+      <article class="plan">
+        <h3>Đầy đủ nhân sự</h3>
+        <div class="p">Báo giá theo quy mô</div>
+        <p class="d">Quản lý hồ sơ nhân sự từ ngày vào làm đến khi nghỉ việc.</p>
+        <ul>
+          <li>Mọi thứ của các gói trên</li>
+          <li>Hợp đồng lao động, phụ lục, phụ cấp</li>
+          <li>Giấy tờ nhân sự, cảnh báo hết hạn</li>
+          <li>Sơ đồ tổ chức, quản lý duyệt đơn, báo cáo</li>
+        </ul>
+        <a class="btn btn-primary" href="#lien-he">Nhận báo giá</a>
+      </article>
+    </div>
+    <p class="price-note">Giá chưa gồm VAT. Doanh nghiệp bật hoặc tắt từng chức năng bất cứ lúc nào; dùng thử với dữ liệu thật trước khi quyết định.</p>
+  </div>
+</section>
+
 <section id="hoi-dap" style="background:var(--bg-soft)">
   <div class="wrap">
     <div class="section-head"><span class="eyebrow">Hỏi đáp</span><h2>Câu hỏi thường gặp</h2></div>
     <div class="faq">
+      <details><summary>Giá BossKin tính thế nào?</summary>
+        <p>Tính theo số nhân viên và chức năng bạn bật, chỉ từ 5.000đ mỗi nhân viên mỗi tháng. Bạn dùng thử với dữ liệu thật trước, rồi nhận báo giá theo đúng quy mô và chức năng cần dùng.</p></details>
       <details><summary>Có cần mua máy chấm công không?</summary>
         <p>Không. Nhân viên chấm công bằng điện thoại của mình; BossKin kiểm tra vị trí GPS và chỉ chấp nhận chiếc máy đã đăng ký với tài khoản.</p></details>
       <details><summary>Nhân viên đổi điện thoại thì sao?</summary>
@@ -562,6 +634,7 @@
         <li><a href="#video">Video giới thiệu</a></li>
         <li><a href="#tinh-nang">Tính năng</a></li>
         <li><a href="#vai-tro">Dành cho ai</a></li>
+        <li><a href="#bang-gia">Bảng giá</a></li>
         <li><a href="#hoi-dap">Hỏi đáp</a></li>
       </ul>
     </div>

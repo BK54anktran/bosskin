@@ -76,7 +76,7 @@ Nghe hết, nhắc lại ý khách, rồi trả lời ngắn và quay về lời
 
 | Khách nói | Trả lời |
 | --- | --- |
-| "Giá bao nhiêu?" | "Giá tính theo số nhân viên, em gửi báo giá riêng sau khi biết quy mô. Trước hết anh/chị dùng thử với dữ liệu thật để thấy có đáng không." |
+| "Giá bao nhiêu?" | "Giá tính theo số nhân viên và chức năng, chỉ từ 5.000đ/nhân viên/tháng (có trên trang bosskin.io.vn mục Bảng giá). Em gửi báo giá riêng sau khi biết quy mô. Trước hết anh/chị dùng thử với dữ liệu thật để thấy có đáng không." |
 | "Đang có máy vân tay rồi." | "Máy vân tay chỉ ghi giờ. Còn ca, đơn nghỉ, chốt công, tính lương vẫn làm tay trên Excel. BossKin làm nốt phần đó, và không cần máy nữa khi máy hỏng." |
 | "Excel vẫn đang ổn." | "Excel ổn khi một người làm. Khi có ca, phép, tăng ca, bảo hiểm thì cuối tháng mất [số ngày khách nói]. Nhập thẳng file Excel hiện có vào được, không phải gõ lại." |
 | "Nhân viên lớn tuổi, không biết dùng app." | "Nhân viên chỉ cần bấm một nút Check-in, giao diện tiếng Việt. Em hướng dẫn trực tiếp một buổi." |
