@@ -86,7 +86,7 @@ public class AttendanceRequestDTO {
                 .shiftAssignmentId(r.getShiftAssignment() != null ? r.getShiftAssignment().getId() : null)
                 .shiftName(r.getShiftAssignment() != null && r.getShiftAssignment().getShift() != null
                     ? r.getShiftAssignment().getShift().getName()
-                    : r.getShiftAssignment() != null ? "Tùy chỉnh" : null)
+                    : r.getShiftAssignment() != null ? com.bosskin.i18n.AppText.msg("common.custom") : null)
                 .shiftStart(r.getShiftAssignment() != null
                     ? (r.getShiftAssignment().getCustomStartTime() != null
                         ? r.getShiftAssignment().getCustomStartTime()

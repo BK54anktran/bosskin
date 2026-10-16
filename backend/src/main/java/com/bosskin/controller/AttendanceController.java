@@ -1802,7 +1802,7 @@ public class AttendanceController {
         if (sa.isCustom()) {
             start = sa.getCustomStartTime();
             end = sa.getCustomEndTime();
-            name = "Tùy chỉnh";
+            name = com.bosskin.i18n.AppText.msg("common.custom");
             color = "#1976D2";
         } else if (sa.getShift() != null) {
             var shift = sa.getShift();

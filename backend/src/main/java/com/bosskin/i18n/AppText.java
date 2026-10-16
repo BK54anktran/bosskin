@@ -17,11 +17,24 @@ public class AppText {
 
     private final ResourceBundleMessageSource source = new ResourceBundleMessageSource();
 
+    private static volatile AppText instance;
+
     public AppText() {
+        instance = this;
         source.setBasename("messages");
         source.setDefaultEncoding("UTF-8");
         source.setUseCodeAsDefaultMessage(true);
         source.setFallbackToSystemLocale(false);
+    }
+
+    /**
+     * Dùng ở chỗ không tiêm được bean (parser công thức tĩnh…): chữ theo ngôn ngữ của request đang xử lý.
+     * Chạy ngoài Spring (test thuần) vẫn dùng được nhờ bản mặc định.
+     */
+    public static String msg(String key, Object... args) {
+        AppText i = instance;
+        if (i == null) { i = new AppText(); }
+        return i.t(key, args);
     }
 
     /** Theo ngôn ngữ của request đang xử lý (Accept-Language; mặc định vi). */

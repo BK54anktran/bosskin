@@ -1,5 +1,6 @@
 package com.bosskin.service;
 
+import com.bosskin.i18n.AppText;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -102,6 +103,18 @@ public class FormulaEngine {
     }
 
     public record SystemVar(String description, String category) {}
+
+    /** Khoá chữ hiển thị (messages_*.properties) của một nhóm biến hệ thống; nhóm lạ trả lại chính tên nhóm. */
+    public static String categoryKey(String category) {
+        return switch (category == null ? "" : category) {
+            case "Chấm công — giờ" -> "var.cat.attHours";
+            case "Chấm công — ngày" -> "var.cat.attDays";
+            case "Lương & Hợp đồng" -> "var.cat.payContract";
+            case "Thuế & bảo hiểm" -> "var.cat.taxIns";
+            case "Thâm niên" -> "var.cat.tenure";
+            default -> category;
+        };
+    }
 
     public static final java.util.LinkedHashMap<String, SystemVar> SYSTEM_VARS =
             new java.util.LinkedHashMap<>() {{
@@ -217,7 +230,7 @@ public class FormulaEngine {
 
         if (order.size() != customVars.size()) {
             throw new FormulaEvaluationException(
-                "Phát hiện tham chiếu vòng tròn trong biến tùy chỉnh");
+                AppText.msg("formula.err.circular"));
         }
 
         // Evaluate in topo order, accumulating resolved values
@@ -228,7 +241,7 @@ public class FormulaEngine {
                 resolved.put(name, evaluate(expr, resolved));
             } catch (FormulaEvaluationException e) {
                 throw new FormulaEvaluationException(
-                    "Lỗi tính biến '" + name + "': " + e.getMessage());
+                    AppText.msg("formula.err.varEval", name, e.getMessage()));
             }
         }
         return resolved;
@@ -333,14 +346,14 @@ public class FormulaEngine {
         try {
             tokens = new Lexer(expression).tokenize();
         } catch (FormulaEvaluationException e) {
-            errors.add("Lỗi cú pháp: " + e.getMessage());
+            errors.add(AppText.msg("formula.err.syntax", e.getMessage()));
             return errors;
         }
 
         // Check for unknown variables (FUNCTION tokens are always allowed if in BUILTIN_FUNCTIONS)
         for (Token t : tokens) {
             if (t.type == TokenType.VARIABLE && !allowedVars.contains(t.value) && !isContractAllowance(t.value)) {
-                errors.add("Biến không hợp lệ: " + t.value);
+                errors.add(AppText.msg("formula.err.badVar", t.value));
             }
         }
 
@@ -353,7 +366,7 @@ public class FormulaEngine {
             Parser parser = new Parser(tokens, onesMap, true);
             parser.parseExpr();
             if (parser.current().type != TokenType.EOF) {
-                errors.add("Công thức có ký tự không hợp lệ ở cuối: " + parser.current().value);
+                errors.add(AppText.msg("formula.err.trailing", parser.current().value));
             }
         } catch (FormulaEvaluationException e) {
             errors.add(e.getMessage());
@@ -408,7 +421,7 @@ public class FormulaEngine {
                 else if (Character.isDigit(c) || c == '.') { tokens.add(readNumber()); }
                 else if (Character.isUpperCase(c) || c == '_') { tokens.add(readVariable()); }
                 else {
-                    throw new FormulaEvaluationException("Ký tự không hợp lệ: '" + c + "'");
+                    throw new FormulaEvaluationException(AppText.msg("formula.err.badChar", String.valueOf(c)));
                 }
             }
             tokens.add(new Token(TokenType.EOF, ""));
@@ -459,7 +472,7 @@ public class FormulaEngine {
             Token t = current();
             if (t.type != expected) {
                 throw new FormulaEvaluationException(
-                        "Mong đợi '" + expected + "' nhưng gặp '" + t.value + "'");
+                        AppText.msg("formula.err.expected", String.valueOf(expected), String.valueOf(t.value)));
             }
             pos++;
             return t;
@@ -541,9 +554,9 @@ public class FormulaEngine {
                     if (right.compareTo(BigDecimal.ZERO) == 0) {
                         if (skipDepth > 0) { left = BigDecimal.ZERO; continue; }
                         if (staticCheck) {
-                            throw new FormulaEvaluationException("Phép chia cho 0 trong công thức");
+                            throw new FormulaEvaluationException(AppText.msg("formula.err.divZero"));
                         }
-                        throw new FormulaEvaluationException("Lỗi chia cho 0 khi tính lương");
+                        throw new FormulaEvaluationException(AppText.msg("formula.err.divZeroPayroll"));
                     }
                     left = left.divide(right, MC);
                 } else {
@@ -561,7 +574,7 @@ public class FormulaEngine {
                 try {
                     return new BigDecimal(t.value);
                 } catch (NumberFormatException e) {
-                    throw new FormulaEvaluationException("Số không hợp lệ: " + t.value);
+                    throw new FormulaEvaluationException(AppText.msg("formula.err.badNumber", String.valueOf(t.value)));
                 }
             }
             if (t.type == TokenType.FUNCTION) {
@@ -629,7 +642,7 @@ public class FormulaEngine {
                         consume(TokenType.RPAREN);
                         yield arg.abs();
                     }
-                    default -> throw new FormulaEvaluationException("Hàm không xác định: " + t.value);
+                    default -> throw new FormulaEvaluationException(AppText.msg("formula.err.unknownFunc", String.valueOf(t.value)));
                 };
             }
             if (t.type == TokenType.VARIABLE) {
@@ -638,7 +651,7 @@ public class FormulaEngine {
                 if (val == null) {
                     // Bước L: phụ cấp hợp đồng mà nhân viên không có = 0
                     if (skipDepth > 0 || isContractAllowance(t.value)) return BigDecimal.ZERO;
-                    throw new FormulaEvaluationException("Biến chưa được gán giá trị: " + t.value);
+                    throw new FormulaEvaluationException(AppText.msg("formula.err.unassigned", String.valueOf(t.value)));
                 }
                 return val;
             }
@@ -652,7 +665,7 @@ public class FormulaEngine {
                 consumeAny();
                 return parseFactor().negate();
             }
-            throw new FormulaEvaluationException("Token không mong đợi: '" + t.value + "'");
+            throw new FormulaEvaluationException(AppText.msg("formula.err.unexpectedToken", String.valueOf(t.value)));
         }
     }
 }

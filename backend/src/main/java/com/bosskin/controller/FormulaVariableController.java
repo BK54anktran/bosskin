@@ -29,6 +29,7 @@ public class FormulaVariableController {
     private final FormulaVariableRepository repo;
     private final SalaryFormulaRepository formulaRepo;
     private final FormulaEngine formulaEngine;
+    private final com.bosskin.i18n.AppText appText;
 
     @GetMapping("/categories")
     public ResponseEntity<List<String>> listCategories(@AuthenticationPrincipal User user) {
@@ -62,11 +63,12 @@ public class FormulaVariableController {
 
         // 1. System variables (read-only)
         FormulaEngine.SYSTEM_VARS.forEach((name, sv) ->
-                result.add(AllVariableDTO.system(name, sv.description(), sv.category())));
+                result.add(AllVariableDTO.system(name, appText.t("var.desc." + name), appText.t(FormulaEngine.categoryKey(sv.category()))
+                        , appText.t("var.scope.system"))));
 
         // 2. Global variables
         repo.findByCompanyIdOrderByName(user.getCompany().getId())
-                .forEach(v -> result.add(AllVariableDTO.global(v)));
+                .forEach(v -> result.add(AllVariableDTO.global(v, appText.t("var.scope.global"))));
 
         // 3. Private variables — gom từ tất cả formulas
         formulaRepo.findByCompanyId(user.getCompany().getId()).forEach(f -> {
@@ -320,18 +322,18 @@ public class FormulaVariableController {
         private Long formulaId;    // chỉ có nếu scope=PRIVATE
         private boolean showInFormula;
 
-        static AllVariableDTO system(String name, String desc, String category) {
+        static AllVariableDTO system(String name, String desc, String category, String scopeLabel) {
             return AllVariableDTO.builder()
                     .name(name).label(desc).category(category).expression(null)
-                    .scope("SYSTEM").scopeLabel("Hệ thống").showInFormula(false).build();
+                    .scope("SYSTEM").scopeLabel(scopeLabel).showInFormula(false).build();
         }
 
-        static AllVariableDTO global(FormulaVariable v) {
+        static AllVariableDTO global(FormulaVariable v, String scopeLabel) {
             return AllVariableDTO.builder()
                     .id(v.getId()).name(v.getName()).label(v.getLabel())
                     .expression(v.getExpression())
                     .category(v.getCategory())
-                    .scope("GLOBAL").scopeLabel("Toàn công ty")
+                    .scope("GLOBAL").scopeLabel(scopeLabel)
                     .showInFormula(v.isShowInFormula()).build();
         }
 

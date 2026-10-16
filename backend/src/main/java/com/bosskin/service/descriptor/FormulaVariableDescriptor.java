@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class FormulaVariableDescriptor implements ExcelEntityDescriptor<FormulaVariableDescriptor.Row> {
 
     private final FormulaVariableRepository variableRepo;
+    private final com.bosskin.i18n.AppText appText;
 
     @Data
     public static class Row {
@@ -96,9 +97,9 @@ public class FormulaVariableDescriptor implements ExcelEntityDescriptor<FormulaV
                 if (!categoryFilter.isEmpty() && !categoryFilter.equals(sv.category())) return;
                 Row r = new Row();
                 r.setName(name);
-                r.setLabel(sv.description());
+                r.setLabel(appText.t("var.desc." + name));
                 r.setExpression("");
-                r.setCategory(sv.category());
+                r.setCategory(appText.t(FormulaEngine.categoryKey(sv.category())));
                 r.setShowInFormula("system");
                 result.add(r);
             });
