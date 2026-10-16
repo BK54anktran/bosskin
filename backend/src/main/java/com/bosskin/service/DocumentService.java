@@ -309,13 +309,12 @@ public class DocumentService {
             .filter(d -> marks.contains(ChronoUnit.DAYS.between(t, d.getExpiresOn())))
             .toList();
         if (due.isEmpty()) return;
-        String body = due.size() == 1
-            ? due.get(0).getEmployee().getFullName() + " — " + due.get(0).getDocumentType().getName()
-                + " hết hạn " + due.get(0).getExpiresOn()
-            : due.size() + " tài liệu sắp hết hạn";
         for (User u : userRepository.findByCompanyId(companyId)) {
             if (u.getFcmToken() == null || !u.isEnabled() || !u.hasPermission(VIEW)) continue;
-            fcmService.sendSimple(u.getFcmToken(), "Tài liệu nhân sự sắp hết hạn", body, Map.of("type", "DOCUMENT_EXPIRING"));
+            String body = due.size() == 1
+                ? com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.one", due.get(0).getEmployee().getFullName(), due.get(0).getDocumentType().getName(), String.valueOf(due.get(0).getExpiresOn()))
+                : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.many", String.valueOf(due.size()));
+            fcmService.sendSimple(u.getFcmToken(), com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.title"), body, Map.of("type", "DOCUMENT_EXPIRING"));
         }
     }
 

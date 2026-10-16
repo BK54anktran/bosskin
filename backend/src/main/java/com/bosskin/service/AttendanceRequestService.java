@@ -150,8 +150,8 @@ public class AttendanceRequestService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.check_in_or_out_required");
         }
         List<AttendanceRequest> saved = requestRepository.saveAll(created);
-        managerApproval.notifyManager(emp, "ATTENDANCE", "Đơn sửa công chờ bạn duyệt",
-            emp.getFullName() + " gửi đơn sửa công ngày " + req.getRequestDate());
+        managerApproval.notifyManager(emp, "ATTENDANCE", "push.attReq.title", "push.attReq.body",
+            emp.getFullName(), String.valueOf(req.getRequestDate()));
         return saved.stream().map(this::toResponse).collect(Collectors.toList());
     }
 

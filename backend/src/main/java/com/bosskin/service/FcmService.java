@@ -109,14 +109,13 @@ public class FcmService {
         }
     }
 
-    public void sendCheckInOutNotif(String fcmToken, Long userId, String shiftName,
+    public void sendCheckInOutNotif(String fcmToken, Long userId, String language, String shiftName,
                                     LocalTime shiftTime, LocalDate workDate, boolean isCheckIn) {
         if (FirebaseApp.getApps().isEmpty()) return;
 
-        String title = isCheckIn ? "Đến giờ check-in" : "Đến giờ check-out";
-        String body  = isCheckIn
-            ? shiftName + " bắt đầu lúc " + shiftTime.format(TIME_FMT) + " — hãy check-in ngay"
-            : shiftName + " đã kết thúc lúc " + shiftTime.format(TIME_FMT) + " — đừng quên check-out";
+        var loc = com.bosskin.i18n.AppText.localeOf(language);
+        String title = com.bosskin.i18n.AppText.msgIn(loc, isCheckIn ? "push.checkin.title" : "push.checkout.title");
+        String body  = com.bosskin.i18n.AppText.msgIn(loc, isCheckIn ? "push.checkin.body" : "push.checkout.body", shiftName, shiftTime.format(TIME_FMT));
 
         FcmNotificationLog.FcmNotificationLogBuilder entry = FcmNotificationLog.builder()
             .userId(userId)
@@ -158,9 +157,11 @@ public class FcmService {
         }
     }
 
-    public void sendShiftReminder(String fcmToken, Long userId, String shiftName,
+    public void sendShiftReminder(String fcmToken, Long userId, String language, String shiftName,
                                   LocalTime startTime, LocalDate workDate, int minutesBefore) {
         if (FirebaseApp.getApps().isEmpty()) return;
+        var loc = com.bosskin.i18n.AppText.localeOf(language);
+        String reminderTitle = com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.title");
 
         FcmNotificationLog.FcmNotificationLogBuilder entry = FcmNotificationLog.builder()
             .userId(userId)
@@ -174,28 +175,27 @@ public class FcmService {
         try {
             long actualMinutes = ChronoUnit.MINUTES.between(
                 LocalTime.now().truncatedTo(ChronoUnit.MINUTES), startTime);
-            String body = shiftName + " bắt đầu lúc " + startTime.format(TIME_FMT)
-                + " — còn " + actualMinutes + " phút nữa";
+            String body = com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.body", shiftName, startTime.format(TIME_FMT), String.valueOf(actualMinutes));
             Message message = Message.builder()
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()
                     .setPriority(AndroidConfig.Priority.HIGH)
                     .setNotification(AndroidNotification.builder()
-                        .setTitle("Nhắc nhở ca làm việc")
+                        .setTitle(reminderTitle)
                         .setBody(body)
                         .build())
                     .build())
                 .setApnsConfig(ApnsConfig.builder()
                     .setAps(Aps.builder()
                         .setAlert(ApsAlert.builder()
-                            .setTitle("Nhắc nhở ca làm việc")
+                            .setTitle(reminderTitle)
                             .setBody(body)
                             .build())
                         .setSound("default")
                         .build())
                     .build())
                 .putData("type", "SHIFT_REMINDER")
-                .putData("title", "Nhắc nhở ca làm việc")
+                .putData("title", reminderTitle)
                 .putData("body", body)
                 .putData("workDate", workDate.toString())
                 .putData("startTime", startTime.format(TIME_FMT))

@@ -250,9 +250,8 @@ public class LeaveService {
 
     /** Bước K: báo quản lý trực tiếp khi công ty bật chế độ quản lý duyệt trước. */
     private void notifyManager(Employee emp, LeaveDTO.CreateLeaveRequest req) {
-        managerApproval.notifyManager(emp, "LEAVE", "Đơn nghỉ chờ bạn duyệt",
-            emp.getFullName() + " xin nghỉ " + req.getFromDate()
-                + (req.getToDate().equals(req.getFromDate()) ? "" : " – " + req.getToDate()));
+        managerApproval.notifyManager(emp, "LEAVE", "push.leave.title", "push.leave.body",
+            emp.getFullName(), req.getFromDate() + (req.getToDate().equals(req.getFromDate()) ? "" : " – " + req.getToDate()));
     }
 
     @Transactional

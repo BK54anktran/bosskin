@@ -13,6 +13,12 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.language = :language WHERE u.id = :id")
+    int updateLanguage(@Param("id") Long id, @Param("language") String language);
+
     Optional<User> findByEmail(String email);
     Optional<User> findByEmailAndCompanyId(String email, Long companyId);
     boolean existsByEmail(String email);

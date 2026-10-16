@@ -88,8 +88,8 @@ public class ShiftSwapService {
             .reason(req.getReason() != null && !req.getReason().isBlank() ? req.getReason().trim() : null)
             .build();
         ShiftSwapRequest saved = swapRepo.save(r);
-        managerApproval.notifyManager(me, "SWAP", "Yêu cầu đổi ca chờ bạn duyệt",
-            me.getFullName() + " xin đổi ca ngày " + mine.getWorkDate());
+        managerApproval.notifyManager(me, "SWAP", "push.swap.title", "push.swap.body",
+            me.getFullName(), String.valueOf(mine.getWorkDate()));
         return toResponse(saved);
     }
 

@@ -59,18 +59,18 @@ public class CheckInOutReminderScheduler {
                     if (startT == null || endT == null) continue;
                     LocalDateTime start = day.atTime(startT);
                     LocalDateTime end = endT.isAfter(startT) ? day.atTime(endT) : day.plusDays(1).atTime(endT);
-                    String name = sa.getSnapshotName() != null ? sa.getSnapshotName() : "Ca làm việc";
+                    String name = sa.getSnapshotName() != null ? sa.getSnapshotName() : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(user.getLanguage()), "shift.defaultName");
 
                     if (sa.getCheckInNotifSentAt() == null
                             && !now.isBefore(start.minusMinutes(minutes)) && now.isBefore(start)) {
-                        fcmService.sendCheckInOutNotif(user.getFcmToken(), user.getId(), name, startT, day, true);
+                        fcmService.sendCheckInOutNotif(user.getFcmToken(), user.getId(), user.getLanguage(), name, startT, day, true);
                         sa.setCheckInNotifSentAt(now);
                         shiftAssignmentRepository.save(sa);
                     }
                     LocalDateTime remindOut = end.plusMinutes(minutes);
                     if (sa.getCheckOutNotifSentAt() == null
                             && !now.isBefore(remindOut) && now.isBefore(remindOut.plusMinutes(CHECK_OUT_GRACE_MINUTES))) {
-                        fcmService.sendCheckInOutNotif(user.getFcmToken(), user.getId(), name, endT, day, false);
+                        fcmService.sendCheckInOutNotif(user.getFcmToken(), user.getId(), user.getLanguage(), name, endT, day, false);
                         sa.setCheckOutNotifSentAt(now);
                         shiftAssignmentRepository.save(sa);
                     }

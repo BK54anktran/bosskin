@@ -393,12 +393,12 @@ public class ContractService {
             .filter(c -> c.getEmployee().getStatus() != Employee.Status.INACTIVE)
             .toList();
         if (due.isEmpty()) return;
-        String body = due.size() == 1
-            ? due.get(0).getEmployee().getFullName() + " — " + due.get(0).getContractNo() + " hết hạn " + due.get(0).getEndDate()
-            : due.size() + " hợp đồng sắp hết hạn";
         for (User u : userRepository.findByCompanyId(companyId)) {
             if (u.getFcmToken() == null || !u.isEnabled() || !u.hasPermission("CONTRACT_VIEW")) continue;
-            fcmService.sendSimple(u.getFcmToken(), "Hợp đồng cần gia hạn", body, Map.of("type", "CONTRACT_EXPIRING"));
+            String body = due.size() == 1
+                ? com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.one", due.get(0).getEmployee().getFullName(), due.get(0).getContractNo(), String.valueOf(due.get(0).getEndDate()))
+                : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.many", String.valueOf(due.size()));
+            fcmService.sendSimple(u.getFcmToken(), com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.title"), body, Map.of("type", "CONTRACT_EXPIRING"));
         }
     }
 

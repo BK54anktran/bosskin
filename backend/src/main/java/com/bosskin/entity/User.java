@@ -67,6 +67,10 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
     @Column(name = "fcm_token", length = 512)
     private String fcmToken;
 
+    /** Ngôn ngữ ưa dùng ("vi" | "en") theo header Accept-Language gần nhất; null = vi. Dùng cho thông báo đẩy. */
+    @Column(name = "language", length = 5)
+    private String language;
+
     @Column(name = "shift_reminder_minutes")
     private Integer shiftReminderMinutes;
 

@@ -51,11 +51,12 @@ public class ShiftReminderScheduler {
 
                 String shiftName = sa.getSnapshotName() != null
                     ? sa.getSnapshotName()
-                    : "Ca tùy chỉnh";
+                    : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(user.getLanguage()), "shift.customName");
 
                 fcmService.sendShiftReminder(
                     user.getFcmToken(),
                     user.getId(),
+                    user.getLanguage(),
                     shiftName,
                     effectiveStart,
                     today,

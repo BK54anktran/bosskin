@@ -89,13 +89,16 @@ public class ManagerApprovalService {
     }
 
     /** Báo quản lý trực tiếp có đơn mới chờ duyệt (khi chế độ bật). Lỗi gửi không làm hỏng việc tạo đơn. */
-    public void notifyManager(Employee requester, String kind, String title, String body) {
+    public void notifyManager(Employee requester, String kind, String titleKey, String bodyKey, Object... bodyArgs) {
         try {
             if (!requiresManagerStep(requester)) return;
             userRepository.findByEmployeeId(managerOf(requester).getId())
                 .filter(u -> u.getFcmToken() != null && u.isEnabled())
-                .ifPresent(u -> fcmService.sendSimple(u.getFcmToken(), title, body,
-                    Map.of("type", "TEAM_APPROVAL", "kind", kind)));
+                .ifPresent(u -> {
+                    var loc = com.bosskin.i18n.AppText.localeOf(u.getLanguage());
+                    fcmService.sendSimple(u.getFcmToken(), com.bosskin.i18n.AppText.msgIn(loc, titleKey),
+                        com.bosskin.i18n.AppText.msgIn(loc, bodyKey, bodyArgs), Map.of("type", "TEAM_APPROVAL", "kind", kind));
+                });
         } catch (RuntimeException ex) {
             log.warn("Không gửi được thông báo cho quản lý trực tiếp: {}", ex.getMessage());
         }
