@@ -1,0 +1,8 @@
+{
+  "name": "bosskin-quang-cao",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Quangcao out/bosskin-quang-cao.mp4 --browser-executable=${CHROMIUM_PATH:-$(ls -d /opt/pw-browsers/chromium_headless_shell-*/chrome-linux*/headless_shell | head -1)}"
+  }
+}
