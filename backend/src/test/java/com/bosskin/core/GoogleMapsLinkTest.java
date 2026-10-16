@@ -35,6 +35,15 @@ class GoogleMapsLinkTest {
     }
 
     @Test
+    @DisplayName("Toạ độ nằm trong đường dẫn: /maps/search/lat,+lng, /maps/place/lat,lng, /maps/dir//lat,lng")
+    void coordinatesInPath() {
+        assertThat(GoogleMapsLink.parse("https://www.google.com/maps/search/10.858649,+106.634309?entry=tts&g_ep=EgoyMDI2").orElseThrow()).containsExactly(10.858649, 106.634309);
+        assertThat(GoogleMapsLink.parse("https://www.google.com/maps/search/10.858649,%20106.634309").orElseThrow()).containsExactly(10.858649, 106.634309);
+        assertThat(GoogleMapsLink.parse("https://www.google.com/maps/place/10.858649,106.634309/@10.9,106.7,17z").orElseThrow()).containsExactly(10.858649, 106.634309);
+        assertThat(GoogleMapsLink.parse("https://www.google.com/maps/dir//10.858649,106.634309/data=!4m2").orElseThrow()).containsExactly(10.858649, 106.634309);
+    }
+
+    @Test
     @DisplayName("Ngoài phạm vi / không có toạ độ → rỗng")
     void invalid() {
         assertThat(GoogleMapsLink.parse("95.0, 106.0")).isEmpty();

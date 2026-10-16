@@ -23,6 +23,15 @@ void main() {
     expect(parseMapsCoordinates(' 10.852238, 106.623761 ')!.longitude, 106.623761);
   });
 
+  test('toạ độ nằm trong đường dẫn: /maps/search/lat,+lng, /maps/place/lat,lng', () {
+    final a = parseMapsCoordinates('https://www.google.com/maps/search/10.858649,+106.634309?entry=tts&g_ep=EgoyMDI2')!;
+    expect([a.latitude, a.longitude], [10.858649, 106.634309]);
+    final b = parseMapsCoordinates('https://www.google.com/maps/search/10.858649,%20106.634309')!;
+    expect(b.longitude, 106.634309);
+    final c = parseMapsCoordinates('https://www.google.com/maps/dir//10.858649,106.634309/data=!4m2')!;
+    expect(c.latitude, 10.858649);
+  });
+
   test('ngoài phạm vi, link rút gọn, rỗng → null; link rút gọn nhận ra là URL', () {
     expect(parseMapsCoordinates('95.0, 106.0'), isNull);
     expect(parseMapsCoordinates('10.0, 200.0'), isNull);
