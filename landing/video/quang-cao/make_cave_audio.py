@@ -37,9 +37,10 @@ wav = f'{HERE}/out/cave-music.wav'
 data = (np.clip(music / max(1e-6, np.abs(music).max()) * .8, -1, 1) * 32767).astype('<i2')
 with wave.open(wav, 'wb') as w: w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(data.tobytes())
 
-src, dst = f'{HERE}/out/bosskin-cai-va.mp4', f'{HERE}/bosskin-cai-va.mp4'
+VO_DIR = os.environ.get('VO_DIR', 'vo-cave')
+src = f'{HERE}/out/bosskin-cai-va.mp4'; dst = f'{HERE}/' + os.environ.get('OUT_NAME', 'bosskin-cai-va.mp4')
 cmd = ['ffmpeg', '-v', 'error', '-y', '-i', src, '-i', wav]
-for i in range(len(SEG)): cmd += ['-i', f'{HERE}/vo-cave/{i + 1}.mp3']
+for i in range(len(SEG)): cmd += ['-i', f'{HERE}/{VO_DIR}/{i + 1}.mp3']
 parts = [f'[{i + 2}:a]adelay={int(s["start"] * 1000 + 150)}:all=1,volume=1.7[v{i}]' for i, s in enumerate(SEG)]
 mix = ''.join(f'[v{i}]' for i in range(len(SEG)))
 filt = ';'.join(parts) + f';{mix}amix=inputs={len(SEG)}:normalize=0[vo];[vo]asplit[vo1][vo2];' \

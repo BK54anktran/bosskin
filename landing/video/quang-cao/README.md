@@ -18,3 +18,7 @@ npx remotion render src/index.ts Cave out/bosskin-cai-va.mp4 --browser-executabl
 python3 make_cave_audio.py     # ghép giọng + nhạc → bosskin-cai-va.mp4
 ```
 Đổi lời thoại → sửa `LINES` trong `make_cave_voice.py` rồi chạy lại 3 lệnh (độ dài từng cảnh tự co giãn theo giọng).
+
+Giọng thần kinh offline (Piper, tự nhiên hơn gTTS): `pip install piper-tts`, tải `vi_VN-vais1000-medium.onnx` (+ `.json`) từ huggingface.co/rhasspy/piper-voices (vi/vi_VN/vais1000/medium), rồi
+`ENGINE=piper PIPER_MODEL=<file.onnx> python3 make_cave_voice.py` → `vo-cave-piper/`; dựng hình lại rồi `VO_DIR=vo-cave-piper OUT_NAME=bosskin-cai-va-piper.mp4 python3 make_cave_audio.py`.
+(`make_cave_voice.py` ghi đè `src/cave-timings.json` — chạy lại engine nào thì dựng hình bằng engine đó.)

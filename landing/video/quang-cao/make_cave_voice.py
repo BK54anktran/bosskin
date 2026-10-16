@@ -3,8 +3,10 @@
 giọng Microsoft cần WebSocket nên bị proxy chặn). Mỗi vai một tông (nhân viên cao, sếp trầm, dẫn chuyện giữ nguyên).
 Ghi vo-cave/N.mp3 và src/cave-timings.json (thời điểm + độ dài từng đoạn) cho Remotion.
   python3 make_cave_voice.py     (cần: pip install gTTS ; ffmpeg ; SSL_CERT_FILE=/root/.ccr/ca-bundle.crt trên cloud)"""
-import json, os, subprocess
-from gtts import gTTS
+import json, os, subprocess, sys
+ENGINE = os.environ.get('ENGINE', 'gtts')   # gtts | piper (piper: giọng thần kinh offline, cần PIPER_MODEL=<file .onnx> + pip install piper-tts)
+PIPER_MODEL = os.environ.get('PIPER_MODEL', '')
+if ENGINE == 'gtts': from gtts import gTTS
 HERE = os.path.dirname(os.path.abspath(__file__))
 LINES = [  # (vai, lời)
     ('nv',  'Sếp ơi, lương em bị thiếu rồi!'),
@@ -18,14 +20,17 @@ LINES = [  # (vai, lời)
 ]
 PITCH = {'nv': 1.16, 'sep': 0.84, 'dan': 1.0}
 GAP, TAIL = 0.2, 0.3
-SPEED = 1.18   # tăng tốc chung (gTTS đọc chậm)   # nghỉ giữa các câu, đuôi mỗi đoạn
-os.makedirs(f'{HERE}/vo-cave', exist_ok=True)
+SPEED = 1.18 if ENGINE == 'gtts' else 1.08   # tăng tốc chung
+SR_IN = 24000 if ENGINE == 'gtts' else 22050
+VODIR = 'vo-cave' if ENGINE == 'gtts' else f'vo-cave-{ENGINE}'   # nghỉ giữa các câu, đuôi mỗi đoạn
+os.makedirs(f'{HERE}/{VODIR}', exist_ok=True)
 segs, t = [], 0.0
 for i, (who, text) in enumerate(LINES, 1):
-    raw = f'{HERE}/vo-cave/raw{i}.mp3'; out = f'{HERE}/vo-cave/{i}.mp3'
-    gTTS(text, lang='vi').save(raw)
+    raw = f'{HERE}/{VODIR}/raw{i}.' + ('mp3' if ENGINE == 'gtts' else 'wav'); out = f'{HERE}/{VODIR}/{i}.mp3'
+    if ENGINE == 'gtts': gTTS(text, lang='vi').save(raw)
+    else: subprocess.run([sys.executable, '-m', 'piper', '-m', PIPER_MODEL, '-f', raw], input=text.encode(), check=True)
     p = PITCH[who]
-    af = f'aresample=44100,atempo={SPEED}' if p == 1.0 else f'asetrate={int(24000 * p)},aresample=44100,atempo={SPEED / p:.4f}'
+    af = f'aresample=44100,atempo={SPEED}' if p == 1.0 else f'asetrate={int(SR_IN * p)},aresample=44100,atempo={SPEED / p:.4f}'
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', raw, '-af', af, out], check=True)
     os.remove(raw)
     d = float(subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', out]))
