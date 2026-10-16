@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Ca tuần này:",
+  "ai cũng không rõ?!"
+ ],
+ "result": [
+  "Xếp ca bằng tin nhắn",
+  "dễ nhầm lắm"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, tuần này em làm ca nào ạ?"
+  },
+  {
+   "who": "sep",
+   "text": "Anh nhắn trong nhóm rồi mà."
+  },
+  {
+   "who": "nv",
+   "text": "Tin nhắn trôi mất rồi, em không thấy!"
+  },
+  {
+   "who": "sep",
+   "text": "Thế sáng mai em lại đi nhầm ca à?"
+  },
+  {
+   "who": "dan",
+   "text": "Xếp ca bằng tin nhắn, rất dễ nhầm."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin xếp ca cả tuần trên một bảng, có ca đêm, ca gãy, xoay ca."
+  },
+  {
+   "who": "dan",
+   "text": "Nhân viên mở ứng dụng là biết ca của mình. Cần đổi ca thì gửi yêu cầu."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "man-xep-ca.webp",
+   "title": [
+    "Xếp ca cả tuần",
+    "trên một bảng"
+   ],
+   "cap": [
+    "Ca đêm · ca gãy · xoay ca",
+    ""
+   ]
+  },
+  {
+   "kind": "phone",
+   "img": "dt-cham-cong.webp",
+   "title": [
+    "Mở app là biết",
+    "ca của mình"
+   ],
+   "cap": [
+    "Cần đổi ca thì gửi yêu cầu",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "xep-ca",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, tuần này em làm ca nào ạ?",
+   "start": 0.0,
+   "voice": 2.847,
+   "len": 3.147
+  },
+  {
+   "who": "sep",
+   "text": "Anh nhắn trong nhóm rồi mà.",
+   "start": 3.347,
+   "voice": 1.855,
+   "len": 2.155
+  },
+  {
+   "who": "nv",
+   "text": "Tin nhắn trôi mất rồi, em không thấy!",
+   "start": 5.702,
+   "voice": 2.638,
+   "len": 2.938
+  },
+  {
+   "who": "sep",
+   "text": "Thế sáng mai em lại đi nhầm ca à?",
+   "start": 8.84,
+   "voice": 2.508,
+   "len": 2.808
+  },
+  {
+   "who": "dan",
+   "text": "Xếp ca bằng tin nhắn, rất dễ nhầm.",
+   "start": 11.848,
+   "voice": 2.743,
+   "len": 3.043
+  },
+  {
+   "who": "dan",
+   "text": "BossKin xếp ca cả tuần trên một bảng, có ca đêm, ca gãy, xoay ca.",
+   "start": 15.091,
+   "voice": 5.46,
+   "len": 5.76
+  },
+  {
+   "who": "dan",
+   "text": "Nhân viên mở ứng dụng là biết ca của mình. Cần đổi ca thì gửi yêu cầu.",
+   "start": 21.051,
+   "voice": 4.754,
+   "len": 5.054
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 26.305,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 32.992
+}

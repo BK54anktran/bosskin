@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Bảng chấm công",
+  "sai ngày?!"
+ ],
+ "result": [
+  "Chấm công bằng giấy",
+  "ai cũng có lý"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, hôm qua em đi làm mà không có công!"
+  },
+  {
+   "who": "sep",
+   "text": "Anh đâu thấy em chấm gì cả."
+  },
+  {
+   "who": "nv",
+   "text": "Em ký sổ rồi mà, sổ đâu mất rồi?"
+  },
+  {
+   "who": "sep",
+   "text": "Sổ giấy thì ai chứng minh được."
+  },
+  {
+   "who": "dan",
+   "text": "Chấm công bằng giấy, ai cũng có lý."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin chấm công bằng điện thoại, có định vị, ghi đúng giờ."
+  },
+  {
+   "who": "dan",
+   "text": "Mỗi lượt chấm đều có dữ liệu. Không ai chấm hộ được."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "phone",
+   "img": "dt-cham-cong.webp",
+   "title": [
+    "Chấm công bằng",
+    "điện thoại"
+   ],
+   "cap": [
+    "Có định vị, ghi đúng giờ",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-duyet-cong.webp",
+   "title": [
+    "Mỗi lượt chấm",
+    "đều có dữ liệu"
+   ],
+   "cap": [
+    "Không ai chấm hộ được",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "cham-cong",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, hôm qua em đi làm mà không có công!",
+   "start": 0.0,
+   "voice": 3.631,
+   "len": 3.931
+  },
+  {
+   "who": "sep",
+   "text": "Anh đâu thấy em chấm gì cả.",
+   "start": 4.131,
+   "voice": 2.064,
+   "len": 2.364
+  },
+  {
+   "who": "nv",
+   "text": "Em ký sổ rồi mà, sổ đâu mất rồi?",
+   "start": 6.695,
+   "voice": 2.743,
+   "len": 3.043
+  },
+  {
+   "who": "sep",
+   "text": "Sổ giấy thì ai chứng minh được.",
+   "start": 9.938,
+   "voice": 2.168,
+   "len": 2.468
+  },
+  {
+   "who": "dan",
+   "text": "Chấm công bằng giấy, ai cũng có lý.",
+   "start": 12.606,
+   "voice": 2.717,
+   "len": 3.017
+  },
+  {
+   "who": "dan",
+   "text": "BossKin chấm công bằng điện thoại, có định vị, ghi đúng giờ.",
+   "start": 15.822,
+   "voice": 4.362,
+   "len": 4.662
+  },
+  {
+   "who": "dan",
+   "text": "Mỗi lượt chấm đều có dữ liệu. Không ai chấm hộ được.",
+   "start": 20.685,
+   "voice": 3.892,
+   "len": 4.192
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 25.077,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 31.764
+}

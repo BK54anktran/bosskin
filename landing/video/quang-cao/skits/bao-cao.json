@@ -1,0 +1,133 @@
+{
+ "paper": [
+  "Báo cáo tháng",
+  "chưa xong?!"
+ ],
+ "result": [
+  "Số liệu rải rác",
+  "quyết định chậm"
+ ],
+ "labels": {
+  "nv": "Kế toán"
+ },
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em chưa tổng hợp xong báo cáo tháng."
+  },
+  {
+   "who": "sep",
+   "text": "Anh cần biết hôm nay ai đi làm, lương hết bao nhiêu!"
+  },
+  {
+   "who": "nv",
+   "text": "Em đang gộp từ nhiều file Excel."
+  },
+  {
+   "who": "sep",
+   "text": "Thế bao giờ anh mới có số liệu?"
+  },
+  {
+   "who": "dan",
+   "text": "Số liệu rải rác, quyết định chậm."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin có màn tổng quan và báo cáo Excel, xuất trong vài giây."
+  },
+  {
+   "who": "dan",
+   "text": "Chủ doanh nghiệp xem ngay hôm nay ai đi làm, chi phí lương bao nhiêu."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "man-tong-quan.webp",
+   "title": [
+    "Biết ngay hôm nay",
+    "ai đi làm"
+   ],
+   "cap": [
+    "Màn tổng quan cho chủ doanh nghiệp",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-bang-luong.webp",
+   "title": [
+    "Báo cáo Excel",
+    "trong vài giây"
+   ],
+   "cap": [
+    "Chi phí lương, chấm công, nhân sự",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "bao-cao",
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em chưa tổng hợp xong báo cáo tháng.",
+   "start": 0.0,
+   "voice": 3.265,
+   "len": 3.565
+  },
+  {
+   "who": "sep",
+   "text": "Anh cần biết hôm nay ai đi làm, lương hết bao nhiêu!",
+   "start": 3.765,
+   "voice": 3.762,
+   "len": 4.062
+  },
+  {
+   "who": "nv",
+   "text": "Em đang gộp từ nhiều file Excel.",
+   "start": 8.027,
+   "voice": 2.377,
+   "len": 2.677
+  },
+  {
+   "who": "sep",
+   "text": "Thế bao giờ anh mới có số liệu?",
+   "start": 10.904,
+   "voice": 2.168,
+   "len": 2.468
+  },
+  {
+   "who": "dan",
+   "text": "Số liệu rải rác, quyết định chậm.",
+   "start": 13.572,
+   "voice": 2.429,
+   "len": 2.729
+  },
+  {
+   "who": "dan",
+   "text": "BossKin có màn tổng quan và báo cáo Excel, xuất trong vài giây.",
+   "start": 16.502,
+   "voice": 4.78,
+   "len": 5.08
+  },
+  {
+   "who": "dan",
+   "text": "Chủ doanh nghiệp xem ngay hôm nay ai đi làm, chi phí lương bao nhiêu.",
+   "start": 21.782,
+   "voice": 4.415,
+   "len": 4.715
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 26.697,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 33.384
+}

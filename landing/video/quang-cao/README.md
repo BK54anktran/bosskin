@@ -10,15 +10,12 @@ npm run render                 # → out/bosskin-quang-cao.mp4  (dùng chromium 
 npm run studio                 # xem / chỉnh trực tiếp
 ```
 
-## Bản "Cãi vã chuyện thiếu lương → BossKin" (`bosskin-cai-va.mp4`, ~31 giây)
-Hoạt hình tự vẽ (nhân viên và sếp cãi nhau vì thiếu công, không dùng clip có bản quyền) rồi vào phần giải pháp BossKin + giá + dùng thử + 24/24.
+## Bộ video "cãi vã → BossKin", mỗi module một video (~30 giây, 9:16)
+Hoạt hình tự vẽ (không dùng clip có bản quyền): nhân viên và sếp cãi nhau vì một vấn đề của module → BossKin giải quyết → giá từ 5.000đ/NV/tháng, dùng thử miễn phí 1 tháng, hỗ trợ 24/24, hotline.
+Kịch bản `skits/<slug>.json` (7 module: cham-cong, xep-ca, nghi-phep, duyet-cong, tinh-luong, nhat-ky, bao-cao); thêm module mới → thêm file JSON + dòng trong `src/skits.ts` + ảnh vào `prep.sh`.
 ```
-python3 make_cave_voice.py     # lời thoại → vo-cave/*.mp3 (gTTS, mỗi vai một tông) + src/cave-timings.json
-npx remotion render src/index.ts Cave out/bosskin-cai-va.mp4 --browser-executable=<headless_shell>
-python3 make_cave_audio.py     # ghép giọng + nhạc → bosskin-cai-va.mp4
+./build_skit.sh <slug>    # giọng (gTTS) → hình (Remotion, composition "Skit") → ghép giọng + nhạc → out/final/skit-<slug>.mp4 + .jpg
 ```
-Đổi lời thoại → sửa `LINES` trong `make_cave_voice.py` rồi chạy lại 3 lệnh (độ dài từng cảnh tự co giãn theo giọng).
-
-Giọng thần kinh offline (Piper, tự nhiên hơn gTTS): `pip install piper-tts`, tải `vi_VN-vais1000-medium.onnx` (+ `.json`) từ huggingface.co/rhasspy/piper-voices (vi/vi_VN/vais1000/medium), rồi
-`ENGINE=piper PIPER_MODEL=<file.onnx> python3 make_cave_voice.py` → `vo-cave-piper/`; dựng hình lại rồi `VO_DIR=vo-cave-piper OUT_NAME=bosskin-cai-va-piper.mp4 python3 make_cave_audio.py`.
-(`make_cave_voice.py` ghi đè `src/cave-timings.json` — chạy lại engine nào thì dựng hình bằng engine đó.)
+Giọng gTTS: nhân viên cao, sếp trầm, người dẫn giữ nguyên; độ dài từng cảnh tự co giãn theo giọng. Trên cloud đặt `SSL_CERT_FILE=/root/.ccr/ca-bundle.crt REQUESTS_CA_BUNDLE=/root/.ccr/ca-bundle.crt`.
+Quy tắc nội dung (chủ dự án): chữ trên video chỉ ghi website + "Hotline: 0865 854 002", không nhắc tên nền tảng khác.
+Video thành phẩm đăng tự động hằng ngày qua tác vụ đăng bài (mỗi ngày một module, xoay vòng); file mp4 nằm ở kho media Supabase, không commit.

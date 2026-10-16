@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Ai đã sửa",
+  "công của em?!"
+ ],
+ "result": [
+  "Không biết ai sửa",
+  "ai cũng chối"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, ai sửa công của em vậy?"
+  },
+  {
+   "who": "sep",
+   "text": "Anh đâu có sửa, chắc máy lỗi."
+  },
+  {
+   "who": "nv",
+   "text": "Hôm qua còn đủ, hôm nay mất một công!"
+  },
+  {
+   "who": "sep",
+   "text": "Anh không nhớ ai sửa cả."
+  },
+  {
+   "who": "dan",
+   "text": "Không biết ai sửa, ai cũng chối."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin ghi nhật ký mọi thao tác: ai sửa, sửa gì, lúc nào."
+  },
+  {
+   "who": "dan",
+   "text": "Minh bạch, không còn cãi nhau chuyện ai sửa."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "man-nhat-ky.webp",
+   "title": [
+    "Nhật ký",
+    "mọi thao tác"
+   ],
+   "cap": [
+    "Ai sửa, sửa gì, lúc nào",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-tong-quan.webp",
+   "title": [
+    "Minh bạch cho",
+    "cả hai bên"
+   ],
+   "cap": [
+    "Không còn cãi nhau",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "nhat-ky",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, ai sửa công của em vậy?",
+   "start": 0.0,
+   "voice": 2.795,
+   "len": 3.095
+  },
+  {
+   "who": "sep",
+   "text": "Anh đâu có sửa, chắc máy lỗi.",
+   "start": 3.295,
+   "voice": 2.377,
+   "len": 2.677
+  },
+  {
+   "who": "nv",
+   "text": "Hôm qua còn đủ, hôm nay mất một công!",
+   "start": 6.172,
+   "voice": 2.847,
+   "len": 3.147
+  },
+  {
+   "who": "sep",
+   "text": "Anh không nhớ ai sửa cả.",
+   "start": 9.52,
+   "voice": 2.011,
+   "len": 2.311
+  },
+  {
+   "who": "dan",
+   "text": "Không biết ai sửa, ai cũng chối.",
+   "start": 12.031,
+   "voice": 2.586,
+   "len": 2.886
+  },
+  {
+   "who": "dan",
+   "text": "BossKin ghi nhật ký mọi thao tác: ai sửa, sửa gì, lúc nào.",
+   "start": 15.117,
+   "voice": 5.016,
+   "len": 5.316
+  },
+  {
+   "who": "dan",
+   "text": "Minh bạch, không còn cãi nhau chuyện ai sửa.",
+   "start": 20.633,
+   "voice": 3.004,
+   "len": 3.304
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 24.137,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 30.824
+}

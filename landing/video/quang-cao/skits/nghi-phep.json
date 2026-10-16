@@ -1,0 +1,131 @@
+{
+ "paper": [
+  "Phép năm",
+  "còn mấy ngày?!"
+ ],
+ "result": [
+  "Phép không ghi rõ",
+  "dễ quên, dễ cãi"
+ ],
+ "lines": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em còn mấy ngày phép năm?"
+  },
+  {
+   "who": "sep",
+   "text": "Chắc còn nhiều, để anh xem lại."
+  },
+  {
+   "who": "nv",
+   "text": "Em xin nghỉ thứ Sáu được không ạ?"
+  },
+  {
+   "who": "sep",
+   "text": "Em xin miệng, anh quên mất rồi!"
+  },
+  {
+   "who": "dan",
+   "text": "Phép không ghi sổ rõ ràng, dễ quên."
+  },
+  {
+   "who": "dan",
+   "text": "BossKin gửi đơn nghỉ trên điện thoại, sổ phép tự trừ và tự hoàn."
+  },
+  {
+   "who": "dan",
+   "text": "Nhân viên thấy số phép còn lại. Quản lý duyệt chỉ một chạm."
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm."
+  }
+ ],
+ "sol": [
+  {
+   "kind": "screen",
+   "img": "man-nghi-phep.webp",
+   "title": [
+    "Xin nghỉ ngay",
+    "trên điện thoại"
+   ],
+   "cap": [
+    "Sổ phép tự trừ, tự hoàn",
+    ""
+   ]
+  },
+  {
+   "kind": "screen",
+   "img": "man-duyet-cong.webp",
+   "title": [
+    "Quản lý duyệt",
+    "một chạm"
+   ],
+   "cap": [
+    "Thấy rõ số phép còn lại",
+    "✓"
+   ]
+  }
+ ],
+ "slug": "nghi-phep",
+ "labels": {},
+ "segments": [
+  {
+   "who": "nv",
+   "text": "Sếp ơi, em còn mấy ngày phép năm?",
+   "start": 0.0,
+   "voice": 2.717,
+   "len": 3.017
+  },
+  {
+   "who": "sep",
+   "text": "Chắc còn nhiều, để anh xem lại.",
+   "start": 3.217,
+   "voice": 2.403,
+   "len": 2.703
+  },
+  {
+   "who": "nv",
+   "text": "Em xin nghỉ thứ Sáu được không ạ?",
+   "start": 6.12,
+   "voice": 2.142,
+   "len": 2.442
+  },
+  {
+   "who": "sep",
+   "text": "Em xin miệng, anh quên mất rồi!",
+   "start": 8.762,
+   "voice": 2.351,
+   "len": 2.651
+  },
+  {
+   "who": "dan",
+   "text": "Phép không ghi sổ rõ ràng, dễ quên.",
+   "start": 11.613,
+   "voice": 2.795,
+   "len": 3.095
+  },
+  {
+   "who": "dan",
+   "text": "BossKin gửi đơn nghỉ trên điện thoại, sổ phép tự trừ và tự hoàn.",
+   "start": 14.908,
+   "voice": 4.78,
+   "len": 5.08
+  },
+  {
+   "who": "dan",
+   "text": "Nhân viên thấy số phép còn lại. Quản lý duyệt chỉ một chạm.",
+   "start": 20.189,
+   "voice": 4.101,
+   "len": 4.401
+  },
+  {
+   "who": "dan",
+   "text": "Chỉ từ năm nghìn đồng một nhân viên. Dùng thử miễn phí một tháng. Hỗ trợ cả ngày lẫn đêm.",
+   "start": 24.79,
+   "voice": 6.087,
+   "len": 6.387
+  }
+ ],
+ "total": 31.477
+}
