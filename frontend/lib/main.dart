@@ -334,7 +334,11 @@ class BossKinApp extends StatelessWidget {
                 textScaler: TextScaler.linear(system * scale),
               ),
               // Bước F: màu AppTheme đọc theo AppTheme.isDark, không qua Theme.of → đổi chế độ thì dựng lại cả cây
-              child: KeyedSubtree(key: ValueKey(dark), child: child!),
+              child: Theme(
+                // Điện thoại: nút / ô nhập / combobox / tab gọn lại (AppTheme.compact)
+                data: width < 600 ? AppTheme.compact(Theme.of(context)) : Theme.of(context),
+                child: KeyedSubtree(key: ValueKey(dark), child: child!),
+              ),
             );
           },
         );

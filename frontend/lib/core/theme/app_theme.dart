@@ -117,4 +117,53 @@ class AppTheme {
       ),
     );
   }
+
+  /// Điện thoại (< 600 dp): nút, ô nhập, combobox, tab gọn lại cho cân đối (chiều cao ~38, chữ 13, lề ngang nhỏ).
+  static ThemeData compact(ThemeData base) {
+    const h = 38.0;
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
+    const pad = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+    const label = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
+    final in0 = base.inputDecorationTheme;
+    return base.copyWith(
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary, foregroundColor: Colors.white,
+          minimumSize: const Size(0, h), padding: pad, shape: shape, textStyle: label, iconSize: 16,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, h), padding: pad, shape: shape, textStyle: label, iconSize: 16,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, h), padding: pad, shape: shape, textStyle: label, iconSize: 16,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(0, 34), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          shape: shape, textStyle: label, iconSize: 16,
+        ),
+      ),
+      inputDecorationTheme: in0.copyWith(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        labelStyle: const TextStyle(fontSize: 13),
+        hintStyle: const TextStyle(fontSize: 13),
+        helperStyle: const TextStyle(fontSize: 11),
+        errorStyle: const TextStyle(fontSize: 11),
+      ),
+      tabBarTheme: base.tabBarTheme.copyWith(
+        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontSize: 13),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+      ),
+      listTileTheme: base.listTileTheme.copyWith(dense: true, minVerticalPadding: 4),
+    );
+  }
 }
