@@ -2058,4 +2058,11 @@
   ,"defaultDocHdDaKy": "Hợp đồng / phụ lục đã ký"
   ,"defaultDocKhamSk": "Giấy khám sức khoẻ"
   ,"defaultRoleEmployeeName": "Nhân viên"
+  ,"pasteMapsLink": "Dán link Google Maps"
+  ,"mapsLinkTitle": "Lấy tọa độ từ link Google Maps"
+  ,"mapsLinkHint": "Dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc tọa độ dạng 10.77, 106.70"
+  ,"mapsLinkField": "Link hoặc tọa độ"
+  ,"mapsLinkApply": "Lấy tọa độ"
+  ,"mapsLinkPaste": "Dán từ bộ nhớ tạm"
+  ,"mapsLinkNotFound": "Không tìm thấy tọa độ trong nội dung này"
 }

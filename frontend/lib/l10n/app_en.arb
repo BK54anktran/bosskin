@@ -2051,4 +2051,11 @@
   ,"defaultDocHdDaKy": "Signed contract / appendix"
   ,"defaultDocKhamSk": "Health check certificate"
   ,"defaultRoleEmployeeName": "Employee"
+  ,"pasteMapsLink": "Paste Google Maps link"
+  ,"mapsLinkTitle": "Get coordinates from a Google Maps link"
+  ,"mapsLinkHint": "Paste a Google Maps link (short maps.app.goo.gl links work too) or coordinates like 10.77, 106.70"
+  ,"mapsLinkField": "Link or coordinates"
+  ,"mapsLinkApply": "Get coordinates"
+  ,"mapsLinkPaste": "Paste from clipboard"
+  ,"mapsLinkNotFound": "No coordinates found in this text"
 }

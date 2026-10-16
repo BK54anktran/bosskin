@@ -1851,6 +1851,48 @@ abstract class AppLocalizations {
   /// **'Xóa vị trí'**
   String get clearLocation;
 
+  /// No description provided for @pasteMapsLink.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán link Google Maps'**
+  String get pasteMapsLink;
+
+  /// No description provided for @mapsLinkTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy tọa độ từ link Google Maps'**
+  String get mapsLinkTitle;
+
+  /// No description provided for @mapsLinkHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc tọa độ dạng 10.77, 106.70'**
+  String get mapsLinkHint;
+
+  /// No description provided for @mapsLinkField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Link hoặc tọa độ'**
+  String get mapsLinkField;
+
+  /// No description provided for @mapsLinkApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy tọa độ'**
+  String get mapsLinkApply;
+
+  /// No description provided for @mapsLinkPaste.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán từ bộ nhớ tạm'**
+  String get mapsLinkPaste;
+
+  /// No description provided for @mapsLinkNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy tọa độ trong nội dung này'**
+  String get mapsLinkNotFound;
+
   /// No description provided for @add.
   ///
   /// In vi, this message translates to:

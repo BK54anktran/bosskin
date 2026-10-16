@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-41 controller, 326 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+42 controller, 327 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -22,6 +22,7 @@
 | [EmployeeController](#employeecontroller) | `/api/v1/employees` | 11 |
 | [EmployeeLocationController](#employeelocationcontroller) | `/api/v1/employees/{employeeId}/locations` | 4 |
 | [FormulaVariableController](#formulavariablecontroller) | `/api/v1/formula-variables` | 9 |
+| [GeoController](#geocontroller) | `/api/v1/geo` | 1 |
 | [HolidayTemplateController](#holidaytemplatecontroller) | `/admin/holidays` | 5 |
 | [JobHistoryController](#jobhistorycontroller) | `/` | 4 |
 | [LeaveController](#leavecontroller) | `/api/v1/leaves` | 21 |
@@ -293,6 +294,14 @@
 | PUT | `/api/v1/formula-variables/{id}` | PAYROLL_CREATE | `update` |
 | PATCH | `/api/v1/formula-variables/{id}/show-in-formula` | PAYROLL_CREATE | `toggleShowInFormula` |
 | DELETE | `/api/v1/formula-variables/{id}` | PAYROLL_CREATE | `delete` |
+
+## GeoController
+
+`backend/src/main/java/com/bosskin/controller/GeoController.java`
+
+| Method | Đường dẫn | Quyền | Hàm |
+|---|---|---|---|
+| POST | `/api/v1/geo/resolve-maps-link` | COMPANY_SETTING_MANAGE hoặc DEPARTMENT_MANAGE hoặc EMPLOYEE_UPDATE | `resolveMapsLink` |
 
 ## HolidayTemplateController
 

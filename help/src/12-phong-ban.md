@@ -16,7 +16,7 @@ Mở **Phòng ban**. Mỗi phòng hiện mã và số nhân viên; bấm mũi t�
 
 1. Bấm **Thêm phòng ban** (hoặc *Thêm phòng con* trên phòng cha).
 2. Nhập **Tên** và **Mã phòng ban**, chọn **Phòng ban cha** (để trống = cấp cao nhất).
-3. **Vị trí check-in** (tuỳ chọn): bấm **Lấy vị trí hiện tại** hoặc nhập vĩ độ / kinh độ và bán kính (mét). Nhân viên phòng này phải
+3. **Vị trí check-in** (tuỳ chọn): bấm **Lấy vị trí hiện tại**, hoặc bấm **Dán link Google Maps** rồi dán link địa điểm (link dài hay link rút gọn `maps.app.goo.gl` đều được; có thể dán luôn toạ độ dạng `10.77, 106.70`) để hệ thống tự điền vĩ độ / kinh độ, hoặc nhập tay vĩ độ / kinh độ; sau đó đặt bán kính (mét). Nhân viên phòng này phải
    đứng trong vùng đó mới chấm công được; để trống thì dùng vị trí chung của công ty.
 4. Có thể đặt dung sai đi muộn / về sớm và làm tròn giờ riêng cho phòng → **Tạo** / **Lưu**.
 

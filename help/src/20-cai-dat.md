@@ -33,7 +33,7 @@ Mở **Cài đặt công ty** (cuối menu). Hai tab: **Chung** và **Lịch là
 
 | Mục | Ý nghĩa |
 |---|---|
-| Bật kiểm tra vị trí check-in | Bắt nhân viên đứng trong bán kính quanh vị trí công ty (hoặc vị trí riêng của phòng ban) |
+| Bật kiểm tra vị trí check-in | Bắt nhân viên đứng trong bán kính quanh vị trí công ty (hoặc vị trí riêng của phòng ban). Đặt vị trí bằng bản đồ, nút **Lấy vị trí hiện tại**, nút **Dán link Google Maps** (dán link địa điểm, kể cả link rút gọn, hệ thống tự lấy toạ độ) hoặc nhập vĩ độ / kinh độ |
 | Chỉ chấm công trên thiết bị đã gắn | Lần chấm đầu tự gắn máy; máy khác bị chặn. Đổi máy: nhân sự gỡ thiết bị ở hồ sơ nhân viên |
 | Cho chấm vào / ra khi không được xếp ca | Ngày nhân viên không có ca vẫn chấm vào / ra được nhiều lượt trong ngày (mỗi lượt một dòng công; chưa chấm ra thì chưa vào lượt mới): công không gắn ca, không xét đi muộn, giờ làm theo giờ thực tế, vẫn cần duyệt. Ngày có ca vẫn chấm theo khung giờ ca |
 | Phạm vi giờ check-in / out | Được chấm sớm / muộn bao nhiêu phút quanh giờ ca |
