@@ -701,6 +701,14 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
   `docs/chuyen-du-lieu.md`; đối chiếu pilot `tools/onboarding/doi_chieu.py`. Đổi cột nhập Excel → tạo lại mẫu (quy tắc 2).
 - Checklist thử điện thoại: `docs/thu-dien-thoai.md` (bước D) — tính năng mobile mới thì thêm kịch bản.
 
+### Responsive điện thoại (17/10/2026)
+- Màn rộng < 560–600 dp là điện thoại: **không đặt ô rộng cố định (`SizedBox(width: …)`) cạnh `Spacer()` trong một `Row`** (tràn mép phải) — dùng `LayoutBuilder`
+  chia hàng / `Expanded` / `Wrap`. Mẫu: đầu màn Tổng quan (`dashboard_screen.dart`, nhánh `narrow`).
+- Phần cố định (thanh dưới `BottomNavigationBar`, `PaginationBar`, tiêu đề + tab) phải gọn: không chiều cao cố định (dùng `minHeight`), chữ không phóng theo cỡ chữ hệ thống quá 1.1
+  ở thanh dưới; nội dung cuộn mới là phần lớn màn hình. Cỡ chữ hệ thống chặn 1.3 (< 600 dp) / 1.4 (rộng) ở `main.dart`.
+- Hộp thoại: lề `insetPadding` 16 (`AppTheme` → `dialogTheme`); nội dung `SizedBox(width: N)` trong `AlertDialog` tự bị cắt theo bề rộng khả dụng, nhưng bên trong
+  đừng xếp nhiều ô rộng cố định cạnh nhau — dùng `Wrap` hoặc `Expanded`.
+
 ### Hover cursor
 - Widget có `onTap`/`onPressed` trên desktop → thêm `MouseRegion(cursor: SystemMouseCursors.click)` để hiện bàn tay khi hover.
 

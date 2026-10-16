@@ -78,7 +78,9 @@ class AppTheme {
         ),
         color: cardC,
       ),
-      dialogTheme: DialogThemeData(backgroundColor: cardC),
+      // Điện thoại: lề hộp thoại 16 (mặc định 40) để hộp rộng thêm ~48dp, ít phải cuộn ngang / bị cắt
+      dialogTheme: DialogThemeData(
+          backgroundColor: cardC, insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24)),
       dividerColor: borderC,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

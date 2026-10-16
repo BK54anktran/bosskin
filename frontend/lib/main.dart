@@ -327,7 +327,8 @@ class BossKinApp extends StatelessWidget {
             final scale = width < 600 ? 0.9 : (width < 900 ? 0.95 : 1.0);
             // F12 — tôn trọng cỡ chữ hệ thống (người lớn tuổi / thị lực kém), nhân thêm
             // hệ số theo màn hình; chặn trên 1.4 để bảng biểu không vỡ.
-            final system = mq.textScaler.clamp(maxScaleFactor: 1.4).scale(1.0);
+            // Điện thoại (< 600) chặn ở 1.3 để thẻ / thanh nav không phình quá; màn rộng giữ 1.4
+            final system = mq.textScaler.clamp(maxScaleFactor: width < 600 ? 1.3 : 1.4).scale(1.0);
             return MediaQuery(
               data: mq.copyWith(
                 textScaler: TextScaler.linear(system * scale),

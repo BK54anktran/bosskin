@@ -297,43 +297,63 @@ class _DashboardScreenState extends State<DashboardScreen>
     final s = AppLocalizations.of(context);
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(s.statistics,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-              const SizedBox(width: 12),
-              AnimatedBuilder(
-                animation: _tabCtrl,
-                builder: (_, __) {
-                  final tab = _DashTab.values[_tabCtrl.index];
-                  if (tab == _DashTab.overview) {
-                    final isToday = DateUtils.isSameDay(_date, DateTime.now());
-                    return _datePill(
-                        isToday ? s.today : DateFormat('dd/MM/yyyy').format(_date), _pickDate);
-                  }
-                  if (tab == _DashTab.analytics) {
-                    return _datePill(_analyticsYear.toString(), _pickAnalyticsYear);
-                  }
-                  return const SizedBox.shrink();
-                },
+        // Điện thoại (< 560): bỏ tiêu đề "Thống kê" (tên màn đã ở thanh trên) và đặt ô ngày + bộ lọc phòng ban chung một hàng,
+        // bộ lọc co giãn theo chỗ còn lại — trước đây ô cố định 220 đẩy tràn mép phải và hàng đầu chiếm nhiều chỗ.
+        LayoutBuilder(builder: (context, c) {
+          final narrow = c.maxWidth < 560;
+          Widget? pillOf() {
+            final tab = _DashTab.values[_tabCtrl.index];
+            if (tab == _DashTab.overview) {
+              final isToday = DateUtils.isSameDay(_date, DateTime.now());
+              return _datePill(isToday ? s.today : DateFormat('dd/MM/yyyy').format(_date), _pickDate);
+            }
+            if (tab == _DashTab.analytics) {
+              return _datePill(_analyticsYear.toString(), _pickAnalyticsYear);
+            }
+            return null;
+          }
+          final datePill = AnimatedBuilder(
+            animation: _tabCtrl,
+            builder: (_, __) => pillOf() ?? const SizedBox.shrink(),
+          );
+          final datePillGap = AnimatedBuilder(
+            animation: _tabCtrl,
+            builder: (_, __) {
+              final p = pillOf();
+              return p == null ? const SizedBox.shrink() : Padding(padding: const EdgeInsets.only(right: 8), child: p);
+            },
+          );
+          final deptFilter = DepartmentPickerField(
+            departments: _departments,
+            value: _deptId,
+            onChanged: _onDeptChanged,
+            label: s.dashboardFilterDepartment,
+            allowAll: true,
+          );
+          if (narrow) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [datePillGap, Expanded(child: deptFilter)],
               ),
-              const Spacer(),
-              SizedBox(
-                width: 220,
-                child: DepartmentPickerField(
-                  departments: _departments,
-                  value: _deptId,
-                  onChanged: _onDeptChanged,
-                  label: s.dashboardFilterDepartment,
-                  allowAll: true,
-                ),
-              ),
-            ],
-          ),
-        ),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(s.statistics,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                const SizedBox(width: 12),
+                datePill,
+                const Spacer(),
+                SizedBox(width: 220, child: deptFilter),
+              ],
+            ),
+          );
+        }),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Align(

@@ -162,7 +162,11 @@ class _AppShellState extends State<AppShell>
       drawer: isWide ? null : const AppDrawer(),
       bottomNavigationBar: isWide || visibleBottomItems.isEmpty
           ? null
-          : BottomNavigationBar(
+          // Thanh dưới luôn cố định → giữ gọn: chữ nhãn không phóng quá 1.1 theo cỡ chữ hệ thống, để nhiều chỗ cho nội dung
+          : MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                  textScaler: MediaQuery.of(context).textScaler.clamp(maxScaleFactor: 1.1)),
+              child: BottomNavigationBar(
               currentIndex: bottomIndex ?? 0,
               onTap: (i) {
                 final route = visibleBottomItems[i].route;
@@ -176,14 +180,15 @@ class _AppShellState extends State<AppShell>
               type: BottomNavigationBarType.fixed,
               selectedItemColor: AppTheme.primary,
               unselectedItemColor: AppTheme.textSecondary,
-              selectedFontSize: 11,
-              unselectedFontSize: 11,
+              selectedFontSize: 10.5,
+              unselectedFontSize: 10.5,
               items: visibleBottomItems
                   .map((item) => BottomNavigationBarItem(
                         icon: Icon(item.icon),
                         label: item.label,
                       ))
                   .toList(),
+              ),
             ),
       body: isWide
           ? Row(

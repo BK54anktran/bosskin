@@ -29,17 +29,22 @@ class PaginationBar extends StatelessWidget {
     final first = total == 0 ? 0 : page * pageSize + 1;
     final last = ((page + 1) * pageSize).clamp(0, total);
 
+    // Chiều cao tối thiểu (không cố định) để cỡ chữ hệ thống lớn không cắt chữ; điện thoại hẹp bỏ nhãn "Số dòng" cho gọn
+    return LayoutBuilder(builder: (context, c) {
+    final compact = c.maxWidth < 420;
     return Container(
-      height: 40,
+      constraints: const BoxConstraints(minHeight: 40),
       decoration: BoxDecoration(
         color: AppTheme.surfaceAlt,
         border: Border(top: BorderSide(color: AppTheme.border)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
       child: Row(children: [
-        Text('${s.rowsPerPage}:',
-            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-        const SizedBox(width: 6),
+        if (!compact) ...[
+          Text('${s.rowsPerPage}:',
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          const SizedBox(width: 6),
+        ],
         PopupMenuButton<int>(
           initialValue: pageSize,
           onSelected: onPageSizeChanged,
@@ -88,5 +93,6 @@ class PaginationBar extends StatelessWidget {
         ),
       ]),
     );
+    });
   }
 }
