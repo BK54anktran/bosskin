@@ -161,6 +161,9 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+  /// Khoá sửa theo TỪNG DÒNG (một ngày có thể có nhiều dòng: nhiều ca, nhiều lượt vào / ra) — không dùng khoá theo ngày, kẻo sửa một dòng là sửa cả ngày.
+  String _rowKey(TimesheetRow r) => '${_dateKey(r.date)}|${r.attendanceId ?? ''}|${r.shiftAssignmentId ?? ''}';
+
   // ── Selection ──────────────────────────────────────────────────────────────
 
   void _toggleSelectDate(String key) {
@@ -270,7 +273,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         .where((r) => !r.approved)
         .toList();
     for (final row in rows) {
-      final dk = _dateKey(row.date);
+      final dk = _rowKey(row);
       _ctrlFor(dk, 'checkIn',  row.overrideCheckIn  ?? row.checkIn  ?? '').text = row.overrideCheckIn  ?? row.checkIn  ?? '';
       _ctrlFor(dk, 'checkOut', row.overrideCheckOut ?? row.checkOut ?? '').text = row.overrideCheckOut ?? row.checkOut ?? '';
       _ctrlFor(dk, 'break',
@@ -380,7 +383,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
     final editingKeys = Set<String>.from(_editingRows);
     final rowMap = <String, TimesheetRow>{};
     for (final r in _mergedRows.expand((m) => m.rows)) {
-      final k = _dateKey(r.date);
+      final k = _rowKey(r);
       if (editingKeys.contains(k)) rowMap[k] = r;
     }
     if (rowMap.isEmpty) return;
@@ -1081,7 +1084,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
 
     var idx = 0;
     final cells = <Widget>[];
-    final dateKey = _dateKey(row.date);
+    final dateKey = _rowKey(row);
 
     cells.add(_leaveCell(row, cw[idx++], bg));
     cells.add(_shiftCell(row, cw[idx++], bg));
@@ -1329,7 +1332,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
           ],
         ] else
           Builder(builder: (_) {
-            final dk = _dateKey(row.date);
+            final dk = _rowKey(row);
             final isEditing = _editingRows.contains(dk);
             return Row(mainAxisSize: MainAxisSize.min, children: [
               if (isEditing) ...[

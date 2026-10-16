@@ -195,7 +195,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   // ── Inline editing ─────────────────────────────────────────────────────────
 
   String _daySlotKey(DayViewRow slot) =>
-      '${slot.employeeId}_${slot.date}_${slot.shiftAssignmentId ?? 0}';
+      '${slot.employeeId}_${slot.date}_${slot.shiftAssignmentId ?? 0}_${slot.attendanceId ?? 0}'; // một ngày có thể có nhiều lượt không ca → thêm mã dòng công
 
   TextEditingController _dayCtrlFor(String slotKey, String col, String initVal) {
     final k = '$slotKey:$col';
