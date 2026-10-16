@@ -98,9 +98,9 @@ public class PositionExcelService {
             } else {
                 // ── UPDATE / NO_CHANGE ───────────────────────────────────────
                 List<DepartmentDTO.FieldChange> changes = new ArrayList<>();
-                addChange(changes, "Tên",       pos.getName(),        name);
-                addChange(changes, "Phòng ban", pos.getDepartment().getCode(), deptCode);
-                addChange(changes, "Mô tả",     pos.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.name"),       pos.getName(),        name);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.department"), pos.getDepartment().getCode(), deptCode);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.description"),     pos.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
 
                 result.add(PositionDTO.ImportDiff.builder()
                     .action(changes.isEmpty() ? "NO_CHANGE" : "UPDATE")

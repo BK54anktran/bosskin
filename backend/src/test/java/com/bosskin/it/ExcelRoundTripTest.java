@@ -444,7 +444,7 @@ class ExcelRoundTripTest extends IntegrationTest {
         List<String> types = new ArrayList<>();
         meta.fieldNames().forEachRemaining(types::add);
         var r = mvc.perform(MockMvcRequestBuilders.post("/api/v1/excel/export")
-                .header("Authorization", "Bearer " + c.adminToken)
+                .header("Authorization", "Bearer " + c.adminToken).header("Accept-Language", "en")
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(Map.of("types", types))))
             .andReturn().getResponse();
         assertThat(r.getStatus()).isEqualTo(200);

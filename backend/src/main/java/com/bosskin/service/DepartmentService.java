@@ -190,16 +190,16 @@ public class DepartmentService {
             } else {
                 // ── UPDATE / NO_CHANGE ───────────────────────────────────────
                 List<DepartmentDTO.FieldChange> changes = new ArrayList<>();
-                addChange(changes, "Tên",         dept.getName(),        name);
-                addChange(changes, "PB cha",      dept.getParent() == null ? null : dept.getParent().getCode(), parentCode);
-                addChange(changes, "Mô tả",       dept.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
-                addChange(changes, "Vĩ độ",   str(dept.getCheckInLatitude()),  row.getCheckInLatitude());
-                addChange(changes, "Kinh độ", str(dept.getCheckInLongitude()), row.getCheckInLongitude());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.name"),         dept.getName(),        name);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.parentDept"),      dept.getParent() == null ? null : dept.getParent().getCode(), parentCode);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.description"),       dept.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.latitude"),   str(dept.getCheckInLatitude()),  row.getCheckInLatitude());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.longitude"), str(dept.getCheckInLongitude()), row.getCheckInLongitude());
                 // Chỉ so sánh bán kính khi ít nhất 1 phía có tọa độ thực sự (không phải empty)
                 boolean dbHasLocation  = dept.getCheckInLatitude() != null;
                 boolean rowHasLocation = row.getCheckInLatitude() != null && !row.getCheckInLatitude().isBlank();
                 if (dbHasLocation || rowHasLocation) {
-                    addChange(changes, "Bán kính (m)", str(dept.getCheckInRadiusMeters()), row.getCheckInRadiusMeters());
+                    addChange(changes, com.bosskin.i18n.AppText.msg("import.field.radius"), str(dept.getCheckInRadiusMeters()), row.getCheckInRadiusMeters());
                 }
 
                 result.add(DepartmentDTO.ImportDiff.builder()

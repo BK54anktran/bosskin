@@ -209,19 +209,19 @@ public class EmployeeImportService {
             } else {
                 // UPDATE / NO_CHANGE
                 List<DepartmentDTO.FieldChange> changes = new ArrayList<>();
-                addChange(changes, "Họ và tên",  emp.getFullName(),  name);
-                addChange(changes, "Phòng ban",  emp.getDepartment().getCode(), deptCode);
-                addChange(changes, "Chức vụ",   safeCode(emp.getPosition()),   row.getPositionCode());
-                addChange(changes, "Bậc lương", safeCode(emp.getSalaryGrade()), row.getSalaryGradeCode());
-                addChange(changes, "SĐT",        emp.getPhone(),                  row.getPhone());
-                addChange(changes, "Trạng thái", normalizeStatus(str(emp.getStatus())), normalizeStatus(row.getStatus()));
-                addChange(changes, "CCCD",       emp.getIdentityCard(), row.getIdentityCard());
-                addChange(changes, "Địa chỉ",   emp.getAddress(),      row.getAddress());
-                addChange(changes, "Tài khoản NH",emp.getBankAccount(), row.getBankAccount());
-                addChange(changes, "Ngân hàng",  emp.getBankName(),     row.getBankName());
-                addChange(changes, "excel.col.employee.taxCode",           emp.getTaxCode(),           row.getTaxCode());
-                addChange(changes, "excel.col.employee.socialInsuranceNo", emp.getSocialInsuranceNo(), row.getSocialInsuranceNo());
-                addChange(changes, "excel.col.employee.healthInsurancePlace", emp.getHealthInsurancePlace(), row.getHealthInsurancePlace());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.fullName"),  emp.getFullName(),  name);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.department"),  emp.getDepartment().getCode(), deptCode);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.position"),   safeCode(emp.getPosition()),   row.getPositionCode());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.salaryGrade"), safeCode(emp.getSalaryGrade()), row.getSalaryGradeCode());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.phone"),        emp.getPhone(),                  row.getPhone());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.status"), normalizeStatus(str(emp.getStatus())), normalizeStatus(row.getStatus()));
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.idCard"),       emp.getIdentityCard(), row.getIdentityCard());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.address"),   emp.getAddress(),      row.getAddress());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.bankAccount"),emp.getBankAccount(), row.getBankAccount());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.bank"),  emp.getBankName(),     row.getBankName());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.taxCode"),           emp.getTaxCode(),           row.getTaxCode());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.socialInsuranceNo"), emp.getSocialInsuranceNo(), row.getSocialInsuranceNo());
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.healthInsurancePlace"), emp.getHealthInsurancePlace(), row.getHealthInsurancePlace());
                 addChangeMoney(changes, "Lương HĐ",
                     emp.getContractSalary() == null ? null : emp.getContractSalary().stripTrailingZeros().toPlainString(),
                     row.getContractSalary());

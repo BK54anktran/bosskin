@@ -82,7 +82,8 @@ public class Api {
 
     /** Tải file (xuất Excel) — trả nguyên byte. */
     public byte[] download(String token, String url) {
-        return download(token, url, null);
+        // Các test cũ giả định đầu cột tiếng Anh (trước đây rơi về ngôn ngữ JVM); app thật luôn gửi Accept-Language
+        return download(token, url, "en");
     }
 
     /** Tải file với ngôn ngữ (Accept-Language, vd. "vi") — đầu cột / tên sheet xuất theo ngôn ngữ đó. */

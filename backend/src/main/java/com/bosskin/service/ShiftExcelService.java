@@ -510,14 +510,14 @@ public class ShiftExcelService {
                 result.add(ShiftDiff.builder().action("CREATE").code(code).name(row.name.trim())
                     .changes(changes).warnings(warnings).build());
             } else {
-                addChange(changes, "Tên ca", existing.getName(), row.name);
-                addChange(changes, "Giờ bắt đầu", fmt(existing.getStartTime()), row.startTime);
-                addChange(changes, "Giờ kết thúc", fmt(existing.getEndTime()), row.endTime);
-                addChange(changes, "Nghỉ giải lao từ", fmt(existing.getBreakStart()), row.breakStart);
-                addChange(changes, "Nghỉ giải lao đến", fmt(existing.getBreakEnd()), row.breakEnd);
-                addChange(changes, "Nhóm ca", nvl(existing.getGroupName()), nvl(row.groupName));
-                addChange(changes, "Màu", nvl(existing.getColor()), nvl(row.color));
-                addChange(changes, "Phòng ban",
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.shiftName"), existing.getName(), row.name);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.startTime"), fmt(existing.getStartTime()), row.startTime);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.endTime"), fmt(existing.getEndTime()), row.endTime);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.breakFrom"), fmt(existing.getBreakStart()), row.breakStart);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.breakTo"), fmt(existing.getBreakEnd()), row.breakEnd);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.shiftGroup"), nvl(existing.getGroupName()), nvl(row.groupName));
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.color"), nvl(existing.getColor()), nvl(row.color));
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.department"),
                     existing.getDepartments().stream()
                         .map(Department::getCode)
                         .filter(Objects::nonNull)
