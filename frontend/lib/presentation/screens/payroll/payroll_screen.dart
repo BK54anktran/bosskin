@@ -21,7 +21,7 @@ import '../../widgets/permission_guard.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'salary_formula_tab.dart' show FormulaEditorDialog;
 
-final _currFmt = NumberFormat('#,###', 'vi_VN');
+NumberFormat get _currFmt => moneyNumberFormat();
 String _fmt(double v) => '${_currFmt.format(v)}đ';
 
 class PayrollScreen extends StatefulWidget {

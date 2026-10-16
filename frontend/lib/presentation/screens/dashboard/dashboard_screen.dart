@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/locale_utils.dart';
+import '../../../core/utils/text_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/dashboard.dart';
@@ -513,7 +514,7 @@ class _KpiStrip extends StatelessWidget {
     if (d == null) return const SizedBox.shrink();
 
     final hiresChange = d.newHiresThisMonth - d.newHiresLastMonth;
-    final fmtCompact = NumberFormat.compactCurrency(locale: localeCode(context), symbol: '₫', decimalDigits: 0);
+    final fmtCompact = NumberFormat.compactCurrency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
     final attrPct = '${d.attritionRate.toStringAsFixed(1)}%';
     final attendPct = '${d.todayAttendanceRate.toStringAsFixed(0)}%';
 
@@ -1502,7 +1503,7 @@ class _RecentPayrollCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1729,7 +1730,7 @@ class _SalaryTrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (trend.isEmpty) return const SizedBox.shrink();
-    final fmt = NumberFormat.compactCurrency(locale: localeCode(context), symbol: '', decimalDigits: 0);
+    final fmt = NumberFormat.compactCurrency(locale: moneyLocale(), symbol: '', decimalDigits: 0);
     final maxY = trend.map((e) => e.totalNetSalary).fold(0.0, (a, b) => a > b ? a : b);
     if (maxY == 0) return const SizedBox.shrink();
 
@@ -1774,7 +1775,7 @@ class _SalaryTrendChart extends StatelessWidget {
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
-                      NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0).format(s.y),
+                      NumberFormat.currency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0).format(s.y),
                       const TextStyle(color: Colors.white, fontSize: 11),
                     )).toList(),
                   ),
@@ -1840,8 +1841,8 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
           radius: 3, color: Colors.purple.shade400, strokeColor: Colors.white, strokeWidth: 1.5)),
     );
 
-    final fmtCompact  = NumberFormat.compactCurrency(locale: localeCode(context), symbol: '₫', decimalDigits: 0);
-    final fmtCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    final fmtCompact  = NumberFormat.compactCurrency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
+    final fmtCurrency = NumberFormat.currency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
 
     return Card(
       child: Padding(

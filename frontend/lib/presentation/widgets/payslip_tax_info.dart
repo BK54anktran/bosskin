@@ -1,3 +1,4 @@
+import '../../core/utils/text_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +14,7 @@ class PayslipTaxInfo extends StatelessWidget {
   final bool showEmployerCost;
   const PayslipTaxInfo({super.key, required this.payroll, this.showEmployerCost = false});
 
-  static final _fmt = NumberFormat('#,##0', 'vi_VN');
+  static NumberFormat get _fmt => moneyNumberFormat('#,##0');
 
   double get _employerTotal =>
       (payroll.employerSocialIns ?? 0) + (payroll.employerHealthIns ?? 0) + (payroll.employerUnemploymentIns ?? 0);

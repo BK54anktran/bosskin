@@ -10,9 +10,10 @@ import '../../../data/services/auth_service.dart';
 import '../../../data/services/department_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
+import '../../../core/utils/text_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 
-final _currFmt = NumberFormat('#,###', 'vi_VN');
+NumberFormat get _currFmt => moneyNumberFormat();
 
 class SalaryGradeTab extends StatefulWidget {
   const SalaryGradeTab({super.key});

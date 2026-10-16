@@ -10,7 +10,7 @@ import '../../../data/services/auth_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../widgets/payslip_tax_info.dart';
 
-final _currFmt2 = NumberFormat('#,###', 'vi_VN');
+NumberFormat get _currFmt2 => moneyNumberFormat();
 String _fmt2(double v) => '${_currFmt2.format(v)}đ';
 
 class SelfPayrollScreen extends StatefulWidget {

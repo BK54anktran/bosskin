@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/locale_utils.dart';
+import '../../../core/utils/text_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/dialog_utils.dart';
@@ -948,7 +949,7 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final currFmt = NumberFormat('#,###', 'vi_VN');
+    final currFmt = moneyNumberFormat();
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520, maxHeight: 600),
