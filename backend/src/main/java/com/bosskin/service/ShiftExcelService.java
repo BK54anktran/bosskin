@@ -184,7 +184,7 @@ public class ShiftExcelService {
             // Row 0: header — Mã NV | Họ tên | Phòng ban | [day numbers]
             org.apache.poi.ss.usermodel.Row hRow = s1.createRow(0);
             hRow.setHeight((short)(600));
-            String[] fixedCols = {"Mã NV", "Họ và tên", "Phòng ban"};
+            String[] fixedCols = {com.bosskin.i18n.AppText.msgIn(locale, "shift.xl.empCode"), com.bosskin.i18n.AppText.msgIn(locale, "import.field.fullName"), com.bosskin.i18n.AppText.msgIn(locale, "import.field.department")};
             int[] fixedWidths = {14, 28, 20};
             for (int c = 0; c < fixedCols.length; c++) {
                 org.apache.poi.ss.usermodel.Cell cell = hRow.createCell(c);
@@ -273,7 +273,7 @@ public class ShiftExcelService {
             // Row: Số người
             org.apache.poi.ss.usermodel.Row rowCount = s1.createRow(rowIdx++);
             org.apache.poi.ss.usermodel.Cell countLabel = rowCount.createCell(0);
-            countLabel.setCellValue("Số người");
+            countLabel.setCellValue(com.bosskin.i18n.AppText.msgIn(locale, "shift.xl.headcount"));
             countLabel.setCellStyle(summaryLabelStyle);
             rowCount.createCell(1).setCellStyle(summaryLabelStyle);
             rowCount.createCell(2).setCellStyle(summaryLabelStyle);
@@ -289,7 +289,7 @@ public class ShiftExcelService {
             // Row: Số giờ — dùng placeholder, sẽ patch XML sau
             org.apache.poi.ss.usermodel.Row rowHours = s1.createRow(rowIdx++);
             org.apache.poi.ss.usermodel.Cell hoursLabel = rowHours.createCell(0);
-            hoursLabel.setCellValue("Số giờ");
+            hoursLabel.setCellValue(com.bosskin.i18n.AppText.msgIn(locale, "shift.xl.hours"));
             hoursLabel.setCellStyle(summaryLabelStyle);
             rowHours.createCell(1).setCellStyle(summaryLabelStyle);
             rowHours.createCell(2).setCellStyle(summaryLabelStyle);
@@ -764,7 +764,7 @@ public class ShiftExcelService {
         if (cells.isEmpty()) {
             return ImportPreviewBundle.builder()
                 .diffs(shiftDiffs)
-                .sectionLabels(new ArrayList<>(java.util.List.of("Danh sách ca", "Phân công ca")))
+                .sectionLabels(new ArrayList<>(java.util.List.of(com.bosskin.i18n.AppText.msg("shift.xl.sectionShifts"), com.bosskin.i18n.AppText.msg("shift.xl.sectionAssignments"))))
                 .sectionCounts(new ArrayList<>(java.util.List.of(shiftDiffs.size(), 0)))
                 .build();
         }
@@ -819,7 +819,7 @@ public class ShiftExcelService {
                 }
                 LocalTime[] custom = parseCustomTime(raw);
                 if (custom == null) {
-                    warnings.add("Không tìm thấy ca: " + raw);
+                    warnings.add("error.shift.import_shift_not_found|" + raw);
                     continue;
                 }
                 desiredSet.add(formatCustomTime(custom[0], custom[1], custom[2], custom[3]));
@@ -841,7 +841,7 @@ public class ShiftExcelService {
 
                 if (!existingSet.equals(desiredSet)) {
                     changes.add(new FieldChange(
-                        "Ca làm",
+                        com.bosskin.i18n.AppText.msg("shift.xl.fieldShifts"),
                         String.join(", ", existingSet),
                         String.join(", ", desiredDisplay)
                     ));
@@ -856,7 +856,7 @@ public class ShiftExcelService {
                 : java.util.Set.of();
             String label = day.getEmpName() + " — " + day.getDate().format(ddMM)
                 + (desiredSet.isEmpty()
-                ? " (xóa ca " + String.join(", ", existingSet2) + ")"
+                ? " " + com.bosskin.i18n.AppText.msg("shift.xl.deleteShifts", String.join(", ", existingSet2))
                 : " → " + String.join(", ", desiredDisplay));
             assignmentDiffs.add(ShiftDiff.builder()
                 .action(action).code(day.getEmpCode()).name(label)
@@ -867,7 +867,7 @@ public class ShiftExcelService {
         combined.addAll(assignmentDiffs);
         return ImportPreviewBundle.builder()
             .diffs(combined)
-            .sectionLabels(new ArrayList<>(java.util.List.of("Danh sách ca", "Phân công ca")))
+            .sectionLabels(new ArrayList<>(java.util.List.of(com.bosskin.i18n.AppText.msg("shift.xl.sectionShifts"), com.bosskin.i18n.AppText.msg("shift.xl.sectionAssignments"))))
             .sectionCounts(new ArrayList<>(java.util.List.of(shiftDiffs.size(), assignmentDiffs.size())))
             .build();
     }

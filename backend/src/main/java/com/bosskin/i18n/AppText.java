@@ -37,6 +37,13 @@ public class AppText {
         return i.t(key, args);
     }
 
+    /** Như {@link #msg} nhưng theo ngôn ngữ chỉ định (xuất file đã có sẵn locale). */
+    public static String msgIn(Locale locale, String key, Object... args) {
+        AppText i = instance;
+        if (i == null) { i = new AppText(); }
+        return i.t(key, locale, args);
+    }
+
     /** Theo ngôn ngữ của request đang xử lý (Accept-Language; mặc định vi). */
     public String t(String key, Object... args) {
         return t(key, LocaleContextHolder.getLocale(), args);

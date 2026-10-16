@@ -35,9 +35,9 @@ public class EmployeeExcelService {
         ExcelColumn.readOnlyI18n("excel.col.employee.email",          Employee::getEmail),
         ExcelColumn.readOnlyI18n("excel.col.employee.phone",          Employee::getPhone),
         ExcelColumn.readOnlyI18n("excel.col.employee.gender",         e -> e.getGender() == null ? "" : switch (e.getGender()) {
-            case MALE   -> "Nam";
-            case FEMALE -> "Nữ";
-            case OTHER  -> "Khác";
+            case MALE   -> com.bosskin.i18n.AppText.msg("gender.MALE");
+            case FEMALE -> com.bosskin.i18n.AppText.msg("gender.FEMALE");
+            case OTHER  -> com.bosskin.i18n.AppText.msg("gender.OTHER");
         }),
         ExcelColumn.readOnlyI18n("excel.col.employee.dateOfBirth",    e -> e.getDateOfBirth() == null ? "" : e.getDateOfBirth().format(DATE_FMT)),
         ExcelColumn.readOnlyI18n("excel.col.employee.joinDate",       e -> e.getJoinDate() == null ? "" : e.getJoinDate().format(DATE_FMT)),
