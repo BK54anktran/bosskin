@@ -7,7 +7,7 @@ summary: Vai trò và quyền, phạm vi phòng ban, gán vai trò, đặt lại
 
 ## Vai trò
 
-Mở **Phân quyền** → tab **Phân quyền**. Có sẵn *Admin* (toàn quyền) và *Nhân viên* (mặc định cho người mới: tự chấm công, xin nghỉ…). Vai trò *Admin* là vai trò hệ thống nên bị **khoá** (có biểu tượng ổ khoá): không sửa quyền, đổi tên hay xoá được, và tài khoản admin đầu tiên của công ty cũng không bị đổi vai trò, quyền hay khoá bởi người khác — để công ty luôn có người quản trị. Bạn vẫn tạo vai trò mới và gán *Admin* cho người khác bình thường.
+Mở **Phân quyền** → tab **Phân quyền**. Có sẵn *Admin* (toàn quyền) và *Nhân viên* (mặc định cho người mới: tự chấm công, xin nghỉ…). Vai trò *Admin* là vai trò hệ thống nên bị **khoá** (có biểu tượng ổ khoá): không sửa quyền, đổi tên hay xoá được, và **tài khoản admin đầu tiên của công ty là quyền cao nhất**: không admin nào khác đổi được vai trò, quyền, đặt lại mật khẩu, gỡ 2FA hay khoá nó — để công ty luôn có người quản trị. Bạn vẫn tạo vai trò mới và gán *Admin* cho người khác bình thường.
 Tạo thêm vai trò cho quản lý, nhân sự, kế toán.
 
 ![Danh sách vai trò](img:roles)

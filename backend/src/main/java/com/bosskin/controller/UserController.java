@@ -39,6 +39,7 @@ public class UserController {
     private final DeptScopeService deptScopeService;
     private final PasswordEncoder passwordEncoder;
     private final com.bosskin.service.GrantGuard grantGuard;
+    private final com.bosskin.service.AccountGuard accountGuard;
     private final com.bosskin.repository.UserSessionRepository userSessionRepository;
     private final com.bosskin.audit.AuditService audit;
     private final com.bosskin.util.ExcelI18n excelI18n;
@@ -83,6 +84,7 @@ public class UserController {
         if (user.getId().equals(caller.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.cannot_reset_self");
         }
+        accountGuard.requireNotFirstAdmin(caller, user);
         String pw = issueTemporaryPassword(user);
         audit.log("USER_RESET_PASSWORD").entity("USER", user.getId()).summary(user.getEmail()).save();
         return ResponseEntity.ok(Map.of("password", pw));
@@ -221,7 +223,7 @@ public class UserController {
         @SuppressWarnings("unchecked")
         List<Integer> roleIds = (List<Integer>) body.getOrDefault("roleIds", Collections.emptyList());
         grantGuard.requireNotSelf(caller, user.getId());
-        grantGuard.requireNotFirstAdmin(caller, isFirstAdmin(user));
+        accountGuard.requireNotFirstAdmin(caller, user);
         Set<Role> newRoles = resolveRoles(roleIds, caller.getCompany().getId());
         grantGuard.requireCanGrantRoles(caller, newRoles);
         var beforeRoles = user.getRoles().stream().map(Role::getName).sorted().toList();
@@ -243,7 +245,7 @@ public class UserController {
         @SuppressWarnings("unchecked")
         List<String> codes = (List<String>) body.getOrDefault("permissionCodes", Collections.emptyList());
         grantGuard.requireNotSelf(caller, user.getId());
-        grantGuard.requireNotFirstAdmin(caller, isFirstAdmin(user));
+        accountGuard.requireNotFirstAdmin(caller, user);
         Set<String> submittedCodes = permissionConsistencyService.normalizePermissionCodes(codes);
         grantGuard.requireCanGrant(caller, submittedCodes);
         // V26: giữ quyền riêng của tính năng đang tắt (bị ẩn ở màn Phân quyền)
@@ -283,7 +285,7 @@ public class UserController {
         requirePermission(caller, "USER_MANAGE");
         User targetUser = findUserInCompanyAndScope(id, caller);
         grantGuard.requireNotSelf(caller, targetUser.getId());
-        grantGuard.requireNotFirstAdmin(caller, isFirstAdmin(targetUser));
+        accountGuard.requireNotFirstAdmin(caller, targetUser);
         Set<String> directCodes = targetUser.getDirectPermissions().stream()
             .map(Permission::getCode)
             .collect(Collectors.toSet());
@@ -316,19 +318,12 @@ public class UserController {
         if (!enabled && user.getId().equals(caller.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.user.cannot_disable_self");
         }
-        if (!enabled) grantGuard.requireNotFirstAdmin(caller, isFirstAdmin(user));
+        accountGuard.requireNotFirstAdmin(caller, user);
         user.setEnabled(enabled);
         User saved = userRepository.save(user);
         if (!enabled) userSessionRepository.revokeAllByUserId(saved.getId());
         audit.log(enabled ? "USER_ENABLE" : "USER_DISABLE").entity("USER", saved.getId()).summary(saved.getEmail()).save();
         return ResponseEntity.ok(toUserMap(saved));
-    }
-
-    /** V30: tài khoản đầu tiên của công ty (admin tạo cùng công ty) — người dùng công ty không đổi vai trò / quyền / phạm vi / khoá được. */
-    private boolean isFirstAdmin(User target) {
-        if (target.getCompany() == null) return false;
-        return userRepository.findFirstByCompanyIdOrderByIdAsc(target.getCompany().getId())
-            .map(first -> first.getId().equals(target.getId())).orElse(false);
     }
 
     private User findUserInCompanyAndScope(Long userId, User caller) {

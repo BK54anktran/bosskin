@@ -38,7 +38,7 @@ class SystemRoleLockTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("Admin thứ hai không đổi vai trò / quyền / trạng thái của admin đầu tiên; admin đầu vẫn quản được admin thứ hai")
+    @DisplayName("Admin thứ hai không tác động được lên admin đầu tiên (vai trò, quyền, phạm vi, khoá, đặt lại mật khẩu, gỡ 2FA); admin đầu vẫn quản được admin thứ hai")
     void firstAdminAccountIsLocked() {
         var c = fixture.standardCompany();
         long adminRoleId = adminRoleId(c);
@@ -52,6 +52,9 @@ class SystemRoleLockTest extends IntegrationTest {
         assertThat(roles.raw()).contains("error.user.first_admin_locked");
         assertThat(api.put(token, "/api/v1/users/" + firstAdminId + "/permissions", Map.of("permissionCodes", List.of())).status()).isEqualTo(403);
         assertThat(api.patch(token, "/api/v1/users/" + firstAdminId + "/enabled", Map.of("enabled", false)).status()).isEqualTo(403);
+        assertThat(api.put(token, "/api/v1/users/" + firstAdminId + "/dept-scopes", Map.of()).status()).isEqualTo(403);
+        assertThat(api.post(token, "/api/v1/users/" + firstAdminId + "/reset-password", Map.of()).status()).isEqualTo(403);
+        assertThat(api.delete(token, "/api/v1/users/" + firstAdminId + "/2fa").status()).isEqualTo(403);
 
         api.put(c.adminToken, "/api/v1/users/" + second.userId() + "/roles",
             Map.of("roleIds", List.of(c.roles.get("Nhân viên")))).expectOk();

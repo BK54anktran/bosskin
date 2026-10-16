@@ -30,6 +30,7 @@ import java.util.Map;
 public class TwoFactorController {
 
     private final UserRepository userRepository;
+    private final com.bosskin.service.AccountGuard accountGuard;
     private final CompanyRepository companyRepository;
     private final TwoFactorService twoFactorService;
     private final PasswordEncoder passwordEncoder;
@@ -107,6 +108,7 @@ public class TwoFactorController {
         if (caller.getId() != null && caller.getId().equals(u.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.cannot_change_own");
         }
+        accountGuard.requireNotFirstAdmin(caller, u);
         twoFactorService.disable(u);
         userRepository.save(u);
         audit.log("2FA_RESET").entity("USER", u.getId()).summary(u.getEmail()).save();
