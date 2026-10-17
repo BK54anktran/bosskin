@@ -165,7 +165,7 @@ footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hov
 you only need to generate, check, approve and pay in the first tab.</p>
 <h2 id="salary-grades">Salary grades</h2>
 <p>Each grade is a group with its own way of paying: <strong>daily</strong> or <strong>hourly</strong>, with a rate. An employee is linked to one grade (in their profile). A grade that employees use (now or in their job history) cannot be deleted: change those employees' grade first.</p>
-<figure><a href="../img/salary-grades.webp" class="zoom"><img src="../img/salary-grades.webp" alt="Salary grades" fetchpriority="high" width="1440" height="900"></a><figcaption>Salary grades</figcaption></figure>
+<figure><a href="../img-en/salary-grades.webp" class="zoom"><img src="../img-en/salary-grades.webp" alt="Salary grades" fetchpriority="high" width="1440" height="900"></a><figcaption>Salary grades</figcaption></figure>
 
 <h2 id="variables">Variables</h2>
 <p>Custom variables (attendance bonus, coefficients, etc.) used in formulas. There are also built-in <strong>system variables</strong> that BossKin calculates from data:</p>
@@ -211,14 +211,14 @@ you only need to generate, check, approve and pay in the first tab.</p>
 </tr>
 </tbody>
 </table>
-<figure><a href="../img/salary-variables.webp" class="zoom"><img src="../img/salary-variables.webp" alt="Variables" loading="lazy" width="1440" height="900"></a><figcaption>Variables</figcaption></figure>
+<figure><a href="../img-en/salary-variables.webp" class="zoom"><img src="../img-en/salary-variables.webp" alt="Variables" loading="lazy" width="1440" height="900"></a><figcaption>Variables</figcaption></figure>
 
 <h2 id="salary-formulas">Salary formulas</h2>
 <p>Each salary grade has a <strong>GROSS</strong> (total pay) and a <strong>NET</strong> (take-home pay) formula, effective from a date. Write them with variables, operators, <code>IF(...)</code>,
 <code>ROUND(...)</code> and <code>PIT_VN(taxable income)</code>. Example:</p>
 <p><code>GROSS:  CONTRACT_SALARY * PRESENT_DAYS / STANDARD_WORK_DAYS + CONTRACT_ALLOWANCE + BONUS
 NET:    GROSS - TOTAL_INSURANCE - PIT</code></p>
-<figure><a href="../img/salary-formulas.webp" class="zoom"><img src="../img/salary-formulas.webp" alt="Salary formulas" loading="lazy" width="1440" height="900"></a><figcaption>Salary formulas</figcaption></figure>
+<figure><a href="../img-en/salary-formulas.webp" class="zoom"><img src="../img-en/salary-formulas.webp" alt="Salary formulas" loading="lazy" width="1440" height="900"></a><figcaption>Salary formulas</figcaption></figure>
 
 <blockquote class="note "><p><strong>Note:</strong> Family deduction amounts, the tax table and insurance caps are updated by the system administrator according to the law (by effective date); a payroll period uses the
 policy in effect on the <strong>last day of the period</strong>. Do not hard-code these numbers in formulas.</p>
@@ -229,12 +229,12 @@ policy in effect on the <strong>last day of the period</strong>. Do not hard-cod
 <li>In the <strong>Payroll</strong> tab click <strong>Generate payroll</strong>.</li>
 <li>Choose <strong>Month / Year</strong>; leave the employee field empty to generate for everyone in your scope, or search and add people one by one, then click <strong>Create</strong>.</li>
 </ol>
-<figure><a href="../img/payroll-generate.webp" class="zoom"><img src="../img/payroll-generate.webp" alt="Generate payroll" loading="lazy" width="1440" height="900"></a><figcaption>Generate payroll</figcaption></figure>
+<figure><a href="../img-en/payroll-generate.webp" class="zoom"><img src="../img-en/payroll-generate.webp" alt="Generate payroll" loading="lazy" width="1440" height="900"></a><figcaption>Generate payroll</figcaption></figure>
 
 <p>If a formula fails for someone, the system tells you exactly which person and which variable caused the error.</p>
 <h2 id="check-adjust-approve-pay">Check, adjust, approve, pay</h2>
 <p>The monthly payslip list shows base salary, gross pay, net pay, days worked and the status <strong>Draft → Approved → Paid</strong>.</p>
-<figure><a href="../img/payroll-list.webp" class="zoom"><img src="../img/payroll-list.webp" alt="September payroll" loading="lazy" width="1440" height="900"></a><figcaption>September payroll</figcaption></figure>
+<figure><a href="../img-en/payroll-list.webp" class="zoom"><img src="../img-en/payroll-list.webp" alt="September payroll" loading="lazy" width="1440" height="900"></a><figcaption>September payroll</figcaption></figure>
 
 <ul>
 <li><strong>View details</strong> — every line item. A draft payslip can have bonuses / deductions entered manually and then be <strong>recalculated</strong>.</li>

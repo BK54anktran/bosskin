@@ -16,7 +16,9 @@ help/
 `help/src-en/NN-<trang>.md` (cùng tên file với `src/`, `group:` = Getting started | Employee | Manager | HR | Accounting | Administration | Support,
 hộp lưu ý `Note:` / `Tip:` / `Important:`) → `help/en/*.html` (https://bosskin.io.vn/help/en/…, canonical + hreflang vi / en, nút VI / EN ở đầu trang).
 `build_help.py` dựng cả hai ngôn ngữ; chữ khung trang dịch bằng bảng `EN_CHROME` trong script. Neo liên kết trong trang Anh = slug của **tiêu đề tiếng Anh**.
-Sửa trang tiếng Việt → sửa luôn bản `src-en` cùng tên (CI `check_sitemap.py` báo lệch tên file). Ảnh chụp dùng chung, vẫn là giao diện tiếng Việt.
+Sửa trang tiếng Việt → sửa luôn bản `src-en` cùng tên (CI `check_sitemap.py` báo lệch tên file). Ảnh chụp giao diện tiếng Anh nằm ở `help/img-en/` (cùng id với `img/`); trang EN dùng ảnh `img-en` nếu có, không thì ảnh `img` tiếng Việt
+(hiện còn `admin-tab-1…6` của cổng /admin, cần 2FA nên chưa chụp). Chụp lại: `HELP_LANG=en python3 help/tools/capture.py <chương>` (môi trường thử như mục "Chụp lại ảnh";
+nhãn tiếng Việt trong `capture.py` tự đổi sang tiếng Anh qua `app_vi/en.arb` + `help/tools/en_labels.json` khi tên không khớp; cần `tesseract-ocr`, Chromium: `HELP_CHROMIUM`).
 
 ## Sửa nội dung
 

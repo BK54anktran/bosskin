@@ -15,6 +15,10 @@
   "caption": null,
   "marks": []
  },
+ "appendix-new": {
+  "caption": null,
+  "marks": []
+ },
  "att-bulk-approve": {
   "caption": null,
   "marks": [
@@ -80,6 +84,35 @@
    "Check-in"
   ]
  },
+ "contract-detail": {
+  "caption": null,
+  "marks": [
+   "Add appendix",
+   "Terminated",
+   "Edit"
+  ]
+ },
+ "contract-new": {
+  "caption": null,
+  "marks": [
+   "Employees",
+   "Contract no. *",
+   "Contract type\nFixed term",
+   "Start date *\n—",
+   "Base salary *",
+   "Add allowance",
+   "Save"
+  ]
+ },
+ "contracts": {
+  "caption": null,
+  "marks": [
+   "5 contracts are expiring or overdue without a follow-up contract — tap to view",
+   "Add contract",
+   "Export Excel",
+   "Import Excel"
+  ]
+ },
  "dashboard": {
   "caption": null,
   "marks": [
@@ -120,6 +153,25 @@
   "marks": [
    "Add dependent"
   ]
+ },
+ "docs-expiring": {
+  "caption": null,
+  "marks": [
+   "Expiring",
+   "Download"
+  ]
+ },
+ "docs-missing": {
+  "caption": null,
+  "marks": []
+ },
+ "docs-pending": {
+  "caption": null,
+  "marks": []
+ },
+ "docs-types": {
+  "caption": null,
+  "marks": []
  },
  "edit-requests": {
   "caption": null,
