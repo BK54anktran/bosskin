@@ -1,4 +1,36 @@
 {
+ "shift-assign": {
+  "caption": null,
+  "marks": [
+   "Shift assignments",
+   "10/2026",
+   "Quick fill shift"
+  ]
+ },
+ "shift-list": {
+  "caption": null,
+  "marks": [
+   "Create shift"
+  ]
+ },
+ "shift-new": {
+  "caption": null,
+  "marks": []
+ },
+ "shift-quickfill": {
+  "caption": null,
+  "marks": []
+ },
+ "shift-rotation": {
+  "caption": null,
+  "marks": [
+   "Add rotation"
+  ]
+ },
+ "swap-approve": {
+  "caption": null,
+  "marks": []
+ },
  "team-approvals": {
   "caption": null,
   "marks": []
