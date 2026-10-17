@@ -63,6 +63,13 @@
   "caption": null,
   "marks": []
  },
+ "audit": {
+  "caption": null,
+  "marks": [
+   "All actions",
+   "Actor (email)"
+  ]
+ },
  "calendar-new": {
   "caption": null,
   "marks": []
