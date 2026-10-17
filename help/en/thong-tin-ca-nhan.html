@@ -26,10 +26,17 @@ a{color:var(--accent)}
 .top-in{display:flex;align-items:center;gap:24px;max-width:1180px;margin:0 auto;padding:0 20px;height:68px}
 .links{display:flex;gap:22px;margin-left:auto;font-size:15px;white-space:nowrap}.links a{color:#fff;text-decoration:none;opacity:.82}.links a:hover,.links a.on{opacity:1}.links a.on{font-weight:600}
 .btn-login{display:inline-block;padding:10px 18px;border-radius:999px;font-weight:700;font-size:15px;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28)}
-.lang-sw{display:inline-block;padding:10px 16px;margin-right:8px;border-radius:999px;font-weight:700;font-size:15px;white-space:nowrap;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.28)}
 .actions{display:flex;align-items:center;white-space:nowrap}.btn-login{white-space:nowrap}
-@media (max-width:820px){.lang-sw,.btn-login{padding:9px 13px}.lang-sw{margin-right:6px}}
-.lang-sw:hover{background:rgba(255,255,255,.12)}
+@media (max-width:820px){.lang-dd summary,.btn-login{padding:9px 13px}.lang-dd{margin-right:6px}}
+.lang-dd{position:relative;margin-right:8px}
+.lang-dd summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.28);color:#fff;font-size:15px;font-weight:700;white-space:nowrap;user-select:none}
+.lang-dd summary::-webkit-details-marker{display:none}
+.lang-dd summary::after{content:'';width:6px;height:6px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-2px)}
+.lang-dd summary:hover,.lang-dd[open] summary{background:rgba(255,255,255,.1)}
+@media (max-width:440px){.top-in{gap:8px}.lang-dd summary,.btn-login{padding:8px 11px;font-size:14px}.lang-dd summary{gap:6px}.lang-dd{margin-right:2px}}
+.lang-menu{position:absolute;right:0;top:calc(100% + 8px);min-width:160px;padding:6px;border-radius:14px;background:#0b1630;border:1px solid rgba(255,255,255,.2);box-shadow:0 14px 34px rgba(0,0,0,.35);z-index:30}
+.lang-menu a{display:block;padding:9px 12px;border-radius:10px;color:#fff;text-decoration:none;font-size:15px;opacity:1}
+.lang-menu a:hover{background:rgba(255,255,255,.1)}.lang-menu a.on{font-weight:700}.lang-menu a.on::after{content:' ✓'}
 .btn-login:hover{background:rgba(255,255,255,.16)}
 @media (max-width:820px){.links{display:none}.actions{margin-left:auto}}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:#fff;text-decoration:none;white-space:nowrap}
@@ -124,7 +131,7 @@ footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hov
   <button class="menu-btn" aria-label="Open menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="../../en/" title="Back to the BossKin home page"><img class="logo" src="../img/logo-80.png" width="38" height="38" alt="">BossKin</a>
   <nav class="links"><a href="../../en/#cai-dat">Install</a><a href="../../en/#video">Video</a><a href="../../en/#tinh-nang">Features</a><a href="../../en/#vai-tro">Who it's for</a><a href="../../en/#bang-gia">Pricing</a><a href="../../en/#hoi-dap">FAQ</a><a class="on" href="index.html">Help</a></nav>
-  <div class="actions"><a class="lang-sw" href="../thong-tin-ca-nhan.html" hreflang="vi" lang="vi" data-lang="vi" title="Tiếng Việt">VI</a><a class="btn-login js-app" href="/login" hidden>Log in</a></div>
+  <div class="actions"><details class="lang-dd"><summary aria-label="Language">EN</summary><div class="lang-menu"><a href="../thong-tin-ca-nhan.html" hreflang="vi" lang="vi" data-lang="vi">Tiếng Việt</a><a href="../en/thong-tin-ca-nhan.html" hreflang="en" lang="en" data-lang="en" class="on" aria-current="true">English</a></div></details><a class="btn-login js-app" href="/login" hidden>Log in</a></div>
 </div></header>
 <div class="wrap">
 <nav class="side"><div class="side-site"><a href="../../en/">Home</a><a href="../../en/#cai-dat">Install</a><a href="../../en/#video">Video</a><a href="../../en/#tinh-nang">Features</a><a href="../../en/#vai-tro">Who it's for</a><a href="../../en/#bang-gia">Pricing</a><a href="../../en/#hoi-dap">FAQ</a></div><div class="search"><input id="q" type="search" placeholder="Search the guides…  ( / )" autocomplete="off"><div id="results"></div></div><div class="nav-group"><div class="nav-h">Getting started</div>
@@ -311,6 +318,10 @@ with the tax authority. To add or edit, send the documents to HR.</p>
   document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
   document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
 })();
+
+// Danh sách ngôn ngữ: nhớ lựa chọn (trang giới thiệu đọc khoá này) và đóng khi bấm ra ngoài
+document.querySelectorAll('.lang-menu a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('bk_lang',a.dataset.lang);}catch(e){}});});
+document.addEventListener('click',function(e){document.querySelectorAll('.lang-dd[open]').forEach(function(d){if(!d.contains(e.target))d.removeAttribute('open');});});
 </script>
 </body>
 </html>

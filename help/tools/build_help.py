@@ -157,8 +157,7 @@ def alt_links(slug):
     vi, en = HELP_URL + tail, HELP_URL + 'en/' + tail
     links = (f'<link rel="alternate" hreflang="vi" href="{vi}">\n<link rel="alternate" hreflang="en" href="{en}">\n'
              f'<link rel="alternate" hreflang="x-default" href="{vi}">')
-    sw = (f'<a class="lang-sw" href="../{tail}" hreflang="vi" lang="vi" data-lang="vi" title="Tiếng Việt">VI</a>' if LANG == 'en'
-          else f'<a class="lang-sw" href="en/{tail}" hreflang="en" lang="en" data-lang="en" title="English">EN</a>')
+    sw = chrome.lang_dropdown(LANG, tail)
     return links, sw
 
 

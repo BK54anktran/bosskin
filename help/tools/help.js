@@ -54,3 +54,7 @@
   document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
   document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
 })();
+
+// Danh sách ngôn ngữ: nhớ lựa chọn (trang giới thiệu đọc khoá này) và đóng khi bấm ra ngoài
+document.querySelectorAll('.lang-menu a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('bk_lang',a.dataset.lang);}catch(e){}});});
+document.addEventListener('click',function(e){document.querySelectorAll('.lang-dd[open]').forEach(function(d){if(!d.contains(e.target))d.removeAttribute('open');});});

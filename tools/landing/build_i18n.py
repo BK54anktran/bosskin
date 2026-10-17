@@ -38,12 +38,14 @@ def esc(t):
 def synced_source():
     """index.html với menu đầu trang lấy từ chrome.NAV (một nguồn chung với trang trợ giúp)."""
     html = open(SRC, encoding='utf-8').read()
-    return re.sub(r'(<nav class="links">\s*).*?(\s*</nav>)', lambda m: m.group(1) + chrome.landing_nav() + m.group(2), html, count=1, flags=re.S)
+    html = re.sub(r'(<nav class="links">\s*).*?(\s*</nav>)', lambda m: m.group(1) + chrome.landing_nav() + m.group(2), html, count=1, flags=re.S)
+    return re.sub(r'<!--lang-dd-->.*?<!--/lang-dd-->', lambda m: '<!--lang-dd-->' + chrome.lang_dropdown(chrome.ROOT_LANG) + '<!--/lang-dd-->', html, count=1, flags=re.S)
 
 
 def build():
     en = json.load(open(DICT, encoding='utf-8'))
     html = synced_source()
+    html = re.sub(r'<!--lang-dd-->.*?<!--/lang-dd-->', '@@LANGDD@@', html, count=1, flags=re.S)   # tên ngôn ngữ giữ nguyên, không dịch
     missing = []
 
     def tr(t):
@@ -103,9 +105,7 @@ def build():
     res = res.replace('content="vi_VN"', 'content="en_US"')
     # trợ giúp có bản tiếng Anh riêng ở help/en/
     res = re.sub(r'href="\.\./help/(?!en/)', 'href="../help/en/', res)
-    # nút đổi ngôn ngữ: bản EN trỏ về tiếng Việt
-    res = re.sub(r'<a class="lang-sw"[^>]*>EN</a>',
-                 '<a class="lang-sw" href="../" hreflang="vi" lang="vi" data-lang="vi" title="Tiếng Việt">VI</a>', res)
+    res = res.replace('@@LANGDD@@', '<!--lang-dd-->' + chrome.lang_dropdown('en') + '<!--/lang-dd-->')
     return res, missing
 
 

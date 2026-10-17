@@ -30,3 +30,22 @@ def help_side(lang, up='../'):
     i = 1 if lang == 'vi' else 2
     return (f'<a href="{up}">{"Trang chủ" if lang == "vi" else "Home"}</a>'
             + ''.join(f'<a href="{up}#{n[0]}">{n[i]}</a>' for n in NAV))
+
+
+# Ngôn ngữ: mã, tên hiển thị (tên gốc của ngôn ngữ). ROOT_LANG nằm ở gốc (/ và /help/), các ngôn ngữ khác ở /<mã>/ và /help/<mã>/.
+# Thêm ngôn ngữ mới: thêm một dòng ở đây + landing/i18n/<mã>.json + help/src-<mã>/ (xem landing/README.md).
+LANGS = [('vi', 'Tiếng Việt'), ('en', 'English')]
+ROOT_LANG = 'vi'
+
+
+def lang_dropdown(cur, tail=''):
+    """Danh sách chọn ngôn ngữ (thẻ <details>, không cần JS) trỏ tới cùng trang ở mọi ngôn ngữ.
+    `cur` = ngôn ngữ của trang đang dựng, `tail` = tên file sau thư mục ngôn ngữ ('' cho trang chủ, 'bang-luong.html' cho trợ giúp)."""
+    up = '' if cur == ROOT_LANG else '../'
+    items = []
+    for code, name in LANGS:
+        href = up + ('' if code == ROOT_LANG else code + '/') + tail or './'
+        on = ' class="on" aria-current="true"' if code == cur else ''
+        items.append(f'<a href="{href}" hreflang="{code}" lang="{code}" data-lang="{code}"{on}>{name}</a>')
+    return (f'<details class="lang-dd"><summary aria-label="Language">{cur.upper()}</summary>'
+            f'<div class="lang-menu">{"".join(items)}</div></details>')

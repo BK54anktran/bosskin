@@ -44,7 +44,9 @@ Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, 
 - Menu đầu trang (Cài đặt, Video, … Trợ giúp) khai báo **một chỗ** ở `tools/landing/chrome.py` (`NAV`), dùng cho cả trang giới thiệu (`build_i18n.py` ghi lại `<nav class="links">` trong `index.html`)
   và trang trợ giúp (`build_help.py`): thêm / đổi mục menu ở đó rồi chạy cả hai script. CSS đầu trang vẫn là hai bản (`index.html`, `help/tools/help.css`) — đổi kiểu thì sửa cả hai.
 - Chuỗi trong JS (lỗi form, "Đang gửi…", dòng liên hệ) nằm trong `TXT` / `ERR` của `index.html`, chọn theo `<html lang>`; form gửi `Accept-Language` theo trang.
-- Nút VI / EN ở thanh trên; lựa chọn nhớ trong `localStorage` (`bk_lang`), trang tiếng Việt chỉ tự chuyển sang `/en/` khi người dùng đã chọn English (không dò ngôn ngữ trình duyệt để khỏi ảnh hưởng SEO).
+- Chọn ngôn ngữ bằng danh sách thả xuống (`<details class="lang-dd">`, không cần JS) ở thanh trên cả trang giới thiệu và trợ giúp; danh sách ngôn ngữ nằm ở `LANGS` trong `tools/landing/chrome.py`.
+  **Thêm ngôn ngữ mới** (vd. `ja`): thêm `('ja', '日本語')` vào `LANGS`, tạo `landing/i18n/ja.json` (khoá tiếng Việt → câu mới, copy từ `en.json`) và `help/src-ja/`, rồi mở rộng `build_i18n.py` / `build_help.py` (hiện đang cố định `en`: tham số hoá theo `LANGS`), `check_sitemap.py`, Dockerfile (`help/ja`).
+- Lựa chọn ngôn ngữ; nhớ trong `localStorage` (`bk_lang`), trang tiếng Việt chỉ tự chuyển sang `/<mã>/` khi người dùng đã chọn English (không dò ngôn ngữ trình duyệt để khỏi ảnh hưởng SEO).
   Cả hai trang có canonical riêng + `hreflang` vi / en / x-default; `/en/` có trong sitemap.
 - Trang trợ giúp `/help/`, ảnh chụp màn hình và video vẫn tiếng Việt (chưa có bản Anh).
 
