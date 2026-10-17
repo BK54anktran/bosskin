@@ -1133,7 +1133,7 @@ class _RangeDailyLineChart extends StatelessWidget {
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             LayoutBuilder(builder: (context, constraints) {
-              final step = ((trend.length / ((constraints.maxWidth - 28) / 28)).ceil()).clamp(1, trend.length);
+              final step = trend.isEmpty ? 1 : ((trend.length / ((constraints.maxWidth - 28) / 28)).ceil()).clamp(1, trend.length);
               return SizedBox(
                 height: 200,
                 child: LineChart(LineChartData(
@@ -1784,7 +1784,9 @@ class _SalaryTrendChart extends StatelessWidget {
                     getTitlesWidget: (v, _) {
                       final month = v.toInt();
                       if (month < 1 || month > 12) return const SizedBox.shrink();
-                      return Text(DateFormat.MMM(localeCode(context)).format(DateTime(2000, month)),
+                      // Điện thoại: 12 nhãn "Tháng N" chồng chữ → chỉ hiện số tháng
+                      final narrow = MediaQuery.of(context).size.width < 600;
+                      return Text(narrow ? '$month' : DateFormat.MMM(localeCode(context)).format(DateTime(2000, month)),
                           style: TextStyle(fontSize: 10, color: AppTheme.textSecondary));
                     },
                   )),
@@ -1881,13 +1883,19 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                 style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
             const SizedBox(height: 16),
             LayoutBuilder(builder: (context, constraints) {
-              const tooltipWidth = 285.0;
+              // Điện thoại: biểu đồ hẹp hơn 285 → thu hộp thông tin lại; clamp với cận trên < cận dưới sẽ ném lỗi (màn xám trên APK)
+              final tooltipWidth = constraints.maxWidth < 285.0 + 24 ? (constraints.maxWidth - 8).clamp(120.0, 285.0).toDouble() : 285.0;
+              final maxLeft = (constraints.maxWidth - tooltipWidth).clamp(0.0, double.infinity).toDouble();
               final left = selectedDay == null
-                  ? 12.0
-                  : ((tooltipIndex! / (display.length > 1 ? (display.length - 1) : 1)) *
-                          (constraints.maxWidth - tooltipWidth - 24))
-                      .clamp(12.0, constraints.maxWidth - tooltipWidth - 12.0)
+                  ? 0.0
+                  : ((tooltipIndex! / (display.length > 1 ? (display.length - 1) : 1)) * maxLeft)
+                      .clamp(0.0, maxLeft)
                       .toDouble();
+              final narrowChart = constraints.maxWidth < 480;
+              final sideWidth = narrowChart ? 44.0 : 64.0;
+              // Nhãn ngày thưa ra theo bề rộng (mỗi nhãn ~44dp), tránh chồng chữ trên điện thoại
+              final plotWidth = (constraints.maxWidth - sideWidth * 2).clamp(60.0, double.infinity);
+              final labelStep = display.isEmpty ? 1 : (display.length / (plotWidth / 44)).ceil().clamp(1, display.length);
               return SizedBox(
                 height: 240,
                 child: Stack(
@@ -1906,10 +1914,10 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                           showTitles: true, reservedSize: 32, interval: 1,
                           getTitlesWidget: (v, _) {
                             final i = v.toInt();
-                            if (i < 0 || i >= display.length) return const SizedBox.shrink();
+                            if (i < 0 || i >= display.length || i % labelStep != 0) return const SizedBox.shrink();
                             return Padding(
                               padding: const EdgeInsets.only(top: 4),
-                              child: Text(DateFormat('dd/MM/yyyy').format(display[i].date),
+                              child: Text(DateFormat(narrowChart ? 'dd/MM' : 'dd/MM/yyyy').format(display[i].date),
                                   style: TextStyle(fontSize: 8, color: AppTheme.textSecondary)),
                             );
                           },
@@ -1918,7 +1926,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                           axisNameWidget: Text(s.dashboardAnalyticsHours,
                               style: const TextStyle(fontSize: 9, color: AppTheme.primary)),
                           sideTitles: SideTitles(
-                            showTitles: true, reservedSize: 64,
+                            showTitles: true, reservedSize: sideWidth,
                             getTitlesWidget: (v, meta) => SideTitleWidget(
                               axisSide: meta.axisSide, space: 2,
                               child: Text('${v.toInt()}h',
@@ -1930,7 +1938,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                           axisNameWidget: Text(s.totalSalary,
                               style: TextStyle(fontSize: 9, color: Colors.purple.shade400)),
                           sideTitles: SideTitles(
-                            showTitles: true, reservedSize: 64,
+                            showTitles: true, reservedSize: sideWidth,
                             getTitlesWidget: (v, meta) => SideTitleWidget(
                               axisSide: meta.axisSide, space: 8,
                               child: Text(
@@ -2043,7 +2051,7 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(child: Text(s.dashboardTooltipGrade, style: mutedStyle)),
-                    SizedBox(width: 56, child: Text(s.dashboardTooltipHours, style: mutedStyle, textAlign: TextAlign.right)),
+                    SizedBox(width: 84, child: Text(s.dashboardTooltipHours, style: mutedStyle, textAlign: TextAlign.right)),
                     const SizedBox(width: 8),
                     SizedBox(width: 92, child: Text(s.dashboardTooltipAmount, style: mutedStyle, textAlign: TextAlign.right)),
                   ],
@@ -2070,7 +2078,7 @@ class _DailyTimelineHoverTooltip extends StatelessWidget {
                                     maxLines: 1, overflow: TextOverflow.ellipsis),
                               ),
                               SizedBox(
-                                width: 56,
+                                width: 84,
                                 child: Text('${item.totalHours.toStringAsFixed(1)}h / $unit',
                                     style: TextStyle(color: AppTheme.textPrimary, fontSize: 10.5, fontWeight: FontWeight.w500, height: 1.2),
                                     textAlign: TextAlign.right),

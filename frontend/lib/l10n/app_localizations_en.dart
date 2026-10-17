@@ -6078,8 +6078,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonPositions => 'Common positions';
 
   @override
-  String get commonPositionsHint => 'Common positions can be used in every department (e.g. Manager, Staff). Positions specific to this department are managed here.';
+  String get commonPositionsHint =>
+      'Common positions can be used in every department (e.g. Manager, Staff). Positions specific to this department are managed here.';
 
   @override
-  String get commonPositionsNote => 'Common position — not tied to any department';
+  String get commonPositionsNote =>
+      'Common position — not tied to any department';
 }

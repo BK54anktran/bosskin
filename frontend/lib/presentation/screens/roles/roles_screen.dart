@@ -1211,38 +1211,51 @@ class _UsersTabState extends State<_UsersTab> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: SearchTextField(
-                  controller: _searchCtrl,
-                  onChanged: (_) => setState(() { _page = 0; }),
-                  onClear: () => setState(() { _page = 0; }),
-                ),
+          child: LayoutBuilder(builder: (context, c) {
+            final search = SearchTextField(
+              controller: _searchCtrl,
+              onChanged: (_) => setState(() { _page = 0; }),
+              onClear: () => setState(() { _page = 0; }),
+            );
+            final dept = DepartmentPickerField(
+              compact: true,
+              departments: _allDepts,
+              value: _filterDeptId,
+              label: s.department,
+              allowAll: true,
+              onChanged: (v) => setState(() { _filterDeptId = v; _page = 0; }),
+            );
+            final export = PermissionGuard(
+              permission: 'USER_MANAGE',
+              child: OutlinedButton.icon(
+                onPressed: _issueInitialPasswords,
+                icon: const Icon(Icons.key_outlined, size: 18),
+                label: Text(s.userInitialPasswordsButton),
               ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 220,
-                child: DepartmentPickerField(
-                  compact: true,
-                  departments: _allDepts,
-                  value: _filterDeptId,
-                  label: s.department,
-                  allowAll: true,
-                  onChanged: (v) => setState(() { _filterDeptId = v; _page = 0; }),
-                ),
-              ),
-              const SizedBox(width: 12),
-              PermissionGuard(
-                permission: 'USER_MANAGE',
-                child: OutlinedButton.icon(
-                  onPressed: _issueInitialPasswords,
-                  icon: const Icon(Icons.key_outlined, size: 18),
-                  label: Text(s.userInitialPasswordsButton),
-                ),
-              ),
-            ],
-          ),
+            );
+            // Điện thoại: tìm kiếm, phòng ban, nút xuất xếp thành 3 hàng thay vì ép chung một hàng
+            if (c.maxWidth < 600) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  search,
+                  const SizedBox(height: 8),
+                  dept,
+                  const SizedBox(height: 8),
+                  Align(alignment: Alignment.centerRight, child: export),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: search),
+                const SizedBox(width: 12),
+                SizedBox(width: 220, child: dept),
+                const SizedBox(width: 12),
+                export,
+              ],
+            );
+          }),
         ),
         Expanded(
           child: filtered.isEmpty
