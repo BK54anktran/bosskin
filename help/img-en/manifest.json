@@ -148,6 +148,14 @@
   "caption": null,
   "marks": []
  },
+ "leave-grant": {
+  "caption": null,
+  "marks": [
+   "Employees",
+   "Pool for leave type\nShared pool (any balance-based type)",
+   "Manual grant"
+  ]
+ },
  "leave-new": {
   "caption": null,
   "marks": [
