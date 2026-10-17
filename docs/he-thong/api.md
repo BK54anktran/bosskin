@@ -2,7 +2,7 @@
 
 # Danh sách API
 
-42 controller, 327 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
+43 controller, 333 endpoint. Cột **Quyền** là mã quyền kiểm ở controller (`requirePermission`); "—" nghĩa là chỉ cần đăng nhập, phần kiểm tra (chính chủ, phạm vi phòng ban, vai trò) nằm ở service. `/api/v1/public/**`, `/api/v1/auth/login|refresh|logout|2fa/**`, `/admin/auth/**`, `/actuator/health` không cần đăng nhập; `/admin/**` chỉ nhận token quản trị hệ thống (xem [bảo mật](bao-mat.md)).
 
 | Controller | Gốc | Số endpoint |
 |---|---|---|
@@ -27,6 +27,7 @@
 | [JobHistoryController](#jobhistorycontroller) | `/` | 4 |
 | [LeaveController](#leavecontroller) | `/api/v1/leaves` | 21 |
 | [MapTileController](#maptilecontroller) | `/api/v1/map-tiles` | 1 |
+| [NotificationController](#notificationcontroller) | `/api/v1/notifications` | 6 |
 | [PayrollController](#payrollcontroller) | `/api/v1/payrolls , /api/v1/payroll` | 10 |
 | [PositionController](#positioncontroller) | `/api/v1/positions` | 4 |
 | [ProfileController](#profilecontroller) | `/api/v1/profile` | 12 |
@@ -361,6 +362,19 @@
 | Method | Đường dẫn | Quyền | Hàm |
 |---|---|---|---|
 | GET | `/api/v1/map-tiles/{z}/{x}/{y}.png` | — | `tile` |
+
+## NotificationController
+
+`backend/src/main/java/com/bosskin/controller/NotificationController.java`
+
+| Method | Đường dẫn | Quyền | Hàm |
+|---|---|---|---|
+| GET | `/api/v1/notifications` | — | `list` |
+| GET | `/api/v1/notifications/unread-count` | — | `unread` |
+| POST | `/api/v1/notifications/read-all` | — | `readAll` |
+| POST | `/api/v1/notifications/{id}/read` | — | `read` |
+| DELETE | `/api/v1/notifications/{id}` | — | `delete` |
+| DELETE | `/api/v1/notifications` | — | `clear` |
 
 ## PayrollController
 

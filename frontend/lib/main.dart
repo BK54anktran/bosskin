@@ -18,6 +18,7 @@ import 'presentation/screens/auth/force_change_password_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
+import 'presentation/screens/notifications/notifications_screen.dart';
 import 'presentation/screens/profile/edit_requests_screen.dart';
 import 'presentation/screens/admin/admin_login_screen.dart';
 import 'presentation/screens/admin/admin_dashboard_screen.dart';
@@ -236,6 +237,11 @@ final _router = GoRouter(
           path: AppRoutes.companySettings,
           pageBuilder: (_, __) =>
               const NoTransitionPage(child: CompanySettingsScreen()),
+        ),
+        GoRoute(
+          path: AppRoutes.notifications,
+          pageBuilder: (_, __) =>
+              const NoTransitionPage(child: NotificationsScreen()),
         ),
         GoRoute(
           path: AppRoutes.profile,

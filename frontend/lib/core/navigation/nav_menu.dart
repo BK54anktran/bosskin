@@ -36,6 +36,7 @@ List<NavGroup> navGroups(AppLocalizations s) => [
         NavEntry(s.checkInOut, Icons.login_outlined, AppRoutes.checkInOut),
         NavEntry(s.shiftRegMenu, Icons.edit_calendar_outlined, AppRoutes.shiftRegistration),
         NavEntry(s.selfPayroll, Icons.receipt_long_outlined, AppRoutes.selfPayroll),
+        NavEntry(s.notifications, Icons.notifications_outlined, AppRoutes.notifications),
         NavEntry(s.personalInfo, Icons.person_outline, AppRoutes.profile),
       ]),
       NavGroup('requests', s.navGroupRequests, [

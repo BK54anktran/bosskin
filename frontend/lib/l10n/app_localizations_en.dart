@@ -6109,4 +6109,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attendanceLocationTitle => 'Attendance location';
+
+  @override
+  String get notificationsInboxTab => 'Inbox';
+
+  @override
+  String get notificationsSettingsTab => 'Settings';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsClearAll => 'Clear all';
+
+  @override
+  String get notificationsClearConfirm =>
+      'Delete all notifications? This applies to all your devices.';
+
+  @override
+  String get notificationsSharedHint =>
+      'Notifications and settings are shared across every device signed in to this account.';
+
+  @override
+  String notificationsDevices(String count) {
+    return 'Receiving notifications on $count device(s)';
+  }
+
+  @override
+  String get notificationsNoDevice =>
+      'No device receives notifications yet — turn on a reminder below and save on your phone.';
+
+  @override
+  String get managerAlertsTitle => 'Manager alerts';
+
+  @override
+  String get managerAlertsDesc =>
+      'Shown only if you are a direct manager. Sent to all your devices.';
+
+  @override
+  String get lateAlertTitle => 'Employee is late';
+
+  @override
+  String get lateAlertDesc =>
+      'Notify when someone you manage checks in late for their shift.';
+
+  @override
+  String get earlyLeaveAlertTitle => 'Employee leaves early';
+
+  @override
+  String get earlyLeaveAlertDesc =>
+      'Notify when someone you manage checks out before the shift ends.';
 }

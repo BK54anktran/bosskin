@@ -6091,4 +6091,54 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get attendanceLocationTitle => 'Vị trí chấm công';
+
+  @override
+  String get notificationsInboxTab => 'Hộp thư';
+
+  @override
+  String get notificationsSettingsTab => 'Cài đặt';
+
+  @override
+  String get notificationsMarkAllRead => 'Đánh dấu đã đọc hết';
+
+  @override
+  String get notificationsClearAll => 'Xoá tất cả';
+
+  @override
+  String get notificationsClearConfirm =>
+      'Xoá toàn bộ thông báo? Thao tác này áp dụng cho mọi thiết bị của bạn.';
+
+  @override
+  String get notificationsSharedHint =>
+      'Thông báo và cài đặt dùng chung cho mọi thiết bị đăng nhập tài khoản này.';
+
+  @override
+  String notificationsDevices(String count) {
+    return 'Đang nhận thông báo trên $count thiết bị';
+  }
+
+  @override
+  String get notificationsNoDevice =>
+      'Chưa có thiết bị nào nhận thông báo — bật nhắc ca hoặc check-in / check-out ở dưới rồi lưu trên điện thoại.';
+
+  @override
+  String get managerAlertsTitle => 'Báo cho quản lý';
+
+  @override
+  String get managerAlertsDesc =>
+      'Chỉ hiện khi bạn là quản lý trực tiếp của nhân viên. Thông báo gửi tới mọi thiết bị của bạn.';
+
+  @override
+  String get lateAlertTitle => 'Nhân viên đi trễ';
+
+  @override
+  String get lateAlertDesc =>
+      'Báo khi nhân viên bạn quản lý check-in trễ so với ca.';
+
+  @override
+  String get earlyLeaveAlertTitle => 'Nhân viên về sớm';
+
+  @override
+  String get earlyLeaveAlertDesc =>
+      'Báo khi nhân viên bạn quản lý check-out sớm hơn giờ kết thúc ca.';
 }

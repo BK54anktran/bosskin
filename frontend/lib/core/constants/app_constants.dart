@@ -33,6 +33,7 @@ class AppRoutes {
   static const String leaves = '/leaves';
   static const String companySettings = '/company-settings';
   static const String profile = '/profile';
+  static const String notifications = '/notifications';
   static const String changePassword = '/change-password';
   static const String editRequests = '/profile/edit-requests';
   static const String excelImportExport = '/excel';

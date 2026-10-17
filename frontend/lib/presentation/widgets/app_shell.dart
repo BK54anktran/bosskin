@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'notification_tile.dart';
 import '../../core/navigation/nav_access.dart';
 import '../../core/navigation/nav_menu.dart';
 import 'package:go_router/go_router.dart';
@@ -48,10 +51,15 @@ class _AppShellState extends State<AppShell>
     TeamApprovalService.instance.refresh();
     CompanyFeatureService.instance.addListener(_onLocaleChanged);
     CompanyFeatureService.instance.refresh();
+    NotificationService.instance.refreshInbox();
+    _inboxTimer = Timer.periodic(const Duration(minutes: 2), (_) => NotificationService.instance.refreshInbox());
   }
+
+  Timer? _inboxTimer;
 
   @override
   void dispose() {
+    _inboxTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     AuthService.instance.removeListener(_onAuthChanged);
     LanguageService.instance.removeListener(_onLocaleChanged);
@@ -247,6 +255,7 @@ class _AppShellState extends State<AppShell>
       AppRoutes.payroll => s.payroll,
       AppRoutes.selfPayroll => s.selfPayroll,
       AppRoutes.profile => s.profile,
+      AppRoutes.notifications => s.notifications,
       AppRoutes.excelImportExport => s.navImportExport,
       AppRoutes.reports => s.reportScreenTitle,
       AppRoutes.auditLogs => s.auditLogTitle,
@@ -342,7 +351,7 @@ class _NotificationBell extends StatelessWidget {
   }
 
   void _openPanel(BuildContext context) {
-    NotificationService.instance.markAllRead();
+    NotificationService.instance.refreshInbox().then((_) => NotificationService.instance.markAllRead());
     showDialog<void>(
       context: context,
       barrierColor: Colors.black26,
@@ -389,6 +398,15 @@ class _NotificationSheet extends StatelessWidget {
                         style: const TextStyle(fontSize: 13)),
                   ),
                 IconButton(
+                  icon: const Icon(Icons.settings_outlined, size: 20),
+                  tooltip: s.notificationsSettingsTab,
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.go(AppRoutes.notifications);
+                  },
+                  color: AppTheme.textSecondary,
+                ),
+                IconButton(
                   icon: const Icon(Icons.close, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
                   color: AppTheme.textSecondary,
@@ -422,83 +440,13 @@ class _NotificationSheet extends StatelessWidget {
                 itemCount: notifications.length,
                 separatorBuilder: (_, __) =>
                     const Divider(height: 1, indent: 56),
-                itemBuilder: (_, i) => _NotificationTile(notifications[i]),
+                itemBuilder: (_, i) => NotificationTile(notifications[i]),
               ),
             ),
           const SizedBox(height: 8),
         ],
       ),
     );
-  }
-}
-
-class _NotificationTile extends StatelessWidget {
-  final AppNotification notification;
-  const _NotificationTile(this.notification);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: CircleAvatar(
-        radius: 20,
-        backgroundColor: _iconColor.withValues(alpha: 0.12),
-        child: Icon(_icon, color: _iconColor, size: 20),
-      ),
-      title: Text(
-        notification.title,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight:
-              notification.isRead ? FontWeight.w400 : FontWeight.w600,
-          color: AppTheme.textPrimary,
-        ),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (notification.body.isNotEmpty)
-            Text(
-              notification.body,
-              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          const SizedBox(height: 2),
-          Text(
-            _relativeTime(AppLocalizations.of(context), notification.time),
-            style: TextStyle(
-              fontSize: 11,
-              color: AppTheme.textSecondary.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData get _icon {
-    return switch (notification.type) {
-      'CHECK_IN_REMINDER'  => Icons.login_outlined,
-      'CHECK_OUT_REMINDER' => Icons.logout_outlined,
-      _                    => Icons.notifications_outlined,
-    };
-  }
-
-  Color get _iconColor {
-    return switch (notification.type) {
-      'CHECK_IN_REMINDER'  => AppTheme.success,
-      'CHECK_OUT_REMINDER' => AppTheme.warning,
-      _                    => AppTheme.primary,
-    };
-  }
-
-  String _relativeTime(AppLocalizations s, DateTime time) {
-    final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 1) return s.uiJustNow;
-    if (diff.inMinutes < 60) return s.uiMinutesAgo('${diff.inMinutes}');
-    if (diff.inHours < 24) return s.uiHoursAgo('${diff.inHours}');
-    return s.uiDaysAgo('${diff.inDays}');
   }
 }
 

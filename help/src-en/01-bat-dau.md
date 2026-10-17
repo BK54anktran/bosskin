@@ -65,10 +65,24 @@ Click your **avatar** (the first letter of your name) at the top right:
 
 ## Notifications
 
-The bell icon shows the number of unread notifications: requests approved / rejected, attendance reminders, contracts about to expire… On a phone,
-push notifications also appear when the app is closed (turn them on in **Personal info → Notification settings**).
+The bell icon shows how many notifications are unread: requests approved / rejected, attendance reminders, contracts about to expire… Click it for a quick look;
+open the **Notifications** menu (*My space* group) to see everything, mark as read or delete.
+
+- **Shared across all your devices**: the inbox and the settings belong to your account. Sign in on another phone or computer and you see the same notifications,
+  and push notifications reach **every** device that has them turned on.
+- **Settings** tab: **Shift reminder** (get a notification before your shift starts), **Quick check-in / check-out notification** (a clock-in/out button right in the notification, phone),
+  and — if you are a direct manager of employees — **Manager alerts**: **Employee is late** / **Employee leaves early** (notified when someone you manage
+  checks in late or checks out before the shift ends, using the company's tolerance). Turn them on or off, then click **Save**.
+- **Send test notification**: turn on at least one type and click it; a few seconds later every one of your devices gets a notification. If you see nothing, check the app's notification
+  permission in your phone settings; if the app says "Push notifications are not enabled on the server", tell your system administrator.
+- The web version gets notifications too: the first time you click **Save** or **Send test notification** the browser asks for permission — choose **Allow**.
+  On iPhone, add BossKin to the home screen and open it from there to receive them.
 
 ![Notification panel](img:notifications)
+
+![Notifications screen: an inbox shared by all your devices](img:notifications-page)
+
+![Notification settings, including manager alerts](img:notification-settings)
 
 ## Forgot your password
 

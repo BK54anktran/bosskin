@@ -309,9 +309,23 @@
    "Nhóm thu gọn"
   ]
  },
+ "notification-settings": {
+  "caption": null,
+  "marks": [
+   "Save"
+  ]
+ },
  "notifications": {
   "caption": null,
   "marks": []
+ },
+ "notifications-page": {
+  "caption": null,
+  "marks": [
+   "Inbox",
+   "Settings",
+   "Mark all as read"
+  ]
  },
  "org-chart": {
   "caption": null,

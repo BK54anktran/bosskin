@@ -12,6 +12,7 @@ import '../../core/localization/language_service.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../core/navigation/navigator_keys.dart';
 import '../../core/config/runtime_host.dart';
+import '../repositories/notification_repository.dart';
 import 'profile_service.dart';
 
 const _channelId         = 'shift_reminders';
@@ -40,6 +41,7 @@ class AppNotification {
   final String? type;
   final DateTime time;
   final bool isRead;
+  final Map<String, String> data;
 
   const AppNotification({
     required this.id,
@@ -48,6 +50,7 @@ class AppNotification {
     this.type,
     required this.time,
     this.isRead = false,
+    this.data = const {},
   });
 
   AppNotification copyWith({bool? isRead}) => AppNotification(
@@ -57,24 +60,18 @@ class AppNotification {
         type: type,
         time: time,
         isRead: isRead ?? this.isRead,
+        data: data,
       );
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'body': body,
-        'type': type,
-        'time': time.toIso8601String(),
-        'isRead': isRead,
-      };
-
-  factory AppNotification.fromJson(Map<String, dynamic> m) => AppNotification(
-        id: m['id'] as String,
-        title: m['title'] as String,
+  /// Thông báo từ hộp thư máy chủ (`GET /notifications`).
+  factory AppNotification.fromServer(Map<String, dynamic> m) => AppNotification(
+        id: '${m['id']}',
+        title: m['title'] as String? ?? '',
         body: m['body'] as String? ?? '',
         type: m['type'] as String?,
-        time: DateTime.parse(m['time'] as String),
-        isRead: m['isRead'] as bool? ?? false,
+        time: DateTime.parse(m['createdAt'] as String),
+        isRead: m['read'] as bool? ?? false,
+        data: ((m['data'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', '$v')),
       );
 }
 
@@ -89,29 +86,6 @@ Future<void> _onBackgroundMessage(RemoteMessage message) async {
   await _initLocalPlugin();
   await _ensureResultChannel();
   await _showShiftNotification(message);
-  await _saveNotificationToPrefs(message);
-}
-
-Future<void> _saveNotificationToPrefs(RemoteMessage message) async {
-  try {
-    final title = message.data['title'] as String? ?? message.notification?.title;
-    final body  = message.data['body']  as String? ?? message.notification?.body;
-    if (title == null) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getStringList('notification_inbox') ?? [];
-
-    final n = AppNotification(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      body: body ?? '',
-      type: message.data['type'] as String?,
-      time: DateTime.now(),
-    );
-
-    final updated = [jsonEncode(n.toJson()), ...stored].take(50).toList();
-    await prefs.setStringList('notification_inbox', updated);
-  } catch (_) {}
 }
 
 @pragma('vm:entry-point')
@@ -388,42 +362,53 @@ class NotificationService {
     }
   }
 
-  void _addToInbox(String title, String body, String? type) {
-    final n = AppNotification(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      body: body,
-      type: type,
-      time: DateTime.now(),
-    );
-    inbox.value = [n, ...inbox.value].take(50).toList();
-    _saveInbox();
-  }
+  final _inboxRepo = NotificationRepository();
+  bool _inboxLoading = false;
 
-  Future<void> _saveInbox() async {
+  /// Tải lại hộp thư từ máy chủ (mọi thiết bị của tài khoản thấy cùng danh sách). Lỗi mạng → giữ danh sách cũ.
+  Future<void> refreshInbox() async {
+    if (_inboxLoading) return;
+    _inboxLoading = true;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(
-        'notification_inbox',
-        inbox.value.map((n) => jsonEncode(n.toJson())).toList(),
-      );
-    } catch (_) {}
+      inbox.value = await _inboxRepo.getAll();
+    } catch (_) {
+      // chưa đăng nhập / mất mạng: để nguyên
+    } finally {
+      _inboxLoading = false;
+    }
   }
 
-  Future<void> _loadInbox() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final stored = prefs.getStringList('notification_inbox') ?? [];
-      inbox.value = stored
-          .map((s) => AppNotification.fromJson(jsonDecode(s) as Map<String, dynamic>))
-          .toList();
-    } catch (_) {}
-  }
+  /// Xoá hộp thư trong bộ nhớ khi đăng xuất (không để lộ thông báo của tài khoản trước).
+  void clearLocal() => inbox.value = [];
 
-  void markAllRead() {
+  Future<void> markAllRead() async {
     if (inbox.value.every((n) => n.isRead)) return;
     inbox.value = inbox.value.map((n) => n.copyWith(isRead: true)).toList();
-    _saveInbox();
+    try {
+      await _inboxRepo.markAllRead();
+    } catch (_) {}
+  }
+
+  Future<void> markRead(AppNotification n) async {
+    if (n.isRead) return;
+    inbox.value = inbox.value.map((x) => x.id == n.id ? x.copyWith(isRead: true) : x).toList();
+    try {
+      await _inboxRepo.markRead(n.id);
+    } catch (_) {}
+  }
+
+  Future<void> deleteNotification(AppNotification n) async {
+    inbox.value = inbox.value.where((x) => x.id != n.id).toList();
+    try {
+      await _inboxRepo.delete(n.id);
+    } catch (_) {}
+  }
+
+  Future<void> clearAll() async {
+    inbox.value = [];
+    try {
+      await _inboxRepo.clear();
+    } catch (_) {}
   }
 
   bool _firebaseReady = false;
@@ -490,7 +475,12 @@ class NotificationService {
       final t = token ?? await deviceToken();
       if (t == null) return;
       final settings = await ProfileService.instance.getNotificationSettings();
-      if (!settings.enabled) return;
+      // Cài đặt lưu theo tài khoản: đăng nhập thêm một máy thì máy đó cũng nhận (nhiều thiết bị / tài khoản)
+      final wantsPush = settings.shiftReminderMinutes != null ||
+          settings.checkInOutNotifMinutes != null ||
+          settings.lateAlert ||
+          settings.earlyLeaveAlert;
+      if (!wantsPush && !settings.enabled) return;
       await ProfileService.instance.updateNotificationSettings(
         fcmToken: t,
         shiftReminderMinutes: settings.shiftReminderMinutes,
@@ -562,13 +552,9 @@ class NotificationService {
       }
     }
 
-    await _loadInbox();
-
     FirebaseMessaging.onMessage.listen((msg) {
       _showShiftNotification(msg);
-      final title = msg.data['title'] as String? ?? msg.notification?.title;
-      final body  = msg.data['body']  as String? ?? msg.notification?.body;
-      if (title != null) _addToInbox(title, body ?? '', msg.data['type'] as String?);
+      refreshInbox();   // thông báo đã được máy chủ lưu — chỉ cần tải lại
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen(_handleFcmTap);
@@ -578,7 +564,7 @@ class NotificationService {
   }
 
   /// Bản web: Firebase khởi tạo bằng cấu hình trong env.js; thông báo do web/firebase-messaging-sw.js hiện (cả khi
-  /// trang đang mở — xem lý do trong file đó), ở đây chỉ ghi vào hộp thông báo. Không xin quyền ở đây — trình duyệt chỉ cho xin
+  /// trang đang mở — xem lý do trong file đó), ở đây chỉ tải lại hộp thông báo từ máy chủ. Không xin quyền ở đây — trình duyệt chỉ cho xin
   /// khi người dùng bấm nút (Lưu cài đặt thông báo / Gửi thông báo thử).
   Future<void> _initializeWeb() async {
     final cfg = runtimeFirebaseConfig();
@@ -602,32 +588,38 @@ class NotificationService {
     _fcm.onTokenRefresh.listen((t) {
       if (onTokenRefreshWhileSignedIn?.call() ?? false) syncDeviceToken(token: t);
     });
-    await _loadInbox();
-    FirebaseMessaging.onMessage.listen((msg) {
-      final title = msg.data['title'] as String? ?? msg.notification?.title;
-      final body  = msg.data['body']  as String? ?? msg.notification?.body;
-      if (title == null) return;
-      _addToInbox(title, body ?? '', msg.data['type'] as String?);
-    });
+    FirebaseMessaging.onMessage.listen((_) => refreshInbox());
   }
 
+  /// Gắn thiết bị này vào tài khoản (một tài khoản có nhiều thiết bị) và lưu cài đặt thông báo.
   Future<void> registerToken({
     required int? shiftReminderMinutes,
     required int? checkInOutNotifMinutes,
+    bool? lateAlert,
+    bool? earlyLeaveAlert,
   }) async {
     final token = await deviceToken();
     await ProfileService.instance.updateNotificationSettings(
       fcmToken: token,
       shiftReminderMinutes: shiftReminderMinutes,
       checkInOutNotifMinutes: checkInOutNotifMinutes,
+      lateAlert: lateAlert,
+      earlyLeaveAlert: earlyLeaveAlert,
     );
   }
 
-  Future<void> disableNotifications() async {
-    await ProfileService.instance.updateNotificationSettings(
-      fcmToken: null,
-      shiftReminderMinutes: null,
-      checkInOutNotifMinutes: null,
-    );
-  }
+  /// Lưu cài đặt không gắn thiết bị (cũng dùng khi tắt hết nhắc).
+  Future<void> saveSettingsOnly({
+    required int? shiftReminderMinutes,
+    required int? checkInOutNotifMinutes,
+    bool? lateAlert,
+    bool? earlyLeaveAlert,
+  }) =>
+      ProfileService.instance.updateNotificationSettings(
+        fcmToken: null,
+        shiftReminderMinutes: shiftReminderMinutes,
+        checkInOutNotifMinutes: checkInOutNotifMinutes,
+        lateAlert: lateAlert,
+        earlyLeaveAlert: earlyLeaveAlert,
+      );
 }

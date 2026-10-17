@@ -64,6 +64,16 @@ async def bat_dau(sh):
     await sh.esc()
 
 
+@chapter
+async def thong_bao(sh):
+    """Màn Thông báo (hộp thư + cài đặt): quản lý có báo đi trễ / về sớm trong hộp thư (tạo bằng một lần chấm trễ trên DB thử)."""
+    await sh.login(QD)
+    await sh.goto('/notifications', wait=7000)
+    await sh.shot('notifications-page', [('Hộp thư', 'tab'), ('Cài đặt', 'tab'), ('Đánh dấu đã đọc hết', 'button')])
+    await sh.click('Cài đặt', role='tab', wait=2500)
+    await sh.shot('notification-settings', [('Lưu', 'button')])
+
+
 # ── 2. Thông tin cá nhân ───────────────────────────────────────────────────
 @chapter
 async def ca_nhan(sh):

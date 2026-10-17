@@ -54,7 +54,7 @@ void main() {
     });
 
     test('mọi màn có khai báo quyền trong nav_access (trừ màn mở cho mọi tài khoản)', () {
-      const open = {AppRoutes.profile, AppRoutes.teamApprovals};
+      const open = {AppRoutes.profile, AppRoutes.notifications, AppRoutes.teamApprovals};
       for (final r in routes) {
         expect(routeAnyOf.containsKey(r) || open.contains(r), isTrue, reason: r);
       }

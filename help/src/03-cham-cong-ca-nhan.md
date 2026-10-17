@@ -25,9 +25,9 @@ Những trường hợp không chấm được:
 | Ngoài khung giờ | Chưa tới / đã quá khung giờ chấm của ca. Gửi **Yêu cầu chấm công** (mục dưới). |
 | Hôm nay bạn chưa được xếp ca | Ngày này bạn không có ca. Nếu công ty bật "cho chấm khi không được xếp ca", màn hình báo vẫn chấm được: chấm vào / ra nhiều lượt trong ngày (xong lượt này mới vào lượt mới), mỗi lượt là một dòng công, giờ làm tính theo giờ thực tế. |
 
-> **Mẹo:** Trên điện thoại, bật *Thông báo check-in / check-out nhanh* ở Thông tin cá nhân để chấm ngay từ thông báo nhắc.
+> **Mẹo:** Trên điện thoại, bật *Thông báo check-in / check-out nhanh* ở **Thông báo → Cài đặt** để chấm ngay từ thông báo nhắc.
 
-Phần **Lịch sử chấm công** cuối trang hiện các ngày trong tháng kèm giờ vào / ra. Lượt chưa được quản lý duyệt hiện nhãn **Chờ duyệt**.
+Phần **Lịch sử chấm công** cuối trang hiện các ngày trong tháng kèm giờ vào / ra. Lượt chưa được quản lý duyệt hiện nhãn **Chờ duyệt**. Dưới giờ vào / ra có hai nhãn nhỏ **Check-in** / **Check-out** kèm biểu tượng ghim: bấm để xem vị trí lúc bạn chấm trên bản đồ nhỏ (chỉ bạn thấy trong lịch sử của mình).
 
 ## Gửi yêu cầu chấm công (quên chấm, sửa giờ, tăng ca)
 

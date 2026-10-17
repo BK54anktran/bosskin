@@ -11260,12 +11260,96 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Lương hợp đồng ({currency})'**
   String empContractSalaryIn(String currency);
+
   /// No description provided for @attendanceLocationTitle.
   ///
   /// In vi, this message translates to:
   /// **'Vị trí chấm công'**
   String get attendanceLocationTitle;
 
+  /// No description provided for @notificationsInboxTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hộp thư'**
+  String get notificationsInboxTab;
+
+  /// No description provided for @notificationsSettingsTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt'**
+  String get notificationsSettingsTab;
+
+  /// No description provided for @notificationsMarkAllRead.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu đã đọc hết'**
+  String get notificationsMarkAllRead;
+
+  /// No description provided for @notificationsClearAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá tất cả'**
+  String get notificationsClearAll;
+
+  /// No description provided for @notificationsClearConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá toàn bộ thông báo? Thao tác này áp dụng cho mọi thiết bị của bạn.'**
+  String get notificationsClearConfirm;
+
+  /// No description provided for @notificationsSharedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông báo và cài đặt dùng chung cho mọi thiết bị đăng nhập tài khoản này.'**
+  String get notificationsSharedHint;
+
+  /// No description provided for @notificationsDevices.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang nhận thông báo trên {count} thiết bị'**
+  String notificationsDevices(String count);
+
+  /// No description provided for @notificationsNoDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thiết bị nào nhận thông báo — bật nhắc ca hoặc check-in / check-out ở dưới rồi lưu trên điện thoại.'**
+  String get notificationsNoDevice;
+
+  /// No description provided for @managerAlertsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cho quản lý'**
+  String get managerAlertsTitle;
+
+  /// No description provided for @managerAlertsDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ hiện khi bạn là quản lý trực tiếp của nhân viên. Thông báo gửi tới mọi thiết bị của bạn.'**
+  String get managerAlertsDesc;
+
+  /// No description provided for @lateAlertTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đi trễ'**
+  String get lateAlertTitle;
+
+  /// No description provided for @lateAlertDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo khi nhân viên bạn quản lý check-in trễ so với ca.'**
+  String get lateAlertDesc;
+
+  /// No description provided for @earlyLeaveAlertTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên về sớm'**
+  String get earlyLeaveAlertTitle;
+
+  /// No description provided for @earlyLeaveAlertDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo khi nhân viên bạn quản lý check-out sớm hơn giờ kết thúc ca.'**
+  String get earlyLeaveAlertDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -2074,4 +2074,19 @@
   ,"empContractSalaryIn": "Contract salary ({currency})"
   ,"@empContractSalaryIn": {"placeholders": {"currency": {"type": "String"}}}
   ,"attendanceLocationTitle": "Attendance location"
+  ,"notificationsInboxTab": "Inbox"
+  ,"notificationsSettingsTab": "Settings"
+  ,"notificationsMarkAllRead": "Mark all as read"
+  ,"notificationsClearAll": "Clear all"
+  ,"notificationsClearConfirm": "Delete all notifications? This applies to all your devices."
+  ,"notificationsSharedHint": "Notifications and settings are shared across every device signed in to this account."
+  ,"notificationsDevices": "Receiving notifications on {count} device(s)"
+  ,"@notificationsDevices": {"placeholders": {"count": {"type": "String"}}}
+  ,"notificationsNoDevice": "No device receives notifications yet — turn on a reminder below and save on your phone."
+  ,"managerAlertsTitle": "Manager alerts"
+  ,"managerAlertsDesc": "Shown only if you are a direct manager. Sent to all your devices."
+  ,"lateAlertTitle": "Employee is late"
+  ,"lateAlertDesc": "Notify when someone you manage checks in late for their shift."
+  ,"earlyLeaveAlertTitle": "Employee leaves early"
+  ,"earlyLeaveAlertDesc": "Notify when someone you manage checks out before the shift ends."
 }

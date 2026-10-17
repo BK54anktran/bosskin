@@ -345,9 +345,23 @@
    "Nhóm thu gọn"
   ]
  },
+ "notification-settings": {
+  "caption": null,
+  "marks": [
+   "Lưu"
+  ]
+ },
  "notifications": {
   "caption": null,
   "marks": []
+ },
+ "notifications-page": {
+  "caption": null,
+  "marks": [
+   "Hộp thư",
+   "Cài đặt",
+   "Đánh dấu đã đọc hết"
+  ]
  },
  "org-chart": {
   "caption": null,

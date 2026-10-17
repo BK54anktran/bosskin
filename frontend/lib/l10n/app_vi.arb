@@ -2081,4 +2081,19 @@
   ,"empContractSalaryIn": "Lương hợp đồng ({currency})"
   ,"@empContractSalaryIn": {"placeholders": {"currency": {"type": "String"}}}
   ,"attendanceLocationTitle": "Vị trí chấm công"
+  ,"notificationsInboxTab": "Hộp thư"
+  ,"notificationsSettingsTab": "Cài đặt"
+  ,"notificationsMarkAllRead": "Đánh dấu đã đọc hết"
+  ,"notificationsClearAll": "Xoá tất cả"
+  ,"notificationsClearConfirm": "Xoá toàn bộ thông báo? Thao tác này áp dụng cho mọi thiết bị của bạn."
+  ,"notificationsSharedHint": "Thông báo và cài đặt dùng chung cho mọi thiết bị đăng nhập tài khoản này."
+  ,"notificationsDevices": "Đang nhận thông báo trên {count} thiết bị"
+  ,"@notificationsDevices": {"placeholders": {"count": {"type": "String"}}}
+  ,"notificationsNoDevice": "Chưa có thiết bị nào nhận thông báo — bật nhắc ca hoặc check-in / check-out ở dưới rồi lưu trên điện thoại."
+  ,"managerAlertsTitle": "Báo cho quản lý"
+  ,"managerAlertsDesc": "Chỉ hiện khi bạn là quản lý trực tiếp của nhân viên. Thông báo gửi tới mọi thiết bị của bạn."
+  ,"lateAlertTitle": "Nhân viên đi trễ"
+  ,"lateAlertDesc": "Báo khi nhân viên bạn quản lý check-in trễ so với ca."
+  ,"earlyLeaveAlertTitle": "Nhân viên về sớm"
+  ,"earlyLeaveAlertDesc": "Báo khi nhân viên bạn quản lý check-out sớm hơn giờ kết thúc ca."
 }

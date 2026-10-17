@@ -361,7 +361,7 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V32** (`V32__company_currency_timezone.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V33** (`V33__notification_inbox.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
@@ -370,7 +370,8 @@ V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: I
 V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc, V24 gói chức năng theo công ty (đã thay bằng V26),
 V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`), V27 giờ sửa tay chấm công lưu datetime, V28 nhiều lượt chấm không ca (`punch_no`), V29 ngôn ngữ người dùng (`users.language`), V30 cờ vai trò hệ thống (`roles.is_system`: Admin sinh sẵn bị khoá, tài khoản admin đầu tiên không bị đổi vai trò / quyền / khoá), V31 chức vụ chung (`positions.company_id` + `department_id` NULL = chức vụ chung dùng ở mọi phòng ban; `Position.usableIn(deptId)`, API `GET /positions?departmentId=` trả chức vụ của phòng + chức vụ chung; Excel để trống mã phòng ban = chung)
 V32 tiền tệ + múi giờ theo công ty (`companies.currency_code` / `timezone`; xem mục "Múi giờ & tiền tệ theo công ty")
-→ Migration tiếp theo phải là **V33**
+V33 thông báo dùng chung (`fcm_tokens` nhiều thiết bị / tài khoản thay `users.fcm_token`, hộp thư `user_notifications`, `users.notif_late_alert` / `notif_early_leave_alert`; xem mục "Thông báo dùng chung")
+→ Migration tiếp theo phải là **V34**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -610,6 +611,17 @@ V32 tiền tệ + múi giờ theo công ty (`companies.currency_code` / `timezon
   khung ca qua đêm hôm qua) vẫn tự chấm vào / ra **nhiều lượt** (V28: `attendances.punch_no`, mỗi cặp vào / ra một dòng công, chưa chấm ra thì chưa vào lượt mới; bảng công / theo ngày hiện mỗi lượt một dòng): công `shift_assignment_id` NULL, trạng thái PRESENT (không xét đi muộn), giờ theo giờ thực tế;
   chấm ra trong 24 giờ kể từ lúc vào (qua đêm được). Ngày có ca vẫn theo khung giờ ca. Lỗi `error.attendance.already_checked_in|already_checked_out|not_checked_in`;
   `/self/today` trả `message = attendanceNoShiftFreeCheckIn`. Test: `CheckInWithoutShiftTest`.
+
+## Thông báo dùng chung (V33, 17/10/2026)
+- Cài đặt thông báo **theo tài khoản** (không theo máy): `users.shift_reminder_minutes`, `check_in_out_notif_minutes`, `notif_late_alert`, `notif_early_leave_alert`. Thiết bị nhận push ở `fcm_tokens`
+  (nhiều thiết bị / tài khoản, một token chỉ thuộc một tài khoản — đăng ký ở `PATCH /profile/notification-settings`, gỡ khi đăng xuất / FCM báo chết). **Không** còn `users.fcm_token`.
+- Hộp thư ở máy chủ: `user_notifications` + `NotificationController` (`GET /api/v1/notifications`, `/unread-count`, `POST /read-all`, `/{id}/read`, `DELETE /{id}`, `DELETE`); chỉ thao tác trên thông báo của chính mình.
+  Mọi nơi gửi thông báo phải qua `PushService.notifyUser(user, type, title, body, data)` (ghi hộp thư + đẩy mọi thiết bị) — **không** gọi `FcmService.sendSimple` trực tiếp với token riêng lẻ. Nhắc ca / check-in dùng `PushService.record` + gửi từng token.
+- Quản lý trực tiếp (`employees.manager_id`) nhận báo đi trễ (`ATTENDANCE_LATE`, khi check-in quá dung sai) / về sớm (`ATTENDANCE_EARLY`, check-out sớm hơn giờ kết thúc ca trừ dung sai về sớm; ca linh hoạt / không ca bỏ qua)
+  nếu tự bật ở **Thông báo → Cài đặt** (`AttendanceAlertService`, gọi từ `AttendanceController` tự chấm; lỗi gửi không làm hỏng chấm công).
+- FE: màn `/notifications` (`screens/notifications/`: tab Hộp thư + Cài đặt), menu "Thông báo" nhóm *Của tôi*, chuông dùng chung `NotificationTile`; `NotificationService.refreshInbox()` tải hộp thư (khi mở app, mỗi 2 phút, khi có push);
+  hộp thư **không** còn lưu ở SharedPreferences. Lịch sử chấm công cá nhân (`GET /attendances/self/history`) trả thêm toạ độ vào / ra (`AttendanceDTO.Response.fromSelf`) — chip vị trí nhỏ ở màn Check-in.
+  Test: `NotificationInboxTest`, `FcmTokenTest`.
 
 ## Màn hình Flutter
 | Screen | Path |

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +9,6 @@ import '../../../core/utils/error_utils.dart';
 import '../../../core/utils/file_picker_utils.dart';
 import '../../../data/repositories/upload_repository.dart';
 import '../../../data/services/auth_service.dart';
-import '../../../data/services/notification_service.dart';
 import '../../../data/services/profile_service.dart';
 import 'my_dependents_card.dart';
 import 'my_documents_card.dart';
@@ -45,17 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   DateTime? _selectedDob;
 
   bool get _isAdmin => AuthService.instance.currentUser?.isAdmin ?? false;
-
-  // ── Notification settings state ──
-  bool _notifEnabled = false;
-  int _reminderMinutes = 30;
-  bool _checkInOutEnabled = false;
-  int _checkInOutMinutes = 5;
-  bool _notifSaving = false;
-  bool _notifTesting = false;
-
-  static const _reminderOptions     = [15, 30, 60, 90, 120];
-  static const _checkInOutOptions   = [5, 10, 15, 30];
 
   @override
   void initState() {
@@ -101,12 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final s = AppLocalizations.of(context);
     setState(() { _loading = true; _error = null; });
     try {
-      final results = await Future.wait([
-        ProfileService.instance.getMyProfile(),
-        ProfileService.instance.getNotificationSettings(),
-      ]);
-      final p = results[0] as ProfileData;
-      final n = results[1] as NotificationSettings;
+      final p = await ProfileService.instance.getMyProfile();
       await AuthService.instance.syncCurrentUserProfile(p);
       setState(() {
         _profile = p;
@@ -118,78 +100,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _selectedDob = p.dateOfBirth != null
             ? DateTime.tryParse(p.dateOfBirth!)
             : null;
-        _notifEnabled        = n.enabled;
-        _reminderMinutes     = n.shiftReminderMinutes ?? 30;
-        _checkInOutEnabled   = n.checkInOutNotifMinutes != null;
-        _checkInOutMinutes   = n.checkInOutNotifMinutes ?? 5;
       });
     } catch (e) {
       setState(() => _error = '${s.profileLoadError}: ${serverMsg(e)}');
     } finally {
       setState(() => _loading = false);
-    }
-  }
-
-  /// Gửi thông báo thử tới chính thiết bị này: gắn lại token của máy (theo cài đặt đang chọn) rồi nhờ backend gửi.
-  Future<void> _sendTestNotification() async {
-    final s = AppLocalizations.of(context);
-    final shiftMinutes      = _notifEnabled     ? _reminderMinutes   : null;
-    final checkInOutMinutes = _checkInOutEnabled ? _checkInOutMinutes : null;
-    if (shiftMinutes == null && checkInOutMinutes == null) {
-      _showSnack(s.notificationTestNeedEnable);
-      return;
-    }
-    setState(() => _notifTesting = true);
-    try {
-      if (!await NotificationService.instance.ensurePermission()) {
-        if (mounted) _showSnack(kIsWeb ? s.notificationPermissionDeniedWeb : s.notificationTestPermissionDenied);
-        return;
-      }
-      if (await NotificationService.instance.deviceToken() == null) {
-        if (mounted) _showSnack(s.notificationTestNoDevice);
-        return;
-      }
-      await NotificationService.instance.registerToken(
-        shiftReminderMinutes: shiftMinutes,
-        checkInOutNotifMinutes: checkInOutMinutes,
-      );
-      await ProfileService.instance.sendTestNotification(
-        title: s.notificationTestTitle,
-        body: s.notificationTestBody,
-      );
-      if (mounted) _showSnack(s.notificationTestSent, success: true);
-    } catch (e) {
-      if (mounted) _showSnack('${s.errorPrefix}: ${serverMsg(e)}');
-    } finally {
-      if (mounted) setState(() => _notifTesting = false);
-    }
-  }
-
-  Future<void> _saveNotificationSettings() async {
-    final s = AppLocalizations.of(context);
-    setState(() => _notifSaving = true);
-    try {
-      final shiftMinutes      = _notifEnabled      ? _reminderMinutes   : null;
-      final checkInOutMinutes = _checkInOutEnabled  ? _checkInOutMinutes : null;
-      if (shiftMinutes == null && checkInOutMinutes == null) {
-        await NotificationService.instance.disableNotifications();
-      } else {
-        // Bản web: trình duyệt chỉ cho xin quyền thông báo ngay sau một lần bấm nút
-        if (kIsWeb && NotificationService.instance.available &&
-            !await NotificationService.instance.ensurePermission()) {
-          if (mounted) _showSnack(s.notificationPermissionDeniedWeb);
-          return;
-        }
-        await NotificationService.instance.registerToken(
-          shiftReminderMinutes: shiftMinutes,
-          checkInOutNotifMinutes: checkInOutMinutes,
-        );
-      }
-      if (mounted) _showSnack(s.notificationSaveSuccess, success: true);
-    } catch (e) {
-      if (mounted) _showSnack('${s.errorPrefix}: ${serverMsg(e)}');
-    } finally {
-      if (mounted) setState(() => _notifSaving = false);
     }
   }
 
@@ -610,24 +525,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              _NotificationSettingsCard(
-                enabled: _notifEnabled,
-                reminderMinutes: _reminderMinutes,
-                reminderOptions: _reminderOptions,
-                checkInOutEnabled: _checkInOutEnabled,
-                checkInOutMinutes: _checkInOutMinutes,
-                checkInOutOptions: _checkInOutOptions,
-                saving: _notifSaving,
-                onToggle: (val) => setState(() => _notifEnabled = val),
-                onMinutesChanged: (val) => setState(() => _reminderMinutes = val),
-                onCheckInOutToggle: (val) => setState(() => _checkInOutEnabled = val),
-                onCheckInOutMinutesChanged: (val) => setState(() => _checkInOutMinutes = val),
-                onSave: _saveNotificationSettings,
-                testing: _notifTesting,
-                // Chỉ hiện nút thử khi thiết bị / trình duyệt này nhận được thông báo đẩy
-                onTest: NotificationService.instance.available ? _sendTestNotification : null,
-              ),
-              const SizedBox(height: 16),
               // V26: thẻ của tính năng công ty đã tắt không hiện (khỏi gọi API bị chặn mỗi lần mở Hồ sơ)
               if (AuthService.instance.currentUser?.hasFeature('PAY_DEPENDENT') ?? true) const MyDependentsCard(),
               if (AuthService.instance.currentUser?.hasFeature('HR_DOCUMENT') ?? true) const MyDocumentsCard(),
@@ -644,186 +541,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 // ── Sub-widgets ─────────────────────────────────────────────────────────────
-
-class _NotificationSettingsCard extends StatelessWidget {
-  final bool enabled;
-  final int reminderMinutes;
-  final List<int> reminderOptions;
-  final bool checkInOutEnabled;
-  final int checkInOutMinutes;
-  final List<int> checkInOutOptions;
-  final bool saving;
-  final ValueChanged<bool> onToggle;
-  final ValueChanged<int> onMinutesChanged;
-  final ValueChanged<bool> onCheckInOutToggle;
-  final ValueChanged<int> onCheckInOutMinutesChanged;
-  final VoidCallback onSave;
-  final bool testing;
-  final VoidCallback? onTest;
-
-  const _NotificationSettingsCard({
-    required this.enabled,
-    required this.reminderMinutes,
-    required this.reminderOptions,
-    required this.checkInOutEnabled,
-    required this.checkInOutMinutes,
-    required this.checkInOutOptions,
-    required this.saving,
-    required this.onToggle,
-    required this.onMinutesChanged,
-    required this.onCheckInOutToggle,
-    required this.onCheckInOutMinutesChanged,
-    required this.onSave,
-    this.testing = false,
-    this.onTest,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(s.notificationSettings,
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary)),
-            const SizedBox(height: 16),
-
-            // ── Nhắc ca ───────────────────────────────────────────────
-            _NotifRow(
-              title: s.shiftReminderTitle,
-              subtitle: s.shiftReminderDesc,
-              value: enabled,
-              onChanged: saving ? null : onToggle,
-            ),
-            if (enabled) ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: reminderMinutes,
-                decoration: InputDecoration(
-                    labelText: s.shiftReminderMinutesLabel,
-                    labelStyle: TextStyle(
-                        fontSize: 13, color: AppTheme.textSecondary)),
-                items: reminderOptions
-                    .map((m) => DropdownMenuItem(
-                        value: m, child: Text(s.minutesBefore(m))))
-                    .toList(),
-                onChanged: saving ? null : (v) { if (v != null) onMinutesChanged(v); },
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ],
-
-            const Divider(height: 28),
-
-            // ── Check-in / Check-out nhanh ────────────────────────────
-            _NotifRow(
-              title: s.checkInOutNotifTitle,
-              subtitle: s.checkInOutNotifDesc,
-              value: checkInOutEnabled,
-              onChanged: saving ? null : onCheckInOutToggle,
-            ),
-            if (checkInOutEnabled) ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: checkInOutMinutes,
-                decoration: InputDecoration(
-                    labelText: s.checkInOutNotifMinutesLabel,
-                    labelStyle: TextStyle(
-                        fontSize: 13, color: AppTheme.textSecondary)),
-                items: checkInOutOptions
-                    .map((m) => DropdownMenuItem(
-                        value: m, child: Text(s.minutesBefore(m))))
-                    .toList(),
-                onChanged: saving ? null : (v) { if (v != null) onCheckInOutMinutesChanged(v); },
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ],
-
-            if (onTest != null) ...[
-              const SizedBox(height: 16),
-              Text(s.notificationTestHint,
-                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-            ],
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                alignment: WrapAlignment.end,
-                children: [
-                  if (onTest != null)
-                    OutlinedButton.icon(
-                      onPressed: saving || testing ? null : onTest,
-                      icon: testing
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.send_outlined, size: 18),
-                      label: Text(s.notificationTestButton),
-                    ),
-                  FilledButton.icon(
-                    onPressed: saving || testing ? null : onSave,
-                    icon: saving
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.notifications_outlined, size: 18),
-                    label: Text(s.save),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NotifRow extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-
-  const _NotifRow({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w500)),
-              Text(subtitle,
-                  style: TextStyle(
-                      fontSize: 12, color: AppTheme.textSecondary)),
-            ],
-          ),
-        ),
-        Switch(value: value, onChanged: onChanged),
-      ],
-    );
-  }
-}
 
 class _AvatarSection extends StatelessWidget {
   final String? avatarUrl;

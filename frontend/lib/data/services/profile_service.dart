@@ -226,11 +226,15 @@ class ProfileService {
     required String? fcmToken,
     required int? shiftReminderMinutes,
     int? checkInOutNotifMinutes,
+    bool? lateAlert,
+    bool? earlyLeaveAlert,
   }) async {
     await _dio.patch('/profile/notification-settings', data: {
       'fcmToken': fcmToken,
       'shiftReminderMinutes': shiftReminderMinutes,
       'checkInOutNotifMinutes': checkInOutNotifMinutes,
+      if (lateAlert != null) 'lateAlert': lateAlert,
+      if (earlyLeaveAlert != null) 'earlyLeaveAlert': earlyLeaveAlert,
     });
   }
 
@@ -245,21 +249,36 @@ class ProfileService {
   }
 }
 
+/// Cài đặt thông báo của tài khoản — lưu ở máy chủ, dùng chung mọi thiết bị.
 class NotificationSettings {
   final bool enabled;
+  final int deviceCount;
   final int? shiftReminderMinutes;
   final int? checkInOutNotifMinutes;
+  final bool lateAlert;
+  final bool earlyLeaveAlert;
+
+  /// Có nhân viên quản lý trực tiếp → hiện mục báo đi trễ / về sớm.
+  final bool manager;
 
   const NotificationSettings({
     required this.enabled,
+    this.deviceCount = 0,
     this.shiftReminderMinutes,
     this.checkInOutNotifMinutes,
+    this.lateAlert = false,
+    this.earlyLeaveAlert = false,
+    this.manager = false,
   });
 
   factory NotificationSettings.fromJson(Map<String, dynamic> j) =>
       NotificationSettings(
         enabled: j['enabled'] as bool? ?? false,
+        deviceCount: (j['deviceCount'] as num?)?.toInt() ?? 0,
         shiftReminderMinutes: (j['shiftReminderMinutes'] as num?)?.toInt(),
         checkInOutNotifMinutes: (j['checkInOutNotifMinutes'] as num?)?.toInt(),
+        lateAlert: j['lateAlert'] as bool? ?? false,
+        earlyLeaveAlert: j['earlyLeaveAlert'] as bool? ?? false,
+        manager: j['manager'] as bool? ?? false,
       );
 }

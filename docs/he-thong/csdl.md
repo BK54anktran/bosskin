@@ -2,13 +2,13 @@
 
 # Cơ sở dữ liệu
 
-MySQL 8, utf8mb4. Lược đồ tại migration **V32 – company currency timezone**, 53 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
+MySQL 8, utf8mb4. Lược đồ tại migration **V33 – notification inbox**, 55 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
 
 Ký hiệu: 🔑 khoá chính · ↗ khoá ngoại (bảng.cột, hành vi khi xoá) · `∅` không có mặc định.
 
 ## Mục lục
 
-- **Công ty & tài khoản**: [`companies`](#companies), [`fcm_notification_logs`](#fcm_notification_logs), [`permissions`](#permissions), [`role_permission_dept_scopes`](#role_permission_dept_scopes), [`role_permissions`](#role_permissions), [`roles`](#roles), [`system_admins`](#system_admins), [`trial_requests`](#trial_requests), [`user_permission_dept_scopes`](#user_permission_dept_scopes), [`user_permissions`](#user_permissions), [`user_roles`](#user_roles), [`user_sessions`](#user_sessions), [`users`](#users)
+- **Công ty & tài khoản**: [`companies`](#companies), [`fcm_notification_logs`](#fcm_notification_logs), [`fcm_tokens`](#fcm_tokens), [`permissions`](#permissions), [`role_permission_dept_scopes`](#role_permission_dept_scopes), [`role_permissions`](#role_permissions), [`roles`](#roles), [`system_admins`](#system_admins), [`trial_requests`](#trial_requests), [`user_notifications`](#user_notifications), [`user_permission_dept_scopes`](#user_permission_dept_scopes), [`user_permissions`](#user_permissions), [`user_roles`](#user_roles), [`user_sessions`](#user_sessions), [`users`](#users)
 - **Tổ chức & nhân viên**: [`departments`](#departments), [`document_types`](#document_types), [`employee_code_counters`](#employee_code_counters), [`employee_dependents`](#employee_dependents), [`employee_documents`](#employee_documents), [`employee_job_histories`](#employee_job_histories), [`employee_locations`](#employee_locations), [`employees`](#employees), [`positions`](#positions), [`profile_edit_requests`](#profile_edit_requests)
 - **Hợp đồng**: [`contract_allowances`](#contract_allowances), [`contract_appendices`](#contract_appendices), [`labor_contracts`](#labor_contracts)
 - **Ca làm**: [`shift_assignments`](#shift_assignments), [`shift_registration_round_departments`](#shift_registration_round_departments), [`shift_registration_rounds`](#shift_registration_rounds), [`shift_registrations`](#shift_registrations), [`shift_rotations`](#shift_rotations), [`shift_swap_requests`](#shift_swap_requests), [`work_shifts`](#work_shifts)
@@ -87,6 +87,18 @@ Duy nhất: (code) · (domain)
 | `status` | varchar(20) |  | ∅ | SUCCESS / FAILED |
 | `error_message` | varchar(500) | có | ∅ |  |
 | `sent_at` | datetime |  | ∅ |  |
+
+### fcm_tokens
+
+Duy nhất: (token)
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|---|---|---|
+| `id` | bigint |  | ∅ | 🔑 tự tăng |
+| `user_id` | bigint |  | ∅ | ↗ [users](#users).id (cascade) |
+| `token` | varchar(512) |  | ∅ |  |
+| `created_at` | datetime(6) |  | CURRENT_TIMESTAMP(6) |  |
+| `updated_at` | datetime(6) |  | CURRENT_TIMESTAMP(6) |  |
 
 ### permissions
 
@@ -171,6 +183,19 @@ Duy nhất: (email)
 | `created_at` | datetime(6) |  | ∅ |  |
 | `updated_at` | datetime(6) |  | ∅ |  |
 
+### user_notifications
+
+| Cột | Kiểu | Null | Mặc định | Ghi chú |
+|---|---|---|---|---|
+| `id` | bigint |  | ∅ | 🔑 tự tăng |
+| `user_id` | bigint |  | ∅ | ↗ [users](#users).id (cascade) |
+| `type` | varchar(40) |  | ∅ |  |
+| `title` | varchar(200) |  | ∅ |  |
+| `body` | varchar(1000) |  | ∅ |  |
+| `data` | varchar(1000) | có | ∅ | JSON {khoá: giá trị} đi kèm thông báo (ngày công, loại đơn…) |
+| `created_at` | datetime(6) |  | ∅ |  |
+| `read_at` | datetime(6) | có | ∅ |  |
+
 ### user_permission_dept_scopes
 
 | Cột | Kiểu | Null | Mặc định | Ghi chú |
@@ -223,9 +248,10 @@ Duy nhất: (employee_id) · (email_key)
 | `deleted` | tinyint(1) |  | 0 |  |
 | `created_at` | datetime(6) |  | ∅ |  |
 | `updated_at` | datetime(6) |  | ∅ |  |
-| `fcm_token` | varchar(512) | có | ∅ |  |
 | `shift_reminder_minutes` | int | có | ∅ |  |
 | `check_in_out_notif_minutes` | int | có | ∅ | Sá»‘ phÃºt trÆ°á»›c ca (check-in) / sau ca (check-out) Ä‘á»ƒ gá»­i thÃ´ng bÃ¡o. NULL = táº¯t |
+| `notif_late_alert` | tinyint(1) |  | 0 |  |
+| `notif_early_leave_alert` | tinyint(1) |  | 0 |  |
 | `email_key` | varchar(100) | có | ∅ |  |
 | `must_change_password` | tinyint(1) |  | 0 |  |
 | `totp_secret` | varchar(64) | có | ∅ |  |

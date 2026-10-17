@@ -25,9 +25,9 @@ Cases where you cannot clock in:
 | Outside the time window | Too early / past the clock-in window of the shift. Send an **Attendance request** (section below). |
 | You have no shift today | You have no shift on this day. If the company enabled "allow clock-in without an assigned shift", the screen says you can still clock in: clock in / out several times a day (finish one session before starting the next), each session is one attendance row, and hours are counted from actual times. |
 
-> **Tip:** On a phone, turn on *Quick check-in / check-out notification* in Personal info to clock in straight from the reminder notification.
+> **Tip:** On a phone, turn on *Quick check-in / check-out notification* in **Notifications → Settings** to clock in straight from the reminder notification.
 
-The **Attendance history** section at the bottom lists the days of the month with check-in / out times. Entries not yet approved by a manager show a **Pending** label.
+The **Attendance history** section at the bottom lists the days of the month with check-in / out times. Entries not yet approved by a manager show a **Pending** label. Under the in / out times there are two small **Check-in** / **Check-out** labels with a pin icon: click one to see where you clocked on a small map (only you see this in your own history).
 
 ## Send an attendance request (missed punch, time correction, overtime)
 

@@ -29,18 +29,8 @@ You get a notification when it is approved or rejected. A rejected request inclu
 
 ## Notification settings
 
-- **Shift reminder**: get a notification before your shift starts.
-- **Quick check-in / check-out notification**: get a clock-in/out button right in the notification (phone).
-
-Turn them on / off, then click **Save**.
-
-**Send test notification** button: turn on at least one type of notification and click it; a few seconds later your phone
-receives a "BossKin — test notification". If you see nothing, check the app's notification permission in your phone settings;
-if the app says "The server has not enabled push notifications", tell the system administrator. The web version also gets notifications: the first time you click **Save** or **Send test notification**, the browser asks for permission — choose **Allow**.
-On iPhone you must add BossKin to the home screen and open it from that icon to receive notifications. Each account receives notifications on one device only
-— the last device that turned them on.
-
-![Notification settings and My documents](img:profile-more)
+Notification settings now live under the **Notifications** menu (*My space* group) → **Settings** tab, not on this page.
+See [Getting started](bat-dau.html#notifications) for details.
 
 ## My documents
 
