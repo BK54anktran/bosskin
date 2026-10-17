@@ -2088,4 +2088,5 @@
   ,"lateAlertDesc": "Notify when someone you manage checks in late for their shift."
   ,"earlyLeaveAlertTitle": "Employee leaves early"
   ,"earlyLeaveAlertDesc": "Notify when someone you manage checks out before the shift ends."
+  ,"notificationsNothingToSet": "This account is not linked to an employee, so there are no shift or check-in / check-out reminders. The late / early-leave alerts appear only when you are the direct manager of at least one employee (set under Employees → Direct manager). Your inbox still works as usual."
 }

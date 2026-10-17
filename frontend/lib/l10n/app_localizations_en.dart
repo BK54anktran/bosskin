@@ -6154,4 +6154,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get earlyLeaveAlertDesc =>
       'Notify when someone you manage checks out before the shift ends.';
+
+  @override
+  String get notificationsNothingToSet => 'This account is not linked to an employee, so there are no shift or check-in / check-out reminders. The late / early-leave alerts appear only when you are the direct manager of at least one employee (set under Employees → Direct manager). Your inbox still works as usual.';
 }

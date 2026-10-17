@@ -165,6 +165,19 @@ class _NotificationSettingsTabState extends State<NotificationSettingsTab> {
         ]),
       );
     }
+    // Tài khoản không gắn nhân viên và không phải quản lý trực tiếp: không có gì để cài → nói rõ thay vì hiện thẻ trống
+    if (!_hasEmployee && !_manager) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Text(s.notificationsNothingToSet, style: TextStyle(color: AppTheme.textSecondary, height: 1.5)),
+          ),
+        ),
+      );
+    }
     final busy = _saving || _testing;
     return ListView(
       padding: const EdgeInsets.all(20),

@@ -11350,6 +11350,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Báo khi nhân viên bạn quản lý check-out sớm hơn giờ kết thúc ca.'**
   String get earlyLeaveAlertDesc;
+  /// No description provided for @notificationsNothingToSet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản này không gắn với nhân viên nên không có nhắc ca hay nhắc check-in / check-out. Mục báo nhân viên đi trễ / về sớm chỉ hiện khi bạn là quản lý trực tiếp của ít nhất một nhân viên (đặt ở Nhân viên → Quản lý trực tiếp). Hộp thư thông báo vẫn nhận bình thường.'**
+  String get notificationsNothingToSet;
+
 }
 
 class _AppLocalizationsDelegate
