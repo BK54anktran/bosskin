@@ -1,4 +1,12 @@
 {
+ "admin-dashboard": {
+  "caption": null,
+  "marks": []
+ },
+ "admin-login": {
+  "caption": null,
+  "marks": []
+ },
  "calendar-new": {
   "caption": null,
   "marks": []

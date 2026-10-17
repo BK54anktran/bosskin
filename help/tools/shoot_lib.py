@@ -53,7 +53,16 @@ def tr(label):
     """Đổi nhãn tiếng Việt trong kịch bản chụp sang chữ của giao diện tiếng Anh (khi HELP_LANG=en)."""
     if LANG != 'en' or not isinstance(label, str):
         return label
-    return _EN_MAP.get(label.strip().lower(), label)
+    hit = _EN_MAP.get(label.strip().lower())
+    if hit:
+        return hit
+    for vi_d, en_d in _WEEKDAYS.items():   # "Thứ Bảy, 10/10/2026" → "Saturday, 10/10/2026"
+        label = label.replace(vi_d, en_d)
+    return label
+
+
+_WEEKDAYS = {'Thứ Hai': 'Monday', 'Thứ Ba': 'Tuesday', 'Thứ Tư': 'Wednesday', 'Thứ Năm': 'Thursday', 'Thứ Sáu': 'Friday',
+             'Thứ Bảy': 'Saturday', 'Chủ Nhật': 'Sunday'}
 
 _FIND_JS = r"""
 ([needle, role, nth, exact]) => {
@@ -207,6 +216,19 @@ class Shooter:
                 boxes = ocr_boxes(await self.page.screenshot(), label, region)
                 if len(boxes) > nth: return boxes[nth]
                 await self.page.wait_for_timeout(800)
+        if LANG == 'en':   # nhãn dịch máy không khớp hẳn: lấy nhãn trên màn hình gần giống nhất (báo ra để soát)
+            items = await self.dump()
+            n = _norm(label)
+            best = None
+            for it in items:
+                if role and it['role'] != role: continue
+                r = difflib.SequenceMatcher(None, n, _norm(it['label'])).ratio()
+                if r >= 0.6 and (best is None or r > best[0]): best = (r, it)
+            if best:
+                print(f'  ~ "{label}" → "{best[1]["label"]}" ({best[0]:.2f})')
+                it = best[1]
+                return {'x': it['x'], 'y': it['y'], 'w': it['w'], 'h': it['h'], 'label': it['label']}
+            print('  nhãn trên màn hình:', [i['label'] for i in items][:60])
         raise RuntimeError(f'Không thấy "{label}" (role={role})')
 
     def box(self, x, y, w, h, label=''):
