@@ -99,7 +99,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
+        run: flutter build web --release --pwa-strategy=none --dart-define=API_HOST=${{ vars.API_HOST }} --build-number=${{ github.run_number }}
 
       # frontend/Dockerfile tải gói này về thay vì build Flutter trên máy build của nền tảng host (Vibe Host chỉ chờ ~5 phút).
       # Đăng ngay sau khi build web, không chờ APK, để triển khai lại bản web được sớm.

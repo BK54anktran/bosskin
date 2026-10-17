@@ -376,6 +376,7 @@ V33 thông báo dùng chung (`fcm_tokens` (một thiết bị / tài khoản) th
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
   secrets `ANDROID_KEYSTORE_*`; thiếu thì ký debug). Gradle 8.14.3, AGP 8.11.1, Kotlin 2.2.20; Gradle heap 4G (`gradle.properties`).
+- Web build với `--pwa-strategy=none` + nginx `no-cache` cho `index.html` / `main.dart.js` / `flutter_bootstrap.js`: sau mỗi lần triển khai chỉ cần tải lại trang là thấy bản mới (trước đây service worker giữ bản cũ, phải xoá dữ liệu trình duyệt).
 - Runbook: `docs/runbook.md` (biến môi trường, deploy, rollback, sao lưu/khôi phục DB, sự cố). Đổi cách deploy/biến môi trường → sửa runbook.
 - Deploy EB **chạy tay** (workflow_dispatch); push `main` chỉ chạy test. Gói: jar + Procfile + `.ebextensions`.
 - Health: `GET /actuator/health` (công khai, không chi tiết); actuator khác bị chặn (SecurityConfig chain 0).
