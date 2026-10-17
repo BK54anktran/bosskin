@@ -711,6 +711,7 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
 - Thanh công cụ nhiều nút (Chấm công, Nghỉ phép, Lương): `LayoutBuilder` → hẹp thì xếp cột / hàng nút cuộn ngang; form nhiều cột (`employee_form_screen.dart` `_row`) dưới 600 dp xếp một cột;
   `Row` chứa `Flexible`/`Expanded` phải có bề rộng giới hạn; ô chứa nhiều nút nhỏ cố định dùng `FittedBox(scaleDown)`. Nhãn thanh dưới dùng khoá `nav*Short`.
 - Điện thoại (< 600 dp) dùng `AppTheme.compact()` (bọc ở `main.dart`): nút cao 38 / chữ 13, ô nhập + combobox `isDense` đệm 10, tab chữ 13 — đừng đặt `minimumSize` / chiều cao riêng lớn hơn cho nút thường.
+- Công cụ quét tự động: `tools/mobile-audit/` (README, `setup.sh` cài môi trường một lần, `run.sh up|crawl|reload`); ảnh mẫu `docs/thiet-ke/img/mobile-audit/`.
 - Kiểm tra: Flutter debug web + Playwright 390×844, bật `FlutterError.dumpErrorToConsole(forceReport: true)` tạm để thấy dòng `RenderFlex overflowed` kèm vị trí (không commit).
 
 ### Hover cursor
