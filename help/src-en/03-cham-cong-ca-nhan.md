@@ -7,7 +7,7 @@ summary: Check in / Check out by location, view history, send requests to correc
 
 ## Check-in / Check-out
 
-Open **Check-in / Check-out** (*My space* group). The screen shows a map of your current location, today's shift and the allowed time window.
+Open **Check-in / Check-out** (*My space* group). The screen shows a map of your current location, today's shift and the allowed time window. The date card at the top has a **live clock in your company's time zone** (shown with the zone, e.g. `UTC+07:00 · Asia/Ho_Chi_Minh`) — punches are timed by this clock, not by your phone's.
 
 1. Allow the browser / app **location access** when asked.
 2. Check **Today's shifts** and the allowed *Check-in time / Check-out time* window.

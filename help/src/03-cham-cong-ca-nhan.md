@@ -7,7 +7,7 @@ summary: Check-in / Check-out bằng vị trí, xem lịch sử, gửi yêu cầ
 
 ## Check-in / Check-out
 
-Mở **Check-in / Check-out** (nhóm *Của tôi*). Màn hình hiện bản đồ vị trí hiện tại, ca hôm nay và khung giờ được chấm.
+Mở **Check-in / Check-out** (nhóm *Của tôi*). Màn hình hiện bản đồ vị trí hiện tại, ca hôm nay và khung giờ được chấm. Thẻ ngày ở trên có **đồng hồ giờ hiện tại theo múi giờ công ty** (kèm múi giờ, vd. `UTC+07:00 · Asia/Ho_Chi_Minh`) — giờ chấm công tính theo đồng hồ này, không theo giờ trên điện thoại.
 
 1. Cho phép trình duyệt / ứng dụng **truy cập vị trí** khi được hỏi.
 2. Kiểm tra **Ca hôm nay** và khung *Giờ vào / Giờ ra* cho phép.

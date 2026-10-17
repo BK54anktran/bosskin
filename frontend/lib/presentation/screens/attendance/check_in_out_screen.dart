@@ -243,9 +243,6 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
                 loc.latitude, loc.longitude) <=
             loc.radiusMeters);
 
-    final localeTag = Localizations.localeOf(context).toLanguageTag();
-    final today =
-        DateFormat('EEEE, dd/MM/yyyy', localeTag).format(companyNow());
     final att = data?.attendance;
     final timeFmt = DateFormat('HH:mm');
     final hasShifts = data?.shifts.isNotEmpty ?? false;
@@ -267,7 +264,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
                     allowedLocations: data?.allowedLocations,
                   ),
                   const SizedBox(height: 16),
-                  _TodayCard(today: today),
+                  const _TodayCard(),
                   const SizedBox(height: 16),
                   if (data?.employeeName != null)
                     _InfoPanel(
@@ -360,33 +357,89 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   }
 }
 
-class _TodayCard extends StatelessWidget {
-  final String today;
-  const _TodayCard({required this.today});
+/// Ngày + đồng hồ giờ hiện tại theo múi giờ công ty (cập nhật mỗi giây, không theo giờ máy).
+class _TodayCard extends StatefulWidget {
+  const _TodayCard();
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today_outlined,
-                color: AppTheme.primary, size: 18),
-            const SizedBox(width: 10),
-            Text(
-              today,
+  State<_TodayCard> createState() => _TodayCardState();
+}
+
+class _TodayCardState extends State<_TodayCard> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  String _zoneLabel() {
+    final user = AuthService.instance.currentUser;
+    final off = user?.companyUtcOffsetMinutes ?? DateTime.now().timeZoneOffset.inMinutes;
+    final sign = off < 0 ? '-' : '+';
+    final a = off.abs();
+    final utc = 'UTC$sign${(a ~/ 60).toString().padLeft(2, '0')}:${(a % 60).toString().padLeft(2, '0')}';
+    final id = user?.companyTimezone;
+    return id == null || id.isEmpty ? utc : '$utc · $id';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final now = companyNow();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.calendar_today_outlined,
+              color: AppTheme.primary, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              DateFormat('EEEE, dd/MM/yyyy', localeTag).format(now),
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 color: AppTheme.primary,
               ),
             ),
-          ],
-        ),
-      );
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                DateFormat('HH:mm:ss').format(now),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: AppTheme.primary,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              Text(
+                _zoneLabel(),
+                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _InfoPanel extends StatelessWidget {
