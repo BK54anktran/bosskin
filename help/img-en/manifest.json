@@ -188,6 +188,12 @@
    "Generate payroll"
   ]
  },
+ "payslip": {
+  "caption": null,
+  "marks": [
+   "Net salary"
+  ]
+ },
  "profile": {
   "caption": null,
   "marks": []
@@ -247,6 +253,12 @@
  "salary-variables": {
   "caption": null,
   "marks": []
+ },
+ "self-payroll": {
+  "caption": null,
+  "marks": [
+   "Month 9"
+  ]
  },
  "settings-calendar": {
   "caption": null,
