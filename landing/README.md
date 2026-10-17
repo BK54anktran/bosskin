@@ -41,6 +41,8 @@ Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, 
 - `landing/index.html` là bản tiếng Việt (nguồn). Bản tiếng Anh `landing/en/index.html` (https://bosskin.io.vn/en/) **sinh tự động**, không sửa tay:
   `python3 tools/landing/build_i18n.py` (từ `index.html` + bảng `landing/i18n/en.json`: câu tiếng Việt → câu tiếng Anh, khoá gộp khoảng trắng).
   Sửa chữ trong `index.html` → thêm / sửa dòng cùng khoá trong `en.json` rồi chạy lại; chữ Việt chưa có bản dịch thì script báo lỗi. CI `site-check.yml` chạy `--check`.
+- Menu đầu trang (Cài đặt, Video, … Trợ giúp) khai báo **một chỗ** ở `tools/landing/chrome.py` (`NAV`), dùng cho cả trang giới thiệu (`build_i18n.py` ghi lại `<nav class="links">` trong `index.html`)
+  và trang trợ giúp (`build_help.py`): thêm / đổi mục menu ở đó rồi chạy cả hai script. CSS đầu trang vẫn là hai bản (`index.html`, `help/tools/help.css`) — đổi kiểu thì sửa cả hai.
 - Chuỗi trong JS (lỗi form, "Đang gửi…", dòng liên hệ) nằm trong `TXT` / `ERR` của `index.html`, chọn theo `<html lang>`; form gửi `Accept-Language` theo trang.
 - Nút VI / EN ở thanh trên; lựa chọn nhớ trong `localStorage` (`bk_lang`), trang tiếng Việt chỉ tự chuyển sang `/en/` khi người dùng đã chọn English (không dò ngôn ngữ trình duyệt để khỏi ảnh hưởng SEO).
   Cả hai trang có canonical riêng + `hreflang` vi / en / x-default; `/en/` có trong sitemap.
