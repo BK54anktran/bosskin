@@ -12,6 +12,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import chrome
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SRC = os.path.join(ROOT, 'landing', 'index.html')
 DICT = os.path.join(ROOT, 'landing', 'i18n', 'en.json')
@@ -32,9 +35,15 @@ def esc(t):
     return re.sub(r'&(?!#?\w+;)', '&amp;', t)
 
 
+def synced_source():
+    """index.html với menu đầu trang lấy từ chrome.NAV (một nguồn chung với trang trợ giúp)."""
+    html = open(SRC, encoding='utf-8').read()
+    return re.sub(r'(<nav class="links">\s*).*?(\s*</nav>)', lambda m: m.group(1) + chrome.landing_nav() + m.group(2), html, count=1, flags=re.S)
+
+
 def build():
     en = json.load(open(DICT, encoding='utf-8'))
-    html = open(SRC, encoding='utf-8').read()
+    html = synced_source()
     missing = []
 
     def tr(t):
@@ -107,11 +116,15 @@ def main():
         print('\n'.join('   ' + m[:100] for m in dict.fromkeys(missing)))
         sys.exit(1)
     if '--check' in sys.argv:
+        if synced_source() != open(SRC, encoding='utf-8').read():
+            sys.exit('✘ menu trong landing/index.html lệch tools/landing/chrome.py — chạy python3 tools/landing/build_i18n.py')
         cur = open(OUT, encoding='utf-8').read() if os.path.isfile(OUT) else ''
         if cur != res:
             sys.exit('✘ landing/en/index.html cũ so với index.html / en.json — chạy python3 tools/landing/build_i18n.py')
         print('✔ landing/en/index.html khớp nguồn')
         return
+    src_html = synced_source()   # đọc trước khi mở file để ghi (mở 'w' xoá nội dung)
+    open(SRC, 'w', encoding='utf-8', newline='\n').write(src_html)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, 'w', encoding='utf-8', newline='\n').write(res)
     print('đã dựng', os.path.relpath(OUT, ROOT))

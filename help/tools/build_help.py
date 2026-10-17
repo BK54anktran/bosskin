@@ -21,9 +21,13 @@ import json
 import os
 import re
 import subprocess
+import sys
 from xml.sax.saxutils import escape
 
 import markdown
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'landing'))
+import chrome
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..'))
@@ -106,11 +110,9 @@ EN_CHROME = [
     ('Trợ giúp BossKin', 'BossKin Help'),
     ('aria-label="Mở menu"', 'aria-label="Open menu"'),
     ('title="Về trang chủ BossKin"', 'title="Back to the BossKin home page"'),
-    ('<a href="../#cai-dat">Cài đặt</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#bang-gia">Bảng giá</a><a href="../#hoi-dap">Hỏi đáp</a><a class="on" href="index.html">Trợ giúp</a>',
-     '<a href="../#cai-dat">Install</a><a href="../#video">Video</a><a href="../#tinh-nang">Features</a><a href="../#vai-tro">Who it\'s for</a><a href="../#bang-gia">Pricing</a><a href="../#hoi-dap">FAQ</a><a class="on" href="index.html">Help</a>'),
+    (chrome.help_nav('vi'), chrome.help_nav('en')),
+    (chrome.help_side('vi'), chrome.help_side('en')),
     ('>Đăng nhập<', '>Log in<'),
-    ('<a href="../">Trang chủ</a><a href="../#cai-dat">Cài đặt</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#bang-gia">Bảng giá</a><a href="../#hoi-dap">Hỏi đáp</a>',
-     '<a href="../">Home</a><a href="../#cai-dat">Install</a><a href="../#video">Video</a><a href="../#tinh-nang">Features</a><a href="../#vai-tro">Who it\'s for</a><a href="../#bang-gia">Pricing</a><a href="../#hoi-dap">FAQ</a>'),
     ('Tìm hướng dẫn…  ( / )', 'Search the guides…  ( / )'),
     ('Tìm hướng dẫn… (vd. nghỉ phép, khoá kỳ, phiếu lương)', 'Search the guides… (e.g. leave, lock period, payslip)'),
     ('Phần mềm chấm công, xếp ca, nghỉ phép và tính lương cho doanh nghiệp Việt Nam. Dùng trên điện thoại Android và trình duyệt web, tiếng Việt và tiếng Anh.',
@@ -182,11 +184,11 @@ def page(title, body, pages, current, desc, aside=''):
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Mở menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="../" title="Về trang chủ BossKin"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
-  <nav class="links"><a href="../#cai-dat">Cài đặt</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#bang-gia">Bảng giá</a><a href="../#hoi-dap">Hỏi đáp</a><a class="on" href="index.html">Trợ giúp</a></nav>
+  <nav class="links">{chrome.help_nav("vi")}</nav>
   <div class="actions">@@SW@@<a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
 </div></header>
 <div class="wrap">
-<nav class="side"><div class="side-site"><a href="../">Trang chủ</a><a href="../#cai-dat">Cài đặt</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#bang-gia">Bảng giá</a><a href="../#hoi-dap">Hỏi đáp</a></div>{'' if current == 'index' else SEARCH_BOX}{nav(pages, current)}</nav>
+<nav class="side"><div class="side-site">{chrome.help_side("vi")}</div>{'' if current == 'index' else SEARCH_BOX}{nav(pages, current)}</nav>
 <main class="content">{body}</main>
 {aside}
 </div>
