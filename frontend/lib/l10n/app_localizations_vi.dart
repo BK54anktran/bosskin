@@ -6088,4 +6088,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String empContractSalaryIn(String currency) {
     return 'Lương hợp đồng ($currency)';
   }
+
+  @override
+  String get attendanceLocationTitle => 'Vị trí chấm công';
 }

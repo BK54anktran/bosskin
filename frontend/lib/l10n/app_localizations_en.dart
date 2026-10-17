@@ -6106,4 +6106,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String empContractSalaryIn(String currency) {
     return 'Contract salary ($currency)';
   }
+
+  @override
+  String get attendanceLocationTitle => 'Attendance location';
 }

@@ -28,6 +28,20 @@ public class AttendanceDTO {
         private Attendance.Status status;
         private String note;
         private boolean approved;
+        /** Toạ độ lúc chấm vào / ra — chỉ điền ở lịch sử của chính mình ({@link #fromSelf}), các màn của quản lý không trả. */
+        private Double checkInLatitude;
+        private Double checkInLongitude;
+        private Double checkOutLatitude;
+        private Double checkOutLongitude;
+
+        public static Response fromSelf(Attendance a) {
+            Response r = from(a);
+            r.checkInLatitude = a.getCheckInLatitude();
+            r.checkInLongitude = a.getCheckInLongitude();
+            r.checkOutLatitude = a.getCheckOutLatitude();
+            r.checkOutLongitude = a.getCheckOutLongitude();
+            return r;
+        }
 
         public static Response from(Attendance a) {
             var employee = a.getEmployee();

@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "en",
   "appName": "BossKin",
   "menu": "Menu",
@@ -2073,4 +2073,5 @@
   ,"timezoneHint": "Check-in, shifts and work days follow the company local time. Changing the time zone with existing data only applies from the change onward."
   ,"empContractSalaryIn": "Contract salary ({currency})"
   ,"@empContractSalaryIn": {"placeholders": {"currency": {"type": "String"}}}
+  ,"attendanceLocationTitle": "Attendance location"
 }

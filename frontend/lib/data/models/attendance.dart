@@ -25,6 +25,11 @@ class Attendance {
   final double? overtimeHours;
   final String? note;
   final bool approved;
+  /// Toạ độ lúc chấm vào / ra (chỉ có ở lịch sử của chính mình).
+  final double? checkInLatitude;
+  final double? checkInLongitude;
+  final double? checkOutLatitude;
+  final double? checkOutLongitude;
 
   const Attendance({
     required this.id,
@@ -43,7 +48,13 @@ class Attendance {
     this.overtimeHours,
     this.note,
     this.approved = true,
+    this.checkInLatitude,
+    this.checkInLongitude,
+    this.checkOutLatitude,
+    this.checkOutLongitude,
   });
+
+  bool get hasLocation => (checkInLatitude != null && checkInLongitude != null) || (checkOutLatitude != null && checkOutLongitude != null);
 
   factory Attendance.fromJson(Map<String, dynamic> j) => Attendance(
         id: j['id'],
@@ -65,6 +76,10 @@ class Attendance {
         overtimeHours: (j['overtimeHours'] as num?)?.toDouble(),
         note: j['note'],
         approved: j['approved'] as bool? ?? true,
+        checkInLatitude: (j['checkInLatitude'] as num?)?.toDouble(),
+        checkInLongitude: (j['checkInLongitude'] as num?)?.toDouble(),
+        checkOutLatitude: (j['checkOutLatitude'] as num?)?.toDouble(),
+        checkOutLongitude: (j['checkOutLongitude'] as num?)?.toDouble(),
       );
 }
 

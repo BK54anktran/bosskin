@@ -1297,7 +1297,7 @@ public class AttendanceController {
             .findByEmployeeAndDateRange(employee.getId(), period.from(), period.to())
             .stream()
             .sorted(Comparator.comparing(Attendance::getDate).thenComparing(Attendance::getId).reversed())
-            .map(AttendanceDTO.Response::from)
+            .map(AttendanceDTO.Response::fromSelf)
             .toList();
         return ResponseEntity.ok(history);
     }

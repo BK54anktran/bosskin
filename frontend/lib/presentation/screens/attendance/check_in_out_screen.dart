@@ -18,6 +18,7 @@ import '../../../data/services/notification_service.dart';
 import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/utils/company_currency_utils.dart';
+import '../../widgets/attendance_location_chip.dart';
 
 class CheckInOutScreen extends StatefulWidget {
   const CheckInOutScreen({super.key});
@@ -731,6 +732,24 @@ class _HistorySection extends StatelessWidget {
                               color: AppTheme.textSecondary,
                             ),
                           ),
+                          if (a.hasLocation)
+                            Wrap(
+                              children: [
+                                if (a.checkInLatitude != null && a.checkInLongitude != null)
+                                  AttendanceLocationChip(
+                                    label: s.checkIn,
+                                    latitude: a.checkInLatitude!,
+                                    longitude: a.checkInLongitude!,
+                                  ),
+                                if (a.checkOutLatitude != null && a.checkOutLongitude != null)
+                                  AttendanceLocationChip(
+                                    label: s.checkOut,
+                                    latitude: a.checkOutLatitude!,
+                                    longitude: a.checkOutLongitude!,
+                                    color: AppTheme.warning,
+                                  ),
+                              ],
+                            ),
                         ],
                       ),
                     ),

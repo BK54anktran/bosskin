@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "vi",
   "appName": "BossKin",
   "menu": "Menu",
@@ -2080,4 +2080,5 @@
   ,"timezoneHint": "Chấm công, ca làm và ngày công tính theo giờ địa phương của công ty. Đổi múi giờ khi đã có dữ liệu chỉ áp dụng cho các ngày từ lúc đổi trở đi."
   ,"empContractSalaryIn": "Lương hợp đồng ({currency})"
   ,"@empContractSalaryIn": {"placeholders": {"currency": {"type": "String"}}}
+  ,"attendanceLocationTitle": "Vị trí chấm công"
 }

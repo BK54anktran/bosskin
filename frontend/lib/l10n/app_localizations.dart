@@ -11260,6 +11260,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Lương hợp đồng ({currency})'**
   String empContractSalaryIn(String currency);
+  /// No description provided for @attendanceLocationTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí chấm công'**
+  String get attendanceLocationTitle;
+
 }
 
 class _AppLocalizationsDelegate
