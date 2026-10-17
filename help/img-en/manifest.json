@@ -90,11 +90,64 @@
   "caption": null,
   "marks": []
  },
+ "departments": {
+  "caption": null,
+  "marks": [
+   "Add department",
+   "Manage positions",
+   "Add sub-department",
+   "Edit"
+  ]
+ },
+ "dependents": {
+  "caption": null,
+  "marks": [
+   "Add dependent"
+  ]
+ },
  "edit-requests": {
   "caption": null,
   "marks": [
    "Approve",
    "Reject"
+  ]
+ },
+ "employee-documents": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-edit": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-new": {
+  "caption": null,
+  "marks": [
+   "Full name *",
+   "Work email *",
+   "Departments",
+   "Direct manager\nNone",
+   "Create"
+  ]
+ },
+ "employee-new-2": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-reset-password": {
+  "caption": null,
+  "marks": []
+ },
+ "employee-resign": {
+  "caption": null,
+  "marks": []
+ },
+ "employees": {
+  "caption": null,
+  "marks": [
+   "Add employee",
+   "Search by name, email, employee code...",
+   "Nút thao tác"
   ]
  },
  "excel": {
@@ -128,6 +181,10 @@
   "marks": [
    "Menu"
   ]
+ },
+ "job-history": {
+  "caption": null,
+  "marks": []
  },
  "leave-accrual": {
   "caption": null,
@@ -185,6 +242,17 @@
   ]
  },
  "notifications": {
+  "caption": null,
+  "marks": []
+ },
+ "org-chart": {
+  "caption": null,
+  "marks": [
+   "By person",
+   "By department"
+  ]
+ },
+ "org-chart-dept": {
   "caption": null,
   "marks": []
  },
