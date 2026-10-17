@@ -53,7 +53,8 @@ def parse(path):
 def render_body(md):
     def fig(m):
         cap, sid = m.group(1), m.group(2)
-        src = f'img/{sid}.webp'
+        # bản tiếng Anh dùng ảnh chụp giao diện tiếng Anh (help/img-en/) nếu có, không thì ảnh chung
+        src = f'img-en/{sid}.webp' if LANG == 'en' and os.path.exists(os.path.join(ROOT, 'img-en', sid + '.webp')) else f'img/{sid}.webp'
         return (f'\n<figure><a href="{src}" class="zoom"><img src="{src}" alt="{html.escape(cap)}" loading="lazy" '
                 f'width="1440" height="900"></a><figcaption>{cap}</figcaption></figure>\n')
     md = re.sub(r'!\[([^\]]*)\]\(img:([\w-]+)\)', fig, md)
@@ -136,6 +137,7 @@ EN_CHROME = [
     ('href="../#', 'href="../../en/#'), ('href="../"', 'href="../../en/"'),
     ('src="../site-config.js"', 'src="../../site-config.js"'),
     ('src="img/', 'src="../img/'), ('href="img/', 'href="../img/'),
+    ('src="img-en/', 'src="../img-en/'), ('href="img-en/', 'href="../img-en/'),
 ]
 
 

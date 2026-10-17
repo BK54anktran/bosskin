@@ -23,10 +23,37 @@ WEB = os.environ.get('HELP_WEB', 'http://localhost:3000')
 PW = os.environ.get('HELP_PW', 'AnPhat2026demo')
 W, H, DPR = 1440, 900, 1.5
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.environ.get('HELP_IMG', os.path.join(HERE, '..', 'img'))
+LANG = os.environ.get('HELP_LANG', 'vi')   # 'en' = chụp giao diện tiếng Anh → help/img-en/ (nhãn tiếng Việt trong capture.py tự đổi sang tiếng Anh)
+OUT = os.environ.get('HELP_IMG', os.path.join(HERE, '..', 'img-en' if LANG == 'en' else 'img'))
 RAW = os.path.join(HERE, '.raw')
 FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 RED = (229, 57, 53)
+
+
+def _load_en_map():
+    """Nhãn tiếng Việt → tiếng Anh: giá trị trùng nhau trong app_vi.arb / app_en.arb, thêm en_labels.json (viết tay, ưu tiên)."""
+    arb = os.path.join(HERE, '..', '..', 'frontend', 'lib', 'l10n')
+    vi = json.load(open(os.path.join(arb, 'app_vi.arb'), encoding='utf-8-sig'))
+    en = json.load(open(os.path.join(arb, 'app_en.arb'), encoding='utf-8-sig'))
+    m = {}
+    for k, v in vi.items():
+        if isinstance(v, str) and not k.startswith('@') and '{' not in v and isinstance(en.get(k), str):
+            m.setdefault(v.strip().lower(), en[k])
+    extra = os.path.join(HERE, 'en_labels.json')
+    if os.path.exists(extra):
+        for k, v in json.load(open(extra, encoding='utf-8')).items():
+            m[k.strip().lower()] = v
+    return m
+
+
+_EN_MAP = _load_en_map() if LANG == 'en' else {}
+
+
+def tr(label):
+    """Đổi nhãn tiếng Việt trong kịch bản chụp sang chữ của giao diện tiếng Anh (khi HELP_LANG=en)."""
+    if LANG != 'en' or not isinstance(label, str):
+        return label
+    return _EN_MAP.get(label.strip().lower(), label)
 
 _FIND_JS = r"""
 ([needle, role, nth, exact]) => {
@@ -98,7 +125,7 @@ def ocr_boxes(png_bytes, needle, region=None):
     key = hashlib.md5(png_bytes).hexdigest() + str(region)
     d = _OCR_CACHE.get(key)
     if d is None:
-        d = pytesseract.image_to_data(im.convert('L'), lang='vie', config='--psm 3', output_type=pytesseract.Output.DICT)
+        d = pytesseract.image_to_data(im.convert('L'), lang='eng' if LANG == 'en' else 'vie', config='--psm 3', output_type=pytesseract.Output.DICT)
         _OCR_CACHE.clear(); _OCR_CACHE[key] = d
     n = _norm(needle)
     groups = {}
@@ -161,6 +188,7 @@ class Shooter:
 
     # ── tìm / bấm ─────────────────────────────────────────────────────────
     async def find(self, label, role=None, nth=0, exact=False, timeout=4000, region=None, ocr=None):
+        label = tr(label)
         """Tìm theo semantics (nhãn của Flutter); không thấy thì OCR chữ trên màn hình.
         ocr=True: chỉ OCR (dùng cho chữ trong danh sách / menu không có nhãn riêng)."""
         if not ocr:
@@ -267,10 +295,15 @@ def annotate(src, dst, boxes, clip=None):
 async def run(job):
     """job(sh) — hàm async nhận Shooter."""
     async with async_playwright() as p:
-        b = await p.chromium.launch(args=['--no-proxy-server', '--hide-scrollbars'])
-        ctx = await b.new_context(viewport={'width': W, 'height': H}, device_scale_factor=DPR, locale='vi-VN',
+        exe = os.environ.get('HELP_CHROMIUM') or ('/opt/pw-browsers/chromium' if os.path.exists('/opt/pw-browsers/chromium') else None)
+        b = await p.chromium.launch(executable_path=exe, args=['--hide-scrollbars', '--no-sandbox'])
+        ctx = await b.new_context(viewport={'width': W, 'height': H}, device_scale_factor=DPR, ignore_https_errors=True, locale='en-US' if LANG == 'en' else 'vi-VN',
                                   timezone_id='Asia/Ho_Chi_Minh', geolocation={'latitude': 10.7769, 'longitude': 106.7009},
                                   permissions=['geolocation'])
+        # Flutter debug web (dev server) trỏ tài nguyên về /v123/…: đưa về gốc như tools/mobile-audit/lib.js
+        await ctx.route(re.compile(r'/v\d+/(assets|canvaskit|icons|fonts)/'), lambda r: r.continue_(url=re.sub(r'/v\d+/', '/', r.request.url)))
+        if LANG == 'en':   # LanguageService đọc khoá này (shared_preferences web); đặt lại sau mỗi lần tải trang
+            await ctx.add_init_script("try { localStorage.setItem('flutter.app_locale', '\"en\"'); } catch (e) {}")
         page = await ctx.new_page()
         sh = Shooter(page)
         try:
