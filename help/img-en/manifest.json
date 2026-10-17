@@ -54,6 +54,21 @@
    "Export Excel"
   ]
  },
+ "role-new": {
+  "caption": null,
+  "marks": [
+   "Role name",
+   "Departments",
+   "View employee list\nEMPLOYEE_VIEW\nShow Employees on menu"
+  ]
+ },
+ "roles": {
+  "caption": null,
+  "marks": [
+   "Add role",
+   "Edit"
+  ]
+ },
  "shift-assign": {
   "caption": null,
   "marks": [
@@ -89,5 +104,16 @@
  "team-approvals": {
   "caption": null,
   "marks": []
+ },
+ "user-roles": {
+  "caption": null,
+  "marks": []
+ },
+ "users": {
+  "caption": null,
+  "marks": [
+   "Export temporary passwords",
+   "Reset password"
+  ]
  }
 }
