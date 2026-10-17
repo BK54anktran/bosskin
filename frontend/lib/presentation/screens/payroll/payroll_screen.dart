@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import '../../../core/utils/file_saver_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/models/department_model.dart';
@@ -22,7 +23,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import 'salary_formula_tab.dart' show FormulaEditorDialog;
 
 NumberFormat get _currFmt => moneyNumberFormat();
-String _fmt(double v) => '${_currFmt.format(v)}đ';
+String _fmt(double v) => '${_currFmt.format(v)}${currencySuffix()}';
 
 class PayrollScreen extends StatefulWidget {
   const PayrollScreen({super.key});
@@ -47,8 +48,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
   int _localPage = 0;
   final Set<int> _selectedIds = {};
 
-  int _year = DateTime.now().year;
-  int _month = DateTime.now().month;
+  int _year = companyNow().year;
+  int _month = companyNow().month;
   int? _deptId;
   String? _status;
   List<DepartmentFlat> _depts = [];
@@ -988,8 +989,8 @@ class _GenerateDialogState extends State<_GenerateDialog> {
   final _formulaRepo = SalaryFormulaRepository();
   List<Employee> _suggestions = [];
   final List<_EmpEntry> _entries = [];
-  int _year = DateTime.now().year;
-  int _month = DateTime.now().month;
+  int _year = companyNow().year;
+  int _month = companyNow().month;
   bool _searching = false;
   bool _saving = false;
   String? _error;
@@ -1375,20 +1376,20 @@ class _EditDraftDialogState extends State<_EditDraftDialog> {
             TextFormField(
               controller: _allowanceCtrl,
               decoration:
-                  InputDecoration(labelText: s.allowance, suffixText: 'đ'),
+                  InputDecoration(labelText: s.allowance, suffixText: currencySuffix()),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _bonusCtrl,
-              decoration: InputDecoration(labelText: s.bonus, suffixText: 'đ'),
+              decoration: InputDecoration(labelText: s.bonus, suffixText: currencySuffix()),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _deductCtrl,
               decoration: InputDecoration(
-                  labelText: s.otherDeductions, suffixText: 'đ'),
+                  labelText: s.otherDeductions, suffixText: currencySuffix()),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),

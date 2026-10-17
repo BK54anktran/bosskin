@@ -15,6 +15,7 @@ import '../../widgets/date_field.dart';
 import '../../widgets/manager_dropdown.dart';
 import 'allowance_editor.dart';
 import 'contract_shared.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 final _iso = DateFormat('yyyy-MM-dd');
 final _dmy = DateFormat('dd/MM/yyyy');
@@ -634,7 +635,7 @@ class _TerminateDialogState extends State<_TerminateDialog> {
   void initState() {
     super.initState();
     final c = widget.contract;
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(companyNow());
     _date = c.endDate != null && c.endDate!.isBefore(today) ? c.endDate : today;
     if (_date!.isBefore(c.startDate)) _date = c.startDate;
   }

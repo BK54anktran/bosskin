@@ -11224,6 +11224,42 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chức vụ chung — không thuộc phòng ban nào'**
   String get commonPositionsNote;
+
+  /// No description provided for @regionalSettings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khu vực & tiền tệ'**
+  String get regionalSettings;
+
+  /// No description provided for @currencyLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền tệ'**
+  String get currencyLabel;
+
+  /// No description provided for @currencyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn vị hiển thị số tiền (lương, chi phí, báo cáo). Không tự quy đổi các số đã nhập.'**
+  String get currencyHint;
+
+  /// No description provided for @timezoneLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Múi giờ'**
+  String get timezoneLabel;
+
+  /// No description provided for @timezoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm công, ca làm và ngày công tính theo giờ địa phương của công ty. Đổi múi giờ khi đã có dữ liệu chỉ áp dụng cho các ngày từ lúc đổi trở đi.'**
+  String get timezoneHint;
+
+  /// No description provided for @empContractSalaryIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lương hợp đồng ({currency})'**
+  String empContractSalaryIn(String currency);
 }
 
 class _AppLocalizationsDelegate

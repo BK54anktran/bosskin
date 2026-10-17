@@ -31,11 +31,16 @@ public class ShiftReminderScheduler {
         List<User> users = userRepository.findAllByFcmTokenIsNotNullAndShiftReminderMinutesIsNotNull();
         if (users.isEmpty()) return;
 
-        LocalDate today = LocalDate.now();
-        LocalTime nowMinute = LocalTime.now().truncatedTo(ChronoUnit.MINUTES);
-
+        try {
         for (User user : users) {
             if (user.getEmployeeId() == null) continue;
+            // V32: giờ nhắc theo múi giờ của công ty người nhận
+            java.time.ZoneId zone = com.bosskin.core.CompanyZone.parseOrDefault(
+                user.getCompany() != null ? user.getCompany().getTimezone() : null);
+            java.time.Clock zoneClock = java.time.Clock.system(zone);
+            com.bosskin.core.CompanyZone.set(zone); // FcmService tính số phút còn lại theo cùng múi giờ
+            LocalDate today = LocalDate.now(zoneClock);
+            LocalTime nowMinute = LocalTime.now(zoneClock).truncatedTo(ChronoUnit.MINUTES);
             if (user.getCompany() != null && !user.getCompany().hasFeature(com.bosskin.core.CompanyFeatures.SHIFT_REMINDER)) continue;
             int minutes = user.getShiftReminderMinutes();
             LocalTime targetShiftStart = nowMinute.plusMinutes(minutes);
@@ -62,9 +67,12 @@ public class ShiftReminderScheduler {
                     today,
                     minutes
                 );
-                sa.setReminderSentAt(LocalDateTime.now());
+                sa.setReminderSentAt(com.bosskin.core.CompanyZone.now());
                 shiftAssignmentRepository.save(sa);
             }
+        }
+        } finally {
+            com.bosskin.core.CompanyZone.clear();
         }
     }
 }

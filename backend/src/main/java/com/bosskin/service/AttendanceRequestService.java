@@ -185,7 +185,7 @@ public class AttendanceRequestService {
         request.setApplied(false);
         request.setAdminNote("Người dùng đã hủy yêu cầu");
         request.setProcessedBy(user);
-        request.setProcessedAt(java.time.LocalDateTime.now());
+        request.setProcessedAt(com.bosskin.core.CompanyZone.now());
         requestRepository.save(request);
         return toResponse(getRequestOrThrow(requestId, user.getCompany().getId()));
     }
@@ -203,7 +203,7 @@ public class AttendanceRequestService {
         request.setApplied(true);
         request.setAdminNote(body != null ? body.getAdminNote() : null);
         request.setProcessedBy(admin);
-        request.setProcessedAt(java.time.LocalDateTime.now());
+        request.setProcessedAt(com.bosskin.core.CompanyZone.now());
         requestRepository.save(request);
         disableOlderAppliedRequests(request);
         approvePairedRequest(request, admin, body != null ? body.getAdminNote() : null);
@@ -229,7 +229,7 @@ public class AttendanceRequestService {
         request.setApplied(false);
         request.setAdminNote(note);
         request.setProcessedBy(admin);
-        request.setProcessedAt(java.time.LocalDateTime.now());
+        request.setProcessedAt(com.bosskin.core.CompanyZone.now());
         requestRepository.save(request);
         rejectPairedRequest(request, admin, note);
         clearAttendanceSnapIfApproved(request.getEmployee().getId(), request.getRequestDate());
@@ -517,7 +517,7 @@ public class AttendanceRequestService {
         peer.setApplied(true);
         peer.setAdminNote(adminNote);
         peer.setProcessedBy(admin);
-        peer.setProcessedAt(java.time.LocalDateTime.now());
+        peer.setProcessedAt(com.bosskin.core.CompanyZone.now());
         requestRepository.save(peer);
         disableOlderAppliedRequests(peer);
     }
@@ -534,7 +534,7 @@ public class AttendanceRequestService {
         peer.setApplied(false);
         peer.setAdminNote(adminNote);
         peer.setProcessedBy(admin);
-        peer.setProcessedAt(java.time.LocalDateTime.now());
+        peer.setProcessedAt(com.bosskin.core.CompanyZone.now());
         requestRepository.save(peer);
     }
 

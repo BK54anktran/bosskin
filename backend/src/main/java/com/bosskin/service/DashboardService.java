@@ -51,7 +51,7 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardDTO.Response getDashboard(User user, Long departmentId, LocalDate date) {
         Long companyId = user.getCompanyId();
-        LocalDate today = date != null ? date : LocalDate.now();
+        LocalDate today = date != null ? date : com.bosskin.core.CompanyZone.today();
 
         long totalEmployees = departmentId != null
             ? employeeRepository.countByCompanyIdAndDepartmentId(companyId, departmentId)
@@ -155,7 +155,7 @@ public class DashboardService {
             .late(late)
             .build();
 
-        DashboardDTO.RecentPayroll recentPayroll = latestPayroll(companyId, YearMonth.now());
+        DashboardDTO.RecentPayroll recentPayroll = latestPayroll(companyId, YearMonth.from(com.bosskin.core.CompanyZone.today()));
 
         return DashboardDTO.Response.builder()
             .date(today)
@@ -327,8 +327,8 @@ public class DashboardService {
         }
 
         // Attendance trend 90 ngay gan nhat
-        LocalDate trendFrom = LocalDate.now().minusDays(89);
-        LocalDate trendTo   = LocalDate.now();
+        LocalDate trendFrom = com.bosskin.core.CompanyZone.today().minusDays(89);
+        LocalDate trendTo   = com.bosskin.core.CompanyZone.today();
 
         Map<LocalDate, List<Attendance>> attendanceByDate = (departmentId != null
             ? attendanceRepository.findByCompanyAndDateRangeAndDept(companyId, trendFrom, trendTo, departmentId)
@@ -429,7 +429,7 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardDTO.KpiResponse getKpi(User user, Long departmentId, LocalDate date) {
         Long companyId = user.getCompanyId();
-        LocalDate today = date != null ? date : LocalDate.now();
+        LocalDate today = date != null ? date : com.bosskin.core.CompanyZone.today();
         LocalDate monthStart = today.withDayOfMonth(1);
         LocalDate lastMonthStart = monthStart.minusMonths(1);
         LocalDate lastMonthEnd = monthStart.minusDays(1);
@@ -495,7 +495,7 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardDTO.RiskResponse getRisks(User user, Long departmentId, LocalDate date) {
         Long companyId = user.getCompanyId();
-        LocalDate today = date != null ? date : LocalDate.now();
+        LocalDate today = date != null ? date : com.bosskin.core.CompanyZone.today();
         LocalDate monthStart = today.withDayOfMonth(1);
 
         // 1. Repeated late this month (>= 3 occurrences)

@@ -299,7 +299,7 @@ public class EmployeeImportService {
                     .gender(parseGender(row.getGender()))
                     .dateOfBirth(parseDate(row.getDateOfBirth()))
                     .joinDate(parseDate(row.getJoinDate()) != null
-                        ? parseDate(row.getJoinDate()) : LocalDate.now())
+                        ? parseDate(row.getJoinDate()) : com.bosskin.core.CompanyZone.today())
                     .leaveDate(parseDate(row.getLeaveDate()))
                     .department(dept).position(pos).salaryGrade(grade)
                     .address(row.getAddress())
@@ -563,7 +563,7 @@ public class EmployeeImportService {
             .phone(row.getPhone())
             .gender(parseGender(row.getGender()))
             .dateOfBirth(parseDate(row.getDateOfBirth()))
-            .joinDate(parseDate(row.getJoinDate()) != null ? parseDate(row.getJoinDate()) : LocalDate.now())
+            .joinDate(parseDate(row.getJoinDate()) != null ? parseDate(row.getJoinDate()) : com.bosskin.core.CompanyZone.today())
             .leaveDate(parseDate(row.getLeaveDate()))
             .department(resolveDept(deptMap, row.getDepartmentCode(), code))
             .position(resolvePos(posMap, row.getPositionCode(), code))

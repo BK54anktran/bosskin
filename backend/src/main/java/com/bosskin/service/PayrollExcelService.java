@@ -174,8 +174,8 @@ public class PayrollExcelService {
         }
 
         // Filter: year + month (required for payroll)
-        int year  = LocalDate.now().getYear();
-        int month = LocalDate.now().getMonthValue();
+        int year  = com.bosskin.core.CompanyZone.today().getYear();
+        int month = com.bosskin.core.CompanyZone.today().getMonthValue();
         try { year  = Integer.parseInt(filters.getOrDefault("year",  String.valueOf(year)).trim()); }  catch (Exception ignored) {}
         try { month = Integer.parseInt(filters.getOrDefault("month", String.valueOf(month)).trim()); } catch (Exception ignored) {}
 

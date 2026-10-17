@@ -44,6 +44,12 @@ public class CompanySettingService {
             c.setDayEndTime(req.getAttendance().getDayEndTime());
         }
         c.setLeaveHoursPerDay(req.getLeaves().getHoursPerDay().setScale(2, RoundingMode.HALF_UP));
+        if (req.getRegional() != null) {
+            if (req.getRegional().getCurrencyCode() != null)
+                c.setCurrencyCode(com.bosskin.core.CompanyCurrency.normalize(req.getRegional().getCurrencyCode()));
+            if (req.getRegional().getTimezone() != null)
+                c.setTimezone(com.bosskin.core.CompanyZone.normalize(req.getRegional().getTimezone()));
+        }
         if (req.getPayroll() != null) {
             if (req.getPayroll().getStandardWorkDays() != null && req.getPayroll().getStandardWorkDays() > 0) {
                 c.setStandardWorkDays(req.getPayroll().getStandardWorkDays());
@@ -182,6 +188,10 @@ public class CompanySettingService {
                 .build())
             .leaves(CompanySettingDTO.LeaveSetting.builder()
                 .hoursPerDay(c.getLeaveHoursPerDay())
+                .build())
+            .regional(CompanySettingDTO.RegionalSetting.builder()
+                .currencyCode(c.getCurrencyCode())
+                .timezone(c.getTimezone())
                 .build())
             .payroll(CompanySettingDTO.PayrollSetting.builder()
                 .standardWorkDays(c.getStandardWorkDays())

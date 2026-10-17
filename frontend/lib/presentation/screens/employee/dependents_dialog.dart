@@ -13,6 +13,7 @@ import '../../widgets/app_dropdown.dart';
 import '../../widgets/date_field.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 String dependentRelationshipLabel(AppLocalizations s, String r) => switch (r) {
       'CHILD' => s.dependentRelChild,
@@ -206,7 +207,7 @@ class _DependentFormDialogState extends State<_DependentFormDialog> {
   String _relationship = 'CHILD';
   String _status = 'PENDING';
   DateTime? _dob;
-  DateTime _from = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime _from = DateTime(companyNow().year, companyNow().month);
   DateTime? _to;
   bool _saving = false;
 
@@ -300,7 +301,7 @@ class _DependentFormDialogState extends State<_DependentFormDialog> {
                 child: DateField(
                   label: s.dateOfBirth,
                   value: _dob,
-                  lastDate: DateTime.now(),
+                  lastDate: companyNow(),
                   firstDate: DateTime(1920),
                   clearable: true,
                   onChanged: (d) => setState(() => _dob = d),

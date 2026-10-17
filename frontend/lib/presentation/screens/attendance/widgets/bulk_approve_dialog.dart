@@ -9,6 +9,7 @@ import '../../../../data/models/department_model.dart';
 import '../../../../data/repositories/attendance_repository.dart';
 import '../../../../data/services/department_service.dart';
 import '../../../widgets/department_picker_field.dart';
+import '../../../../core/utils/company_currency_utils.dart';
 
 /// Duyệt công cả phòng × cả kỳ một lần (bước A sau thử nghiệm nội bộ).
 /// Backend `/attendances/approve-bulk` tự bỏ qua dòng đã duyệt, kỳ đã khoá, công của chính mình.
@@ -44,7 +45,7 @@ class _BulkApproveDialogState extends State<_BulkApproveDialog> {
 
   Future<void> _load() async {
     try {
-      final now = DateTime.now();
+      final now = companyNow();
       final results = await Future.wait([
         _repo.getPeriods(now.year),
         if (now.month == 1) _repo.getPeriods(now.year - 1),

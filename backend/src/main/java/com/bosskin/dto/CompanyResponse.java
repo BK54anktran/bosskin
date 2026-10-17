@@ -10,6 +10,9 @@ public class CompanyResponse {
     private String name;
     private String code;
     private String domain;
+    /** V32 */
+    private String currencyCode;
+    private String timezone;
     private String address;
     private String phone;
     private String email;

@@ -2,6 +2,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../auth/force_change_password_screen.dart' show isStrongPassword;
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import '../../../core/utils/company_identity_utils.dart';
 import '../../../data/services/auth_service.dart';
 import 'package:intl/intl.dart';
@@ -56,7 +57,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
 
   Gender _gender = Gender.male;
   DateTime? _dob;
-  DateTime _joinDate = DateTime.now();
+  DateTime _joinDate = companyNow();
   int? _deptId;
   int? _positionId;
   int? _gradeId;
@@ -177,7 +178,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   }
 
   Future<void> _pickDate(bool isDob) async {
-    final now = DateTime.now();
+    final now = companyNow();
     final picked = await showDatePicker(
       context: context,
       initialDate: isDob ? (_dob ?? DateTime(1990)) : _joinDate,
@@ -429,7 +430,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                 _field(TextFormField(
                   controller: _contractSalary,
                   decoration: InputDecoration(
-                    labelText: s.empContractSalaryVnd,
+                    labelText: s.empContractSalaryIn(companyCurrency.code),
                     hintText: s.empContractSalaryHint,
                   ),
                   keyboardType: TextInputType.number,

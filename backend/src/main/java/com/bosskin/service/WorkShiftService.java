@@ -135,7 +135,7 @@ public class WorkShiftService {
 
         // A11: phân ca từ hôm nay trở đi chưa có dữ liệu chấm công nhận giờ mới của ca;
         // ngày đã qua / đã chấm giữ nguyên ảnh chụp giờ cũ để không đổi công hồi tố.
-        for (ShiftAssignment a : assignRepo.findByShift_IdAndWorkDateGreaterThanEqual(saved.getId(), LocalDate.now())) {
+        for (ShiftAssignment a : assignRepo.findByShift_IdAndWorkDateGreaterThanEqual(saved.getId(), com.bosskin.core.CompanyZone.today())) {
             if (a.isDeleted() || a.isApproved()
                 || hasAttendanceData(a.getEmployee().getId(), a.getWorkDate(), a.getId())) continue;
             applySnapshot(a, saved);
@@ -363,7 +363,7 @@ public class WorkShiftService {
         attendanceRepository.findByEmployeeIdAndDateAndShift(a.getEmployee().getId(), a.getWorkDate(), id)
             .ifPresent(att -> {
                 att.setDeleted(true);
-                att.setDeletedAt(java.time.LocalDateTime.now());
+                att.setDeletedAt(com.bosskin.core.CompanyZone.now());
                 attendanceRepository.save(att);
             });
 

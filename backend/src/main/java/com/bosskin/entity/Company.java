@@ -23,6 +23,16 @@ public class Company extends BaseEntity {
     @Column(name = "domain", length = 100)
     private String domain;
 
+    /** V32: mã tiền tệ ISO 4217 của công ty (xem CompanyCurrency). */
+    @Column(name = "currency_code", nullable = false, length = 3)
+    @Builder.Default
+    private String currencyCode = "VND";
+
+    /** V32: múi giờ IANA của công ty — chấm công, ca và ngày công tính theo giờ địa phương này. */
+    @Column(name = "timezone", nullable = false, length = 40)
+    @Builder.Default
+    private String timezone = "Asia/Ho_Chi_Minh";
+
     @Column(name = "logo", length = 255)
     private String logo;
 

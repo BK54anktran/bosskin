@@ -13,6 +13,7 @@ import '../../widgets/excel_template_button.dart';
 import '../../widgets/permission_guard.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/universal_import_preview_dialog.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Màn hình Export / Import tổng hợp kiểu Matrixify.
 /// Route: /excel
@@ -715,7 +716,7 @@ class _HistoryCardState extends State<_HistoryCard> {
   }
 
   Future<void> _pickDate(bool isFrom) async {
-    final now = DateTime.now();
+    final now = companyNow();
     final picked = await showDatePicker(
       context: context,
       initialDate: (isFrom ? _dateFrom : _dateTo) ?? now,

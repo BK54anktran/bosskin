@@ -19,6 +19,7 @@ import '../../../widgets/department_picker_field.dart';
 import '../attendance_shared.dart';
 import '../../../widgets/holiday_widgets.dart';
 import '../widgets/attendance_grid.dart';
+import '../../../../core/utils/company_currency_utils.dart';
 
 // ── Tab key ───────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
 
   List<DepartmentFlat> _depts = [];
   int? _filterDept;
-  DateTime _date = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  DateTime _date = DateTime(companyNow().year, companyNow().month, companyNow().day);
   int _page = 0;
   int _pageSize = 20;
 
@@ -527,7 +528,7 @@ class _AttendanceDayTabState extends State<AttendanceDayTab>
   String _dayLabel(DateTime date) => fullDayLabel(context, date);
 
   bool get _isToday {
-    final now = DateTime.now();
+    final now = companyNow();
     return _date.year == now.year && _date.month == now.month && _date.day == now.day;
   }
 

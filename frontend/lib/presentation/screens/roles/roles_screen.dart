@@ -24,6 +24,7 @@ import '../../widgets/reset_password_flow.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 Future<T?> _showInstantDialog<T>(BuildContext context, WidgetBuilder builder,
     {bool dismissible = true}) {
@@ -1142,7 +1143,7 @@ class _UsersTabState extends State<_UsersTab> {
       final r = await ApiService.instance.dio.post('/users/initial-passwords',
           options: Options(responseType: ResponseType.bytes));
       await saveFileToDevice(Uint8List.fromList(r.data as List<int>),
-          'mat-khau-tam-${DateFormat('yyyyMMdd-HHmm').format(DateTime.now())}.xlsx');
+          'mat-khau-tam-${DateFormat('yyyyMMdd-HHmm').format(companyNow())}.xlsx');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

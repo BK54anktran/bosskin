@@ -57,7 +57,7 @@ public class WorkShiftController {
             dateFrom = LocalDate.parse(from);
             dateTo = LocalDate.parse(to);
         } else {
-            LocalDate now = LocalDate.now();
+            LocalDate now = com.bosskin.core.CompanyZone.today();
             int y = year != null ? year : now.getYear();
             int m = month != null ? month : now.getMonthValue();
             int cutoffDay = companySettingService.getByCompanyId(user.getCompany().getId())

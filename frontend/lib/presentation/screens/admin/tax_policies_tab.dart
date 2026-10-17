@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 final _money = NumberFormat('#,###', 'vi_VN');
 final _dateFmt = DateFormat('dd/MM/yyyy');
@@ -220,7 +221,7 @@ class _TaxPolicyDialogState extends State<_TaxPolicyDialog> {
     final src = widget.existing ?? widget.template;
     _from = widget.existing != null
         ? DateTime.parse(widget.existing!['effectiveFrom'] as String)
-        : DateTime(DateTime.now().year + 1, 1, 1);
+        : DateTime(companyNow().year + 1, 1, 1);
     _personalCtrl.text = _plain(src?['personalDeduction'] as num?);
     _dependentCtrl.text = _plain(src?['dependentDeduction'] as num?);
     _refWageCtrl.text = _plain(src?['referenceWage'] as num?);

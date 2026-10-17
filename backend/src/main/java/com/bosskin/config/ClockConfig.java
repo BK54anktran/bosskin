@@ -14,10 +14,11 @@ import java.time.ZoneId;
 @Configuration
 public class ClockConfig {
 
-    public static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    /** Múi giờ mặc định (Việt Nam); múi giờ thực dùng theo công ty của request, xem {@link com.bosskin.core.CompanyZone}. */
+    public static final ZoneId ZONE = com.bosskin.core.CompanyZone.DEFAULT;
 
     @Bean
     public Clock clock() {
-        return Clock.system(ZONE);
+        return com.bosskin.core.CompanyZone.clock();
     }
 }

@@ -16,6 +16,7 @@ import '../../widgets/department_picker_field.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 class AttendanceRequestsScreen extends StatefulWidget {
   const AttendanceRequestsScreen({super.key});
@@ -255,7 +256,7 @@ class _AttendanceRequestsScreenState extends State<AttendanceRequestsScreen>
     final current = isFrom ? _filterFrom : _filterTo;
     final picked = await showDatePicker(
       context: context,
-      initialDate: current ?? DateTime.now(),
+      initialDate: current ?? companyNow(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
@@ -433,7 +434,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
   final _checkOutCtrl = TextEditingController();
   final _otCtrl = TextEditingController();
 
-  DateTime _requestDate = DateTime.now();
+  DateTime _requestDate = companyNow();
   String _type = 'CHECK_IN_OUT';
   String _otScope = 'IN_SHIFT';
   String _otPeriod = 'DAY';
@@ -506,7 +507,7 @@ class _CreateRequestDialogState extends State<_CreateRequestDialog> {
   }
 
   Future<void> _pickTime(TextEditingController ctrl) async {
-    final now = DateTime.now();
+    final now = companyNow();
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(now),

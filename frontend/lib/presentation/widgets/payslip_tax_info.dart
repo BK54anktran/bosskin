@@ -14,7 +14,7 @@ class PayslipTaxInfo extends StatelessWidget {
   final bool showEmployerCost;
   const PayslipTaxInfo({super.key, required this.payroll, this.showEmployerCost = false});
 
-  static NumberFormat get _fmt => moneyNumberFormat('#,##0');
+  static NumberFormat get _fmt => moneyNumberFormat();
 
   double get _employerTotal =>
       (payroll.employerSocialIns ?? 0) + (payroll.employerHealthIns ?? 0) + (payroll.employerUnemploymentIns ?? 0);

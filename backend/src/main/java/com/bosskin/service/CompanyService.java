@@ -77,6 +77,8 @@ public class CompanyService {
         company.setName(req.getName());
         company.setCode(code);
         company.setDomain(domain);
+        company.setCurrencyCode(com.bosskin.core.CompanyCurrency.normalize(req.getCurrencyCode()));
+        company.setTimezone(com.bosskin.core.CompanyZone.normalize(req.getTimezone()));
         company.setAddress(req.getAddress());
         company.setPhone(req.getPhone());
         company.setEmail(req.getCompanyEmail());
@@ -208,7 +210,7 @@ public class CompanyService {
         long empCount = employeeRepository.countByCompanyId(c.getId());
         return CompanyResponse.builder()
             .id(c.getId()).name(c.getName()).code(c.getCode())
-            .domain(c.getDomain()).address(c.getAddress())
+            .domain(c.getDomain()).currencyCode(c.getCurrencyCode()).timezone(c.getTimezone()).address(c.getAddress())
             .phone(c.getPhone()).email(c.getEmail())
             .active(c.isActive())
             .requireAdmin2fa(c.isRequireAdmin2fa())

@@ -17,6 +17,7 @@ import '../../widgets/department_picker_field.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/manager_dropdown.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 const jobChangeTypes = ['TRANSFER', 'PROMOTION', 'SALARY_CHANGE', 'MANAGER_CHANGE', 'OTHER'];
 
@@ -219,7 +220,7 @@ class _JobHistoryFormDialog extends StatefulWidget {
 
 class _JobHistoryFormDialogState extends State<_JobHistoryFormDialog> {
   final _noteCtrl = TextEditingController();
-  DateTime _from = DateTime.now();
+  DateTime _from = companyNow();
   String _type = 'TRANSFER';
   int? _deptId;
   int? _positionId;
@@ -265,7 +266,7 @@ class _JobHistoryFormDialogState extends State<_JobHistoryFormDialog> {
       context: context,
       initialDate: _from,
       firstDate: widget.employee.joinDate,
-      lastDate: DateTime.now().add(const Duration(days: 3650)),
+      lastDate: companyNow().add(const Duration(days: 3650)),
     );
     if (d != null) setState(() => _from = d);
   }

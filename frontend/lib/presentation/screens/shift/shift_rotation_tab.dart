@@ -11,6 +11,7 @@ import '../../../data/models/work_shift.dart';
 import '../../../data/repositories/employee_repository.dart';
 import '../../../data/repositories/shift_plan_repository.dart';
 import '../../widgets/empty_state.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Tab "Xoay ca": mẫu chu kỳ ca và sinh phân ca theo mẫu (Mốc 2b).
 class ShiftRotationTab extends StatefulWidget {
@@ -341,7 +342,7 @@ class _GenerateDialogState extends State<_GenerateDialog> {
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = companyNow();
     _from = DateTime(now.year, now.month, now.day + 1);
     _to = DateTime(_from.year, _from.month + 1, _from.day - 1);
     EmployeeRepository().getAllForPicker(status: EmployeeStatus.active).then((list) {

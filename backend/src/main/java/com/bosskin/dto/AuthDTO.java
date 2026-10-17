@@ -45,6 +45,10 @@ public class AuthDTO {
         /** V22: mã công ty (tiền tố mã NV) và đuôi email bắt buộc của tài khoản trong công ty. */
         private String      companyCode;
         private String      companyDomain;
+        /** V32: tiền tệ (mã ISO 4217) và múi giờ IANA của công ty; độ lệch UTC hiện tại (phút) để app hiển thị giờ công ty. */
+        private String      companyCurrency;
+        private String      companyTimezone;
+        private Integer     companyUtcOffsetMinutes;
         /** V24 (tương thích app cũ): gói chức năng công ty đang bật = tính năng gốc của gói còn bật. */
         private java.util.List<String> modules;
         /** V26: tính năng công ty đang bật (core/CompanyFeatures) — FE ẩn menu / tab / nút của tính năng tắt. */

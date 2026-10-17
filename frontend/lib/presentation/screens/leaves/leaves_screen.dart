@@ -18,6 +18,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/search_text_field.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 class LeavesScreen extends StatefulWidget {
   const LeavesScreen({super.key});
@@ -748,7 +749,7 @@ class _LeavesScreenState extends State<LeavesScreen>
 
   Widget _buildBalanceTable(AppLocalizations s) {
     final Map<int, ({String name, double days, double hours})> byEmployee = {};
-    final today = DateTime.now().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
+    final today = companyNow().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
     for (final g in _grants) {
       final empId = g['employeeId'] as int?;
       if (empId == null) continue;
@@ -1173,8 +1174,8 @@ class _CreateLeaveRequestDialogState extends State<_CreateLeaveRequestDialog> {
   int? _employeeId;
   int? _typeId;
   String _mode = 'DAY_RANGE';
-  DateTime _fromDate = DateTime.now();
-  DateTime _toDate = DateTime.now();
+  DateTime _fromDate = companyNow();
+  DateTime _toDate = companyNow();
   TimeOfDay _fromTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _toTime = const TimeOfDay(hour: 17, minute: 0);
   final _reasonCtrl = TextEditingController();
@@ -1451,7 +1452,7 @@ class _ManualGrantDialogState extends State<_ManualGrantDialog> {
                       onPressed: () async {
                         final p = await showDatePicker(
                           context: context,
-                          initialDate: _validFrom ?? DateTime.now(),
+                          initialDate: _validFrom ?? companyNow(),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2100),
                         );
@@ -1468,7 +1469,7 @@ class _ManualGrantDialogState extends State<_ManualGrantDialog> {
                       onPressed: () async {
                         final p = await showDatePicker(
                           context: context,
-                          initialDate: _validTo ?? DateTime.now(),
+                          initialDate: _validTo ?? companyNow(),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2100),
                         );
@@ -1822,7 +1823,7 @@ class _AccrualRuleDialogState extends State<_AccrualRuleDialog> {
                       onPressed: () async {
                         final p = await showDatePicker(
                           context: context,
-                          initialDate: _validFrom ?? DateTime.now(),
+                          initialDate: _validFrom ?? companyNow(),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2100),
                         );
@@ -1839,7 +1840,7 @@ class _AccrualRuleDialogState extends State<_AccrualRuleDialog> {
                       onPressed: () async {
                         final p = await showDatePicker(
                           context: context,
-                          initialDate: _validTo ?? DateTime.now(),
+                          initialDate: _validTo ?? companyNow(),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2100),
                         );
@@ -1988,7 +1989,7 @@ class _EmployeeGrantHistoryDialogState
   }
 
   List<Map<String, dynamic>> _sortGrants(List<Map<String, dynamic>> grants) {
-    final today = DateTime.now().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
+    final today = companyNow().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
 
     DateTime? parseDate(dynamic v) {
       if (v == null) return null;
@@ -2057,7 +2058,7 @@ class _EmployeeGrantHistoryDialogState
     if (v == null) return false;
     try {
       return DateTime.parse(v.toString()).isBefore(
-          DateTime.now().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0));
+          companyNow().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0));
     } catch (_) {
       return false;
     }

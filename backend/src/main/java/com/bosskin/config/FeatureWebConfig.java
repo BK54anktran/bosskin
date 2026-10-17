@@ -1,5 +1,6 @@
 package com.bosskin.config;
 
+import com.bosskin.security.CompanyZoneInterceptor;
 import com.bosskin.security.FeatureRouteInterceptor;
 import com.bosskin.security.UserLanguageInterceptor;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +15,13 @@ public class FeatureWebConfig implements WebMvcConfigurer {
 
     private final FeatureRouteInterceptor featureRouteInterceptor;
     private final UserLanguageInterceptor userLanguageInterceptor;
+    private final CompanyZoneInterceptor companyZoneInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(featureRouteInterceptor).addPathPatterns("/api/v1/**");
         registry.addInterceptor(userLanguageInterceptor).addPathPatterns("/api/v1/**");
+        // V32: múi giờ theo công ty cho cả request (đặt trước các interceptor khác dùng giờ)
+        registry.addInterceptor(companyZoneInterceptor).addPathPatterns("/api/v1/**").order(-1);
     }
 }

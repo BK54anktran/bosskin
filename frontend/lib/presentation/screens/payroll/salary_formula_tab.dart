@@ -16,6 +16,7 @@ import '../../../data/services/department_service.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/pagination_bar.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 final _dateFmt = DateFormat('dd/MM/yyyy');
 
@@ -348,7 +349,7 @@ class _FormulaEditorDialogState extends State<FormulaEditorDialog> {
   bool _netActive = false;
 
   SalaryGrade? _selectedGrade;
-  DateTime _effectiveDate = DateTime.now();
+  DateTime _effectiveDate = companyNow();
   bool _saving = false;
   bool _validating = false;
   String? _error;

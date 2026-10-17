@@ -1,6 +1,7 @@
 import 'package:bosskin/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../localization/language_service.dart';
+import 'company_currency_utils.dart' show currencyDecimals;
 
 /// Trả về chuỗi kỳ lương: "25/04 – 24/05/2026" nếu có period, fallback "Tháng 5/2026"
 String formatPayrollPeriod(AppLocalizations s, DateTime? from, DateTime? to, int month, int year) {
@@ -34,7 +35,9 @@ String formatDays(num v) {
 /// Ngôn ngữ định dạng số tiền theo ngôn ngữ app: vi → 12.000.000, en → 12,000,000 (luôn giữ ký hiệu đồng).
 String moneyLocale() => LanguageService.instance.isEnglish ? 'en_US' : 'vi_VN';
 
-NumberFormat moneyNumberFormat([String pattern = '#,###']) => NumberFormat(pattern, moneyLocale());
+/// V32: không truyền [pattern] → theo số chữ số thập phân của tiền tệ công ty (VND `#,###`, USD `#,##0.00`).
+NumberFormat moneyNumberFormat([String? pattern]) =>
+    NumberFormat(pattern ?? (currencyDecimals() == 0 ? '#,###' : '#,##0.00'), moneyLocale());
 
 NumberFormat get _moneyFmt => moneyNumberFormat();
 

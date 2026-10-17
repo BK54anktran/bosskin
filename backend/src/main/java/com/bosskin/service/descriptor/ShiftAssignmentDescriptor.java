@@ -99,11 +99,11 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
                 from = LocalDate.of(y, m, 1);
                 to   = from.withDayOfMonth(from.lengthOfMonth());
             } catch (Exception e) {
-                from = LocalDate.now().withDayOfMonth(1);
+                from = com.bosskin.core.CompanyZone.today().withDayOfMonth(1);
                 to   = from.withDayOfMonth(from.lengthOfMonth());
             }
         } else {
-            from = LocalDate.now().withDayOfMonth(1);
+            from = com.bosskin.core.CompanyZone.today().withDayOfMonth(1);
             to   = from.withDayOfMonth(from.lengthOfMonth());
         }
 
@@ -173,7 +173,7 @@ public class ShiftAssignmentDescriptor implements ExcelEntityDescriptor<ShiftAss
             .map(d -> FilterDefinition.opt(d.getCode(), d.getName() + " (" + d.getCode() + ")"))
             .collect(Collectors.toList());
 
-        int curYear = LocalDate.now().getYear();
+        int curYear = com.bosskin.core.CompanyZone.today().getYear();
         List<FilterDefinition.Option> yearOptions = List.of(
             FilterDefinition.opt(String.valueOf(curYear - 1), String.valueOf(curYear - 1)),
             FilterDefinition.opt(String.valueOf(curYear),     String.valueOf(curYear)),

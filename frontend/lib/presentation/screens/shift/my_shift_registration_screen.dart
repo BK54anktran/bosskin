@@ -9,6 +9,7 @@ import '../../../data/repositories/shift_registration_repository.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Đăng ký lịch làm việc của nhân viên (V23): chọn đợt đang mở, bật từng ngày rồi chọn ca có sẵn,
 /// giờ tuỳ chỉnh hoặc "rảnh cả ngày"; tối đa 2 khung / ngày. Gửi rồi vẫn sửa được tới khi đợt đóng.
@@ -86,7 +87,7 @@ class _MyShiftRegistrationScreenState extends State<MyShiftRegistrationScreen> {
 
   static DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  DateTime get _today => _day(DateTime.now());
+  DateTime get _today => _day(companyNow());
 
   List<RegSlot> _approvedOn(DateTime d) =>
       (_data?.registrations ?? const []).where((r) => r.status == 'APPROVED' && _day(r.workDate) == d).toList();

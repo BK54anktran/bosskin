@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/models/payroll.dart';
 import '../../../data/repositories/payroll_repository.dart';
@@ -11,7 +12,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import '../../widgets/payslip_tax_info.dart';
 
 NumberFormat get _currFmt2 => moneyNumberFormat();
-String _fmt2(double v) => '${_currFmt2.format(v)}đ';
+String _fmt2(double v) => '${_currFmt2.format(v)}${currencySuffix()}';
 
 class SelfPayrollScreen extends StatefulWidget {
   const SelfPayrollScreen({super.key});
@@ -22,7 +23,7 @@ class SelfPayrollScreen extends StatefulWidget {
 
 class _SelfPayrollScreenState extends State<SelfPayrollScreen> {
   final _repo = PayrollRepository();
-  int _year = DateTime.now().year;
+  int _year = companyNow().year;
   bool _loading = true;
   String? _error;
   List<Payroll> _items = [];
@@ -83,7 +84,7 @@ class _SelfPayrollScreenState extends State<SelfPayrollScreen> {
               Text('$_year', style: const TextStyle(fontWeight: FontWeight.w600)),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
-                onPressed: _year < DateTime.now().year
+                onPressed: _year < companyNow().year
                     ? () { setState(() => _year++); _load(); }
                     : null,
               ),

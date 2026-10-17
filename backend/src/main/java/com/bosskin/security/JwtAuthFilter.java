@@ -85,7 +85,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             return;
                         }
                         companyRepository.findById(user.getCompanyId())
-                            .ifPresent(co -> user.setDisabledFeaturesLoaded(co.disabledFeatureSet()));
+                            .ifPresent(co -> {
+                                user.setDisabledFeaturesLoaded(co.disabledFeatureSet());
+                                user.setCompanyTimezoneLoaded(co.getTimezone());
+                            });
                         setAuth(user, request);
                     }
                 }

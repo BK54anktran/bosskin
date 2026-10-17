@@ -8,6 +8,7 @@ import '../../../core/utils/error_utils.dart';
 import '../../../data/models/work_calendar.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/holiday_widgets.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Tab "Ngày lễ mẫu" ở trang system admin (bước J): danh sách ngày lễ mặc định theo năm cho mọi công ty.
 /// Công ty chưa tự chỉnh năm nào thì dùng danh sách này; đã chỉnh thì giữ bản riêng.
@@ -20,7 +21,7 @@ class HolidayTemplatesTab extends StatefulWidget {
 }
 
 class _HolidayTemplatesTabState extends State<HolidayTemplatesTab> {
-  int _year = DateTime.now().year;
+  int _year = companyNow().year;
   List<Holiday> _items = [];
   bool _loading = true;
   String? _error;

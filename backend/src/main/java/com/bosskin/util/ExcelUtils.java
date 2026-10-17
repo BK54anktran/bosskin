@@ -367,7 +367,7 @@ public final class ExcelUtils {
     }
 
     private static ResponseEntity<byte[]> buildResponse(String filename, byte[] bytes) {
-        String ts = java.time.LocalDateTime.now()
+        String ts = com.bosskin.core.CompanyZone.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
         String base = filename.replaceAll("[\\\\/:*?\"<>|]", "-").strip();
         String withTs = base + "-" + ts + ".xlsx";

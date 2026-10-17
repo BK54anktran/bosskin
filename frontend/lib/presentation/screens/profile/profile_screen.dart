@@ -17,6 +17,7 @@ import 'my_documents_card.dart';
 import 'appearance_card.dart';
 import 'two_factor_card.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -374,7 +375,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
+    final now = companyNow();
     final s = AppLocalizations.of(context);
     final picked = await showDatePicker(
       context: context,

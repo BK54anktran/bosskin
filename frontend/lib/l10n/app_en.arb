@@ -2066,4 +2066,11 @@
   ,"commonPositions": "Common positions"
   ,"commonPositionsHint": "Common positions can be used in every department (e.g. Manager, Staff). Positions specific to this department are managed here."
   ,"commonPositionsNote": "Common position — not tied to any department"
+  ,"regionalSettings": "Region & currency"
+  ,"currencyLabel": "Currency"
+  ,"currencyHint": "Unit used to display amounts (pay, costs, reports). Existing figures are not converted."
+  ,"timezoneLabel": "Time zone"
+  ,"timezoneHint": "Check-in, shifts and work days follow the company local time. Changing the time zone with existing data only applies from the change onward."
+  ,"empContractSalaryIn": "Contract salary ({currency})"
+  ,"@empContractSalaryIn": {"placeholders": {"currency": {"type": "String"}}}
 }

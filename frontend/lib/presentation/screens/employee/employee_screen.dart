@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/locale_utils.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../auth/force_change_password_screen.dart' show isStrongPassword;
@@ -137,7 +138,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   /// Nghỉ việc: chọn ngày làm việc cuối; hồ sơ không bị xoá (xem lại ở lọc "Nghỉ việc", cho đi làm lại được).
   Future<void> _resign(Employee emp) async {
     final s = AppLocalizations.of(context);
-    final today = DateTime.now();
+    final today = companyNow();
     DateTime lastDay = DateTime(today.year, today.month, today.day);
     final ok = await showInstantDialog<bool>(
       context,
@@ -1010,8 +1011,8 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
-            '${s.baseSalary}: ${currFmt.format(p.baseSalary)}đ'
-            '  •  ${s.netSalary}: ${currFmt.format(p.netSalary)}đ',
+            '${s.baseSalary}: ${currFmt.format(p.baseSalary)}${currencySuffix()}'
+            '  •  ${s.netSalary}: ${currFmt.format(p.netSalary)}${currencySuffix()}',
           ),
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -1056,7 +1057,7 @@ class _SalaryHistoryDialogState extends State<_SalaryHistoryDialog>
                         return ListTile(
                           dense: true,
                           title: Text(
-                            '${currFmt.format(sh.baseSalary)}đ',
+                            '${currFmt.format(sh.baseSalary)}${currencySuffix()}',
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                           subtitle: Text(
@@ -1098,7 +1099,7 @@ class _SalaryHistoryFormDialog extends StatefulWidget {
 class _SalaryHistoryFormDialogState extends State<_SalaryHistoryFormDialog> {
   late final TextEditingController _salaryCtrl;
   late final TextEditingController _noteCtrl;
-  DateTime _effectiveDate = DateTime.now();
+  DateTime _effectiveDate = companyNow();
   bool _saving = false;
   String? _error;
 
@@ -1176,7 +1177,7 @@ class _SalaryHistoryFormDialogState extends State<_SalaryHistoryFormDialog> {
               ),
             TextFormField(
               controller: _salaryCtrl,
-              decoration: InputDecoration(labelText: s.baseSalary, suffixText: 'đ'),
+              decoration: InputDecoration(labelText: s.baseSalary, suffixText: currencySuffix()),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),

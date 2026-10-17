@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
 import '../../../data/services/api_service.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Bước 2 — Nhật ký thao tác: ai sửa công, duyệt lương, đổi quyền, impersonate… (quyền AUDIT_VIEW).
 class AuditLogScreen extends StatefulWidget {
@@ -135,7 +136,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
   @override
   void initState() {
     super.initState();
-    final today = DateTime.now();
+    final today = companyNow();
     _range = DateTimeRange(
         start: today.subtract(const Duration(days: 30)), end: today);
     _load(reset: true);
@@ -191,7 +192,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
     final r = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      lastDate: companyNow(),
       initialDateRange: _range,
     );
     if (r != null) {

@@ -6066,4 +6066,26 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get commonPositionsNote => 'Chức vụ chung — không thuộc phòng ban nào';
+
+  @override
+  String get regionalSettings => 'Khu vực & tiền tệ';
+
+  @override
+  String get currencyLabel => 'Tiền tệ';
+
+  @override
+  String get currencyHint =>
+      'Đơn vị hiển thị số tiền (lương, chi phí, báo cáo). Không tự quy đổi các số đã nhập.';
+
+  @override
+  String get timezoneLabel => 'Múi giờ';
+
+  @override
+  String get timezoneHint =>
+      'Chấm công, ca làm và ngày công tính theo giờ địa phương của công ty. Đổi múi giờ khi đã có dữ liệu chỉ áp dụng cho các ngày từ lúc đổi trở đi.';
+
+  @override
+  String empContractSalaryIn(String currency) {
+    return 'Lương hợp đồng ($currency)';
+  }
 }

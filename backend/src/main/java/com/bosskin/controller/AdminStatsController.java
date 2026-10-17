@@ -38,7 +38,7 @@ public class AdminStatsController {
         long totalEmployees  = employeeRepository.count();
         long totalUsers      = userRepository.count();
 
-        LocalDate now = LocalDate.now();
+        LocalDate now = com.bosskin.core.CompanyZone.today();
         final int finalYear  = (year  != null) ? year  : now.getYear();
         final int finalMonth = (month != null) ? month : now.getMonthValue();
 

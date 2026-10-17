@@ -342,7 +342,7 @@ public class PayrollService {
         return SalaryFormula.builder()
             .salaryGrade(payroll.getEmployee().getSalaryGrade())
             .name(cf.getName())
-            .effectiveDate(java.time.LocalDate.now())
+            .effectiveDate(com.bosskin.core.CompanyZone.today())
             .expressionGross(cf.getExpressionGross())
             .expressionNet(cf.getExpressionNet())
             .customVars(cf.getCustomVars() != null ? cf.getCustomVars() : new java.util.LinkedHashMap<>())
@@ -426,7 +426,7 @@ public class PayrollService {
                 "error.payroll.approve_non_draft");
         }
         payroll.setStatus(Payroll.Status.APPROVED);
-        payroll.setApprovedAt(LocalDateTime.now());
+        payroll.setApprovedAt(com.bosskin.core.CompanyZone.now());
         payroll.setApprovedById(approvedById);
         return payrollRepository.save(payroll);
     }
@@ -444,7 +444,7 @@ public class PayrollService {
                 "error.payroll.pay_non_approved");
         }
         payroll.setStatus(Payroll.Status.PAID);
-        payroll.setPaidAt(LocalDateTime.now());
+        payroll.setPaidAt(com.bosskin.core.CompanyZone.now());
         payroll.setPaidById(paidById);
         return payrollRepository.save(payroll);
     }

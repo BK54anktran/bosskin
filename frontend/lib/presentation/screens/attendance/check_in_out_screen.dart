@@ -17,6 +17,7 @@ import '../../../data/services/auth_service.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../core/utils/locale_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 class CheckInOutScreen extends StatefulWidget {
   const CheckInOutScreen({super.key});
@@ -128,7 +129,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   }
 
   Future<void> _loadHistory() async {
-    final now = DateTime.now();
+    final now = companyNow();
     try {
       final history = (await _repo.getSelfHistory(
         year: now.year,
@@ -244,7 +245,7 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
 
     final localeTag = Localizations.localeOf(context).toLanguageTag();
     final today =
-        DateFormat('EEEE, dd/MM/yyyy', localeTag).format(DateTime.now());
+        DateFormat('EEEE, dd/MM/yyyy', localeTag).format(companyNow());
     final att = data?.attendance;
     final timeFmt = DateFormat('HH:mm');
     final hasShifts = data?.shifts.isNotEmpty ?? false;
@@ -439,7 +440,7 @@ class _ShiftPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final today = DateTime.now();
+    final today = companyNow();
     final isYesterday = date != null &&
         date!.year == today.subtract(const Duration(days: 1)).year &&
         date!.month == today.subtract(const Duration(days: 1)).month &&

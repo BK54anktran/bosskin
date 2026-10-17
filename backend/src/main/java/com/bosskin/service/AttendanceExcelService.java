@@ -92,11 +92,11 @@ public class AttendanceExcelService {
                 from = LocalDate.of(y, m, 1);
                 to   = from.withDayOfMonth(from.lengthOfMonth());
             } catch (Exception e) {
-                from = LocalDate.now().withDayOfMonth(1);
+                from = com.bosskin.core.CompanyZone.today().withDayOfMonth(1);
                 to   = from.withDayOfMonth(from.lengthOfMonth());
             }
         } else {
-            from = LocalDate.now().withDayOfMonth(1);
+            from = com.bosskin.core.CompanyZone.today().withDayOfMonth(1);
             to   = from.withDayOfMonth(from.lengthOfMonth());
         }
 
@@ -1007,7 +1007,7 @@ public class AttendanceExcelService {
                 if (row.deleteFlag) {
                     if (att == null || att.isDeleted()) { skipped++; continue; }
                     att.setDeleted(true);
-                    att.setDeletedAt(LocalDateTime.now());
+                    att.setDeletedAt(com.bosskin.core.CompanyZone.now());
                     toSave.add(att);
                     deleted++;
                     continue;
@@ -1072,7 +1072,7 @@ public class AttendanceExcelService {
                 String[] parts = datePart.split("-");
                 sheetYear = Integer.parseInt(parts[1]);
             } catch (Exception e) {
-                sheetYear = LocalDate.now().getYear();
+                sheetYear = com.bosskin.core.CompanyZone.today().getYear();
             }
 
             // Parse date columns from header (format: "d/M\nWeekday") + tìm cột "Xóa"
@@ -1561,7 +1561,7 @@ public class AttendanceExcelService {
                 if (row.deleteFlag) {
                     if (att == null || att.isDeleted()) { skipped++; continue; }
                     att.setDeleted(true);
-                    att.setDeletedAt(LocalDateTime.now());
+                    att.setDeletedAt(com.bosskin.core.CompanyZone.now());
                     toSave.add(att); approveFlags.add(false);
                     deleted++; continue;
                 }

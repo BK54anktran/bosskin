@@ -101,7 +101,7 @@ public class ShiftAssignment {
     private LocalDateTime checkOutNotifSentAt;
 
     @PrePersist
-    void prePersist() { createdAt = LocalDateTime.now(); }
+    void prePersist() { createdAt = com.bosskin.core.CompanyZone.now(); }
 
     public boolean isCustom() {
         return shift == null && customStartTime != null;

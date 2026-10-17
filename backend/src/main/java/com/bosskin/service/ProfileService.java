@@ -164,7 +164,7 @@ public class ProfileService {
 
         req.setStatus(ProfileEditRequest.Status.APPROVED);
         req.setProcessedBy(admin);
-        req.setProcessedAt(java.time.LocalDateTime.now());
+        req.setProcessedAt(com.bosskin.core.CompanyZone.now());
         audit.log("PROFILE_EDIT_APPROVE").entity("EMPLOYEE", emp.getId()).summary(emp.getEmployeeCode())
             .detail(com.bosskin.audit.AuditService.map(
                 "before", changedFields(req, true), "after", changedFields(req, false))).save();
@@ -180,7 +180,7 @@ public class ProfileService {
         requireCanProcess(admin, req);
         req.setStatus(ProfileEditRequest.Status.REJECTED);
         req.setProcessedBy(admin);
-        req.setProcessedAt(java.time.LocalDateTime.now());
+        req.setProcessedAt(com.bosskin.core.CompanyZone.now());
         req.setAdminNote(body.getAdminNote());
         audit.log("PROFILE_EDIT_REJECT").entity("EMPLOYEE", req.getEmployee().getId())
             .summary(req.getEmployee().getEmployeeCode()).save();

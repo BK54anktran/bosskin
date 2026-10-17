@@ -18,6 +18,8 @@ Mở **Cài đặt công ty** (cuối menu). Hai tab: **Chung** và **Lịch là
 | **Người duyệt đơn** | *Theo quyền và phạm vi* (mặc định) hoặc *Quản lý trực tiếp duyệt trước, rồi HR* |
 | Đăng ký lịch làm việc | Bật: nhân viên có menu *Đăng ký lịch*, Ca làm có tab *Đăng ký lịch* để quản lý mở / đóng đợt và duyệt thành phân ca |
 | Báo trước hợp đồng hết hạn | Số ngày (mặc định 30) — hợp đồng / tài liệu hết hạn trong số ngày này hiện cảnh báo |
+| **Múi giờ** | Giờ địa phương của công ty (mặc định Asia/Ho_Chi_Minh). Chấm công, ca làm, "hôm nay", ngày công và nhắc ca đều tính theo múi giờ này — công ty ở Thái Lan, Nhật… chọn đúng múi giờ để không bị lệch ngày / đi muộn. Đổi khi đã có dữ liệu chỉ áp dụng từ lúc đổi trở đi. Các việc chạy ngầm hằng ngày (cộng phép, nhắc hợp đồng / tài liệu) vẫn chạy theo giờ Việt Nam |
+| **Tiền tệ** | Đơn vị hiển thị số tiền (VND, USD, THB, JPY…): ký hiệu và số lẻ ở lương, chi phí, Tổng quan. Chỉ đổi cách hiển thị, **không tự quy đổi** số đã nhập; thuế và bảo hiểm mặc định là quy định Việt Nam |
 
 ![Lương và bảo hiểm](img:settings-general-2)
 

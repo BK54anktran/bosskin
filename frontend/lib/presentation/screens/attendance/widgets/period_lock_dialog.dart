@@ -5,6 +5,7 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../../core/utils/dialog_utils.dart';
 import '../../../../core/utils/error_utils.dart';
 import '../../../../data/repositories/attendance_repository.dart';
+import '../../../../core/utils/company_currency_utils.dart';
 
 /// Khoá / mở lại kỳ công theo năm (A12). Mở bằng [showPeriodLockDialog].
 /// Kỳ tính theo ngày chốt công trong cài đặt công ty — backend trả sẵn from/to.
@@ -20,7 +21,7 @@ class _PeriodLockDialog extends StatefulWidget {
 
 class _PeriodLockDialogState extends State<_PeriodLockDialog> {
   final _repo = AttendanceRepository();
-  int _year = DateTime.now().year;
+  int _year = companyNow().year;
   List<AttendancePeriod> _periods = const [];
   bool _isLoading = true;
   String? _error;

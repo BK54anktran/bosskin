@@ -32,4 +32,8 @@ public class CreateCompanyRequest {
 
     /** Ngôn ngữ của dữ liệu mặc định tạo sẵn (tên vai trò, loại tài liệu): "vi" | "en"; trống = vi. */
     private String language;
+
+    /** V32: tiền tệ (ISO 4217) và múi giờ IANA; trống = VND, Asia/Ho_Chi_Minh. */
+    private String currencyCode;
+    private String timezone;
 }

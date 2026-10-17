@@ -361,7 +361,7 @@ XxxSetting  // sub-object response (AttendanceSetting)
 | `EmployeeDocument` | `employee_documents` | tài liệu nhân sự, loại ở `document_types` (V18) |
 
 ## Migration version hiện tại
-Cao nhất: **V31** (`V31__position_common.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
+Cao nhất: **V32** (`V32__company_currency_timezone.sql`) — V1 là baseline gộp V1–V117 cũ; V6 gắn thiết bị, V7 bắt đổi mật khẩu, V8 sổ phép, V9 nhật ký,
 V10 index chấm công, V11 xác thực 2 lớp, V12 yêu cầu dùng thử, V13 thuế/BH theo ngày hiệu lực (`tax_policies`), V14 ngày lễ + lịch làm việc,
 V15 quá trình công tác + quản lý trực tiếp + chế độ duyệt, V16 hợp đồng lao động + phụ lục + phụ cấp,
 V17 MST / sổ BHXH / người phụ thuộc / BH công ty đóng / quyền xem dữ liệu nhạy cảm, V18 tài liệu nhân sự,
@@ -369,7 +369,8 @@ V19 bộ đếm mã NV + giá trị cũ của yêu cầu sửa hồ sơ, V20 kh�
 V21 hiện lại NV bị nút Nghỉ việc cũ xoá mềm (sửa dữ liệu: INACTIVE + ngày nghỉ = ngày khoá tài khoản),
 V22 định danh công ty (đuôi email unique + đổi mã NV `EMP…` → `<mã công ty>…`), V23 đăng ký lịch làm việc, V24 gói chức năng theo công ty (đã thay bằng V26),
 V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `disabled_modules`), V27 giờ sửa tay chấm công lưu datetime, V28 nhiều lượt chấm không ca (`punch_no`), V29 ngôn ngữ người dùng (`users.language`), V30 cờ vai trò hệ thống (`roles.is_system`: Admin sinh sẵn bị khoá, tài khoản admin đầu tiên không bị đổi vai trò / quyền / khoá), V31 chức vụ chung (`positions.company_id` + `department_id` NULL = chức vụ chung dùng ở mọi phòng ban; `Position.usableIn(deptId)`, API `GET /positions?departmentId=` trả chức vụ của phòng + chức vụ chung; Excel để trống mã phòng ban = chung)
-→ Migration tiếp theo phải là **V32**
+V32 tiền tệ + múi giờ theo công ty (`companies.currency_code` / `timezone`; xem mục "Múi giờ & tiền tệ theo công ty")
+→ Migration tiếp theo phải là **V33**
 
 ## Vận hành (Bước 2)
 - Build frontend: `.github/workflows/frontend-build.yml` (job check → web + apk song song trên 2 máy, APK lỗi không chặn gói web; chạy khi push `main` + PR, commit mới huỷ lượt cũ cùng nhánh; Flutter ghim 3.47.6; APK ký bằng `android/key.properties` do CI tạo từ
@@ -713,6 +714,16 @@ V25 chấm công không cần xếp ca, V26 tính năng theo công ty (thay `dis
 - Điện thoại (< 600 dp) dùng `AppTheme.compact()` (bọc ở `main.dart`): nút cao 38 / chữ 13, ô nhập + combobox `isDense` đệm 10, tab chữ 13 — đừng đặt `minimumSize` / chiều cao riêng lớn hơn cho nút thường.
 - Công cụ quét tự động: `tools/mobile-audit/` (README, `setup.sh` cài môi trường một lần, `run.sh up|crawl|reload`); ảnh mẫu `docs/thiet-ke/img/mobile-audit/`.
 - Kiểm tra: Flutter debug web + Playwright 390×844, bật `FlutterError.dumpErrorToConsole(forceReport: true)` tạm để thấy dòng `RenderFlex overflowed` kèm vị trí (không commit).
+
+### Múi giờ & tiền tệ theo công ty (V32, 17/10/2026)
+- `companies.timezone` (IANA, mặc định `Asia/Ho_Chi_Minh`) và `currency_code` (ISO 4217 trong `core/CompanyCurrency`, mặc định VND), chọn ở Cài đặt công ty → "Khu vực & tiền tệ"
+  (`CompanySettingDTO.RegionalSetting`), tạo công ty nhận `currencyCode` / `timezone` tuỳ chọn. Đăng nhập / làm mới trả `companyCurrency`, `companyTimezone`, `companyUtcOffsetMinutes`.
+- **Không gọi `LocalDate.now()` / `LocalDateTime.now()` / `LocalTime.now()` trần trong code nghiệp vụ**: dùng `CompanyZone.today()/now()/time()` hoặc bean `Clock` (cả hai theo múi giờ công ty của request).
+  `CompanyZoneInterceptor` đặt múi giờ (ThreadLocal) từ `User.companyTimezoneId()` — `JwtAuthFilter` nạp sẵn vì công ty là LAZY; ngoài request (job nền) = Việt Nam.
+  Việc nền có người nhận theo công ty phải tự đặt múi giờ (ví dụ `ShiftReminderScheduler`). Job hằng ngày theo giờ VN (cộng phép, nhắc hợp đồng / tài liệu, đóng đợt đăng ký) chưa chạy theo từng công ty.
+- FE: `core/utils/company_currency_utils.dart` — `companyCurrency`, `currencySymbol()` / `currencySuffix()` (VND giữ "đ"), `moneyCurrencyFormat()`, `moneyCompactFormat()`, `moneyNumberFormat()` (số lẻ theo tiền tệ);
+  `companyNow()` / `companyToday()` thay `DateTime.now()` cho ngày giờ nghiệp vụ (giữ `DateTime.now()` chỉ khi đo thời gian thực). Không viết cứng ₫ / đ. Bảng tiền tệ FE phải khớp `CompanyCurrency.java`.
+- Chỉ đổi cách hiển thị tiền, không quy đổi số liệu; thuế / BH vẫn theo quy định Việt Nam (`tax_policies`). Test: `CompanyZoneTest`, `CompanyRegionalTest`.
 
 ### Hover cursor
 - Widget có `onTap`/`onPressed` trên desktop → thêm `MouseRegion(cursor: SystemMouseCursors.click)` để hiện bàn tay khi hover.

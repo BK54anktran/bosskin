@@ -12,6 +12,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/search_text_field.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Tab "Yêu cầu dùng thử" ở trang system admin — đơn gửi từ trang giới thiệu (landing/).
 class TrialRequestsTab extends StatefulWidget {
@@ -85,7 +86,7 @@ class _TrialRequestsTabState extends State<TrialRequestsTab> {
           queryParameters: {if (_status != null) 'status': _status},
           options: Options(responseType: ResponseType.bytes));
       await saveFileToDevice(Uint8List.fromList(r.data as List<int>),
-          'yeu-cau-dung-thu-${DateFormat('yyyyMMdd').format(DateTime.now())}.xlsx');
+          'yeu-cau-dung-thu-${DateFormat('yyyyMMdd').format(companyNow())}.xlsx');
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(serverMsg(e))));
     }

@@ -4,6 +4,7 @@ import '../../data/models/department_model.dart';
 import '../../data/repositories/universal_excel_repository.dart';
 import 'department_picker_field.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/company_currency_utils.dart';
 
 final _excelRepo = UniversalExcelRepository();
 
@@ -747,7 +748,7 @@ class _DateInputState extends State<_DateInput> {
   Future<void> _pick() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.tryParse(_ctrl.text) ?? DateTime.now(),
+      initialDate: DateTime.tryParse(_ctrl.text) ?? companyNow(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );

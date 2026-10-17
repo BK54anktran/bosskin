@@ -275,7 +275,7 @@ public class LeaveService {
                     child.setStatus(LeaveRequest.Status.APPROVED);
                     child.setAdminNote(body != null ? body.getAdminNote() : null);
                     child.setProcessedBy(admin);
-                    child.setProcessedAt(java.time.LocalDateTime.now());
+                    child.setProcessedAt(com.bosskin.core.CompanyZone.now());
                     leaveRequestRepository.save(child);
                 }
             }
@@ -283,7 +283,7 @@ public class LeaveService {
         request.setStatus(LeaveRequest.Status.APPROVED);
         request.setAdminNote(body != null ? body.getAdminNote() : null);
         request.setProcessedBy(admin);
-        request.setProcessedAt(java.time.LocalDateTime.now());
+        request.setProcessedAt(com.bosskin.core.CompanyZone.now());
         return saveAndReload(request, companyId);
     }
 
@@ -314,7 +314,7 @@ public class LeaveService {
                     child.setStatus(LeaveRequest.Status.REJECTED);
                     child.setAdminNote(note);
                     child.setProcessedBy(admin);
-                    child.setProcessedAt(java.time.LocalDateTime.now());
+                    child.setProcessedAt(com.bosskin.core.CompanyZone.now());
                     leaveRequestRepository.save(child);
                 }
             }
@@ -324,7 +324,7 @@ public class LeaveService {
         request.setStatus(LeaveRequest.Status.REJECTED);
         request.setAdminNote(note);
         request.setProcessedBy(admin);
-        request.setProcessedAt(java.time.LocalDateTime.now());
+        request.setProcessedAt(com.bosskin.core.CompanyZone.now());
         return saveAndReload(request, companyId);
     }
 
@@ -389,7 +389,7 @@ public class LeaveService {
                     }
                     unapproveAttendanceForLeave(child);
                     child.setStatus(LeaveRequest.Status.CANCELLED);
-                    child.setProcessedAt(java.time.LocalDateTime.now());
+                    child.setProcessedAt(com.bosskin.core.CompanyZone.now());
                     leaveRequestRepository.save(child);
                 }
             }
@@ -400,7 +400,7 @@ public class LeaveService {
             unapproveAttendanceForLeave(request);
         }
         request.setStatus(LeaveRequest.Status.CANCELLED);
-        request.setProcessedAt(java.time.LocalDateTime.now());
+        request.setProcessedAt(com.bosskin.core.CompanyZone.now());
         return saveAndReload(request, companyId);
     }
 
@@ -455,7 +455,7 @@ public class LeaveService {
         if (req.getGrantDays() == null && req.getGrantHours() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.leave.amount_required");
         }
-        LocalDate grantedAt = req.getGrantedAt() != null ? req.getGrantedAt() : LocalDate.now();
+        LocalDate grantedAt = req.getGrantedAt() != null ? req.getGrantedAt() : com.bosskin.core.CompanyZone.today();
         LocalDate validFrom = req.getValidFrom();
         LocalDate validTo = req.getValidTo();
         if (req.getExpireAfterDays() != null) {
@@ -601,7 +601,7 @@ public class LeaveService {
     @Transactional
     public Map<String, Integer> runAccrual(User user, LocalDate runDate) {
         requirePermission(user, "LEAVE_ACCRUAL_MANAGE");
-        return runAccrualForCompany(user.getCompanyId(), runDate != null ? runDate : LocalDate.now());
+        return runAccrualForCompany(user.getCompanyId(), runDate != null ? runDate : com.bosskin.core.CompanyZone.today());
     }
 
     /**

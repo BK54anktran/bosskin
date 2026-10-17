@@ -18,6 +18,7 @@ import '../../widgets/excel_template_button.dart';
 import '../../widgets/holiday_widgets.dart';
 import '../../widgets/import_preview_dialog.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Tab "Lịch làm việc" trong Cài đặt công ty (bước J): lịch tuần (mặc định + theo phòng ban) và ngày lễ theo năm.
 /// Năm công ty chưa chỉnh dùng danh sách mẫu của hệ thống; sửa lần đầu sẽ chép mẫu sang công ty.
@@ -37,7 +38,7 @@ class _DeptOption {
 
 class _WorkCalendarTabState extends State<WorkCalendarTab> {
   final _repo = WorkCalendarRepository();
-  int _year = DateTime.now().year;
+  int _year = companyNow().year;
   bool _loading = true;
   bool _loadingHolidays = false;
   bool _busy = false;

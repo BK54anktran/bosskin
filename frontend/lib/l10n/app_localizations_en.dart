@@ -6084,4 +6084,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get commonPositionsNote =>
       'Common position — not tied to any department';
+
+  @override
+  String get regionalSettings => 'Region & currency';
+
+  @override
+  String get currencyLabel => 'Currency';
+
+  @override
+  String get currencyHint =>
+      'Unit used to display amounts (pay, costs, reports). Existing figures are not converted.';
+
+  @override
+  String get timezoneLabel => 'Time zone';
+
+  @override
+  String get timezoneHint =>
+      'Check-in, shifts and work days follow the company local time. Changing the time zone with existing data only applies from the change onward.';
+
+  @override
+  String empContractSalaryIn(String currency) {
+    return 'Contract salary ($currency)';
+  }
 }

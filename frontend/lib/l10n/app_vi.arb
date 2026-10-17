@@ -2073,4 +2073,11 @@
   ,"commonPositions": "Chức vụ chung"
   ,"commonPositionsHint": "Chức vụ chung dùng được ở mọi phòng ban (vd. Quản lý, Nhân viên); chức vụ riêng của phòng ban quản lý ở đây."
   ,"commonPositionsNote": "Chức vụ chung — không thuộc phòng ban nào"
+  ,"regionalSettings": "Khu vực & tiền tệ"
+  ,"currencyLabel": "Tiền tệ"
+  ,"currencyHint": "Đơn vị hiển thị số tiền (lương, chi phí, báo cáo). Không tự quy đổi các số đã nhập."
+  ,"timezoneLabel": "Múi giờ"
+  ,"timezoneHint": "Chấm công, ca làm và ngày công tính theo giờ địa phương của công ty. Đổi múi giờ khi đã có dữ liệu chỉ áp dụng cho các ngày từ lúc đổi trở đi."
+  ,"empContractSalaryIn": "Lương hợp đồng ({currency})"
+  ,"@empContractSalaryIn": {"placeholders": {"currency": {"type": "String"}}}
 }

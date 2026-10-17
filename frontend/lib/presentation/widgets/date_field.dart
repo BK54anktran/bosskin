@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../core/utils/company_currency_utils.dart';
 
 /// Ô chọn ngày dạng dd/MM/yyyy (bấm mở lịch). [onChanged] null = chỉ xem; [clearable] cho phép xoá về null.
 class DateField extends StatelessWidget {
@@ -21,7 +22,7 @@ class DateField extends StatelessWidget {
   });
 
   Future<void> _pick(BuildContext context) async {
-    final now = DateTime.now();
+    final now = companyNow();
     final first = firstDate ?? DateTime(now.year - 20);
     final last = lastDate ?? DateTime(now.year + 20);
     var initial = value ?? now;

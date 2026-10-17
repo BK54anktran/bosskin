@@ -9,9 +9,18 @@ import 'package:bosskin/l10n/app_localizations.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/location_picker_field.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import 'work_calendar_tab.dart';
 
 /// Cài đặt công ty: tab "Chung" (quyền COMPANY_SETTING_VIEW) và "Lịch làm việc" (CALENDAR_VIEW, bước J).
+/// Múi giờ thường dùng (IANA); múi giờ đang lưu mà không có trong danh sách vẫn hiện.
+const _timezoneChoices = [
+  'Asia/Ho_Chi_Minh', 'Asia/Bangkok', 'Asia/Phnom_Penh', 'Asia/Vientiane', 'Asia/Singapore', 'Asia/Kuala_Lumpur',
+  'Asia/Jakarta', 'Asia/Manila', 'Asia/Shanghai', 'Asia/Hong_Kong', 'Asia/Tokyo', 'Asia/Seoul', 'Asia/Kolkata',
+  'Asia/Dubai', 'Australia/Sydney', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'America/New_York',
+  'America/Chicago', 'America/Los_Angeles', 'UTC',
+];
+
 class CompanySettingsScreen extends StatelessWidget {
   const CompanySettingsScreen({super.key});
 
@@ -71,6 +80,8 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
 
   final _contractWarningCtrl = TextEditingController(text: '30');
   int _minWageRegion = 1;
+  String _currencyCode = 'VND';
+  String _timezone = 'Asia/Ho_Chi_Minh';
   /// Bước M: tỷ lệ BH công ty đóng (%)
   final _employerSocialCtrl = TextEditingController(text: '17.5');
   final _employerHealthCtrl = TextEditingController(text: '3');
@@ -150,6 +161,9 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
         _standardWorkDaysCtrl.text = ((payroll?['standardWorkDays'] as num?)?.toInt() ?? 22).toString();
         _cutoffDayCtrl.text = ((payroll?['payrollCutoffDay'] as num?)?.toInt() ?? 1).toString();
         _minWageRegion = (payroll?['minWageRegion'] as num?)?.toInt() ?? 1;
+        final regional = data['regional'] as Map?;
+        _currencyCode = (regional?['currencyCode'] as String?) ?? 'VND';
+        _timezone = (regional?['timezone'] as String?) ?? 'Asia/Ho_Chi_Minh';
         _standardDaysFromCalendar = payroll?['standardDaysFromCalendar'] == true;
         _employerSocialCtrl.text = _percentText(payroll?['employerSocialPercent'], '17.5');
         _employerHealthCtrl.text = _percentText(payroll?['employerHealthPercent'], '3');
@@ -298,6 +312,7 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
           'employerHealthPercent': _percentValue(_employerHealthCtrl),
           'employerUnemploymentPercent': _percentValue(_employerUnemploymentCtrl),
         },
+        'regional': {'currencyCode': _currencyCode, 'timezone': _timezone},
         'approval': {'mode': _approvalMode},
         'contract': {'expiryWarningDays': int.tryParse(_contractWarningCtrl.text.trim()) ?? 30},
         'shiftRegistration': {'enabled': _shiftRegistrationEnabled},
@@ -308,6 +323,8 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
       );
       TeamApprovalService.instance.refresh();
       CompanyFeatureService.instance.refresh();
+      // Tiền tệ / múi giờ mới nằm trong phiên đăng nhập → lấy lại ngay
+      AuthService.instance.syncPermissions(force: true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -469,6 +486,42 @@ class _CompanySettingsGeneralTabState extends State<CompanySettingsGeneralTab> {
                       ),
                     ),
                   ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.regionalSettings, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 12),
+                          AppDropdown<String>(
+                            value: _timezone,
+                            label: s.timezoneLabel,
+                            items: [
+                              for (final z in {..._timezoneChoices, _timezone})
+                                DropdownMenuItem(value: z, child: Text(z)),
+                            ],
+                            onChanged: (v) => setState(() => _timezone = v ?? _timezone),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(s.timezoneHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          const SizedBox(height: 12),
+                          AppDropdown<String>(
+                            value: _currencyCode,
+                            label: s.currencyLabel,
+                            items: [
+                              for (final c in companyCurrencies)
+                                DropdownMenuItem(value: c.code, child: Text('${c.code} (${c.symbol})')),
+                            ],
+                            onChanged: (v) => setState(() => _currencyCode = v ?? _currencyCode),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(s.currencyHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),

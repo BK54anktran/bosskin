@@ -20,6 +20,7 @@ import '../../../widgets/import_preview_dialog.dart';
 import '../attendance_shared.dart';
 import '../../../widgets/holiday_widgets.dart';
 import '../widgets/attendance_grid.dart';
+import '../../../../core/utils/company_currency_utils.dart';
 
 // ── Tab key ───────────────────────────────────────────────────────────────────
 
@@ -56,8 +57,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   List<TimesheetRow> _rows = [];
   bool _loading = false;
   String? _error;
-  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
-  DateTime _weekFocus = DateTime.now();
+  DateTime _month = DateTime(companyNow().year, companyNow().month);
+  DateTime _weekFocus = companyNow();
   DateTimeRange? _customRange;
   late AttViewRangeMode _rangeMode;
   int _cutoffDay = 1;
@@ -118,8 +119,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
       case AttViewRangeMode.custom:
         return _customRange ??
             DateTimeRange(
-              start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-              end: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 6),
+              start: DateTime(companyNow().year, companyNow().month, companyNow().day),
+              end: DateTime(companyNow().year, companyNow().month, companyNow().day + 6),
             );
     }
   }
@@ -496,7 +497,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         break;
     }
     final s = AppLocalizations.of(context);
-    final now = DateTime.now();
+    final now = companyNow();
     final picked = await showDialog<DateTime>(
       context: context,
       builder: (context) {
@@ -915,7 +916,7 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
         isWeekend: (i) => merged[i].weekend,
         isToday: (i) {
           final d = merged[i].first.date;
-          final now = DateTime.now();
+          final now = companyNow();
           return d.year == now.year && d.month == now.month && d.day == now.day;
         },
         selectionMode: _selectionMode,
@@ -967,8 +968,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   // ── Cell builders ──────────────────────────────────────────────────────────
 
   Widget _dateCell(TimesheetRow row, {double width = attDateColW, bool selected = false, VoidCallback? onTap}) {
-    final isToday = row.date.year == DateTime.now().year &&
-        row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
+    final isToday = row.date.year == companyNow().year &&
+        row.date.month == companyNow().month && row.date.day == companyNow().day;
     final color = selected ? AppTheme.primary.withValues(alpha: 0.10)
         : row.holidayName != null ? holidayCellColor
         : row.weekend ? AppTheme.tint(AppTheme.warning)
@@ -994,8 +995,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
   Widget _dateCellMerged(AttMergedTimesheetRow row, double height,
       {double width = attDateColW, bool selected = false, VoidCallback? onTap}) {
     final first = row.first;
-    final isToday = first.date.year == DateTime.now().year &&
-        first.date.month == DateTime.now().month && first.date.day == DateTime.now().day;
+    final isToday = first.date.year == companyNow().year &&
+        first.date.month == companyNow().month && first.date.day == companyNow().day;
     final color = selected ? AppTheme.primary.withValues(alpha: 0.10)
         : row.holidayName != null ? holidayCellColor
         : row.weekend ? AppTheme.tint(AppTheme.warning)
@@ -1068,8 +1069,8 @@ class _AttendanceTimesheetTabState extends State<AttendanceTimesheetTab>
 
   List<Widget> _dataCells(TimesheetRow row, List<double> cw, {bool selected = false}) {
     final s = AppLocalizations.of(context);
-    final isToday = row.date.year == DateTime.now().year &&
-        row.date.month == DateTime.now().month && row.date.day == DateTime.now().day;
+    final isToday = row.date.year == companyNow().year &&
+        row.date.month == companyNow().month && row.date.day == companyNow().day;
     final bg = selected ? AppTheme.primary.withValues(alpha: 0.08)
         : row.holidayName != null ? holidayCellColor
         : row.weekend ? AppTheme.tint(AppTheme.warning)

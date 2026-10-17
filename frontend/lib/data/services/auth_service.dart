@@ -43,6 +43,11 @@ class AuthUser {
   final String? companyCode;
   final String? companyDomain;
 
+  /// V32: tiền tệ (ISO 4217), múi giờ IANA và độ lệch UTC (phút) của công ty — định dạng tiền và hiển thị ngày giờ theo công ty.
+  final String? companyCurrency;
+  final String? companyTimezone;
+  final int? companyUtcOffsetMinutes;
+
   /// V24: gói chức năng công ty đang bật (ATTENDANCE, SHIFT, LEAVE, PAYROLL, CONTRACT, DOCUMENT, REPORT).
   /// null = phiên cũ / không rõ → coi như bật hết. Quyền thuộc gói tắt đã bị backend bỏ khỏi [permissions].
   final Set<String>? modules;
@@ -66,6 +71,9 @@ class AuthUser {
     this.companyName,
     this.companyCode,
     this.companyDomain,
+    this.companyCurrency,
+    this.companyTimezone,
+    this.companyUtcOffsetMinutes,
     this.modules,
     this.features,
     this.employeeId,
@@ -95,6 +103,9 @@ class AuthUser {
         'companyName': companyName,
         'companyCode': companyCode,
         'companyDomain': companyDomain,
+        'companyCurrency': companyCurrency,
+        'companyTimezone': companyTimezone,
+        'companyUtcOffsetMinutes': companyUtcOffsetMinutes,
         'modules': modules?.toList(),
         'features': features?.toList(),
         'employeeId': employeeId,
@@ -115,6 +126,9 @@ class AuthUser {
         companyName: m['companyName'] as String?,
         companyCode: m['companyCode'] as String?,
         companyDomain: m['companyDomain'] as String?,
+        companyCurrency: m['companyCurrency'] as String?,
+        companyTimezone: m['companyTimezone'] as String?,
+        companyUtcOffsetMinutes: (m['companyUtcOffsetMinutes'] as num?)?.toInt(),
         modules: (m['modules'] as List?)?.map((e) => e.toString()).toSet(),
         features: (m['features'] as List?)?.map((e) => e.toString()).toSet(),
         employeeId: m['employeeId'] as int?,
@@ -490,6 +504,9 @@ class AuthService extends ChangeNotifier {
           userMap['companyName'] as String?,
       companyCode: userMap['companyCode'] as String?,
       companyDomain: userMap['companyDomain'] as String?,
+      companyCurrency: userMap['companyCurrency'] as String?,
+      companyTimezone: userMap['companyTimezone'] as String?,
+      companyUtcOffsetMinutes: (userMap['companyUtcOffsetMinutes'] as num?)?.toInt(),
       modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
       features: (userMap['features'] as List?)?.map((e) => e.toString()).toSet(),
       employeeId: userMap['employeeId'] as int?,
@@ -535,6 +552,9 @@ class AuthService extends ChangeNotifier {
         companyName: _currentUser!.companyName,
         companyCode: _currentUser!.companyCode,
         companyDomain: _currentUser!.companyDomain,
+        companyCurrency: _currentUser!.companyCurrency,
+        companyTimezone: _currentUser!.companyTimezone,
+        companyUtcOffsetMinutes: _currentUser!.companyUtcOffsetMinutes,
       modules: _currentUser!.modules,
       features: _currentUser!.features,
         employeeId: _currentUser!.employeeId,
@@ -568,6 +588,9 @@ class AuthService extends ChangeNotifier {
       companyName: _currentUser!.companyName,
       companyCode: _currentUser!.companyCode,
       companyDomain: _currentUser!.companyDomain,
+      companyCurrency: _currentUser!.companyCurrency,
+      companyTimezone: _currentUser!.companyTimezone,
+      companyUtcOffsetMinutes: _currentUser!.companyUtcOffsetMinutes,
       modules: _currentUser!.modules,
       features: _currentUser!.features,
       employeeId: _currentUser!.employeeId,
@@ -654,6 +677,9 @@ class AuthService extends ChangeNotifier {
             userMap['companyName'] as String?,
         companyCode: userMap['companyCode'] as String?,
         companyDomain: userMap['companyDomain'] as String?,
+        companyCurrency: userMap['companyCurrency'] as String?,
+        companyTimezone: userMap['companyTimezone'] as String?,
+        companyUtcOffsetMinutes: (userMap['companyUtcOffsetMinutes'] as num?)?.toInt(),
       modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
       features: (userMap['features'] as List?)?.map((e) => e.toString()).toSet(),
         employeeId:
@@ -783,6 +809,9 @@ class AuthService extends ChangeNotifier {
       companyName: userMap['companyName'] as String?,
       companyCode: userMap['companyCode'] as String?,
       companyDomain: userMap['companyDomain'] as String?,
+      companyCurrency: userMap['companyCurrency'] as String?,
+      companyTimezone: userMap['companyTimezone'] as String?,
+      companyUtcOffsetMinutes: (userMap['companyUtcOffsetMinutes'] as num?)?.toInt(),
       modules: (userMap['modules'] as List?)?.map((e) => e.toString()).toSet(),
       features: (userMap['features'] as List?)?.map((e) => e.toString()).toSet(),
       employeeId: userMap['employeeId'] as int?,
@@ -819,6 +848,9 @@ class AuthService extends ChangeNotifier {
       companyName: _currentUser!.companyName,
       companyCode: _currentUser!.companyCode,
       companyDomain: _currentUser!.companyDomain,
+      companyCurrency: _currentUser!.companyCurrency,
+      companyTimezone: _currentUser!.companyTimezone,
+      companyUtcOffsetMinutes: _currentUser!.companyUtcOffsetMinutes,
       modules: _currentUser!.modules,
       features: _currentUser!.features,
       employeeId: _currentUser!.employeeId,

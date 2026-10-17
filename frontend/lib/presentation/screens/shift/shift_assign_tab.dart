@@ -15,6 +15,7 @@ import '../../../data/services/api_service.dart';
 import '../../widgets/holiday_widgets.dart';
 import '../../../data/services/auth_service.dart';
 import '../../widgets/pagination_bar.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 // ── Layout constants ─────────────────────────────────────────────────────────
 const double _nameW = 200.0;
@@ -53,8 +54,8 @@ class ShiftAssignTabKey extends GlobalKey<_ShiftAssignTabState> {
 }
 
 class _ShiftAssignTabState extends State<ShiftAssignTab> {
-  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
-  DateTime _weekFocus = DateTime.now();
+  DateTime _month = DateTime(companyNow().year, companyNow().month);
+  DateTime _weekFocus = companyNow();
   DateTimeRange? _customRange;
   _ViewRangeMode _rangeMode = _ViewRangeMode.payroll;
   List<Employee> _employees = [];
@@ -107,8 +108,8 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
       case _ViewRangeMode.custom:
         return _customRange ??
             DateTimeRange(
-              start: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-              end: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+              start: DateTime(companyNow().year, companyNow().month, companyNow().day),
+              end: DateTime(companyNow().year, companyNow().month, companyNow().day),
             );
     }
   }
@@ -694,7 +695,7 @@ class _ShiftAssignTabState extends State<ShiftAssignTab> {
     if (_rangeMode == mode) return;
     setState(() {
       _rangeMode = mode;
-      final today = DateTime.now();
+      final today = companyNow();
       if (mode == _ViewRangeMode.week) {
         _weekFocus = today;
       } else if (mode == _ViewRangeMode.custom) {
@@ -1363,7 +1364,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
                   isDense: true,
                 ),
                 items: List.generate(11, (index) {
-                  final year = DateTime.now().year - 5 + index;
+                  final year = companyNow().year - 5 + index;
                   return DropdownMenuItem(
                     value: year,
                     child: Text('$year'),

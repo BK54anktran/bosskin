@@ -102,7 +102,7 @@ public class PayrollDescriptor implements ExcelEntityDescriptor<PayrollDTO.Impor
             .map(d -> FilterDefinition.opt(d.getCode(), d.getName() + " (" + d.getCode() + ")"))
             .collect(Collectors.toList());
 
-        int curYear = java.time.LocalDate.now().getYear();
+        int curYear = com.bosskin.core.CompanyZone.today().getYear();
         List<FilterDefinition.Option> yearOptions = List.of(
             FilterDefinition.opt(String.valueOf(curYear - 1), String.valueOf(curYear - 1)),
             FilterDefinition.opt(String.valueOf(curYear),     String.valueOf(curYear)),

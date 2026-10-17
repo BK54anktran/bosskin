@@ -399,7 +399,7 @@ public class UniversalExcelService {
         long totalSkip  = allResults.values().stream().mapToLong(SheetImportResult::skipCount).sum();
         String summary = String.format("{\"ok\":%d,\"error\":%d,\"skip\":%d}", totalOk, totalError, totalSkip);
 
-        String ts = java.time.LocalDateTime.now()
+        String ts = com.bosskin.core.CompanyZone.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
         String moduleSlug = allResults.keySet().stream()
                 .collect(java.util.stream.Collectors.joining("-"));

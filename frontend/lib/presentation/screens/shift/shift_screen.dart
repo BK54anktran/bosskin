@@ -24,6 +24,7 @@ import 'shift_registration_tab.dart';
 import 'shift_rotation_tab.dart';
 import '../../../data/services/company_feature_service.dart';
 import 'shift_form_dialog.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 class ShiftScreen extends StatefulWidget {
   const ShiftScreen({super.key});
@@ -169,7 +170,7 @@ class _ShiftScreenState extends State<ShiftScreen>
           : '';
       final query = range != null
           ? 'from=${fmt.format(range.start)}&to=${fmt.format(range.end)}$deptQuery'
-          : 'year=${DateTime.now().year}&month=${DateTime.now().month}$deptQuery';
+          : 'year=${companyNow().year}&month=${companyNow().month}$deptQuery';
       final res = await ApiService.instance.dio.get<List<int>>(
         '/shifts/export?$query',
         options: Options(responseType: ResponseType.bytes),

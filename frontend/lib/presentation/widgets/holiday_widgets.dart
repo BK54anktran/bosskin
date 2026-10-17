@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/work_calendar.dart';
 import 'app_dropdown.dart';
 import 'status_badge.dart';
+import '../../core/utils/company_currency_utils.dart';
 
 /// Ngày lễ dùng chung cho tab "Lịch làm việc" (công ty) và tab "Ngày lễ mẫu" (system admin).
 
@@ -124,7 +125,7 @@ class _HolidayFormDialogState extends State<HolidayFormDialog> {
   void initState() {
     super.initState();
     final e = widget.existing;
-    final now = DateTime.now();
+    final now = companyNow();
     _date = e?.date ?? (now.year == widget.year ? DateTime(now.year, now.month, now.day) : DateTime(widget.year, 1, 1));
     _nameCtrl = TextEditingController(text: e?.name ?? '');
     _type = e?.type ?? 'HOLIDAY';

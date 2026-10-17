@@ -18,6 +18,7 @@ import 'trial_requests_tab.dart';
 import 'system_admins_tab.dart';
 import 'tax_policies_tab.dart';
 import 'holiday_templates_tab.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -49,7 +50,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = companyNow();
     _selectedYear  = now.year;
     _selectedMonth = now.month;
     _tabCtrl = TabController(length: 6, vsync: this);
@@ -115,7 +116,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 
   Future<void> _pickMonth() async {
-    final now = DateTime.now();
+    final now = companyNow();
     // Hiện dialog chọn tháng/năm
     int tempYear  = _selectedYear;
     int tempMonth = _selectedMonth;

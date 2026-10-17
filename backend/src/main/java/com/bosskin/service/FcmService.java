@@ -124,7 +124,7 @@ public class FcmService {
             .shiftStart(shiftTime)
             .workDate(workDate)
             .minutesBefore(0)
-            .sentAt(LocalDateTime.now());
+            .sentAt(com.bosskin.core.CompanyZone.now());
 
         try {
             Message message = Message.builder()
@@ -170,11 +170,11 @@ public class FcmService {
             .shiftStart(startTime)
             .workDate(workDate)
             .minutesBefore(minutesBefore)
-            .sentAt(LocalDateTime.now());
+            .sentAt(com.bosskin.core.CompanyZone.now());
 
         try {
             long actualMinutes = ChronoUnit.MINUTES.between(
-                LocalTime.now().truncatedTo(ChronoUnit.MINUTES), startTime);
+                com.bosskin.core.CompanyZone.time().truncatedTo(ChronoUnit.MINUTES), startTime);
             String body = com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.body", shiftName, startTime.format(TIME_FMT), String.valueOf(actualMinutes));
             Message message = Message.builder()
                 .setToken(fcmToken)

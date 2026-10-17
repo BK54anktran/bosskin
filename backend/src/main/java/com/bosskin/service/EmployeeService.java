@@ -394,8 +394,8 @@ public class EmployeeService {
     public EmployeeDTO.Response resign(Long id, Long companyId, Long userId, LocalDate leaveDate) {
         Employee e = getOrThrow(id, companyId);
         requireViewScope(userId, e.getDepartment().getId());
-        LocalDate last = leaveDate != null ? leaveDate : LocalDate.now();
-        if (last.isAfter(LocalDate.now())) {
+        LocalDate last = leaveDate != null ? leaveDate : com.bosskin.core.CompanyZone.today();
+        if (last.isAfter(com.bosskin.core.CompanyZone.today())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.employee.leave_date_future");
         }
         if (e.getJoinDate() != null && last.isBefore(e.getJoinDate())) {
@@ -443,7 +443,7 @@ public class EmployeeService {
         requireViewScope(userId, e.getDepartment().getId());
         e.setStatus(Employee.Status.INACTIVE);
         if (e.getLeaveDate() == null) {
-            e.setLeaveDate(LocalDate.now());
+            e.setLeaveDate(com.bosskin.core.CompanyZone.today());
         }
         employeeRepository.save(e);
         employeeRepository.delete(e);

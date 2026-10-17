@@ -13,6 +13,7 @@ import '../../widgets/date_field.dart';
 import '../../widgets/department_picker_field.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/status_badge.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 /// Tab "Đăng ký lịch" ở Ca làm (V23): danh sách đợt (mở / đóng ngay trên dòng), tạo / sửa đợt,
 /// lưới người × ngày để duyệt theo ngày hoặc từng ô → phân ca.
@@ -306,7 +307,7 @@ class _RoundFormDialogState extends State<_RoundFormDialog> {
   }
 
   void _applyPreset(String p) {
-    final now = DateTime.now();
+    final now = companyNow();
     final today = DateTime(now.year, now.month, now.day);
     final nextMon = today.add(Duration(days: 8 - today.weekday));
     setState(() {
@@ -331,7 +332,7 @@ class _RoundFormDialogState extends State<_RoundFormDialog> {
   }
 
   Future<void> _pickDeadline() async {
-    final now = DateTime.now();
+    final now = companyNow();
     final d = await showDatePicker(
       context: context,
       initialDate: _deadline ?? now,

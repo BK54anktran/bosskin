@@ -54,6 +54,15 @@ public class CompanySettingDTO {
         private BigDecimal employerUnemploymentPercent;
     }
 
+    /** V32: tiền tệ và múi giờ của công ty. */
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class RegionalSetting {
+        /** Mã ISO 4217 trong core/CompanyCurrency (VND, USD, THB…). */
+        private String currencyCode;
+        /** Múi giờ IANA, vd. Asia/Ho_Chi_Minh, Asia/Bangkok. */
+        private String timezone;
+    }
+
     /** Bước K: ai duyệt đơn nghỉ / sửa công / đổi ca. */
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ApprovalSetting {
@@ -78,6 +87,7 @@ public class CompanySettingDTO {
         private AttendanceSetting attendance;
         private LeaveSetting leaves;
         private PayrollSetting payroll;
+        private RegionalSetting regional;
         private ApprovalSetting approval;
         private ContractSetting contract;
         private ShiftRegistrationSetting shiftRegistration;
@@ -148,5 +158,7 @@ public class CompanySettingDTO {
         @Valid private ContractUpsert contract;
         /** V23. Không gửi = giữ nguyên. */
         private ShiftRegistrationSetting shiftRegistration;
+        /** V32. Không gửi = giữ nguyên. */
+        private RegionalSetting regional;
     }
 }

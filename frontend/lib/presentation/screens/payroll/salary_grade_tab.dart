@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_utils.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import '../../../data/models/department_model.dart';
 import '../../../data/models/salary_grade.dart';
 import '../../../data/repositories/salary_grade_repository.dart';
@@ -243,7 +244,7 @@ class _GradeCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_currFmt.format(g.baseRate)}đ / ${g.payType == PayType.hourly ? s.unitHour : s.unitDay}',
+                    '${_currFmt.format(g.baseRate)}${currencySuffix()} / ${g.payType == PayType.hourly ? s.unitHour : s.unitDay}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: AppTheme.secondary,
@@ -430,7 +431,7 @@ class _SalaryGradeDialogState extends State<_SalaryGradeDialog> {
               controller: _rateCtrl,
               decoration: InputDecoration(
                 labelText: s.baseRate,
-                suffixText: 'đ',
+                suffixText: currencySuffix(),
               ),
               keyboardType: TextInputType.number,
             ),

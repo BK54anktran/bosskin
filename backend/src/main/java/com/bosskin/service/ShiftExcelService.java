@@ -779,8 +779,8 @@ public class ShiftExcelService {
         // empId -> date -> Set<label> (hỗ trợ nhiều ca/ngày)
         Map<Long, Map<java.time.LocalDate, java.util.Set<String>>> existingLabelMap = new HashMap<>();
         assignRepo.findByCompanyAndDateRange(companyId,
-            grouped.keySet().stream().map(AssignDayKey::getDate).min(Comparator.naturalOrder()).orElse(java.time.LocalDate.now()),
-            grouped.keySet().stream().map(AssignDayKey::getDate).max(Comparator.naturalOrder()).orElse(java.time.LocalDate.now()))
+            grouped.keySet().stream().map(AssignDayKey::getDate).min(Comparator.naturalOrder()).orElse(com.bosskin.core.CompanyZone.today()),
+            grouped.keySet().stream().map(AssignDayKey::getDate).max(Comparator.naturalOrder()).orElse(com.bosskin.core.CompanyZone.today()))
             .forEach(a -> {
                 Long empId = a.getEmployee().getId();
                 String label;

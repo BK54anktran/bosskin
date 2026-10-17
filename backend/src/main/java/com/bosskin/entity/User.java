@@ -123,6 +123,22 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
     @Transient
     private java.util.Set<String> disabledFeaturesLoaded;
 
+    /** V32: múi giờ công ty, JwtAuthFilter nạp sẵn (công ty là LAZY, ngoài phiên Hibernate không đọc được). */
+    @Transient
+    private String companyTimezoneLoaded;
+
+    public void setCompanyTimezoneLoaded(String tz) { this.companyTimezoneLoaded = tz; }
+
+    /** Múi giờ của công ty người dùng; chưa nạp được → mặc định Việt Nam. */
+    public String companyTimezoneId() {
+        if (companyTimezoneLoaded != null) return companyTimezoneLoaded;
+        try {
+            return company != null ? company.getTimezone() : null;
+        } catch (org.hibernate.LazyInitializationException e) {
+            return null;
+        }
+    }
+
     public void setDisabledFeaturesLoaded(java.util.Set<String> disabled) {
         this.disabledFeaturesLoaded = disabled;
     }

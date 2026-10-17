@@ -11,6 +11,7 @@ import '../../../data/repositories/report_repository.dart';
 import '../../../data/services/department_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_dropdown.dart';
+import '../../../core/utils/company_currency_utils.dart';
 
 // ── Filter types và values ────────────────────────────────────────────────────
 
@@ -128,7 +129,7 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
-    final now = DateTime.now();
+    final now = companyNow();
 
     _ReportItem item(String key, String title, String desc, IconData icon, List<_FT> filters) =>
         _ReportItem(
@@ -264,7 +265,7 @@ class _FilterDialogState extends State<_FilterDialog> {
     super.initState();
     _year = widget.initialYear;
     _month = widget.initialMonth;
-    final now = DateTime.now();
+    final now = companyNow();
     _dateFrom = DateTime(now.year, now.month, 1);
     _dateTo = now;
   }
@@ -288,7 +289,7 @@ class _FilterDialogState extends State<_FilterDialog> {
   @override
   Widget build(BuildContext context) {
     final s = widget.s;
-    final curYear = DateTime.now().year;
+    final curYear = companyNow().year;
     final has = widget.types.contains;
 
     return AlertDialog(

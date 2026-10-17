@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/locale_utils.dart';
-import '../../../core/utils/text_utils.dart';
+import '../../../core/utils/company_currency_utils.dart';
 import 'package:bosskin/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/dashboard.dart';
@@ -32,7 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   DashboardData? _dayData;
   bool _dayLoading = true;
   String? _dayError;
-  DateTime _date = DateTime.now();
+  DateTime _date = companyNow();
 
   DashboardKpiData? _kpiData;
   bool _kpiLoading = true;
@@ -45,15 +45,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   DashboardRangeData? _attendanceData;
   bool _attendanceLoading = false;
   String? _attendanceError;
-  DateTime _rangeFrom = DateTime.now().subtract(const Duration(days: 6));
-  DateTime _rangeTo = DateTime.now();
-  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime _rangeFrom = companyNow().subtract(const Duration(days: 6));
+  DateTime _rangeTo = companyNow();
+  DateTime _month = DateTime(companyNow().year, companyNow().month);
 
   // Analytics
   DashboardAnalyticsData? _analyticsData;
   bool _analyticsLoading = false;
   String? _analyticsError;
-  int _analyticsYear = DateTime.now().year;
+  int _analyticsYear = companyNow().year;
 
   // Shared
   List<DepartmentFlat> _departments = [];
@@ -153,7 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   (DateTime, DateTime) _currentAttendanceRange() => switch (_attendancePeriod) {
-    _AttendancePeriod.week => (DateTime.now().subtract(const Duration(days: 6)), DateTime.now()),
+    _AttendancePeriod.week => (companyNow().subtract(const Duration(days: 6)), companyNow()),
     _AttendancePeriod.month => _monthPeriod(),
     _AttendancePeriod.custom => (_rangeFrom, _rangeTo),
   };
@@ -205,7 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       context: context,
       initialDate: _date,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      lastDate: companyNow(),
     );
     if (picked != null && picked != _date) {
       setState(() { _date = picked; _dayData = null; _kpiData = null; });
@@ -244,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       context: context,
       initialDate: _rangeTo,
       firstDate: _rangeFrom,
-      lastDate: DateTime.now(),
+      lastDate: companyNow(),
     );
     if (picked != null && picked != _rangeTo) {
       setState(() { _rangeTo = picked; _attendanceData = null; });
@@ -258,7 +258,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       builder: (ctx) => _YearPickerDialog(
         initialYear: _analyticsYear,
         minYear: 2020,
-        maxYear: DateTime.now().year,
+        maxYear: companyNow().year,
         s: AppLocalizations.of(context),
       ),
     );
@@ -304,7 +304,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           Widget? pillOf() {
             final tab = _DashTab.values[_tabCtrl.index];
             if (tab == _DashTab.overview) {
-              final isToday = DateUtils.isSameDay(_date, DateTime.now());
+              final isToday = DateUtils.isSameDay(_date, companyNow());
               return _datePill(isToday ? s.today : DateFormat('dd/MM/yyyy').format(_date), _pickDate);
             }
             if (tab == _DashTab.analytics) {
@@ -534,7 +534,7 @@ class _KpiStrip extends StatelessWidget {
     if (d == null) return const SizedBox.shrink();
 
     final hiresChange = d.newHiresThisMonth - d.newHiresLastMonth;
-    final fmtCompact = NumberFormat.compactCurrency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
+    final fmtCompact = moneyCompactFormat();
     final attrPct = '${d.attritionRate.toStringAsFixed(1)}%';
     final attendPct = '${d.todayAttendanceRate.toStringAsFixed(0)}%';
 
@@ -1527,7 +1527,7 @@ class _RecentPayrollCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
+    final currencyFmt = moneyCurrencyFormat();
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1586,7 +1586,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = companyNow();
     return AlertDialog(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1754,7 +1754,7 @@ class _SalaryTrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (trend.isEmpty) return const SizedBox.shrink();
-    final fmt = NumberFormat.compactCurrency(locale: moneyLocale(), symbol: '', decimalDigits: 0);
+    final fmt = moneyCompactFormat(symbol: false);
     final maxY = trend.map((e) => e.totalNetSalary).fold(0.0, (a, b) => a > b ? a : b);
     if (maxY == 0) return const SizedBox.shrink();
 
@@ -1801,7 +1801,7 @@ class _SalaryTrendChart extends StatelessWidget {
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
-                      NumberFormat.currency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0).format(s.y),
+                      moneyCurrencyFormat().format(s.y),
                       const TextStyle(color: Colors.white, fontSize: 11),
                     )).toList(),
                   ),
@@ -1867,8 +1867,8 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
           radius: 3, color: Colors.purple.shade400, strokeColor: Colors.white, strokeWidth: 1.5)),
     );
 
-    final fmtCompact  = NumberFormat.compactCurrency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
-    final fmtCurrency = NumberFormat.currency(locale: moneyLocale(), symbol: '₫', decimalDigits: 0);
+    final fmtCompact  = moneyCompactFormat();
+    final fmtCurrency = moneyCurrencyFormat();
 
     return Card(
       child: Padding(
@@ -1942,7 +1942,7 @@ class _DailyTimelineChartState extends State<_DailyTimelineChart> {
                             getTitlesWidget: (v, meta) => SideTitleWidget(
                               axisSide: meta.axisSide, space: 8,
                               child: Text(
-                                v.abs() < 0.001 ? '0 ₫' : fmtCompact.format(v * scale),
+                                v.abs() < 0.001 ? '0 ${currencySymbol()}' : fmtCompact.format(v * scale),
                                 style: TextStyle(fontSize: 9, color: Colors.purple.shade400),
                               ),
                             ),
