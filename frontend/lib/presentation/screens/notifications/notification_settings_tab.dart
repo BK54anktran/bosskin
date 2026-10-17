@@ -184,7 +184,7 @@ class _NotificationSettingsTabState extends State<NotificationSettingsTab> {
                     Text(s.notificationsSharedHint, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                     const SizedBox(height: 4),
                     Text(
-                      _devices > 0 ? s.notificationsDevices('$_devices') : s.notificationsNoDevice,
+                      _devices > 0 ? s.notificationsPushOn : s.notificationsNoDevice,
                       style: TextStyle(fontSize: 12, color: _devices > 0 ? AppTheme.secondary : AppTheme.warning),
                     ),
                     const SizedBox(height: 16),

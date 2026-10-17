@@ -11303,11 +11303,11 @@ abstract class AppLocalizations {
   /// **'Thông báo và cài đặt dùng chung cho mọi thiết bị đăng nhập tài khoản này.'**
   String get notificationsSharedHint;
 
-  /// No description provided for @notificationsDevices.
+  /// No description provided for @notificationsPushOn.
   ///
   /// In vi, this message translates to:
-  /// **'Đang nhận thông báo trên {count} thiết bị'**
-  String notificationsDevices(String count);
+  /// **'Đang nhận thông báo đẩy trên một thiết bị (máy bật sau cùng)'**
+  String get notificationsPushOn;
 
   /// No description provided for @notificationsNoDevice.
   ///

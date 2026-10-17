@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Thông báo của tài khoản (V33): ghi MỘT bản vào hộp thư ở máy chủ (mọi thiết bị thấy giống nhau) rồi đẩy tới
- * MỌI thiết bị đã đăng ký của tài khoản đó.
+ * Thông báo của tài khoản (V33): ghi MỘT bản vào hộp thư ở máy chủ (đăng nhập máy nào cũng xem được) rồi đẩy tới
+ * thiết bị đã đăng ký của tài khoản đó (máy bật thông báo sau cùng).
  */
 @Service
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class PushService {
     private final FcmService fcmService;
     private final ObjectMapper mapper;
 
-    /** Lưu hộp thư + đẩy tới mọi thiết bị. {@code data} có thể null; khoá "type" trong data được thêm tự động. */
+    /** Lưu hộp thư + đẩy tới thiết bị của tài khoản. {@code data} có thể null; khoá "type" trong data được thêm tự động. */
     public void notifyUser(User user, String type, String title, String body, Map<String, String> data) {
         record(user.getId(), type, title, body, data);
         Map<String, String> payload = new HashMap<>(data != null ? data : Map.of());
@@ -59,17 +59,21 @@ public class PushService {
         return tokens.findByUserId(userId).stream().map(FcmToken::getToken).toList();
     }
 
-    /** Đăng ký thiết bị cho tài khoản; token từng thuộc tài khoản khác (máy dùng chung) thì chuyển sang tài khoản này. */
+    /**
+     * Đăng ký thiết bị nhận thông báo đẩy: mỗi tài khoản MỘT thiết bị (máy bật sau cùng); token từng thuộc tài khoản khác
+     * (máy dùng chung) thì chuyển sang tài khoản này. Hộp thư thì dùng chung — đăng nhập máy nào cũng xem được.
+     */
     @Transactional
     public void registerToken(Long userId, String token) {
         LocalDateTime now = com.bosskin.core.CompanyZone.now();
-        FcmToken t = tokens.findByToken(token).orElse(null);
-        if (t == null) {
+        tokens.findByToken(token).filter(t -> !t.getUserId().equals(userId)).ifPresent(t -> tokens.deleteByToken(token));
+        FcmToken mine = tokens.findByUserId(userId).stream().findFirst().orElse(null);
+        if (mine == null) {
             tokens.save(FcmToken.builder().userId(userId).token(token).createdAt(now).updatedAt(now).build());
-        } else {
-            t.setUserId(userId);
-            t.setUpdatedAt(now);
-            tokens.save(t);
+        } else if (!mine.getToken().equals(token)) {
+            mine.setToken(token);
+            mine.setUpdatedAt(now);
+            tokens.save(mine);
         }
     }
 

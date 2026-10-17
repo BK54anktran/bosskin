@@ -68,12 +68,12 @@ Bấm vào **ảnh đại diện** (chữ cái đầu tên) ở góc trên bên 
 Biểu tượng chuông hiện số thông báo chưa đọc: đơn được duyệt / từ chối, nhắc chấm công, hợp đồng sắp hết hạn… Bấm chuông để xem nhanh;
 mở menu **Thông báo** (nhóm *Của tôi*) để xem toàn bộ, đánh dấu đã đọc hoặc xoá.
 
-- **Dùng chung mọi thiết bị**: hộp thư và cài đặt lưu theo tài khoản. Đăng nhập thêm một điện thoại hay máy tính thì thông báo giống hệt,
-  thông báo đẩy tới **mọi** thiết bị đã bật.
+- **Hộp thư dùng chung theo tài khoản**: thông báo gửi tới điện thoại A nhưng đăng nhập trên máy B (điện thoại khác hay máy tính) vẫn thấy đủ trong hộp thư.
+  Cài đặt cũng lưu theo tài khoản. Thông báo đẩy (hiện ngoài màn hình) chỉ gửi tới một máy — máy bạn bật thông báo sau cùng.
 - Tab **Cài đặt**: **Nhắc nhở ca làm** (nhận thông báo trước khi ca bắt đầu), **Thông báo check-in / check-out nhanh** (nút chấm công ngay trên thông báo, điện thoại),
   và — nếu bạn là quản lý trực tiếp của nhân viên — **Báo cho quản lý**: **Nhân viên đi trễ** / **Nhân viên về sớm** (báo khi nhân viên bạn quản lý
   check-in trễ hoặc check-out sớm hơn giờ kết thúc ca, theo dung sai của công ty). Bật / tắt rồi bấm **Lưu**.
-- **Gửi thông báo thử**: bật ít nhất một loại rồi bấm, vài giây sau mọi thiết bị của bạn nhận một thông báo. Không thấy thì kiểm tra quyền thông báo
+- **Gửi thông báo thử**: bật ít nhất một loại rồi bấm, vài giây sau máy đang nhận thông báo của bạn hiện một thông báo (và thông báo cũng nằm trong hộp thư). Không thấy thì kiểm tra quyền thông báo
   của ứng dụng trong cài đặt điện thoại; nếu app báo "Máy chủ chưa bật thông báo đẩy" thì báo quản trị hệ thống.
 - Bản web cũng nhận được thông báo: lần đầu bấm **Lưu** hoặc **Gửi thông báo thử**, trình duyệt hỏi quyền — chọn **Cho phép**.
   Trên iPhone phải thêm BossKin ra màn hình chính rồi mở từ biểu tượng đó mới nhận được.

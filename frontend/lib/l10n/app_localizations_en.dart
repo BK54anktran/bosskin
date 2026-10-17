@@ -6127,24 +6127,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Delete all notifications? This applies to all your devices.';
 
   @override
-  String get notificationsSharedHint =>
-      'Notifications and settings are shared across every device signed in to this account.';
+  String get notificationsSharedHint => 'The inbox and settings are shared across every device signed in to this account — a notification sent to one device is still there when you sign in on another. Push alerts go only to the device where you turned them on last.';
 
   @override
-  String notificationsDevices(String count) {
-    return 'Receiving notifications on $count device(s)';
-  }
+  String get notificationsPushOn => 'Receiving push alerts on one device (the one you turned them on last)';
 
   @override
-  String get notificationsNoDevice =>
-      'No device receives notifications yet — turn on a reminder below and save on your phone.';
+  String get notificationsNoDevice => 'No device receives push alerts yet — turn on a reminder below and save on your phone.';
 
   @override
   String get managerAlertsTitle => 'Manager alerts';
 
   @override
-  String get managerAlertsDesc =>
-      'Shown only if you are a direct manager. Sent to all your devices.';
+  String get managerAlertsDesc => 'Shown only if you are a direct manager. Sent to the device that receives your alerts and kept in your inbox.';
 
   @override
   String get lateAlertTitle => 'Employee is late';

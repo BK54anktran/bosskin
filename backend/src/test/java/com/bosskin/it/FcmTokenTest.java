@@ -47,8 +47,8 @@ class FcmTokenTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("Một tài khoản có nhiều thiết bị: thêm máy thứ hai không làm mất máy thứ nhất")
-    void sameAccount_keepsAllDevices() {
+    @DisplayName("Đổi máy: máy bật sau cùng nhận thông báo đẩy, máy trước không còn token (hộp thư vẫn xem được ở mọi máy)")
+    void sameAccount_latestDeviceReplacesPrevious() {
         var c = fixture.standardCompany();
         var a = c.emp(6);
         api.patch(c.tokenOf(a), "/api/v1/profile/notification-settings", Map.of(
@@ -56,9 +56,9 @@ class FcmTokenTest extends IntegrationTest {
         api.patch(c.tokenOf(a), "/api/v1/profile/notification-settings", Map.of(
             "fcmToken", "fcm-device-B-0000000000000000002", "shiftReminderMinutes", 30)).expectOk();
 
-        assertThat(deviceCount(a)).isEqualTo(2);
-        var s = api.get(c.tokenOf(a), "/api/v1/profile/notification-settings").expectOk();
-        assertThat(s.body().get("deviceCount").asInt()).isEqualTo(2);
+        assertThat(deviceCount(a)).isEqualTo(1);
+        assertThat(ownersOf("fcm-device-A-0000000000000000001")).isEmpty();
+        assertThat(ownersOf("fcm-device-B-0000000000000000002")).containsExactly(a.userId());
     }
 
     @Test

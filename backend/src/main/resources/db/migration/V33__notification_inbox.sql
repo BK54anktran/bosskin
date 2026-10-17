@@ -1,6 +1,6 @@
 -- V33: thông báo dùng chung giữa các thiết bị của một tài khoản.
---  * fcm_tokens: nhiều thiết bị / tài khoản (trước chỉ giữ token của máy đăng nhập sau cùng trong users.fcm_token) — một token chỉ thuộc một tài khoản.
---  * user_notifications: hộp thư thông báo lưu ở máy chủ (trước nằm riêng trong bộ nhớ từng máy).
+--  * fcm_tokens: thiết bị nhận thông báo đẩy của tài khoản (chuyển từ users.fcm_token) — mỗi tài khoản một thiết bị (máy bật sau cùng), một token chỉ thuộc một tài khoản.
+--  * user_notifications: hộp thư thông báo lưu ở máy chủ: đẩy tới một máy nhưng đăng nhập máy khác vẫn xem được (trước nằm riêng trong bộ nhớ từng máy).
 --  * users.notif_late_alert / notif_early_leave_alert: quản lý nhận báo nhân viên đi trễ / về sớm.
 CREATE TABLE `fcm_tokens` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -10,7 +10,7 @@ CREATE TABLE `fcm_tokens` (
   `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_fcm_tokens_token` (`token`),
-  KEY `idx_fcm_tokens_user` (`user_id`),
+  UNIQUE KEY `uk_fcm_tokens_user` (`user_id`),
   CONSTRAINT `fk_fcm_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

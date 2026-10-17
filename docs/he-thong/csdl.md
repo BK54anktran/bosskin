@@ -90,7 +90,7 @@ Duy nhất: (code) · (domain)
 
 ### fcm_tokens
 
-Duy nhất: (token)
+Duy nhất: (token) · (user_id)
 
 | Cột | Kiểu | Null | Mặc định | Ghi chú |
 |---|---|---|---|---|

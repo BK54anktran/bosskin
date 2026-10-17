@@ -80,7 +80,7 @@ public class CheckInOutReminderScheduler {
         }
     }
 
-    /** Ghi hộp thư một lần rồi đẩy tới mọi thiết bị của tài khoản. */
+    /** Ghi hộp thư một lần rồi đẩy tới thiết bị của tài khoản. */
     private void pushDevices(User user, String shiftName, LocalTime time, LocalDate day, boolean isCheckIn) {
         String[] text = FcmService.checkInOutText(user.getLanguage(), shiftName, time, isCheckIn);
         pushService.record(user.getId(), isCheckIn ? "CHECK_IN_REMINDER" : "CHECK_OUT_REMINDER", text[0], text[1],

@@ -206,7 +206,7 @@ public class ProfileService {
     }
 
     /**
-     * Gửi một thông báo thử tới MỌI thiết bị của chính người gọi (token đọc lại từ DB, không nhận token từ client).
+     * Gửi một thông báo thử tới thiết bị đang nhận thông báo của chính người gọi (token đọc lại từ DB, không nhận token từ client).
      * Chạy ngoài transaction chỉ-đọc của lớp: FCM báo token chết thì {@code FcmService} phải gỡ token (ghi DB),
      * và không giữ kết nối DB trong lúc gọi mạng.
      */

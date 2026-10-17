@@ -6109,24 +6109,19 @@ class AppLocalizationsVi extends AppLocalizations {
       'Xoá toàn bộ thông báo? Thao tác này áp dụng cho mọi thiết bị của bạn.';
 
   @override
-  String get notificationsSharedHint =>
-      'Thông báo và cài đặt dùng chung cho mọi thiết bị đăng nhập tài khoản này.';
+  String get notificationsSharedHint => 'Hộp thư và cài đặt dùng chung cho mọi thiết bị đăng nhập tài khoản này — thông báo gửi tới một máy nhưng đăng nhập máy khác vẫn xem lại được. Thông báo đẩy chỉ gửi tới máy bạn bật sau cùng.';
 
   @override
-  String notificationsDevices(String count) {
-    return 'Đang nhận thông báo trên $count thiết bị';
-  }
+  String get notificationsPushOn => 'Đang nhận thông báo đẩy trên một thiết bị (máy bật sau cùng)';
 
   @override
-  String get notificationsNoDevice =>
-      'Chưa có thiết bị nào nhận thông báo — bật nhắc ca hoặc check-in / check-out ở dưới rồi lưu trên điện thoại.';
+  String get notificationsNoDevice => 'Chưa có thiết bị nào nhận thông báo đẩy — bật nhắc ca hoặc check-in / check-out ở dưới rồi lưu trên điện thoại.';
 
   @override
   String get managerAlertsTitle => 'Báo cho quản lý';
 
   @override
-  String get managerAlertsDesc =>
-      'Chỉ hiện khi bạn là quản lý trực tiếp của nhân viên. Thông báo gửi tới mọi thiết bị của bạn.';
+  String get managerAlertsDesc => 'Chỉ hiện khi bạn là quản lý trực tiếp của nhân viên. Thông báo gửi tới thiết bị đang nhận thông báo của bạn và lưu trong hộp thư.';
 
   @override
   String get lateAlertTitle => 'Nhân viên đi trễ';

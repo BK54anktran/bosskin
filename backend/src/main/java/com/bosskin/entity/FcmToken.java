@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/** Token FCM của một thiết bị. Một tài khoản có nhiều thiết bị; một token chỉ thuộc một tài khoản (V33). */
+/** Token FCM của thiết bị nhận thông báo đẩy: mỗi tài khoản một thiết bị (bật sau cùng), một token chỉ thuộc một tài khoản (V33). */
 @Entity
 @Table(name = "fcm_tokens")
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
