@@ -1,4 +1,8 @@
 {
+ "calendar-new": {
+  "caption": null,
+  "marks": []
+ },
  "dashboard": {
   "caption": null,
   "marks": [
@@ -68,6 +72,25 @@
    "Add role",
    "Edit"
   ]
+ },
+ "settings-calendar": {
+  "caption": null,
+  "marks": [
+   "Add calendar",
+   "Add holiday"
+  ]
+ },
+ "settings-general": {
+  "caption": null,
+  "marks": []
+ },
+ "settings-general-2": {
+  "caption": null,
+  "marks": []
+ },
+ "settings-general-3": {
+  "caption": null,
+  "marks": []
  },
  "shift-assign": {
   "caption": null,
