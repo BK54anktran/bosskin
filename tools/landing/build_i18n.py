@@ -93,7 +93,7 @@ def build():
     res = res.replace(f'<meta property="og:url" content="{SITE}/">', f'<meta property="og:url" content="{SITE}/en/">')
     res = res.replace('content="vi_VN"', 'content="en_US"')
     # trợ giúp có bản tiếng Anh riêng ở help/en/
-    res = res.replace('href="../help/"', 'href="../help/en/"').replace('href="../help/', 'href="../help/en/')
+    res = re.sub(r'href="\.\./help/(?!en/)', 'href="../help/en/', res)
     # nút đổi ngôn ngữ: bản EN trỏ về tiếng Việt
     res = re.sub(r'<a class="lang-sw"[^>]*>EN</a>',
                  '<a class="lang-sw" href="../" hreflang="vi" lang="vi" data-lang="vi" title="Tiếng Việt">VI</a>', res)

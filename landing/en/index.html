@@ -62,14 +62,14 @@
   nav.links { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
   nav.links a { text-decoration: none; opacity: .82; } nav.links a:hover { opacity: 1; }
   header.top .btn { padding: 10px 18px; font-size: 15px; white-space: nowrap; }
-  .lang-sw { display: inline-grid; place-items: center; height: 38px; padding: 0 12px; margin-right: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,.28); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; }
+  .lang-sw { display: inline-flex; align-items: center; padding: 10px 16px; margin-right: 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.28); color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap; }
   .lang-sw:hover { background: rgba(255,255,255,.1); }
   header.top .actions { display: flex; align-items: center; }
   .nav-toggle { display: none; margin-left: 4px; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font-size: 20px; cursor: pointer; }
   @media (max-width: 820px) {
     header.top .wrap { position: relative; }
     nav.links { display: none; } header.top .actions { margin-left: auto; }
-    header.top .wrap { gap: 12px; } header.top .btn { padding: 9px 14px; }
+    header.top .wrap { gap: 12px; } header.top .btn, .lang-sw { padding: 9px 14px; } .lang-sw { margin-right: 6px; }
     .nav-toggle { display: inline-grid; place-items: center; }
     header.top.open nav.links { display: flex; flex-direction: column; gap: 0; position: absolute; top: 68px; left: 0; right: 0; margin: 0;
       padding: 6px 20px 14px; background: #0b1630; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); border-bottom: 1px solid rgba(255,255,255,.12); }
@@ -246,7 +246,7 @@
   <div class="wrap">
     <a class="brand" href="#"><img src="../assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
     <nav class="links">
-      <a href="#cai-dat">Install</a><a href="#video">Video</a><a href="#tinh-nang">Features</a><a href="#vai-tro">Who it's for</a><a href="#bang-gia">Pricing</a><a href="#hoi-dap">FAQ</a><a href="../help/en/en/">Help</a>
+      <a href="#cai-dat">Install</a><a href="#video">Video</a><a href="#tinh-nang">Features</a><a href="#vai-tro">Who it's for</a><a href="#bang-gia">Pricing</a><a href="#hoi-dap">FAQ</a><a href="../help/en/">Help</a>
     </nav>
     <div class="actions"><a class="lang-sw" href="../" hreflang="vi" lang="vi" data-lang="vi" title="Tiếng Việt">VI</a><a class="btn btn-ghost js-app" href="/login">Log in</a></div>
     <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">☰</button>

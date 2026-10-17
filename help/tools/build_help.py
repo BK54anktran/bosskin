@@ -183,7 +183,7 @@ def page(title, body, pages, current, desc, aside=''):
   <button class="menu-btn" aria-label="Mở menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="../" title="Về trang chủ BossKin"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
   <nav class="links"><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a><a class="on" href="index.html">Trợ giúp</a></nav>
-  <div class="actions">{sw}<a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
+  <div class="actions">@@SW@@<a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
 </div></header>
 <div class="wrap">
 <nav class="side"><div class="side-site"><a href="../">Trang chủ</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a></div>{'' if current == 'index' else SEARCH_BOX}{nav(pages, current)}</nav>
@@ -197,7 +197,7 @@ def page(title, body, pages, current, desc, aside=''):
 <script>{JS}</script>
 </body>
 </html>
-''')
+''').replace('@@SW@@', sw)
 
 
 FOOTER = """<footer class="site">
