@@ -256,6 +256,14 @@
   "caption": null,
   "marks": []
  },
+ "payroll-generate": {
+  "caption": null,
+  "marks": [
+   "Month\nMonth 10",
+   "Search employees to add...",
+   "Create"
+  ]
+ },
  "payroll-list": {
   "caption": null,
   "marks": [
