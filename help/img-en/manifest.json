@@ -41,6 +41,19 @@
    "Download template"
   ]
  },
+ "first-login": {
+  "caption": null,
+  "marks": [
+   "Current password",
+   "New password"
+  ]
+ },
+ "home-employee": {
+  "caption": null,
+  "marks": [
+   "Menu"
+  ]
+ },
  "leave-accrual": {
   "caption": null,
   "marks": []
@@ -59,6 +72,14 @@
  "leave-types": {
   "caption": null,
   "marks": []
+ },
+ "login": {
+  "caption": null,
+  "marks": [
+   "Email",
+   "Password *",
+   "Sign in"
+  ]
  },
  "reports": {
   "caption": null,
