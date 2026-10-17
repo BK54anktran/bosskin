@@ -7,6 +7,35 @@
   "caption": null,
   "marks": []
  },
+ "att-bulk-approve": {
+  "caption": null,
+  "marks": [
+   "Period\n10/2026 · 01/10/2026 – 31/10/2026",
+   "Departments\nAll departments in your scope",
+   "Approve"
+  ]
+ },
+ "att-day": {
+  "caption": null,
+  "marks": [
+   "By day",
+   "Saturday, 10/10/2026",
+   "Departments"
+  ]
+ },
+ "att-lock": {
+  "caption": null,
+  "marks": [
+   "Reopen",
+   "Lock"
+  ]
+ },
+ "att-month": {
+  "caption": null,
+  "marks": [
+   "By month"
+  ]
+ },
  "att-request-new": {
   "caption": null,
   "marks": [
@@ -14,6 +43,17 @@
    "Requested check-in time",
    "Send request"
   ]
+ },
+ "att-requests-approve": {
+  "caption": null,
+  "marks": [
+   "Approve",
+   "Reject"
+  ]
+ },
+ "att-week": {
+  "caption": null,
+  "marks": []
  },
  "calendar-new": {
   "caption": null,
