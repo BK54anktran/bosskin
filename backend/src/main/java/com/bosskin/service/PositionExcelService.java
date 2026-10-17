@@ -23,6 +23,7 @@ public class PositionExcelService {
 
     private final PositionRepository positionRepo;
     private final DepartmentRepository departmentRepo;
+    private final com.bosskin.repository.CompanyRepository companyRepo;
     private final EmployeeRepository employeeRepo;
     private final EmployeeJobHistoryRepository jobHistoryRepo;
 
@@ -35,24 +36,24 @@ public class PositionExcelService {
                 row -> ((Number) row[1]).longValue()
             ));
 
-        return positionRepo.findByDepartmentCompanyId(companyId).stream()
+        return positionRepo.findByCompanyId(companyId).stream()
             .map(p -> PositionDTO.FlatItem.builder()
                 .id(p.getId())
                 .code(p.getCode())
                 .name(p.getName())
                 .description(p.getDescription())
-                .departmentCode(p.getDepartment().getCode())
-                .departmentName(p.getDepartment().getName())
+                .departmentCode(p.getDepartment() != null ? p.getDepartment().getCode() : null)
+                .departmentName(p.getDepartment() != null ? p.getDepartment().getName() : null)
                 .employeeCount(empCount.getOrDefault(p.getId(), 0L))
                 .build())
-            .sorted(Comparator.comparing(PositionDTO.FlatItem::getDepartmentCode)
+            .sorted(Comparator.comparing((PositionDTO.FlatItem f) -> f.getDepartmentCode() == null ? "" : f.getDepartmentCode())
                 .thenComparing(PositionDTO.FlatItem::getCode))
             .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<PositionDTO.ImportDiff> previewImport(Long companyId, List<PositionDTO.ImportRow> rows) {
-        Map<String, Position> existing = positionRepo.findByDepartmentCompanyId(companyId)
+        Map<String, Position> existing = positionRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(Position::getCode, p -> p));
 
         Map<Long, Long> empCount = positionRepo.countEmployeesByCompany(companyId)
@@ -80,7 +81,7 @@ public class PositionExcelService {
                     warnings.add("error.import.position_has_employees|" + count);
                 result.add(PositionDTO.ImportDiff.builder()
                     .action("DELETE").code(code).name(pos.getName())
-                    .departmentCode(pos.getDepartment().getCode())
+                    .departmentCode(pos.getDepartment() != null ? pos.getDepartment().getCode() : null)
                     .description(pos.getDescription())
                     .changes(List.of()).warnings(warnings).build());
                 continue;
@@ -99,7 +100,7 @@ public class PositionExcelService {
                 // ── UPDATE / NO_CHANGE ───────────────────────────────────────
                 List<DepartmentDTO.FieldChange> changes = new ArrayList<>();
                 addChange(changes, com.bosskin.i18n.AppText.msg("import.field.name"),       pos.getName(),        name);
-                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.department"), pos.getDepartment().getCode(), deptCode);
+                addChange(changes, com.bosskin.i18n.AppText.msg("import.field.department"), pos.getDepartment() != null ? pos.getDepartment().getCode() : null, deptCode);
                 addChange(changes, com.bosskin.i18n.AppText.msg("import.field.description"),     pos.getDescription(), row.getDescription() == null ? null : row.getDescription().trim());
 
                 result.add(PositionDTO.ImportDiff.builder()
@@ -113,7 +114,7 @@ public class PositionExcelService {
 
     @Transactional
     public void importFromExcel(Long companyId, List<PositionDTO.ImportRow> rows) {
-        Map<String, Position> existing = positionRepo.findByDepartmentCompanyId(companyId)
+        Map<String, Position> existing = positionRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(Position::getCode, p -> p));
 
         Map<String, Department> deptMap = departmentRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
@@ -154,12 +155,11 @@ public class PositionExcelService {
                 if (dept == null)
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "error.import.position_department_missing|" + deptCode + "|" + code);
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "error.import.position_department_required|" + code);
             }
+            // Bỏ trống mã phòng ban = chức vụ chung của công ty
 
             Position pos = existing.containsKey(code) ? existing.get(code) : new Position();
+            if (pos.getCompany() == null) pos.setCompany(companyRepo.getReferenceById(companyId));
             pos.setCode(code);
             pos.setName(row.getName().trim());
             pos.setDepartment(dept);

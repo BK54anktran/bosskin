@@ -35,7 +35,7 @@
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
 | `COMPANY_SETTING_VIEW` | Xem cài đặt chung công ty |  |  | company_settings_screen, nav_access, permission_labels |
-| `COMPANY_SETTING_MANAGE` | Quản lý cài đặt chung công ty |  | 2 | permission_labels |
+| `COMPANY_SETTING_MANAGE` | Quản lý cài đặt chung công ty |  | 3 | permission_labels |
 
 ## CONTRACT
 
@@ -56,8 +56,8 @@
 | Mã | Mô tả | Cần | Endpoint | Dùng ở FE |
 |---|---|---|---|---|
 | `DEPARTMENT_VIEW` | Xem cơ cấu phòng ban |  | 10 | department_service, nav_access, permission_labels, roles_screen |
-| `DEPARTMENT_MANAGE` | Tạo/sửa/xóa phòng ban | `DEPARTMENT_VIEW` | 7 | department_screen, permission_labels |
-| `POSITION_MANAGE` | Tạo/sửa/xóa chức vụ | `DEPARTMENT_VIEW` | 3 | permission_labels |
+| `DEPARTMENT_MANAGE` | Tạo/sửa/xóa phòng ban | `DEPARTMENT_VIEW` | 8 | department_screen, permission_labels |
+| `POSITION_MANAGE` | Tạo/sửa/xóa chức vụ | `DEPARTMENT_VIEW` | 3 | department_screen, permission_labels |
 
 ## EMPLOYEE
 
@@ -65,7 +65,7 @@
 |---|---|---|---|---|
 | `EMPLOYEE_VIEW` | Xem danh sách nhân viên |  | 18 | employee_screen, nav_access, permission_labels, report_screen, roles_screen |
 | `EMPLOYEE_CREATE` | Thêm nhân viên mới | `EMPLOYEE_VIEW` | 3 | employee_screen, permission_labels |
-| `EMPLOYEE_UPDATE` | Cập nhật thông tin nhân viên | `EMPLOYEE_VIEW` | 10 | auth_service, dependents_dialog, edit_requests_screen, employee_screen, job_hist |
+| `EMPLOYEE_UPDATE` | Cập nhật thông tin nhân viên | `EMPLOYEE_VIEW` | 11 | auth_service, dependents_dialog, edit_requests_screen, employee_screen, job_hist |
 | `EMPLOYEE_DELETE` | Xóa/vô hiệu hóa nhân viên | `EMPLOYEE_VIEW` | 3 | employee_screen, permission_labels |
 | `EMPLOYEE_SENSITIVE_VIEW` | Xem dữ liệu nhạy cảm của nhân viên (CCCD, tài khoản NH, MST, sổ BHXH) | `EMPLOYEE_VIEW` |  | permission_labels |
 | `EMPLOYEE_DOCUMENT_VIEW` | Xem tài liệu nhân sự của nhân viên | `EMPLOYEE_VIEW` | 13 | employee_screen, nav_access, permission_labels |

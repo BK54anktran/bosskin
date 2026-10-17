@@ -160,9 +160,9 @@ public class EmployeeService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
         Position pos = null;
         if (req.getPositionId() != null) {
-            pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
+            pos = positionRepository.findByIdAndCompanyId(req.getPositionId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
-            if (!pos.getDepartment().getId().equals(req.getDepartmentId())) {
+            if (!pos.usableIn(req.getDepartmentId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.position.not_in_department");
             }
         }
@@ -230,14 +230,14 @@ public class EmployeeService {
         if (req.getDepartmentId() != null) {
             e.setDepartment(departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found")));
-            if (e.getPosition() != null && !e.getPosition().getDepartment().getId().equals(e.getDepartment().getId())) {
+            if (e.getPosition() != null && !e.getPosition().usableIn(e.getDepartment().getId())) {
                 e.setPosition(null);
             }
         }
         if (req.getPositionId() != null) {
-            Position pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
+            Position pos = positionRepository.findByIdAndCompanyId(req.getPositionId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
-            if (!pos.getDepartment().getId().equals(e.getDepartment().getId())) {
+            if (!pos.usableIn(e.getDepartment().getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.position.not_in_department");
             }
             e.setPosition(pos);

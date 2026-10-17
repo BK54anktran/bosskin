@@ -115,6 +115,17 @@ class _DepartmentScreenState extends State<DepartmentScreen> {
             children: [
               const Spacer(),
               PermissionGuard(
+                permission: 'POSITION_MANAGE',
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: OutlinedButton.icon(
+                    onPressed: () => showInstantDialog(context, (_) => const _PositionManagerDialog()),
+                    icon: const Icon(Icons.work_outline, size: 18),
+                    label: Text(s.commonPositions),
+                  ),
+                ),
+              ),
+              PermissionGuard(
                 permission: 'DEPARTMENT_MANAGE',
                 child: FilledButton.icon(
                   onPressed: () => _showForm(),
@@ -392,7 +403,7 @@ class _DepartmentTileState extends State<_DepartmentTile> {
     );
   }
 
-  void _showPositions(BuildContext context, DepartmentNode node) {
+  void _showPositions(BuildContext context, DepartmentNode? node) {
     showInstantDialog(
       context,
       (_) => _PositionManagerDialog(department: node),
@@ -663,8 +674,9 @@ class _DepartmentFormDialogState extends State<_DepartmentFormDialog> {
 // ── Position Manager Dialog ──────────────────────────────────────────────────
 
 class _PositionManagerDialog extends StatefulWidget {
-  final DepartmentNode department;
-  const _PositionManagerDialog({required this.department});
+  /// null = quản lý chức vụ chung của công ty
+  final DepartmentNode? department;
+  const _PositionManagerDialog({this.department});
 
   @override
   State<_PositionManagerDialog> createState() => _PositionManagerDialogState();
@@ -683,8 +695,13 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final list =
-          await PositionService.instance.getByDepartment(widget.department.id);
+      final dept = widget.department;
+      // Phòng ban: chỉ chức vụ riêng của phòng (chức vụ chung quản lý ở nút "Chức vụ chung")
+      final list = dept == null
+          ? (await PositionService.instance.getAll()).where((p) => p.common).toList()
+          : (await PositionService.instance.getByDepartment(dept.id))
+              .where((p) => !p.common)
+              .toList();
       if (mounted) {
         setState(() {
           _positions = list;
@@ -701,7 +718,7 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
       context,
       (_) => _PositionFormDialog(
         position: pos,
-        departmentId: widget.department.id,
+        departmentId: widget.department?.id,
       ),
     );
     _load();
@@ -748,7 +765,9 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
           const Icon(Icons.work_outline, size: 20),
           const SizedBox(width: 8),
           Expanded(
-              child: Text(s.positionsOfDepartment(widget.department.name))),
+              child: Text(widget.department == null
+                  ? s.commonPositions
+                  : s.positionsOfDepartment(widget.department!.name))),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             tooltip: s.addPosition,
@@ -758,7 +777,17 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
       ),
       content: SizedBox(
         width: 480,
-        child: _loading
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.department != null) ...[
+              Text(s.commonPositionsHint,
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              const SizedBox(height: 8),
+            ],
+            Flexible(
+              child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _positions.isEmpty
                 ? Center(
@@ -850,6 +879,9 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
                       );
                     },
                   ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -863,8 +895,9 @@ class _PositionManagerDialogState extends State<_PositionManagerDialog> {
 
 class _PositionFormDialog extends StatefulWidget {
   final PositionModel? position;
-  final int departmentId;
-  const _PositionFormDialog({this.position, required this.departmentId});
+  /// null = chức vụ chung
+  final int? departmentId;
+  const _PositionFormDialog({this.position, this.departmentId});
 
   @override
   State<_PositionFormDialog> createState() => _PositionFormDialogState();

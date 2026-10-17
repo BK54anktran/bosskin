@@ -26,6 +26,10 @@ Mở **Phòng ban**. Mỗi phòng hiện mã và số nhân viên; bấm mũi t�
 
 ## Chức vụ
 
-Bấm **Quản lý chức vụ** trên phòng: thêm, sửa, xoá chức vụ (mã chức vụ duy nhất trong phòng). Chức vụ dùng khi thêm nhân viên. Chức vụ còn nhân viên hoặc còn trong quá trình công tác không xoá được (cả khi xoá qua nhập Excel).
+Bấm **Quản lý chức vụ** trên phòng: thêm, sửa, xoá chức vụ (mã chức vụ duy nhất trong công ty). Chức vụ dùng khi thêm nhân viên. Chức vụ còn nhân viên hoặc còn trong quá trình công tác không xoá được (cả khi xoá qua nhập Excel).
 
 ![Chức vụ của một phòng](img:positions)
+
+### Chức vụ chung
+
+Cửa hàng, chi nhánh… thường có chức vụ giống nhau ở mọi nơi (Quản lý, Nhân viên). Thay vì tạo lại từng phòng, bấm **Chức vụ chung** ở đầu màn Phòng ban để tạo một lần: chức vụ chung **không thuộc phòng ban nào** và chọn được ở **mọi phòng ban** khi thêm nhân viên hoặc ghi quá trình công tác. Chỉ người có phạm vi xem phòng ban toàn công ty mới tạo / sửa / xoá được chức vụ chung. Khi nhập Excel, để trống cột mã phòng ban = chức vụ chung.

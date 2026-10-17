@@ -1,7 +1,6 @@
 package com.bosskin.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +15,7 @@ public class PositionDTO {
         @NotBlank @Size(max = 20)
         private String code;
 
-        @NotNull
+        /** Bỏ trống = chức vụ chung của công ty (dùng ở mọi phòng ban). */
         private Long departmentId;
 
         private String description;
@@ -31,6 +30,8 @@ public class PositionDTO {
         private Long departmentId;
         private String departmentName;
         private String description;
+        /** true = chức vụ chung (không thuộc phòng ban nào). */
+        private boolean common;
     }
 
     @Data

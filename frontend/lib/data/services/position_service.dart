@@ -4,16 +4,19 @@ class PositionModel {
   final int id;
   final String name;
   final String code;
-  final int departmentId;
+  /// null = chức vụ chung của công ty (dùng ở mọi phòng ban)
+  final int? departmentId;
   final String departmentName;
+  final bool common;
   final String? description;
 
   const PositionModel({
     required this.id,
     required this.name,
     required this.code,
-    required this.departmentId,
+    this.departmentId,
     required this.departmentName,
+    this.common = false,
     this.description,
   });
 
@@ -23,6 +26,7 @@ class PositionModel {
         code: j['code'],
         departmentId: j['departmentId'],
         departmentName: j['departmentName'] ?? '',
+        common: j['common'] == true || j['departmentId'] == null,
         description: j['description'],
       );
 }

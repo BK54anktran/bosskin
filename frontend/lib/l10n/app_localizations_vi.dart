@@ -6056,4 +6056,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get navProfileShort => 'Cá nhân';
+
+  @override
+  String get commonPositions => 'Chức vụ chung';
+
+  @override
+  String get commonPositionsHint => 'Chức vụ chung dùng được ở mọi phòng ban (vd. Quản lý, Nhân viên); chức vụ riêng của phòng ban quản lý ở đây.';
+
+  @override
+  String get commonPositionsNote => 'Chức vụ chung — không thuộc phòng ban nào';
 }

@@ -11206,6 +11206,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Cá nhân'**
   String get navProfileShort;
+
+  /// No description provided for @commonPositions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ chung'**
+  String get commonPositions;
+
+  /// No description provided for @commonPositionsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ chung dùng được ở mọi phòng ban (vd. Quản lý, Nhân viên); chức vụ riêng của phòng ban quản lý ở đây.'**
+  String get commonPositionsHint;
+
+  /// No description provided for @commonPositionsNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức vụ chung — không thuộc phòng ban nào'**
+  String get commonPositionsNote;
 }
 
 class _AppLocalizationsDelegate
@@ -11239,4 +11257,5 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       'an issue with the localizations generation tool. Please file an issue '
       'on GitHub with a reproducible sample app and the gen-l10n configuration '
       'that was used.');
+
 }

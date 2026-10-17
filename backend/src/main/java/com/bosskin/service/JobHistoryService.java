@@ -113,9 +113,9 @@ public class JobHistoryService {
         requireViewScope(user.getId(), dept.getId());
         Position pos = null;
         if (req.getPositionId() != null) {
-            pos = positionRepository.findByIdAndDepartmentCompanyId(req.getPositionId(), companyId)
+            pos = positionRepository.findByIdAndCompanyId(req.getPositionId(), companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
-            if (!pos.getDepartment().getId().equals(dept.getId())) {
+            if (!pos.usableIn(dept.getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.position.not_in_department");
             }
         }

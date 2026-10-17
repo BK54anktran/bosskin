@@ -17,10 +17,11 @@ up() {
     (nohup mysqld --no-defaults --user=mysql --datadir=/var/lib/my8 --socket=/tmp/my8.sock --port=3306 --bind-address=127.0.0.1 > $W/mysql.log 2>&1 &)
     for i in $(seq 1 30); do mysqladmin --no-defaults -uroot -S /tmp/my8.sock ping >/dev/null 2>&1 && break; sleep 2; done
   fi
-  mysql --no-defaults -uroot -S /tmp/my8.sock -e "CREATE DATABASE IF NOT EXISTS bosskin CHARACTER SET utf8mb4;" 
+  mysql --no-defaults -uroot -S /tmp/my8.sock -e "CREATE DATABASE IF NOT EXISTS bosskin CHARACTER SET utf8mb4;
+    CREATE USER IF NOT EXISTS 'bosskin'@'%' IDENTIFIED BY 'bosskin123'; GRANT ALL ON bosskin.* TO 'bosskin'@'%';"
   # Backend (Flyway chạy khi khởi động lần đầu)
   [ -f "$ROOT/backend/target/bosskin-1.0.0.jar" ] || (cd "$ROOT/backend" && mvn -q -DskipTests package)
-  (cd $W && DB_URL="$DBURL" JWT_SECRET="test-secret-for-local-audit-0123456789abcdefghijklmnop" REQUIRE_SYSADMIN_2FA=false \
+  (cd $W && DB_URL="$DBURL" JWT_SECRET="test-secret-for-local-audit-0123456789abcdefghijklmnop" REQUIRE_SYSADMIN_2FA=false SPRING_FLYWAY_ENABLED="${FLYWAY:-true}" SPRING_JPA_HIBERNATE_DDL_AUTO=none \
      BOOTSTRAP_SYSADMIN_EMAIL=sys@bosskin.local BOOTSTRAP_SYSADMIN_PASSWORD='SysAudit2026x' APP_DOCUMENTS_STORAGE=local \
      nohup java -jar "$ROOT/backend/target/bosskin-1.0.0.jar" > $W/backend.log 2>&1 &)
   for i in $(seq 1 60); do curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/actuator/health | grep -q 200 && break; sleep 3; done

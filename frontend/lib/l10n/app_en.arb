@@ -2063,4 +2063,7 @@
   ,"navCheckInShort": "Check-in"
   ,"navRequestsShort": "Requests"
   ,"navProfileShort": "Profile"
+  ,"commonPositions": "Common positions"
+  ,"commonPositionsHint": "Common positions can be used in every department (e.g. Manager, Staff). Positions specific to this department are managed here."
+  ,"commonPositionsNote": "Common position — not tied to any department"
 }

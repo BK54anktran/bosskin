@@ -249,7 +249,7 @@ public class EmployeeImportService {
             .stream().collect(Collectors.toMap(Employee::getEmployeeCode, e -> e));
         Map<String, Department> deptMap    = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(d -> d.getCode().toUpperCase(), d -> d));
-        Map<String, Position>   posMap     = positionRepo.findByDepartmentCompanyId(companyId)
+        Map<String, Position>   posMap     = positionRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(p -> p.getCode().toUpperCase(), p -> p));
         Map<String, SalaryGrade>gradeMap   = salaryGradeRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(g -> g.getCode().toUpperCase(), g -> g));
@@ -508,7 +508,7 @@ public class EmployeeImportService {
 
         Map<String, Department> deptMap  = deptRepo.findByCompanyIdOrderByLevelAscNameAsc(companyId)
             .stream().collect(Collectors.toMap(d -> d.getCode().toUpperCase(), d -> d));
-        Map<String, Position>   posMap   = positionRepo.findByDepartmentCompanyId(companyId)
+        Map<String, Position>   posMap   = positionRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(p -> p.getCode().toUpperCase(), p -> p));
         Map<String, SalaryGrade> gradeMap = salaryGradeRepo.findByCompanyId(companyId)
             .stream().collect(Collectors.toMap(g -> g.getCode().toUpperCase(), g -> g));

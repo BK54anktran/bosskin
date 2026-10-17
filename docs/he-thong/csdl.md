@@ -2,7 +2,7 @@
 
 # Cơ sở dữ liệu
 
-MySQL 8, utf8mb4. Lược đồ tại migration **V30 – role system flag**, 53 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
+MySQL 8, utf8mb4. Lược đồ tại migration **V31 – position common**, 53 bảng (không kể `flyway_schema_history`). Mọi thay đổi lược đồ đi qua file Flyway mới `backend/src/main/resources/db/migration/V<n>__<mô_tả>.sql`, không sửa file cũ; Hibernate chạy `ddl-auto: validate` nên entity lệch DB thì app không khởi động. Hầu hết bảng nghiệp vụ có `company_id` (tách dữ liệu theo công ty — xem [kiến trúc](kien-truc.md#da-cong-ty)).
 
 Ký hiệu: 🔑 khoá chính · ↗ khoá ngoại (bảng.cột, hành vi khi xoá) · `∅` không có mặc định.
 
@@ -405,14 +405,15 @@ Duy nhất: (company_id, code_key) · (company_id, email_key)
 
 ### positions
 
-Duy nhất: (department_id, code_key)
+Duy nhất: (company_id, code_key)
 
 | Cột | Kiểu | Null | Mặc định | Ghi chú |
 |---|---|---|---|---|
 | `id` | bigint |  | ∅ | 🔑 tự tăng |
 | `name` | varchar(100) |  | ∅ |  |
 | `code` | varchar(20) |  | ∅ |  |
-| `department_id` | bigint |  | ∅ | ↗ [departments](#departments).id |
+| `department_id` | bigint | có | ∅ | ↗ [departments](#departments).id |
+| `company_id` | bigint |  | ∅ | ↗ [companies](#companies).id |
 | `description` | text | có | ∅ |  |
 | `created_at` | datetime(6) |  | ∅ |  |
 | `updated_at` | datetime(6) |  | ∅ |  |

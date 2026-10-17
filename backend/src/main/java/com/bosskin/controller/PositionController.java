@@ -37,9 +37,10 @@ public class PositionController {
             @AuthenticationPrincipal User user) {
         requirePermission(user, "DEPARTMENT_VIEW");
         Long companyId = user.getCompany().getId();
+        // Có departmentId: chức vụ của phòng ban đó + chức vụ chung
         var positions = departmentId != null
-            ? positionRepository.findByDepartmentIdAndDepartmentCompanyId(departmentId, companyId)
-            : positionRepository.findByDepartmentCompanyId(companyId);
+            ? positionRepository.findUsableInDepartment(departmentId, companyId)
+            : positionRepository.findByCompanyId(companyId);
         return ResponseEntity.ok(positions.stream().map(this::toResponse).toList());
     }
 
@@ -50,15 +51,15 @@ public class PositionController {
         requirePermission(user, "POSITION_MANAGE");
         requireViewScope(user, req.getDepartmentId());
         Long companyId = user.getCompany().getId();
-        if (positionRepository.existsByCodeAndDepartmentCompanyId(req.getCode(), companyId)) {
+        if (positionRepository.existsByCodeAndCompanyId(req.getCode(), companyId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.code_duplicate");
         }
-        Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
+        Department dept = resolveDept(req.getDepartmentId(), companyId);
 
         Position pos = Position.builder()
             .name(req.getName())
             .code(req.getCode().toUpperCase())
+            .company(user.getCompany())
             .department(dept)
             .description(req.getDescription())
             .build();
@@ -73,13 +74,12 @@ public class PositionController {
         requirePermission(user, "POSITION_MANAGE");
         requireViewScope(user, req.getDepartmentId());
         Long companyId = user.getCompany().getId();
-        Position pos = positionRepository.findByIdAndDepartmentCompanyId(id, companyId)
+        Position pos = positionRepository.findByIdAndCompanyId(id, companyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
-        if (positionRepository.existsByCodeAndDepartmentCompanyIdAndIdNot(req.getCode(), companyId, id)) {
+        if (positionRepository.existsByCodeAndCompanyIdAndIdNot(req.getCode(), companyId, id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.code_duplicate");
         }
-        Department dept = departmentRepository.findByIdAndCompanyId(req.getDepartmentId(), companyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
+        Department dept = resolveDept(req.getDepartmentId(), companyId);
 
         pos.setName(req.getName());
         pos.setCode(req.getCode().toUpperCase());
@@ -93,9 +93,9 @@ public class PositionController {
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
         requirePermission(user, "POSITION_MANAGE");
-        Position pos = positionRepository.findByIdAndDepartmentCompanyId(id, user.getCompany().getId())
+        Position pos = positionRepository.findByIdAndCompanyId(id, user.getCompany().getId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.position.not_found"));
-        requireViewScope(user, pos.getDepartment().getId());
+        requireViewScope(user, pos.getDepartment() == null ? null : pos.getDepartment().getId());
         if (employeeRepository.countByPositionIdAndCompanyId(pos.getId(), user.getCompany().getId()) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "error.position.has_employees");
         }
@@ -111,9 +111,16 @@ public class PositionController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.denied");
     }
 
+    private Department resolveDept(Long departmentId, Long companyId) {
+        if (departmentId == null) return null;
+        return departmentRepository.findByIdAndCompanyId(departmentId, companyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.department.not_found"));
+    }
+
+    /** deptId null = chức vụ chung: chỉ người có phạm vi toàn công ty mới tạo / sửa / xoá. */
     private void requireViewScope(User user, Long deptId) {
         Set<Long> scope = deptScopeService.resolvedScopes(user.getId(), "DEPARTMENT_VIEW");
-        if (!scope.isEmpty() && !scope.contains(deptId))
+        if (!scope.isEmpty() && (deptId == null || !scope.contains(deptId)))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.permission.department_scope");
     }
 
@@ -122,8 +129,9 @@ public class PositionController {
             .id(p.getId())
             .name(p.getName())
             .code(p.getCode())
-            .departmentId(p.getDepartment().getId())
-            .departmentName(p.getDepartment().getName())
+            .departmentId(p.getDepartment() != null ? p.getDepartment().getId() : null)
+            .departmentName(p.getDepartment() != null ? p.getDepartment().getName() : null)
+            .common(p.getDepartment() == null)
             .description(p.getDescription())
             .build();
     }
