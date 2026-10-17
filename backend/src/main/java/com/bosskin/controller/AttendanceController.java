@@ -78,6 +78,7 @@ public class AttendanceController {
     @jakarta.persistence.PersistenceContext
     private jakarta.persistence.EntityManager entityManager;
     private final com.bosskin.service.PeriodLockService periodLockService;
+    private final com.bosskin.service.AttendanceAlertService alertService;
     private final com.bosskin.audit.AuditService audit;
     private final com.bosskin.service.WorkCalendarService workCalendarService;
 
@@ -1339,6 +1340,9 @@ public class AttendanceController {
         target.attendance().setCheckInLatitude(lat);
         target.attendance().setCheckInLongitude(lng);
         attendanceRepository.save(target.attendance());
+        if (status == Attendance.Status.LATE && target.shiftStart() != null) {
+            alertService.lateCheckIn(employee, now, target.shiftStart());
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(buildSelfToday(user, null, locale));
     }
 
@@ -1364,6 +1368,7 @@ public class AttendanceController {
         target.attendance().setCheckOutLatitude(lat);
         target.attendance().setCheckOutLongitude(lng);
         attendanceRepository.save(target.attendance());
+        notifyIfEarlyLeave(employee, target, checkOut);
         return ResponseEntity.ok(buildSelfToday(user, null, locale));
     }
 
@@ -1776,6 +1781,18 @@ public class AttendanceController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.attendance.no_shift_today");
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.attendance.outside_check_out_window");
+    }
+
+    /** Check-out sớm hơn giờ kết thúc ca (trừ dung sai về sớm) → báo quản lý trực tiếp nếu họ bật. Ca linh hoạt / không ca: bỏ qua. */
+    private void notifyIfEarlyLeave(Employee employee, ShiftTarget target, LocalDateTime checkOut) {
+        if (target.shiftStart() == null || target.shift() == null || target.shift().endTime() == null) return;
+        if (target.shiftAssignment() != null && target.shiftAssignment().flexibleRequiredMinutes() != null) return;
+        LocalDateTime end = target.shiftStart().toLocalDate().atTime(target.shift().endTime());
+        if (!end.isAfter(target.shiftStart())) end = end.plusDays(1);
+        Integer tol = resolveAttendancePolicy(employee).checkOutToleranceMinutes();
+        if (checkOut.isBefore(end.minusMinutes(tol != null ? tol : 0))) {
+            alertService.earlyCheckOut(employee, checkOut, end);
+        }
     }
 
     /** Đi muộn khi check-in sau giờ bắt đầu ca + dung sai (phòng ban → công ty → mặc định 15 phút) (A13). */

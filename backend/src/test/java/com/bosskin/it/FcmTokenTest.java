@@ -24,8 +24,13 @@ class FcmTokenTest extends IntegrationTest {
             "fcmToken", DEVICE, "shiftReminderMinutes", 30, "checkInOutNotifMinutes", 5)).expectOk();
     }
 
-    private String tokenInDb(Fixture.Emp e) {
-        return userRepository.findById(e.userId()).orElseThrow().getFcmToken();
+    /** Mã tài khoản đang giữ token (V33: bảng fcm_tokens, một token thuộc một tài khoản). */
+    private java.util.List<Long> ownersOf(String fcmToken) {
+        return jdbc.queryForList("SELECT user_id FROM fcm_tokens WHERE token = ?", Long.class, fcmToken);
+    }
+
+    private long deviceCount(Fixture.Emp e) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM fcm_tokens WHERE user_id = ?", Long.class, e.userId());
     }
 
     @Test
@@ -38,8 +43,22 @@ class FcmTokenTest extends IntegrationTest {
         enable(c.tokenOf(a));
         enable(c.tokenOf(b));
 
-        assertThat(tokenInDb(a)).isNull();
-        assertThat(tokenInDb(b)).isEqualTo(DEVICE);
+        assertThat(ownersOf(DEVICE)).containsExactly(b.userId());
+    }
+
+    @Test
+    @DisplayName("Một tài khoản có nhiều thiết bị: thêm máy thứ hai không làm mất máy thứ nhất")
+    void sameAccount_keepsAllDevices() {
+        var c = fixture.standardCompany();
+        var a = c.emp(6);
+        api.patch(c.tokenOf(a), "/api/v1/profile/notification-settings", Map.of(
+            "fcmToken", "fcm-device-A-0000000000000000001", "shiftReminderMinutes", 30)).expectOk();
+        api.patch(c.tokenOf(a), "/api/v1/profile/notification-settings", Map.of(
+            "fcmToken", "fcm-device-B-0000000000000000002", "shiftReminderMinutes", 30)).expectOk();
+
+        assertThat(deviceCount(a)).isEqualTo(2);
+        var s = api.get(c.tokenOf(a), "/api/v1/profile/notification-settings").expectOk();
+        assertThat(s.body().get("deviceCount").asInt()).isEqualTo(2);
     }
 
     @Test
@@ -53,7 +72,7 @@ class FcmTokenTest extends IntegrationTest {
         assertThat(api.post(null, "/api/v1/auth/logout",
             Map.of("refreshToken", refresh, "fcmToken", DEVICE)).status()).isEqualTo(204);
 
-        assertThat(tokenInDb(a)).isNull();
+        assertThat(ownersOf(DEVICE)).isEmpty();
     }
 
     @Test

@@ -56,7 +56,7 @@ public class DocumentService {
     private final UserRepository userRepository;
     private final DeptScopeService deptScopeService;
     private final DocumentStorageService storage;
-    private final FcmService fcmService;
+    private final PushService pushService;
     private final AuditService audit;
     private final Clock clock;
 
@@ -312,11 +312,11 @@ public class DocumentService {
             .toList();
         if (due.isEmpty()) return;
         for (User u : userRepository.findByCompanyId(companyId)) {
-            if (u.getFcmToken() == null || !u.isEnabled() || !u.hasPermission(VIEW)) continue;
+            if (!u.isEnabled() || !u.hasPermission(VIEW)) continue;
             String body = due.size() == 1
                 ? com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.one", due.get(0).getEmployee().getFullName(), due.get(0).getDocumentType().getName(), String.valueOf(due.get(0).getExpiresOn()))
                 : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.many", String.valueOf(due.size()));
-            fcmService.sendSimple(u.getFcmToken(), com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.title"), body, Map.of("type", "DOCUMENT_EXPIRING"));
+            pushService.notifyUser(u, "DOCUMENT_EXPIRING", com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.docExpiring.title"), body, null);
         }
     }
 

@@ -24,11 +24,12 @@ public class ShiftReminderScheduler {
     private final UserRepository userRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final FcmService fcmService;
+    private final PushService pushService;
 
     @Scheduled(fixedDelay = 60_000)
     @Transactional
     public void sendShiftReminders() {
-        List<User> users = userRepository.findAllByFcmTokenIsNotNullAndShiftReminderMinutesIsNotNull();
+        List<User> users = userRepository.findAllWithDeviceAndShiftReminder();
         if (users.isEmpty()) return;
 
         try {
@@ -58,15 +59,12 @@ public class ShiftReminderScheduler {
                     ? sa.getSnapshotName()
                     : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(user.getLanguage()), "shift.customName");
 
-                fcmService.sendShiftReminder(
-                    user.getFcmToken(),
-                    user.getId(),
-                    user.getLanguage(),
-                    shiftName,
-                    effectiveStart,
-                    today,
-                    minutes
-                );
+                String[] text = FcmService.shiftReminderText(user.getLanguage(), shiftName, effectiveStart);
+                pushService.record(user.getId(), "SHIFT_REMINDER", text[0], text[1],
+                    java.util.Map.of("workDate", today.toString(), "startTime", effectiveStart.toString()));
+                for (String token : pushService.tokensOf(user.getId())) {
+                    fcmService.sendShiftReminder(token, user.getId(), user.getLanguage(), shiftName, effectiveStart, today, minutes);
+                }
                 sa.setReminderSentAt(com.bosskin.core.CompanyZone.now());
                 shiftAssignmentRepository.save(sa);
             }

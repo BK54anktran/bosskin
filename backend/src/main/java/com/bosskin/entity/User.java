@@ -64,9 +64,6 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
     @Builder.Default
     private Set<Permission> directPermissions = new HashSet<>();
 
-    @Column(name = "fcm_token", length = 512)
-    private String fcmToken;
-
     /** Ngôn ngữ ưa dùng ("vi" | "en") theo header Accept-Language gần nhất; null = vi. Dùng cho thông báo đẩy. */
     @Column(name = "language", length = 5)
     private String language;
@@ -76,6 +73,16 @@ public class User extends BaseEntity implements UserDetails, com.bosskin.core.Tw
 
     @Column(name = "check_in_out_notif_minutes")
     private Integer checkInOutNotifMinutes;
+
+    /** Quản lý: nhận báo khi nhân viên mình quản lý trực tiếp chấm công trễ (V33). */
+    @Column(name = "notif_late_alert", nullable = false)
+    @Builder.Default
+    private boolean notifLateAlert = false;
+
+    /** Quản lý: nhận báo khi nhân viên mình quản lý trực tiếp check-out sớm hơn giờ kết thúc ca (V33). */
+    @Column(name = "notif_early_leave_alert", nullable = false)
+    @Builder.Default
+    private boolean notifEarlyLeaveAlert = false;
 
     @Column(name = "enabled", nullable = false)
     @Builder.Default

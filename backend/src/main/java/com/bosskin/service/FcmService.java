@@ -2,7 +2,7 @@ package com.bosskin.service;
 
 import com.bosskin.entity.FcmNotificationLog;
 import com.bosskin.repository.FcmNotificationLogRepository;
-import com.bosskin.repository.UserRepository;
+import com.bosskin.repository.FcmTokenRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
@@ -35,14 +35,14 @@ public class FcmService {
     private static final String ANDROID_CHANNEL = "shift_reminders";
 
     private final FcmNotificationLogRepository logRepository;
-    private final UserRepository userRepository;
+    private final FcmTokenRepository tokenRepository;
 
     /** FCM báo token không còn dùng được (gỡ app, đổi máy…) → gỡ khỏi DB để khỏi gửi mãi (F10). */
     private void dropIfDead(String fcmToken, FirebaseMessagingException e) {
         MessagingErrorCode code = e.getMessagingErrorCode();
         if (code == MessagingErrorCode.UNREGISTERED || code == MessagingErrorCode.SENDER_ID_MISMATCH) {
-            int n = userRepository.clearFcmToken(fcmToken);
-            log.info("FCM token hết hiệu lực ({}), đã gỡ khỏi {} tài khoản", code, n);
+            int n = tokenRepository.deleteByToken(fcmToken);
+            log.info("FCM token hết hiệu lực ({}), đã gỡ {} thiết bị", code, n);
         }
     }
 
@@ -109,13 +109,33 @@ public class FcmService {
         }
     }
 
+    /** {tiêu đề, nội dung} của nhắc check-in / check-out (dùng chung cho đẩy và hộp thư). */
+    public static String[] checkInOutText(String language, String shiftName, LocalTime shiftTime, boolean isCheckIn) {
+        var loc = com.bosskin.i18n.AppText.localeOf(language);
+        return new String[] {
+            com.bosskin.i18n.AppText.msgIn(loc, isCheckIn ? "push.checkin.title" : "push.checkout.title"),
+            com.bosskin.i18n.AppText.msgIn(loc, isCheckIn ? "push.checkin.body" : "push.checkout.body", shiftName, shiftTime.format(TIME_FMT))
+        };
+    }
+
+    /** {tiêu đề, nội dung} của nhắc ca; số phút còn lại tính theo giờ công ty của request / job hiện tại. */
+    public static String[] shiftReminderText(String language, String shiftName, LocalTime startTime) {
+        var loc = com.bosskin.i18n.AppText.localeOf(language);
+        long actualMinutes = ChronoUnit.MINUTES.between(
+            com.bosskin.core.CompanyZone.time().truncatedTo(ChronoUnit.MINUTES), startTime);
+        return new String[] {
+            com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.title"),
+            com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.body", shiftName, startTime.format(TIME_FMT), String.valueOf(actualMinutes))
+        };
+    }
+
     public void sendCheckInOutNotif(String fcmToken, Long userId, String language, String shiftName,
                                     LocalTime shiftTime, LocalDate workDate, boolean isCheckIn) {
         if (FirebaseApp.getApps().isEmpty()) return;
 
-        var loc = com.bosskin.i18n.AppText.localeOf(language);
-        String title = com.bosskin.i18n.AppText.msgIn(loc, isCheckIn ? "push.checkin.title" : "push.checkout.title");
-        String body  = com.bosskin.i18n.AppText.msgIn(loc, isCheckIn ? "push.checkin.body" : "push.checkout.body", shiftName, shiftTime.format(TIME_FMT));
+        String[] text = checkInOutText(language, shiftName, shiftTime, isCheckIn);
+        String title = text[0];
+        String body  = text[1];
 
         FcmNotificationLog.FcmNotificationLogBuilder entry = FcmNotificationLog.builder()
             .userId(userId)
@@ -160,8 +180,8 @@ public class FcmService {
     public void sendShiftReminder(String fcmToken, Long userId, String language, String shiftName,
                                   LocalTime startTime, LocalDate workDate, int minutesBefore) {
         if (FirebaseApp.getApps().isEmpty()) return;
-        var loc = com.bosskin.i18n.AppText.localeOf(language);
-        String reminderTitle = com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.title");
+        String[] text = shiftReminderText(language, shiftName, startTime);
+        String reminderTitle = text[0];
 
         FcmNotificationLog.FcmNotificationLogBuilder entry = FcmNotificationLog.builder()
             .userId(userId)
@@ -173,9 +193,7 @@ public class FcmService {
             .sentAt(com.bosskin.core.CompanyZone.now());
 
         try {
-            long actualMinutes = ChronoUnit.MINUTES.between(
-                com.bosskin.core.CompanyZone.time().truncatedTo(ChronoUnit.MINUTES), startTime);
-            String body = com.bosskin.i18n.AppText.msgIn(loc, "push.reminder.body", shiftName, startTime.format(TIME_FMT), String.valueOf(actualMinutes));
+            String body = text[1];
             Message message = Message.builder()
                 .setToken(fcmToken)
                 .setAndroidConfig(AndroidConfig.builder()

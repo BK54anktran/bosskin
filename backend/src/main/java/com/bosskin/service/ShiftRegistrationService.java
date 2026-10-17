@@ -51,7 +51,7 @@ public class ShiftRegistrationService {
     private final UserRepository userRepo;
     private final DeptScopeService deptScopeService;
     private final WorkShiftService workShiftService;
-    private final FcmService fcmService;
+    private final PushService pushService;
     private final AuditService audit;
     private final Clock clock;
 
@@ -618,13 +618,13 @@ public class ShiftRegistrationService {
             String deadline = r.getClosesAt() != null ? r.getClosesAt().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")) : null;
             for (Employee e : roundEmployees(r)) {
                 userRepo.findByEmployeeId(e.getId())
-                    .filter(u -> u.getFcmToken() != null && u.isEnabled())
+                    .filter(User::isEnabled)
                     .ifPresent(u -> {
                         var loc = com.bosskin.i18n.AppText.localeOf(u.getLanguage());
                         String title = com.bosskin.i18n.AppText.msgIn(loc, "push.shiftReg.title", r.getName());
                         String body = range + (deadline != null ? com.bosskin.i18n.AppText.msgIn(loc, "push.shiftReg.deadline", deadline) : "");
-                        fcmService.sendSimple(u.getFcmToken(), title, body,
-                            Map.of("type", "SHIFT_REGISTRATION", "roundId", String.valueOf(r.getId())));
+                        pushService.notifyUser(u, "SHIFT_REGISTRATION", title, body,
+                            Map.of("roundId", String.valueOf(r.getId())));
                     });
             }
         } catch (Exception ex) {

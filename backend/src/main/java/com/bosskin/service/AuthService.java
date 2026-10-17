@@ -30,6 +30,7 @@ public class AuthService {
 
     private final UserRepository              userRepository;
     private final SystemAdminRepository       systemAdminRepository;
+    private final com.bosskin.repository.FcmTokenRepository fcmTokenRepository;
     private final UserSessionRepository       userSessionRepository;
     private final UserPermDeptScopeRepository deptScopeRepo;
     private final CompanyRepository           companyRepository;
@@ -211,7 +212,7 @@ public class AuthService {
     @org.springframework.transaction.annotation.Transactional
     public void logout(String refreshToken, String fcmToken) {
         if (fcmToken != null && !fcmToken.isBlank()) {
-            userRepository.clearFcmToken(fcmToken);
+            fcmTokenRepository.deleteByToken(fcmToken);
         }
         if (refreshToken == null || refreshToken.isBlank()) return;
         try {

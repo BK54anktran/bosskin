@@ -156,6 +156,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     int clearManager(@Param("managerId") Long managerId);
 
     /** Bước K — cấp dưới trực tiếp đang làm. */
+    boolean existsByManagerIdAndStatusNot(Long managerId, Employee.Status status);
+
     @Query("SELECT e FROM Employee e JOIN FETCH e.department WHERE e.manager.id = :managerId AND e.status <> com.bosskin.entity.Employee.Status.INACTIVE")
     List<Employee> findDirectReports(@Param("managerId") Long managerId);
 }

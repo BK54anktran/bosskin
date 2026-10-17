@@ -32,6 +32,8 @@ public class ProfileService {
     private final DeptScopeService deptScopeService;
     private final com.bosskin.audit.AuditService audit;
     private final FcmService fcmService;
+    private final PushService pushService;
+    private final com.bosskin.repository.FcmTokenRepository fcmTokenRepository;
 
     public ProfileDTO.ProfileResponse getMyProfile(User user) {
         return employeeRepository.findByUserIdFetch(user.getId())
@@ -193,17 +195,18 @@ public class ProfileService {
         User u = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
         if (req.getFcmToken() != null && !req.getFcmToken().isBlank()) {
-            userRepository.clearFcmTokenFromOthers(req.getFcmToken(), u.getId());
-            u.setFcmToken(req.getFcmToken());
+            pushService.registerToken(u.getId(), req.getFcmToken());
         }
         u.setShiftReminderMinutes(req.getShiftReminderMinutes());
         u.setCheckInOutNotifMinutes(req.getCheckInOutNotifMinutes());
+        if (req.getLateAlert() != null) u.setNotifLateAlert(req.getLateAlert());
+        if (req.getEarlyLeaveAlert() != null) u.setNotifEarlyLeaveAlert(req.getEarlyLeaveAlert());
         userRepository.save(u);
         return toNotificationSettingsResponse(u);
     }
 
     /**
-     * Gửi một thông báo thử tới thiết bị của chính người gọi (token đọc lại từ DB, không nhận token từ client).
+     * Gửi một thông báo thử tới MỌI thiết bị của chính người gọi (token đọc lại từ DB, không nhận token từ client).
      * Chạy ngoài transaction chỉ-đọc của lớp: FCM báo token chết thì {@code FcmService} phải gỡ token (ghi DB),
      * và không giữ kết nối DB trong lúc gọi mạng.
      */
@@ -213,7 +216,16 @@ public class ProfileService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "error.user.not_found"));
         String title = req != null && req.getTitle() != null && !req.getTitle().isBlank() ? req.getTitle().trim() : "BossKin";
         String body  = req != null && req.getBody()  != null && !req.getBody().isBlank()  ? req.getBody().trim()  : "Test";
-        fcmService.sendTest(u.getFcmToken(), title, body);
+        java.util.List<String> devices = pushService.tokensOf(u.getId());
+        if (devices.isEmpty()) fcmService.sendTest(null, title, body); // báo lỗi "chưa có thiết bị"
+        ResponseStatusException last = null;
+        int ok = 0;
+        for (String token : devices) {
+            try { fcmService.sendTest(token, title, body); ok++; }
+            catch (ResponseStatusException e) { last = e; }
+        }
+        if (ok == 0 && last != null) throw last;
+        pushService.record(u.getId(), "TEST", title, body, null);
     }
 
     public ProfileDTO.NotificationSettingsResponse getNotificationSettings(User user) {
@@ -221,10 +233,16 @@ public class ProfileService {
     }
 
     private ProfileDTO.NotificationSettingsResponse toNotificationSettingsResponse(User u) {
+        int devices = fcmTokenRepository.findByUserId(u.getId()).size();
         return ProfileDTO.NotificationSettingsResponse.builder()
-                .enabled(u.getFcmToken() != null && u.getShiftReminderMinutes() != null)
+                .enabled(devices > 0)
+                .deviceCount(devices)
                 .shiftReminderMinutes(u.getShiftReminderMinutes())
                 .checkInOutNotifMinutes(u.getCheckInOutNotifMinutes())
+                .lateAlert(u.isNotifLateAlert())
+                .earlyLeaveAlert(u.isNotifEarlyLeaveAlert())
+                .manager(u.getEmployeeId() != null && employeeRepository.existsByManagerIdAndStatusNot(
+                        u.getEmployeeId(), com.bosskin.entity.Employee.Status.INACTIVE))
                 .build();
     }
 

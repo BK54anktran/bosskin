@@ -27,7 +27,7 @@ import java.util.Map;
 public class ManagerApprovalService {
 
     private final UserRepository userRepository;
-    private final FcmService fcmService;
+    private final PushService pushService;
     private final Clock clock;
 
     public boolean enabled(Company company) {
@@ -93,11 +93,11 @@ public class ManagerApprovalService {
         try {
             if (!requiresManagerStep(requester)) return;
             userRepository.findByEmployeeId(managerOf(requester).getId())
-                .filter(u -> u.getFcmToken() != null && u.isEnabled())
+                .filter(com.bosskin.entity.User::isEnabled)
                 .ifPresent(u -> {
                     var loc = com.bosskin.i18n.AppText.localeOf(u.getLanguage());
-                    fcmService.sendSimple(u.getFcmToken(), com.bosskin.i18n.AppText.msgIn(loc, titleKey),
-                        com.bosskin.i18n.AppText.msgIn(loc, bodyKey, bodyArgs), Map.of("type", "TEAM_APPROVAL", "kind", kind));
+                    pushService.notifyUser(u, "TEAM_APPROVAL", com.bosskin.i18n.AppText.msgIn(loc, titleKey),
+                        com.bosskin.i18n.AppText.msgIn(loc, bodyKey, bodyArgs), Map.of("kind", kind));
                 });
         } catch (RuntimeException ex) {
             log.warn("Không gửi được thông báo cho quản lý trực tiếp: {}", ex.getMessage());

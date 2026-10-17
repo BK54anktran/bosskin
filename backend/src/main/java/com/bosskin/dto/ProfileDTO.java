@@ -135,6 +135,8 @@ public class ProfileDTO {
         private String fcmToken;
         private Integer shiftReminderMinutes;    // null = tắt nhắc ca
         private Integer checkInOutNotifMinutes;  // null = tắt thông báo check-in/out
+        private Boolean lateAlert;               // quản lý: báo nhân viên đi trễ; null = giữ nguyên
+        private Boolean earlyLeaveAlert;         // quản lý: báo nhân viên về sớm; null = giữ nguyên
     }
 
     /** Gửi thông báo thử tới thiết bị đang gắn với tài khoản. Tiêu đề / nội dung do app gửi lên (đã dịch theo ngôn ngữ người dùng). */
@@ -147,8 +149,12 @@ public class ProfileDTO {
     /** Trả về trạng thái cài đặt thông báo hiện tại */
     @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class NotificationSettingsResponse {
-        private boolean enabled;
+        private boolean enabled;                 // có ít nhất một thiết bị nhận thông báo
+        private int deviceCount;
         private Integer shiftReminderMinutes;
         private Integer checkInOutNotifMinutes;
+        private boolean lateAlert;
+        private boolean earlyLeaveAlert;
+        private boolean manager;                 // có nhân viên quản lý trực tiếp → hiện mục báo đi trễ / về sớm
     }
 }

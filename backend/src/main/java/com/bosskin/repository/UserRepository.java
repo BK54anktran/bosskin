@@ -41,18 +41,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
         WHERE u.company.id = :companyId""")
     List<User> findForListing(@org.springframework.data.repository.query.Param("companyId") Long companyId);
 
-    List<User> findAllByFcmTokenIsNotNullAndShiftReminderMinutesIsNotNull();
-    List<User> findAllByFcmTokenIsNotNullAndCheckInOutNotifMinutesIsNotNull();
+    /** Tài khoản bật nhắc ca và có ít nhất một thiết bị nhận thông báo. */
+    @Query("SELECT u FROM User u WHERE u.shiftReminderMinutes IS NOT NULL AND EXISTS (SELECT 1 FROM FcmToken t WHERE t.userId = u.id)")
+    List<User> findAllWithDeviceAndShiftReminder();
 
-    /** Một thiết bị chỉ thuộc một tài khoản: gỡ token khỏi các tài khoản khác (máy dùng chung). */
-    @Transactional
-    @Modifying
-    @Query("UPDATE User u SET u.fcmToken = NULL WHERE u.fcmToken = :token AND u.id <> :userId")
-    int clearFcmTokenFromOthers(@Param("token") String token, @Param("userId") Long userId);
-
-    /** Gỡ token khỏi mọi tài khoản (đăng xuất trên thiết bị đó, hoặc FCM báo token hết hiệu lực). */
-    @Transactional
-    @Modifying
-    @Query("UPDATE User u SET u.fcmToken = NULL WHERE u.fcmToken = :token")
-    int clearFcmToken(@Param("token") String token);
+    /** Tài khoản bật nhắc check-in / check-out và có ít nhất một thiết bị nhận thông báo. */
+    @Query("SELECT u FROM User u WHERE u.checkInOutNotifMinutes IS NOT NULL AND EXISTS (SELECT 1 FROM FcmToken t WHERE t.userId = u.id)")
+    List<User> findAllWithDeviceAndCheckInOutNotif();
 }

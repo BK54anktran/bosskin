@@ -51,7 +51,7 @@ public class ContractService {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final DeptScopeService deptScopeService;
-    private final FcmService fcmService;
+    private final PushService pushService;
     private final AuditService audit;
     private final Clock clock;
 
@@ -394,11 +394,11 @@ public class ContractService {
             .toList();
         if (due.isEmpty()) return;
         for (User u : userRepository.findByCompanyId(companyId)) {
-            if (u.getFcmToken() == null || !u.isEnabled() || !u.hasPermission("CONTRACT_VIEW")) continue;
+            if (!u.isEnabled() || !u.hasPermission("CONTRACT_VIEW")) continue;
             String body = due.size() == 1
                 ? com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.one", due.get(0).getEmployee().getFullName(), due.get(0).getContractNo(), String.valueOf(due.get(0).getEndDate()))
                 : com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.many", String.valueOf(due.size()));
-            fcmService.sendSimple(u.getFcmToken(), com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.title"), body, Map.of("type", "CONTRACT_EXPIRING"));
+            pushService.notifyUser(u, "CONTRACT_EXPIRING", com.bosskin.i18n.AppText.msgIn(com.bosskin.i18n.AppText.localeOf(u.getLanguage()), "push.contract.title"), body, null);
         }
     }
 

@@ -24,6 +24,7 @@ public class CheckInOutReminderScheduler {
     private final UserRepository userRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final FcmService fcmService;
+    private final PushService pushService;
 
     private final java.time.Clock clock;
 
@@ -40,7 +41,7 @@ public class CheckInOutReminderScheduler {
     @Transactional
     public void sendCheckInOutReminders() {
         List<User> users = userRepository
-                .findAllByFcmTokenIsNotNullAndCheckInOutNotifMinutesIsNotNull();
+                .findAllWithDeviceAndCheckInOutNotif();
         if (users.isEmpty()) return;
 
         LocalDateTime now = LocalDateTime.now(clock);
@@ -63,19 +64,29 @@ public class CheckInOutReminderScheduler {
 
                     if (sa.getCheckInNotifSentAt() == null
                             && !now.isBefore(start.minusMinutes(minutes)) && now.isBefore(start)) {
-                        fcmService.sendCheckInOutNotif(user.getFcmToken(), user.getId(), user.getLanguage(), name, startT, day, true);
+                        pushDevices(user, name, startT, day, true);
                         sa.setCheckInNotifSentAt(now);
                         shiftAssignmentRepository.save(sa);
                     }
                     LocalDateTime remindOut = end.plusMinutes(minutes);
                     if (sa.getCheckOutNotifSentAt() == null
                             && !now.isBefore(remindOut) && now.isBefore(remindOut.plusMinutes(CHECK_OUT_GRACE_MINUTES))) {
-                        fcmService.sendCheckInOutNotif(user.getFcmToken(), user.getId(), user.getLanguage(), name, endT, day, false);
+                        pushDevices(user, name, endT, day, false);
                         sa.setCheckOutNotifSentAt(now);
                         shiftAssignmentRepository.save(sa);
                     }
                 }
             }
+        }
+    }
+
+    /** Ghi hộp thư một lần rồi đẩy tới mọi thiết bị của tài khoản. */
+    private void pushDevices(User user, String shiftName, LocalTime time, LocalDate day, boolean isCheckIn) {
+        String[] text = FcmService.checkInOutText(user.getLanguage(), shiftName, time, isCheckIn);
+        pushService.record(user.getId(), isCheckIn ? "CHECK_IN_REMINDER" : "CHECK_OUT_REMINDER", text[0], text[1],
+            java.util.Map.of("workDate", day.toString(), "shiftTime", time.toString()));
+        for (String token : pushService.tokensOf(user.getId())) {
+            fcmService.sendCheckInOutNotif(token, user.getId(), user.getLanguage(), shiftName, time, day, isCheckIn);
         }
     }
 }
