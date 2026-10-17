@@ -793,5 +793,6 @@ V32 tiền tệ + múi giờ theo công ty (`companies.currency_code` / `timezon
   (`landing/video/seed_demo.py` + `help/tools/seed_help_extra.py`). Hướng dẫn: `help/README.md`.
 - SEO: `build_help.py` gắn canonical cho trang trợ giúp và sinh `landing/sitemap.xml` (không sửa tay); `landing/robots.txt` trỏ tới sitemap;
   kiểm `tools/ci/check_sitemap.py` (CI `site-check.yml`). Thêm trang công khai mới ở `landing/` → thêm vào `write_sitemap` + canonical.
+- Trợ giúp có bản tiếng Anh `help/src-en/` (cùng tên file) → `help/en/`: sửa trang vi thì sửa luôn bản en (xem `help/README.md`).
 - Đổi màn hình / luồng → sửa trang trợ giúp tương ứng (biến lương, tên nút, bước) và chụp lại chương đó trong cùng đợt.
 

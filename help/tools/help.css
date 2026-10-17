@@ -10,6 +10,8 @@ a{color:var(--accent)}
 .top-in{display:flex;align-items:center;gap:24px;max-width:1180px;margin:0 auto;padding:0 20px;height:68px}
 .links{display:flex;gap:22px;margin-left:auto;font-size:15px;white-space:nowrap}.links a{color:#fff;text-decoration:none;opacity:.82}.links a:hover,.links a.on{opacity:1}.links a.on{font-weight:600}
 .btn-login{display:inline-block;padding:10px 18px;border-radius:999px;font-weight:700;font-size:15px;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28)}
+.lang-sw{display:inline-block;padding:9px 12px;margin-right:8px;border-radius:10px;font-weight:700;font-size:14px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.28)}
+.lang-sw:hover{background:rgba(255,255,255,.12)}
 .btn-login:hover{background:rgba(255,255,255,.16)}
 @media (max-width:820px){.links{display:none}.actions{margin-left:auto}}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:#fff;text-decoration:none;white-space:nowrap}

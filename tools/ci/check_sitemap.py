@@ -31,8 +31,10 @@ def url_to_file(url):
         return 'landing/en/index.html'
     if path == '/help/':
         return 'help/index.html'
-    m = re.fullmatch(r'/help/([\w-]+\.html)', path)
-    return f'help/{m.group(1)}' if m else None
+    if path == '/help/en/':
+        return 'help/en/index.html'
+    m = re.fullmatch(r'/help/(en/)?([\w-]+\.html)', path)
+    return f'help/{m.group(1) or ""}{m.group(2)}' if m else None
 
 
 def main():
@@ -72,7 +74,11 @@ def main():
         errors.append(f'{len(urls)} URL > 50.000: cần chia sitemap + sitemap index')
 
     slugs = {re.sub(r'^\d+-', '', f[:-3]) for f in os.listdir(os.path.join(ROOT, 'help', 'src')) if f.endswith('.md')}
-    expected = {SITE + '/', SITE + '/en/', SITE + '/help/'} | {f'{SITE}/help/{s}.html' for s in slugs}
+    en_slugs = {re.sub(r'^\d+-', '', f[:-3]) for f in os.listdir(os.path.join(ROOT, 'help', 'src-en')) if f.endswith('.md')}
+    if en_slugs != slugs:
+        errors.append(f'help/src-en lệch help/src: thiếu {sorted(slugs - en_slugs)}, thừa {sorted(en_slugs - slugs)}')
+    expected = ({SITE + '/', SITE + '/en/', SITE + '/help/', SITE + '/help/en/'} | {f'{SITE}/help/{s}.html' for s in slugs}
+                | {f'{SITE}/help/en/{s}.html' for s in slugs})
     if set(urls) != expected:
         errors.append(f'thiếu: {sorted(expected - set(urls))}; thừa: {sorted(set(urls) - expected)} '
                       '(chạy lại python3 help/tools/build_help.py)')

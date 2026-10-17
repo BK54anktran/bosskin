@@ -7,7 +7,7 @@ ARG BRANCH=main
 ADD https://github.com/BK54anktran/bosskin/commits/main.atom /tmp/rev.atom
 RUN git clone --depth 1 --filter=blob:none --sparse -b $BRANCH $REPO /src \
  && cd /src && git sparse-checkout set help \
- && mkdir -p /out && cp help/*.html /out/ && cp -r help/img /out/
+ && mkdir -p /out && cp help/*.html /out/ && cp -r help/img help/en /out/
 
 FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf

@@ -14,7 +14,7 @@
     var words=v.split(/\s+/);
     var hits=idx.filter(function(r){return words.every(function(w){return r.n.indexOf(w)>=0;});})
       .sort(function(a,b){return (b.nt.indexOf(v)>=0)-(a.nt.indexOf(v)>=0);}).slice(0,12);
-    box.innerHTML=hits.length?hits.map(function(r){return '<a href="'+r.u+'">'+r.t+'<small>'+r.p+'</small></a>';}).join(''):'<a>Không tìm thấy — thử từ khác</a>';
+    box.innerHTML=hits.length?hits.map(function(r){return '<a href="'+r.u+'">'+r.t+'<small>'+r.p+'</small></a>';}).join(''):'<a>'+(document.documentElement.lang==='en'?'Nothing found — try another word':'Không tìm thấy — thử từ khác')+'</a>';
     box.style.display='block';
   }
   q.addEventListener('input',render);

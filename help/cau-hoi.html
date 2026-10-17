@@ -6,6 +6,9 @@
 <title>Câu hỏi thường gặp · Trợ giúp BossKin</title>
 <meta name="description" content="Các tình huống hay gặp và cách xử lý nhanh.">
 <link rel="canonical" href="https://bosskin.io.vn/help/cau-hoi.html">
+<link rel="alternate" hreflang="vi" href="https://bosskin.io.vn/help/cau-hoi.html">
+<link rel="alternate" hreflang="en" href="https://bosskin.io.vn/help/en/cau-hoi.html">
+<link rel="alternate" hreflang="x-default" href="https://bosskin.io.vn/help/cau-hoi.html">
 <link rel="icon" href="img/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
@@ -23,6 +26,8 @@ a{color:var(--accent)}
 .top-in{display:flex;align-items:center;gap:24px;max-width:1180px;margin:0 auto;padding:0 20px;height:68px}
 .links{display:flex;gap:22px;margin-left:auto;font-size:15px;white-space:nowrap}.links a{color:#fff;text-decoration:none;opacity:.82}.links a:hover,.links a.on{opacity:1}.links a.on{font-weight:600}
 .btn-login{display:inline-block;padding:10px 18px;border-radius:999px;font-weight:700;font-size:15px;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28)}
+.lang-sw{display:inline-block;padding:9px 12px;margin-right:8px;border-radius:10px;font-weight:700;font-size:14px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.28)}
+.lang-sw:hover{background:rgba(255,255,255,.12)}
 .btn-login:hover{background:rgba(255,255,255,.16)}
 @media (max-width:820px){.links{display:none}.actions{margin-left:auto}}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:#fff;text-decoration:none;white-space:nowrap}
@@ -117,7 +122,7 @@ footer.site a{color:rgba(255,255,255,.72);text-decoration:none}footer.site a:hov
   <button class="menu-btn" aria-label="Mở menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="../" title="Về trang chủ BossKin"><img class="logo" src="img/logo-80.png" width="38" height="38" alt="">BossKin</a>
   <nav class="links"><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a><a class="on" href="index.html">Trợ giúp</a></nav>
-  <div class="actions"><a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
+  <div class="actions"><a class="lang-sw" href="en/cau-hoi.html" hreflang="en" lang="en" data-lang="en" title="English">EN</a><a class="btn-login js-app" href="/login" hidden>Đăng nhập</a></div>
 </div></header>
 <div class="wrap">
 <nav class="side"><div class="side-site"><a href="../">Trang chủ</a><a href="../#video">Video</a><a href="../#tinh-nang">Tính năng</a><a href="../#vai-tro">Cho ai</a><a href="../#hoi-dap">Hỏi đáp</a></div><div class="search"><input id="q" type="search" placeholder="Tìm hướng dẫn…  ( / )" autocomplete="off"><div id="results"></div></div><div class="nav-group"><div class="nav-h">Bắt đầu</div>
@@ -227,7 +232,7 @@ hoặc quản lý từ chối.</p>
     var words=v.split(/\s+/);
     var hits=idx.filter(function(r){return words.every(function(w){return r.n.indexOf(w)>=0;});})
       .sort(function(a,b){return (b.nt.indexOf(v)>=0)-(a.nt.indexOf(v)>=0);}).slice(0,12);
-    box.innerHTML=hits.length?hits.map(function(r){return '<a href="'+r.u+'">'+r.t+'<small>'+r.p+'</small></a>';}).join(''):'<a>Không tìm thấy — thử từ khác</a>';
+    box.innerHTML=hits.length?hits.map(function(r){return '<a href="'+r.u+'">'+r.t+'<small>'+r.p+'</small></a>';}).join(''):'<a>'+(document.documentElement.lang==='en'?'Nothing found — try another word':'Không tìm thấy — thử từ khác')+'</a>';
     box.style.display='block';
   }
   q.addEventListener('input',render);

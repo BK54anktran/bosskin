@@ -12,6 +12,12 @@ help/
   tools/                     ← dựng trang, seed dữ liệu mẫu, chụp ảnh
 ```
 
+## Bản tiếng Anh (17/10/2026)
+`help/src-en/NN-<trang>.md` (cùng tên file với `src/`, `group:` = Getting started | Employee | Manager | HR | Accounting | Administration | Support,
+hộp lưu ý `Note:` / `Tip:` / `Important:`) → `help/en/*.html` (https://bosskin.io.vn/help/en/…, canonical + hreflang vi / en, nút VI / EN ở đầu trang).
+`build_help.py` dựng cả hai ngôn ngữ; chữ khung trang dịch bằng bảng `EN_CHROME` trong script. Neo liên kết trong trang Anh = slug của **tiêu đề tiếng Anh**.
+Sửa trang tiếng Việt → sửa luôn bản `src-en` cùng tên (CI `check_sitemap.py` báo lệch tên file). Ảnh chụp dùng chung, vẫn là giao diện tiếng Việt.
+
 ## Sửa nội dung
 
 1. Sửa / thêm `help/src/NN-<trang>.md`. Phần đầu file:
