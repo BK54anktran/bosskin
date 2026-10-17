@@ -97,6 +97,15 @@
   "caption": null,
   "marks": []
  },
+ "department-new": {
+  "caption": null,
+  "marks": [
+   "Department name *",
+   "Department code *",
+   "Parent department\n— None (top level) —",
+   "Use current location"
+  ]
+ },
  "departments": {
   "caption": null,
   "marks": [
@@ -284,6 +293,10 @@
   "marks": [
    "Net salary"
   ]
+ },
+ "positions": {
+  "caption": null,
+  "marks": []
  },
  "profile": {
   "caption": null,
