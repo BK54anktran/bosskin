@@ -82,6 +82,13 @@
   "caption": null,
   "marks": []
  },
+ "edit-requests": {
+  "caption": null,
+  "marks": [
+   "Approve",
+   "Reject"
+  ]
+ },
  "excel": {
   "caption": null,
   "marks": [
