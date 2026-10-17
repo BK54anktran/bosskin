@@ -149,6 +149,14 @@
    "Sign in"
   ]
  },
+ "payroll-list": {
+  "caption": null,
+  "marks": [
+   "Month\nMonth 9",
+   "Export Payslips",
+   "Generate payroll"
+  ]
+ },
  "profile": {
   "caption": null,
   "marks": []
@@ -196,6 +204,18 @@
    "Add role",
    "Edit"
   ]
+ },
+ "salary-formulas": {
+  "caption": null,
+  "marks": []
+ },
+ "salary-grades": {
+  "caption": null,
+  "marks": []
+ },
+ "salary-variables": {
+  "caption": null,
+  "marks": []
  },
  "settings-calendar": {
   "caption": null,
