@@ -1,4 +1,12 @@
 {
+ "account-menu": {
+  "caption": null,
+  "marks": [
+   "Personal info",
+   "Language",
+   "Logout"
+  ]
+ },
  "admin-dashboard": {
   "caption": null,
   "marks": []
@@ -109,6 +117,12 @@
    "New password"
   ]
  },
+ "home-admin": {
+  "caption": null,
+  "marks": [
+   "Menu"
+  ]
+ },
  "home-employee": {
   "caption": null,
   "marks": [
@@ -155,6 +169,16 @@
    "Password *",
    "Sign in"
   ]
+ },
+ "menu-collapse": {
+  "caption": null,
+  "marks": [
+   "Nhóm thu gọn"
+  ]
+ },
+ "notifications": {
+  "caption": null,
+  "marks": []
  },
  "payroll-list": {
   "caption": null,
