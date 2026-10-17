@@ -81,6 +81,33 @@
    "Sign in"
   ]
  },
+ "profile": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-bottom": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-dependents": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-edit-request": {
+  "caption": null,
+  "marks": [
+   "Phone number",
+   "Send request"
+  ]
+ },
+ "profile-more": {
+  "caption": null,
+  "marks": []
+ },
+ "profile-security": {
+  "caption": null,
+  "marks": []
+ },
  "reports": {
   "caption": null,
   "marks": [
