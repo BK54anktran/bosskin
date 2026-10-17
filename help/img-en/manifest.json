@@ -7,9 +7,23 @@
   "caption": null,
   "marks": []
  },
+ "att-request-new": {
+  "caption": null,
+  "marks": [
+   "Request type\nCheck-in / Check-out",
+   "Requested check-in time",
+   "Send request"
+  ]
+ },
  "calendar-new": {
   "caption": null,
   "marks": []
+ },
+ "checkin": {
+  "caption": null,
+  "marks": [
+   "Check-in"
+  ]
  },
  "dashboard": {
   "caption": null,
@@ -65,9 +79,23 @@
    "Reject"
   ]
  },
+ "leave-balance": {
+  "caption": null,
+  "marks": []
+ },
  "leave-balances-hr": {
   "caption": null,
   "marks": []
+ },
+ "leave-new": {
+  "caption": null,
+  "marks": [
+   "Leave type\nPhép năm (PN)",
+   "From date: 17/10/2026",
+   "To date: 17/10/2026",
+   "Reason",
+   "Create"
+  ]
  },
  "leave-types": {
   "caption": null,
@@ -179,6 +207,19 @@
  "swap-approve": {
   "caption": null,
   "marks": []
+ },
+ "swap-new": {
+  "caption": null,
+  "marks": [
+   "My shift",
+   "Send request"
+  ]
+ },
+ "swaps": {
+  "caption": null,
+  "marks": [
+   "Request swap / give away"
+  ]
  },
  "team-approvals": {
   "caption": null,

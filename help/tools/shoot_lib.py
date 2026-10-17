@@ -58,7 +58,7 @@ def tr(label):
         return hit
     for vi_d, en_d in _WEEKDAYS.items():   # "Thứ Bảy, 10/10/2026" → "Saturday, 10/10/2026"
         label = label.replace(vi_d, en_d)
-    return label
+    return re.sub(r'Tháng (\d+)', r'Month \1', label)
 
 
 _WEEKDAYS = {'Thứ Hai': 'Monday', 'Thứ Ba': 'Tuesday', 'Thứ Tư': 'Wednesday', 'Thứ Năm': 'Thursday', 'Thứ Sáu': 'Friday',
