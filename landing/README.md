@@ -37,6 +37,15 @@ Khi backend lên mạng: đặt `apiUrl` (và `appUrl`) trong `site-config.js`, 
 - Ra bản mới: tăng `version` trong `frontend/pubspec.yaml` rồi push `main` — workflow **Frontend build** build, ký và thay `bosskin.apk` ở release `app-latest`
   (số build = số lần chạy workflow nên Android luôn coi là bản mới hơn). Build tay trên máy dev vẫn được: `flutter build apk --release --dart-define=API_HOST=https://api.bosskin.io.vn`.
 
+## Đa ngôn ngữ vi / en (17/10/2026)
+- `landing/index.html` là bản tiếng Việt (nguồn). Bản tiếng Anh `landing/en/index.html` (https://bosskin.io.vn/en/) **sinh tự động**, không sửa tay:
+  `python3 tools/landing/build_i18n.py` (từ `index.html` + bảng `landing/i18n/en.json`: câu tiếng Việt → câu tiếng Anh, khoá gộp khoảng trắng).
+  Sửa chữ trong `index.html` → thêm / sửa dòng cùng khoá trong `en.json` rồi chạy lại; chữ Việt chưa có bản dịch thì script báo lỗi. CI `site-check.yml` chạy `--check`.
+- Chuỗi trong JS (lỗi form, "Đang gửi…", dòng liên hệ) nằm trong `TXT` / `ERR` của `index.html`, chọn theo `<html lang>`; form gửi `Accept-Language` theo trang.
+- Nút VI / EN ở thanh trên; lựa chọn nhớ trong `localStorage` (`bk_lang`), trang tiếng Việt chỉ tự chuyển sang `/en/` khi người dùng đã chọn English (không dò ngôn ngữ trình duyệt để khỏi ảnh hưởng SEO).
+  Cả hai trang có canonical riêng + `hreflang` vi / en / x-default; `/en/` có trong sitemap.
+- Trang trợ giúp `/help/`, ảnh chụp màn hình và video vẫn tiếng Việt (chưa có bản Anh).
+
 ## SEO: sitemap.xml, robots.txt, Google Search Console (12/10/2026)
 
 - `sitemap.xml` **sinh tự động** bởi `python3 help/tools/build_help.py` (trang chủ + `/help/` + 22 trang trợ giúp, URL đúng bằng canonical

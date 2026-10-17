@@ -8,12 +8,14 @@ on:
       - 'landing/**'
       - 'help/**'
       - 'tools/ci/check_sitemap.py'
+      - 'tools/landing/**'
       - '.github/workflows/site-check.yml'
   pull_request:
     paths:
       - 'landing/**'
       - 'help/**'
       - 'tools/ci/check_sitemap.py'
+      - 'tools/landing/**'
       - '.github/workflows/site-check.yml'
 
 jobs:
@@ -24,3 +26,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: sitemap.xml + robots.txt + canonical
         run: python3 tools/ci/check_sitemap.py
+      - name: Bản tiếng Anh của trang giới thiệu khớp nguồn
+        run: python3 tools/landing/build_i18n.py --check

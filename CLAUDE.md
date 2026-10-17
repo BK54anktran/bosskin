@@ -772,6 +772,8 @@ V32 tiền tệ + múi giờ theo công ty (`companies.currency_code` / `timezon
   (SQL: `landing/supabase/001_trial_requests.sql`; anon chỉ INSERT, trigger chống spam). Đổi bảng → sửa file SQL đó + migration Supabase.
 - Host chính: Vibe Host `https://bosskin.io.vn` (`landing/Dockerfile`, trợ giúp ở `/help/`, ảnh mạng xã hội ở `/social/`; host duy nhất — Netlify đã gỡ 12/10/2026); app `https://app.bosskin.io.vn`, API `https://api.bosskin.io.vn` (`docs/he-thong/trien-khai.md`). Form dùng thử: có `apiUrl` → API BossKin, không thì Supabase
   (`supabaseUrl` + `supabaseKey`); thiếu cả hai → form báo lỗi. Ô bẫy bot `website`. `appUrl` trống → ẩn nút Đăng nhập.
+- Trang giới thiệu có 2 ngôn ngữ: `landing/index.html` (vi, nguồn) → `landing/en/index.html` **sinh** bởi `tools/landing/build_i18n.py` từ `landing/i18n/en.json` (CI `--check`);
+  sửa chữ ở `index.html` thì thêm bản dịch vào `en.json` rồi chạy lại. Chi tiết: `landing/README.md`.
 - Đổi tính năng/giao diện chính → cập nhật nội dung trang (và chụp lại ảnh/video nếu màn hình đổi nhiều).
 - Công ty dùng thử trên prod: `tools/demo/seed_test_company.py [API]` — "Công ty test", mã `TEST`, đuôi `@test.com`, 24 NV (gộp dữ liệu chụp ảnh
   seed_demo + seed_help_extra), tắt kiểm tra vị trí / gắn thiết bị. Hỏi email + mật khẩu + mã 2FA system admin và mật khẩu chung tài khoản dùng thử;

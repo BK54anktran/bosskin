@@ -232,7 +232,8 @@ def write_sitemap(pages):
     """landing/sitemap.xml theo giao thức sitemaps.org: chỉ URL canonical, công khai (trang chủ + trợ giúp).
     Trang đăng nhập / ứng dụng ở app.bosskin.io.vn, API ở api.bosskin.io.vn: tên miền khác, không thuộc sitemap này."""
     src = lambda p: os.path.join(SRC, p['order'])
-    entries = [(SITE + '/', lastmod(os.path.join(LANDING, 'index.html'))),
+    landing_mod = lastmod(os.path.join(LANDING, 'index.html'), os.path.join(LANDING, 'i18n', 'en.json'))
+    entries = [(SITE + '/', landing_mod), (SITE + '/en/', landing_mod),
                (HELP_URL, lastmod(*[src(p) for p in pages], *TEMPLATE_FILES))]
     entries += [(canonical(p['slug']), lastmod(src(p), *TEMPLATE_FILES)) for p in pages]
     body = ''.join(f'  <url>\n    <loc>{escape(u)}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n' for u, d in entries)

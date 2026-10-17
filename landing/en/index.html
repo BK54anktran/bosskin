@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BossKin — Time &amp; attendance, shift scheduling, leave and payroll</title>
+<meta name="description" content="BossKin brings phone clock-in, shift scheduling, leave and payroll into one app for small and mid-sized businesses.">
+<meta property="og:title" content="BossKin — Accurate attendance, fast payroll">
+<meta property="og:description" content="GPS clock-in on the phone, shift scheduling, leave, period close and payroll by Vietnamese regulations — in one app.">
+<meta property="og:image" content="https://bosskin.io.vn/assets/man-tong-quan.webp">
+<meta property="og:url" content="https://bosskin.io.vn/en/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<link rel="canonical" href="https://bosskin.io.vn/en/">
+<link rel="alternate" hreflang="vi" href="https://bosskin.io.vn/">
+<link rel="alternate" hreflang="en" href="https://bosskin.io.vn/en/">
+<link rel="alternate" hreflang="x-default" href="https://bosskin.io.vn/">
+<link rel="icon" href="../assets/logo-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+<script src="../site-config.js"></script>
+<style>
+  :root {
+    --ink: #0f172a; --ink-2: #334155; --muted: #56657a; --line: #e2e8f0; --accent: #1d4ed8; --accent-bg: rgba(37,99,235,.1);
+    --bg: #ffffff; --bg-soft: #f4f7fc; --card: #ffffff;
+    --navy: #0b1630; --navy-2: #16306a; --blue: #2563eb; --blue-d: #1d4ed8; --sky: #5fa9d2;
+    --green: #10b981; --red: #ef4444; --amber: #f59e0b;
+    --radius: 18px; --shadow: 0 18px 50px -20px rgba(15, 23, 42, .28);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #e8eefb; --ink-2: #c5d0e6; --muted: #a3b0c8; --line: #24324f; --accent: #8ab4ff; --accent-bg: rgba(138,180,255,.14); --bg: #0a1224; --bg-soft: #0f1a33;
+            --card: #121f3d; --shadow: 0 18px 50px -20px rgba(0, 0, 0, .6); color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+         color: var(--ink); background: var(--bg); line-height: 1.6; font-size: 17px; -webkit-font-smoothing: antialiased; }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+  h1, h2, h3 { line-height: 1.2; text-wrap: balance; margin: 0; }
+  h2 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -.01em; }
+  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .lead { color: var(--muted); font-size: 18px; max-width: 62ch; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 999px; font-weight: 700;
+         text-decoration: none; border: 0; cursor: pointer; font: inherit; font-weight: 700; transition: transform .15s, background .15s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-d); }
+  .btn-ghost { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.28); }
+
+  /* ── header ── */
+  header.top { position: sticky; top: 0; z-index: 20; background: rgba(11,22,48,.86); backdrop-filter: blur(10px); color: #fff; }
+  header.top .wrap { display: flex; align-items: center; gap: 24px; height: 68px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; }
+  .brand img { width: 38px; height: 38px; border-radius: 50%; }
+  nav.links { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
+  nav.links a { text-decoration: none; opacity: .82; } nav.links a:hover { opacity: 1; }
+  header.top .btn { padding: 10px 18px; font-size: 15px; white-space: nowrap; }
+  .lang-sw { display: inline-grid; place-items: center; height: 38px; padding: 0 12px; margin-right: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,.28); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; }
+  .lang-sw:hover { background: rgba(255,255,255,.1); }
+  header.top .actions { display: flex; align-items: center; }
+  .nav-toggle { display: none; margin-left: 4px; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font-size: 20px; cursor: pointer; }
+  @media (max-width: 820px) {
+    header.top .wrap { position: relative; }
+    nav.links { display: none; } header.top .actions { margin-left: auto; }
+    header.top .wrap { gap: 12px; } header.top .btn { padding: 9px 14px; }
+    .nav-toggle { display: inline-grid; place-items: center; }
+    header.top.open nav.links { display: flex; flex-direction: column; gap: 0; position: absolute; top: 68px; left: 0; right: 0; margin: 0;
+      padding: 6px 20px 14px; background: #0b1630; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); border-bottom: 1px solid rgba(255,255,255,.12); }
+    header.top.open nav.links a { padding: 13px 0; font-size: 17px; opacity: .92; border-bottom: 1px solid rgba(255,255,255,.08); }
+    header.top.open nav.links a:last-child { border-bottom: 0; }
+  }
+
+  /* ── hero ── */
+  .hero { background: radial-gradient(1000px 520px at 85% -10%, rgba(64,120,220,.55), transparent 60%),
+                      linear-gradient(135deg, var(--navy), var(--navy-2)); color: #fff; overflow: hidden; }
+  .hero .wrap { display: grid; grid-template-columns: 1.02fr 1fr; gap: 48px; align-items: center; padding-block: 72px 96px; }
+  .hero h1 { font-size: clamp(34px, 4.6vw, 56px); font-weight: 800; letter-spacing: -.02em; }
+  .hero h1 em { font-style: normal; color: #9cc8ff; }
+  .hero p { color: #c8d6f2; font-size: 19px; margin: 22px 0 30px; max-width: 54ch; }
+  .hero .ctas { display: flex; flex-wrap: wrap; gap: 14px; }
+  .hero-install { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
+  .hero-install button { font: inherit; font-weight: 700; color: #fff; cursor: pointer; padding: 8px 18px; border-radius: 999px;
+                         background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.34); }
+  .hero-install button:hover { background: rgba(255,255,255,.2); }
+  .hero .facts { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 34px; font-size: 15px; color: #c8d6f2; }
+  .hero .facts span::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 8px; }
+  .shots { position: relative; min-width: 0; }
+  .shots .desk { border-radius: 14px; box-shadow: 0 40px 80px -30px rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.12); }
+  .shots .phone { position: absolute; width: 30%; right: -2%; bottom: -14%; border-radius: 28px; border: 8px solid #0c0e14;
+                  box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); }
+  @media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; padding-block: 48px 90px; } .shots .phone { right: 2%; } }
+
+  /* ── proof strip ── */
+  .proof { border-bottom: 1px solid var(--line); background: var(--bg-soft); }
+  .proof .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding-block: 34px; }
+  .proof b { display: block; font-size: 26px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .proof span { color: var(--muted); font-size: 15px; }
+  @media (max-width: 760px) { .proof .wrap { grid-template-columns: repeat(2, 1fr); } }
+
+  section { padding-block: 88px; }
+  .section-head { display: grid; gap: 14px; margin-bottom: 44px; }
+
+  /* ── video ── */
+  .video-box { border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); background: #000; aspect-ratio: 16 / 9; max-width: 100%; }
+  .video-box video { width: 100%; height: 100%; display: block; }
+
+  /* ── features ── */
+  .features { display: grid; gap: 22px; }
+  .feature { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; align-items: center; padding: 34px;
+             background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+  .feature:nth-child(even) .feature-text { order: 2; }
+  .feature-text { min-width: 0; }
+  .feature h3 { font-size: 26px; font-weight: 800; margin: 8px 0 12px; }
+  .feature p { color: var(--muted); margin: 0 0 14px; }
+  .feature ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .feature li { padding-left: 28px; position: relative; color: var(--ink-2); }
+  .feature li::before { content: ''; position: absolute; left: 0; top: 8px; width: 16px; height: 9px; border-left: 3px solid var(--green);
+                        border-bottom: 3px solid var(--green); transform: rotate(-45deg); }
+  .feature figure { margin: 0; min-width: 0; }
+  .feature figure img { border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .feature figure.phone-pair { display: flex; gap: 16px; justify-content: center; }
+  .feature figure.phone-pair img { width: min(46%, 240px); border-radius: 24px; border: 6px solid #0c0e14; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+         color: var(--accent); background: var(--accent-bg); padding: 4px 10px; border-radius: 999px; }
+  @media (max-width: 860px) { .feature { grid-template-columns: 1fr; padding: 22px; gap: 22px; } .feature:nth-child(even) .feature-text { order: 0; } }
+
+  /* ── roles ── */
+  /* ── bảng giá ── */
+  .price-hero { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin: 22px 0 6px; }
+  .price-hero .from { color: var(--muted); font-weight: 600; }
+  .price-hero .num { font-size: clamp(40px, 6vw, 60px); font-weight: 800; color: var(--accent); letter-spacing: -.02em; line-height: 1; }
+  .price-hero .unit { color: var(--ink-2); font-weight: 600; font-size: 18px; }
+  .price-formula { display: inline-block; margin: 14px 0 0; padding: 10px 16px; border-radius: 12px; background: var(--accent-bg); color: var(--accent); font-weight: 700; font-size: 15.5px; }
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; }
+  .plan.hot { border: 2px solid var(--blue); box-shadow: var(--shadow); }
+  .plan h3 { font-size: 20px; margin-bottom: 4px; }
+  .plan .p { font-size: 26px; font-weight: 800; color: var(--accent); margin: 8px 0 2px; }
+  .plan .p small { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .plan .d { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+  .plan ul { margin: 0 0 20px; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 15.5px; }
+  .plan li { padding-left: 24px; position: relative; }
+  .plan li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
+  .plan .btn { margin-top: auto; justify-content: center; }
+  .price-note { margin: 22px 0 0; color: var(--muted); font-size: 15px; }
+  @media (max-width: 900px) { .plans { grid-template-columns: 1fr; } }
+  .roles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .role { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+  .role h3 { font-size: 19px; margin-bottom: 8px; }
+  .role p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  .role .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 14px; color: #fff; }
+  @media (max-width: 960px) { .roles { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .roles { grid-template-columns: 1fr; } }
+
+  /* ── steps ── */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; counter-reset: step; }
+  .step { padding: 26px; border-radius: var(--radius); background: var(--bg-soft); border: 1px solid var(--line); }
+  .step::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 38px; height: 38px;
+                  border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; margin-bottom: 14px; }
+  .step h3 { font-size: 19px; margin-bottom: 6px; } .step p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+
+  /* ── faq ── */
+  .faq { display: grid; gap: 12px; max-width: 860px; }
+  .faq details { border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; background: var(--card); }
+  .faq summary { font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  .faq summary::after { content: '+'; color: var(--accent); font-size: 22px; line-height: 1; }
+  .faq details[open] summary::after { content: '–'; }
+  .faq p { margin: 12px 0 0; color: var(--muted); }
+
+  /* ── contact ── */
+  .contact { background: linear-gradient(135deg, var(--navy), var(--navy-2)); color: #fff; }
+  .contact .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .contact p { color: #c8d6f2; }
+  .contact form { background: #fff; color: #0f172a; border-radius: 20px; padding: 28px; display: grid; gap: 14px; box-shadow: 0 30px 60px -25px rgba(0,0,0,.6); color-scheme: light; }
+  .contact input:-webkit-autofill, .contact input:-webkit-autofill:hover, .contact input:-webkit-autofill:focus {
+         -webkit-text-fill-color: #0f172a; caret-color: #0f172a; -webkit-box-shadow: 0 0 0 1000px #eaf1ff inset; box-shadow: 0 0 0 1000px #eaf1ff inset; }
+  .contact input::placeholder, .contact textarea::placeholder { color: #7a8699; }
+  .contact input:focus, .contact select:focus, .contact textarea:focus { outline: 2px solid #2563eb; outline-offset: 1px; border-color: #2563eb; }
+  .contact label { font-size: 14px; font-weight: 600; display: grid; gap: 6px; }
+  .contact input, .contact select, .contact textarea { font: inherit; font-size: 16px; padding: 12px 14px; border: 1px solid #cbd5e1;
+         border-radius: 10px; background: #f8fafc; color: #0f172a; width: 100%; }
+  .contact .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .contact .note { font-size: 14px; color: #64748b; margin: 0; }
+  .contact .direct { margin-top: 24px; display: grid; gap: 8px; font-size: 17px; }
+  .contact .direct b { user-select: all; }
+  #formMsg { font-size: 15px; margin: 0; }
+  .contact label.consent { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; color: #334155; }
+  .contact label.consent input { width: 18px; height: 18px; margin-top: 3px; flex: none; accent-color: var(--blue); }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  @media (max-width: 860px) { .contact .wrap { grid-template-columns: 1fr; } .contact .row { grid-template-columns: 1fr; } }
+
+  /* ── chân trang (dùng chung kiểu với trang trợ giúp help/) ── */
+  footer.site { background: var(--navy); color: rgba(255,255,255,.72); font-size: 15px; }
+  footer.site a { color: rgba(255,255,255,.72); text-decoration: none; }
+  footer.site a:hover { color: #fff; }
+  footer.site a.btn-primary { color: #fff; }   /* chữ trắng trên nền xanh: tương phản 5,2:1 (WCAG AA) */
+  .foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 40px; padding-block: 56px 40px; }
+  footer.site .foot-brand .brand { color: #fff; margin-bottom: 14px; }
+  .foot-brand p { margin: 0 0 18px; line-height: 1.65; max-width: 340px; }
+  .foot-col .foot-h { margin: 4px 0 14px; color: #fff; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .foot-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .foot-contact li { display: flex; gap: 10px; align-items: flex-start; }
+  .foot-contact .ic { flex: none; width: 20px; opacity: .7; }
+  .foot-bottom { border-top: 1px solid rgba(255,255,255,.1); }
+  .foot-bottom .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding-block: 18px; font-size: 14px; color: rgba(255,255,255,.55); }
+  footer.site .btn { padding: 10px 18px; font-size: 15px; }
+  .socials { display: flex; gap: 10px; margin: 0 0 18px; }
+  .socials a { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); color: #fff !important; }
+  .socials a:hover { background: rgba(255,255,255,.18); }
+  .zalo-txt { font-size: 10.5px; font-weight: 800; letter-spacing: -.01em; }
+  @media (max-width: 900px) { .foot-grid { grid-template-columns: 1fr 1fr; gap: 32px; } .foot-brand { grid-column: 1 / -1; } }
+  @media (max-width: 520px) { .foot-grid { gap: 28px 20px; padding-block: 44px 28px; } .foot-col:last-child { grid-column: 1 / -1; } }
+
+  /* ── cài lên điện thoại (lối tắt màn hình chính) ── */
+  .install { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .install .os { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .install .os .ic { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--blue); }
+  .install .os h3 { font-size: 20px; margin: 0; }
+  .install .os p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  .install .os .btn { margin-top: 6px; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+  @media (max-width: 760px) { .install { grid-template-columns: 1fr; } }
+  dialog.howto { border: 1px solid var(--line); border-radius: var(--radius); padding: 0; max-width: min(520px, calc(100vw - 32px)); width: 100%;
+                 background: var(--card); color: var(--ink); box-shadow: 0 24px 60px rgba(2, 8, 23, .35); }
+  dialog.howto::backdrop { background: rgba(2, 8, 23, .6); }
+  dialog.howto .body { padding: 24px 24px 22px; }
+  dialog.howto h3 { font-size: 21px; margin: 0 0 4px; }
+  dialog.howto .sub { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
+  dialog.howto ol { margin: 0 0 18px; padding-left: 22px; display: grid; gap: 10px; font-size: 16px; }
+  dialog.howto ol b { white-space: nowrap; }
+  dialog.howto .acts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  dialog.howto .acts .btn { padding: 11px 20px; font-size: 15.5px; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+  dialog.howto .btn-plain { background: transparent; color: var(--accent); border: 1px solid var(--line) !important; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="../assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
+    <nav class="links">
+      <a href="#cai-dat">Install</a><a href="#video">Video</a><a href="#tinh-nang">Features</a><a href="#vai-tro">Who it's for</a><a href="#bang-gia">Pricing</a><a href="#hoi-dap">FAQ</a><a href="../help/">Help</a>
+    </nav>
+    <div class="actions"><a class="lang-sw" href="../" hreflang="vi" lang="vi" data-lang="vi" title="Tiếng Việt">VI</a><a class="btn btn-ghost js-app" href="/login">Log in</a></div>
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<main>
+<section class="hero" style="padding:0">
+  <div class="wrap">
+    <div>
+      <h1>Time &amp; attendance, shift scheduling, leave and payroll — <em>all in one app</em></h1>
+      <p>No more chasing timesheets and month-end Excel files. Employees clock in from their phone, managers approve with one tap, and payroll calculates itself by the rules.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#lien-he">Start free trial</a>
+        <a class="btn btn-ghost" href="#video">▶ Watch the 1-minute video</a>
+      </div>
+      <div class="hero-install js-app-row">
+        <span>Install on your phone:</span>
+        <button class="js-apk-on" type="button" data-howto="apk">Android</button>
+        <button class="js-apk-off" type="button" data-howto="android" hidden>Android</button>
+        <button type="button" data-howto="ios">iPhone</button>
+      </div>
+      <div class="facts"><span>No time clock needed</span><span>Runs on Android and the web browser</span><span>English and Vietnamese</span></div>
+    </div>
+    <div class="shots">
+      <img class="desk" src="../assets/man-tong-quan.webp" srcset="../assets/man-tong-quan-w800.webp 800w, ../assets/man-tong-quan.webp 1600w" sizes="(max-width: 700px) 92vw, 560px" width="1600" height="900" alt="BossKin overview screen: employees present, on leave, absent today and the latest payroll">
+      <img class="phone" src="../assets/dt-cham-cong.webp" srcset="../assets/dt-cham-cong-w360.webp 360w, ../assets/dt-cham-cong.webp 600w" sizes="(max-width: 700px) 45vw, 240px" width="600" height="1298" alt="Phone clock-in screen with a map of the office location">
+    </div>
+  </div>
+</section>
+
+<div class="proof">
+  <div class="wrap">
+    <div><b>&lt; 1 minute</b><span>to approve a whole period for 300 employees</span></div>
+    <div><b>GPS + 1 device</b><span>stops buddy punching</span></div>
+    <div><b>Social insurance · income tax</b><span>calculated automatically by Vietnamese regulations</span></div>
+    <div><b>8 reports</b><span>exported to Excel in seconds</span></div>
+  </div>
+</div>
+
+<section id="cai-dat" class="js-app-row" style="background:var(--bg-soft);padding-block:64px">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">On your phone</span>
+      <h2>Install BossKin on your phone</h2>
+      <p class="lead">No app store needed. Android downloads the install file directly; on iPhone you add a shortcut to the home screen — next time, tap the BossKin icon and you go straight to clocking in.</p>
+    </div>
+    <div class="install">
+      <div class="os">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M10.5 5h3"/></svg></div>
+        <h3>iPhone / iPad</h3>
+        <p>Open in Safari, tap the Share button, then choose “Add to Home Screen”.</p>
+        <button class="btn btn-primary" type="button" data-howto="ios">Install on iPhone</button>
+      </div>
+      <div class="os">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
+        <h3>Android</h3>
+        <p class="js-apk-on">Download the BossKin install file and install it like an app: shift reminders and quick clock-in right from the notification.</p>
+        <p class="js-apk-off" hidden>Open in Chrome, tap the three dots, then choose “Add to Home screen”.</p>
+        <button class="btn btn-primary js-apk-on" type="button" data-howto="apk">Download for Android</button>
+        <button class="btn btn-primary js-apk-off" type="button" data-howto="android" hidden>Install on Android</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="video">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Quick look</span>
+      <h2>BossKin in 1 minute</h2>
+      <p class="lead">Time &amp; attendance, shifts, leave and payroll — see how BossKin brings everything into one place.</p>
+    </div>
+    <div class="video-box">
+      <video controls preload="metadata" poster="../assets/reel-poster.webp" playsinline>
+        <source src="../assets/bosskin-reel.mp4" type="video/mp4">
+        <track kind="captions" src="../assets/bosskin-reel.vi.vtt" srclang="vi" label="Tiếng Việt">
+      </video>
+    </div>
+    <p style="margin:16px 0 0;color:var(--muted);font-size:15px">Want a closer look at each screen? <a href="../assets/bosskin-gioi-thieu.mp4" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Watch the full 90-second version →</a></p>
+  </div>
+</section>
+
+<section id="tinh-nang" style="background:var(--bg-soft)">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Features</span>
+      <h2>Everything HR does every day, in one place</h2>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <div class="feature-text">
+          <span class="tag">Attendance</span>
+          <h3>Clock in right on your phone</h3>
+          <p>Employees open the app and tap Check-in. BossKin verifies location and device before recording.</p>
+          <ul>
+            <li>Clock-in only works within a radius around the office, set per company or per department</li>
+            <li>Each account is tied to exactly one phone — no buddy punching</li>
+            <li>Rejects spoofed locations and very weak GPS signals</li>
+          </ul>
+        </div>
+        <figure class="phone-pair"><img loading="lazy" src="../assets/dt-cham-cong.webp" srcset="../assets/dt-cham-cong-w360.webp 360w, ../assets/dt-cham-cong.webp 600w" sizes="(max-width: 700px) 45vw, 240px" width="600" height="1298" alt="Successful clock-in on the phone"></figure>
+      </article>
+      <article class="feature">
+        <div class="feature-text">
+          <span class="tag">Shifts</span>
+          <h3>Schedule a whole factory in minutes</h3>
+          <p>Shift roster by pay period, scroll through the whole month, import and export with Excel.</p>
+          <ul>
+            <li>Fixed shifts, overnight shifts, split shifts and flexible shifts that only need the required hours</li>
+            <li>Rotation templates generate schedules for many people at once</li>
+            <li>Employees request to swap or hand over shifts, managers approve</li>
+            <li>Work calendars per department (half-day Saturdays…) and yearly holidays, for correct standard working days</li>
+          </ul>
+        </div>
+        <figure><img loading="lazy" src="../assets/man-xep-ca.webp" srcset="../assets/man-xep-ca-w800.webp 800w, ../assets/man-xep-ca.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Monthly shift roster"></figure>
+      </article>
+      <article class="feature">
+        <div class="feature-text">
+          <span class="tag">Leave</span>
+          <h3>Request leave in the app, approve with one tap</h3>
+          <p>Leave and time-correction requests are sent from the phone and go straight to the approver.</p>
+          <ul>
+            <li>The leave ledger deducts only days that have a shift, and refunds when a request is cancelled</li>
+            <li>Leave by the day or by the hour, automatically excluding lunch break</li>
+            <li>Leave accrues monthly according to your company's rules</li>
+          </ul>
+        </div>
+        <figure><img loading="lazy" src="../assets/man-nghi-phep.webp" srcset="../assets/man-nghi-phep-w800.webp 800w, ../assets/man-nghi-phep.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="List of leave requests with approve buttons"></figure>
+      </article>
+      <article class="feature">
+        <div class="feature-text">
+          <span class="tag">Period close</span>
+          <h3>Close the period with one button</h3>
+          <p>Approve all attendance for the company or a department, then lock the period so figures can't be changed.</p>
+          <ul>
+            <li>Approve a whole period for 300 employees in under a minute</li>
+            <li>Locking a period blocks edits and new requests into the closed period</li>
+            <li>Late arrival, early leave, and day and night overtime are calculated automatically</li>
+          </ul>
+        </div>
+        <figure><img loading="lazy" src="../assets/man-duyet-cong.webp" srcset="../assets/man-duyet-cong-w800.webp 800w, ../assets/man-duyet-cong.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Dialog to approve a whole period"></figure>
+      </article>
+      <article class="feature">
+        <div class="feature-text">
+          <span class="tag">Payroll</span>
+          <h3>Payroll calculates itself, payslips on the phone</h3>
+          <p>Pay is calculated from closed work days, paid leave and your company's own formulas.</p>
+          <ul>
+            <li>Personal income tax by the 2026 schedule, with personal and dependent deductions; insurance with contribution caps</li>
+            <li>Pay and allowances come from the contract; mid-period raise addenda are still calculated correctly</li>
+            <li>Pay grades by day or by hour, with your own variables and formulas</li>
+            <li>Accountants cannot approve or pay out their own salary</li>
+          </ul>
+        </div>
+        <figure class="phone-pair">
+          <img loading="lazy" src="../assets/dt-phieu-luong.webp" srcset="../assets/dt-phieu-luong-w360.webp 360w, ../assets/dt-phieu-luong.webp 600w" sizes="(max-width: 700px) 45vw, 240px" width="600" height="1298" alt="An employee's payslip on the phone">
+        </figure>
+      </article>
+      <article class="feature">
+        <div class="feature-text">
+          <span class="tag">Reports &amp; security</span>
+          <h3>Clear figures, tight permissions</h3>
+          <p>Everyone sees and does only their own part of the work.</p>
+          <ul>
+            <li>8 Excel reports: HR, attendance, overtime, payroll cost, yearly overview</li>
+            <li>Permissions by role and by department</li>
+            <li>An audit log records every sensitive action; two-factor authentication for administrators</li>
+          </ul>
+        </div>
+        <figure><img loading="lazy" src="../assets/man-nhat-ky.webp" srcset="../assets/man-nhat-ky-w800.webp 800w, ../assets/man-nhat-ky.webp 1400w" sizes="(max-width: 700px) 92vw, 560px" width="1400" height="787" alt="Audit log"></figure>
+      </article>
+    </div>
+    <div class="section-head" style="margin-top:48px">
+      <span class="eyebrow">Employee records</span>
+      <h2>Complete employee records, no extra software</h2>
+    </div>
+    <div class="roles">
+      <div class="role"><h3>Employment contracts</h3><p>Probation, fixed-term and indefinite contracts, addenda, allowances. Reminders before a contract or probation ends.</p></div>
+      <div class="role"><h3>Career history</h3><p>Transfers, promotions and pay grade changes with effective dates; an org chart based on direct managers.</p></div>
+      <div class="role"><h3>Tax &amp; insurance</h3><p>Tax code, social insurance book, and dependents deducted by month; sensitive numbers are masked for people without permission.</p></div>
+      <div class="role"><h3>HR documents</h3><p>ID cards, degrees and signed contracts are stored privately and opened only through temporary links; alerts for documents that are expiring or missing.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="vai-tro">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Who it's for</span>
+      <h2>One job each, one app</h2>
+    </div>
+    <div class="roles">
+      <div class="role"><div class="ic" style="background:var(--blue)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+        <h3>Business owners</h3><p>See at a glance who is at work today and what payroll costs, without asking anyone.</p></div>
+      <div class="role"><div class="ic" style="background:var(--green)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg></div>
+        <h3>HR &amp; accounting</h3><p>No more manual timesheet reconciliation. Close attendance, run payroll and export reports in one sitting.</p></div>
+      <div class="role"><div class="ic" style="background:var(--amber)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h3>Department managers</h3><p>Schedule shifts, approve leave and time corrections for your direct reports right on your phone.</p></div>
+      <div class="role"><div class="ic" style="background:var(--sky)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
+        <h3>Employees</h3><p>Clock in, request leave, swap shifts, check leave balance, payslips, contracts and documents — with just a phone.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Get started</span>
+      <h2>Up and running on day one</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Import employees from Excel</h3><p>Use the ready-made template; preview every row before importing.</p></div>
+      <div class="step"><h3>Create shifts and schedule</h3><p>Define shifts, apply a rotation template or import the roster from Excel.</p></div>
+      <div class="step"><h3>Employees install the app</h3><p>Log in with the issued account, change the password the first time, and start clocking in.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<dialog class="howto" id="howto-ios" aria-labelledby="howto-ios-h">
+  <div class="body">
+    <h3 id="howto-ios-h">Install BossKin on iPhone / iPad</h3>
+    <p class="sub">Do this on the phone you want to install it on.</p>
+    <ol>
+      <li>Tap <b>Open BossKin</b> below — the login page opens in <b>Safari</b>.</li>
+      <li>Tap the <b>Share</b> button (the square with an up arrow) in the bottom bar.</li>
+      <li>Scroll down and choose <b>Add to Home Screen</b>, then tap <b>Add</b>.</li>
+      <li>The BossKin icon appears on your home screen — open it from there and log in.</li>
+    </ol>
+    <div class="acts">
+      <button class="btn btn-plain" type="button" data-close>Close</button>
+      <a class="btn btn-primary js-app" href="/login">Open BossKin</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="howto" id="howto-apk" aria-labelledby="howto-apk-h">
+  <div class="body">
+    <h3 id="howto-apk-h">Install BossKin on Android</h3>
+    <p class="sub">Do this on the phone you want to install it on. The file is about 70 MB — use Wi-Fi.</p>
+    <ol>
+      <li>Tap <b>Download the install file</b> below, wait for it to finish, then tap <b>Open</b>.</li>
+      <li>The phone asks for permission to install from the browser: tap <b>Install</b> → turn on <b>Allow from this source</b> → go back.</li>
+      <li>Tap <b>Install</b>, then tap <b>Open</b>.</li>
+      <li>Log in with the issued account and <b>allow notifications</b> when asked.</li>
+    </ol>
+    <p class="sub" style="margin-bottom:16px">Don't want to install the file? <a href="#" data-howto="android" data-close>Adding a browser shortcut</a> works too.</p>
+    <div class="acts">
+      <button class="btn btn-plain" type="button" data-close>Close</button>
+      <a class="btn btn-primary js-apk" href="#" download>Download the install file</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="howto" id="howto-android" aria-labelledby="howto-android-h">
+  <div class="body">
+    <h3 id="howto-android-h">Install BossKin on Android</h3>
+    <p class="sub">Do this on the phone you want to install it on.</p>
+    <ol>
+      <li>Tap <b>Open BossKin</b> below — the login page opens in <b>Chrome</b>.</li>
+      <li>Tap the <b>three dots ⋮</b> in the top right corner.</li>
+      <li>Choose <b>Add to Home screen</b> (or <b>Install app</b>), then tap <b>Add</b>.</li>
+      <li>The BossKin icon appears on your home screen — open it from there and log in.</li>
+    </ol>
+    <div class="acts">
+      <button class="btn btn-plain" type="button" data-close>Close</button>
+      <a class="btn btn-primary js-app" href="/login">Open BossKin</a>
+    </div>
+  </div>
+</dialog>
+
+<section id="bang-gia">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Pricing</span>
+      <h2>Pay for the employees and features you use</h2>
+    </div>
+    <p class="lead" style="margin:0">Turn on only the features your business needs and pay only for active employees. No time clock to buy, no hidden setup fees.</p>
+    <div class="price-hero"><span class="from">From just</span><span class="num">5,000 VND</span><span class="unit">/ employee / month</span></div>
+    <span class="price-formula">Monthly cost = number of employees × price of the features you turn on</span>
+    <div class="plans">
+      <article class="plan">
+        <h3>Attendance &amp; shifts</h3>
+        <div class="p">From 5,000 VND <small>/ employee / month</small></div>
+        <p class="d">A starter plan for businesses still tracking attendance on paper or Excel.</p>
+        <ul>
+          <li>GPS clock-in on the phone, device binding</li>
+          <li>Shift scheduling, overnight, split and flexible shifts</li>
+          <li>Timesheets, attendance approval, time corrections</li>
+          <li>Excel export / import</li>
+        </ul>
+        <a class="btn btn-primary" href="#lien-he">Free trial</a>
+      </article>
+      <article class="plan hot">
+        <h3>Add leave &amp; payroll</h3>
+        <div class="p">Quote by company size</div>
+        <p class="d">From period close to payslips in one app.</p>
+        <ul>
+          <li>Everything in Attendance &amp; shifts</li>
+          <li>Leave requests, leave balances, shift swaps</li>
+          <li>Payroll, insurance, income tax, custom formulas</li>
+          <li>A payslip for every employee</li>
+        </ul>
+        <a class="btn btn-primary" href="#lien-he">Get a quote</a>
+      </article>
+      <article class="plan">
+        <h3>Full HR</h3>
+        <div class="p">Quote by company size</div>
+        <p class="d">Manage employee records from the day they join until they leave.</p>
+        <ul>
+          <li>Everything in the plans above</li>
+          <li>Employment contracts, addenda, allowances</li>
+          <li>HR documents, expiry alerts</li>
+          <li>Org chart, manager approvals, reports</li>
+        </ul>
+        <a class="btn btn-primary" href="#lien-he">Get a quote</a>
+      </article>
+    </div>
+    <p class="price-note"><strong>1-month free trial</strong> with your real data, with help setting up and <strong>24/7 incident support</strong>. Prices exclude VAT. You can turn each feature on or off at any time.</p>
+  </div>
+</section>
+
+<section id="hoi-dap" style="background:var(--bg-soft)">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">FAQ</span><h2>Frequently asked questions</h2></div>
+    <div class="faq">
+      <details><summary>How is BossKin priced?</summary>
+        <p>Pricing is by number of employees and the features you turn on, from just 5,000 VND per employee per month. You get a 1-month free trial with real data, help with setup and 24/7 incident support, then receive a quote matched to your size and the features you need.</p></details>
+      <details><summary>Do I need to buy a time clock?</summary>
+        <p>No. Employees clock in with their own phones; BossKin checks the GPS location and only accepts the device registered to the account.</p></details>
+      <details><summary>What if an employee changes phones?</summary>
+        <p>An administrator unbinds the device for that employee; the next clock-in on the new phone is bound again. The action is recorded in the audit log.</p></details>
+      <details><summary>Does payroll include insurance and tax?</summary>
+        <p>Yes. Payroll calculates social insurance 8%, health insurance 1.5%, unemployment insurance 1% and progressive personal income tax. You can define your own pay formulas and variables.</p></details>
+      <details><summary>Are overnight, split and flexible shifts supported?</summary>
+        <p>Yes. Up to 4 shifts per day; overnight shifts count night hours correctly; flexible shifts only require the full number of hours within the allowed window.</p></details>
+      <details><summary>What devices does it run on?</summary>
+        <p>An Android app for employees and a web version for managers, HR and accountants on a computer. The interface is available in Vietnamese and English.</p></details>
+      <details><summary>Can I move my existing Excel data over?</summary>
+        <p>Yes. Employees, departments, shifts and rosters can be imported from Excel; every import shows a preview of the changes before saving.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="lien-he" class="contact">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow" style="color:#9cc8ff">Free trial</span>
+      <h2 style="margin-top:12px">Try BossKin with your own company's data</h2>
+      <p>Leave your details and we'll walk you through it: import employees, schedule shifts and run a test period before you decide.</p>
+      <div class="direct" id="direct" hidden></div>
+    </div>
+    <form id="leadForm" name="dung-thu" method="POST" novalidate>
+      <div class="row">
+        <label>Full name<input name="name" required autocomplete="name"></label>
+        <label>Company<input name="company" required autocomplete="organization"></label>
+      </div>
+      <div class="row">
+        <label>Phone number<input name="phone" type="tel" required autocomplete="tel"></label>
+        <label>Email<input name="email" type="email" autocomplete="email"></label>
+      </div>
+      <label>Number of employees
+        <select name="size"><option>Under 20</option><option selected>20 – 100</option><option>100 – 300</option><option>Over 300</option></select>
+      </label>
+      <label>What do you need to solve?<textarea name="need" rows="3" placeholder="Example: attendance for a 2-shift factory, payroll by work days"></textarea></label>
+      <label class="consent"><input type="checkbox" name="consent" value="1"> I agree that BossKin may use the information above to contact me about the trial.</label>
+      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <button class="btn btn-primary" type="submit" style="justify-content:center">Send trial request</button>
+      <p id="formMsg" role="status"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer class="site">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="#"><img src="../assets/logo-80.png" width="38" height="38" alt="">BossKin</a>
+      <p>Time &amp; attendance, shift scheduling, leave and payroll software for Vietnamese businesses. Works on Android phones and the web browser, in Vietnamese and English.</p>
+      <div class="socials">
+        <a class="js-soc" data-key="facebookUrl" href="#" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3H13.5V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"/></svg></a>
+        <a class="js-soc" data-key="tiktokUrl" href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.4 2.1 1.7 3.5 3.9 3.8v3.1a7.2 7.2 0 0 1-3.9-1.2v6.2A5.7 5.7 0 1 1 10.9 9.2v3.2a2.5 2.5 0 1 0 2.5 2.5V3h3.2z"/></svg></a>
+        <a class="js-soc" data-key="youtubeUrl" href="#" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg></a>
+        <a class="js-soc-zalo" href="#" target="_blank" rel="noopener" aria-label="Zalo" title="Zalo" hidden><span class="zalo-txt">Zalo</span></a>
+      </div>
+      <a class="btn btn-primary" href="#lien-he">Start free trial</a>
+    </div>
+    <div class="foot-col">
+      <h2 class="foot-h">Product</h2>
+      <ul>
+        <li><a href="#video">Intro video</a></li>
+        <li><a href="#tinh-nang">Features</a></li>
+        <li><a href="#vai-tro">Who it's for</a></li>
+        <li><a href="#bang-gia">Pricing</a></li>
+        <li><a href="#hoi-dap">FAQ</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h2 class="foot-h">Guides</h2>
+      <ul>
+        <li><a href="../help/bat-dau.html">Getting started</a></li>
+        <li><a href="../help/thong-tin-ca-nhan.html">For employees</a></li>
+        <li><a href="../help/duyet-cho-nhom.html">For managers</a></li>
+        <li><a href="../help/nhan-vien.html">For HR</a></li>
+        <li><a href="../help/bang-luong.html">For accountants</a></li>
+        <li><a href="../help/cau-hoi.html">Frequently asked questions</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h2 class="foot-h">Contact</h2>
+      <ul class="foot-contact">
+        <li class="js-phone" hidden><span class="ic">☎</span><a href="#lien-he"></a></li>
+        <li class="js-zalo" hidden><span class="ic">💬</span><a href="#lien-he" target="_blank" rel="noopener"></a></li>
+        <li class="js-mail" hidden><span class="ic">✉</span><a href="#lien-he"></a></li>
+        <li class="js-nocontact"><span class="ic">✎</span><span>Leave your details in the <a href="#lien-he" style="text-decoration:underline">Free trial</a> section and we'll get in touch.</span></li>
+        <li class="js-app-row"><span class="ic">➜</span><a class="js-app" href="/login">Log in to BossKin</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <div class="wrap"><span>© <span id="yr"></span> BossKin. Accurate attendance · Fast payroll · Easy management.</span><a href="#">Back to top ↑</a></div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var cfg = window.BOSSKIN || {};
+    var L = document.documentElement.lang === 'en' ? 'en' : 'vi';
+    var TXT = {
+      vi: { phone: 'Điện thoại / Zalo', sending: 'Đang gửi…', required: 'Vui lòng nhập họ tên, công ty và số điện thoại.',
+            ok: 'Đã nhận yêu cầu của bạn.', sent: 'Đã nhận yêu cầu của bạn. Chúng tôi sẽ liên hệ qua số điện thoại bạn để lại.',
+            fail: 'Chưa gửi được, vui lòng thử lại.', net: 'Không kết nối được máy chủ, vui lòng thử lại.' },
+      en: { phone: 'Phone / Zalo', sending: 'Sending…', required: 'Please enter your name, company and phone number.',
+            ok: 'We have received your request.', sent: 'We have received your request. We will contact you on the phone number you left.',
+            fail: 'Could not send, please try again.', net: 'Cannot reach the server, please try again.' }
+    }[L];
+    // Nhớ ngôn ngữ người dùng chọn bằng nút VI / EN; trang tiếng Việt tự chuyển sang /en/ nếu đã chọn English
+    try {
+      document.querySelectorAll('.lang-sw').forEach(function (a) { a.addEventListener('click', function () { localStorage.setItem('bk_lang', a.dataset.lang); }); });
+      if (L === 'vi' && localStorage.getItem('bk_lang') === 'en' && !location.hash) location.replace('en/');
+    } catch (e) { /* trình duyệt chặn localStorage: bỏ qua */ }
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    // Menu trên điện thoại: bấm ☰ mở / đóng, bấm một mục thì đóng lại
+    var top = document.querySelector('header.top'), tg = document.querySelector('.nav-toggle');
+    tg.addEventListener('click', function () { var o = top.classList.toggle('open'); tg.setAttribute('aria-expanded', o); tg.textContent = o ? '✕' : '☰'; });
+    document.querySelectorAll('nav.links a').forEach(function (a) { a.addEventListener('click', function () { top.classList.remove('open'); tg.setAttribute('aria-expanded', 'false'); tg.textContent = '☰'; }); });
+    document.querySelectorAll('.js-app').forEach(function (a) { if (cfg.appUrl) a.href = cfg.appUrl; else a.hidden = true; });
+    document.querySelectorAll('.js-app-row').forEach(function (r) { r.hidden = !cfg.appUrl; });
+    // Có apkUrl → nút Android tải file cài; không có → hướng dẫn thêm lối tắt trình duyệt
+    document.querySelectorAll('.js-apk').forEach(function (a) { if (cfg.apkUrl) a.href = cfg.apkUrl; });
+    document.querySelectorAll('.js-apk-on').forEach(function (e) { e.hidden = !cfg.apkUrl; });
+    document.querySelectorAll('.js-apk-off').forEach(function (e) { e.hidden = !!cfg.apkUrl; });
+    // Hộp hướng dẫn cài lối tắt lên màn hình chính (iPhone / Android)
+    document.querySelectorAll('[data-howto]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        if (b.tagName === 'A') e.preventDefault();
+        var d = document.getElementById('howto-' + b.getAttribute('data-howto'));
+        if (d && d.showModal) d.showModal(); else if (cfg.appUrl) location.href = cfg.appUrl;
+      });
+    });
+    document.querySelectorAll('dialog.howto').forEach(function (d) {
+      d.addEventListener('click', function (e) { if (e.target === d || e.target.hasAttribute('data-close')) d.close(); });
+    });
+    var direct = document.getElementById('direct');
+    var lines = [];
+    if (cfg.contactPhone) lines.push(TXT.phone + ': <b>' + cfg.contactPhone + '</b>');
+    if (cfg.contactEmail) lines.push('Email: <b>' + cfg.contactEmail + '</b>');
+    if (lines.length) { direct.innerHTML = lines.join('<br>'); direct.hidden = false; }
+    // Chân trang: điện thoại / Zalo / email / mạng xã hội theo site-config.js; trống thì ẩn
+    function setContact(sel, text, href) { var li = document.querySelector(sel); if (!li || !text) return; var a = li.querySelector('a'); a.textContent = text; a.href = href; li.hidden = false; }
+    var phoneDigits = String(cfg.contactPhone || '').replace(/[^0-9+]/g, '');
+    setContact('.js-phone', cfg.contactPhone, 'tel:' + phoneDigits);
+    setContact('.js-zalo', cfg.contactPhone && 'Zalo ' + cfg.contactPhone, 'https://zalo.me/' + phoneDigits);
+    setContact('.js-mail', cfg.contactEmail, 'mailto:' + cfg.contactEmail);
+    if (cfg.contactPhone || cfg.contactEmail) document.querySelector('.js-nocontact').hidden = true;
+    var anySoc = !!phoneDigits;
+    document.querySelectorAll('.js-soc-zalo').forEach(function (a) { if (phoneDigits) { a.href = 'https://zalo.me/' + phoneDigits; a.hidden = false; } });
+    document.querySelectorAll('.js-soc').forEach(function (a) { var u = cfg[a.dataset.key]; if (u) { a.href = u; a.hidden = false; anySoc = true; } });
+    document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
+
+    var ERR = {
+      vi: {
+        'error.trial.name_required': 'Vui lòng nhập họ tên.',
+        'error.trial.company_required': 'Vui lòng nhập tên công ty.',
+        'error.trial.phone_invalid': 'Số điện thoại chưa đúng.',
+        'error.trial.email_invalid': 'Email chưa đúng.',
+        'error.trial.consent_required': 'Vui lòng đánh dấu đồng ý để được liên hệ.',
+        'error.trial.too_many': 'Bạn đã gửi nhiều lần, vui lòng thử lại sau ít phút.'
+      },
+      en: {
+        'error.trial.name_required': 'Please enter your name.',
+        'error.trial.company_required': 'Please enter your company name.',
+        'error.trial.phone_invalid': 'The phone number is not valid.',
+        'error.trial.email_invalid': 'The email is not valid.',
+        'error.trial.consent_required': 'Please tick the box to agree to be contacted.',
+        'error.trial.too_many': 'You have sent too many requests, please try again in a few minutes.'
+      }
+    }[L];
+    var form = document.getElementById('leadForm'), msg = document.getElementById('formMsg');
+    var btn = form.querySelector('button[type=submit]');
+    function say(text, color) { msg.style.color = color; msg.textContent = text; }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var d = new FormData(form);
+      if (!d.get('name') || !d.get('company') || !d.get('phone')) { say(TXT.required, '#dc2626'); return; }
+      if (!d.get('consent')) { say(ERR['error.trial.consent_required'], '#dc2626'); return; }
+      var body = { fullName: d.get('name'), companyName: d.get('company'), phone: d.get('phone'), email: d.get('email') || null,
+                   companySize: d.get('size'), need: d.get('need') || null, consent: true, website: d.get('website') || '',
+                   source: (location.host + location.pathname).slice(0, 200) };
+      btn.disabled = true; say(TXT.sending, '#475569');
+      // Có backend → lưu vào BossKin; không thì Supabase (/admin → Yêu cầu dùng thử đọc cả hai, xem site-config.js).
+      if (body.website) { form.reset(); say(TXT.ok, '#0f766e'); btn.disabled = false; return; }   // bẫy bot
+      var req = cfg.apiUrl
+        ? fetch(cfg.apiUrl + '/api/v1/public/trial-requests', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept-Language': L }, body: JSON.stringify(body) })
+        : cfg.supabaseUrl
+        ? fetch(cfg.supabaseUrl + '/rest/v1/trial_requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', apikey: cfg.supabaseKey, Prefer: 'return=minimal' },
+            body: JSON.stringify({ full_name: body.fullName, company_name: body.companyName, phone: body.phone, email: body.email,
+                                   company_size: body.companySize, need: body.need, consent: true, source: body.source }) })
+        : Promise.reject(new Error('site-config.js: chưa có apiUrl / supabaseUrl'));
+      req.then(function (r) {
+        if (r.ok) { form.reset(); say(TXT.sent, '#0f766e'); return; }
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          say(ERR[j && j.message] || TXT.fail, '#dc2626');
+        });
+      }).catch(function () { say(TXT.net, '#dc2626'); })
+        .finally(function () { btn.disabled = false; });
+    });
+  })();
+</script>
+</body>
+</html>

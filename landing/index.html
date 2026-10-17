@@ -10,7 +10,11 @@
 <meta property="og:image" content="https://bosskin.io.vn/assets/man-tong-quan.webp">
 <meta property="og:url" content="https://bosskin.io.vn/">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="vi_VN">
 <link rel="canonical" href="https://bosskin.io.vn/">
+<link rel="alternate" hreflang="vi" href="https://bosskin.io.vn/">
+<link rel="alternate" hreflang="en" href="https://bosskin.io.vn/en/">
+<link rel="alternate" hreflang="x-default" href="https://bosskin.io.vn/">
 <link rel="icon" href="assets/logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,11 +61,15 @@
   .brand img { width: 38px; height: 38px; border-radius: 50%; }
   nav.links { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
   nav.links a { text-decoration: none; opacity: .82; } nav.links a:hover { opacity: 1; }
-  header.top .btn { padding: 10px 18px; font-size: 15px; }
+  header.top .btn { padding: 10px 18px; font-size: 15px; white-space: nowrap; }
+  .lang-sw { display: inline-grid; place-items: center; height: 38px; padding: 0 12px; margin-right: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,.28); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; }
+  .lang-sw:hover { background: rgba(255,255,255,.1); }
+  header.top .actions { display: flex; align-items: center; }
   .nav-toggle { display: none; margin-left: 4px; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font-size: 20px; cursor: pointer; }
   @media (max-width: 820px) {
     header.top .wrap { position: relative; }
     nav.links { display: none; } header.top .actions { margin-left: auto; }
+    header.top .wrap { gap: 12px; } header.top .btn { padding: 9px 14px; }
     .nav-toggle { display: inline-grid; place-items: center; }
     header.top.open nav.links { display: flex; flex-direction: column; gap: 0; position: absolute; top: 68px; left: 0; right: 0; margin: 0;
       padding: 6px 20px 14px; background: #0b1630; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); border-bottom: 1px solid rgba(255,255,255,.12); }
@@ -240,7 +248,7 @@
     <nav class="links">
       <a href="#cai-dat">Cài đặt</a><a href="#video">Video</a><a href="#tinh-nang">Tính năng</a><a href="#vai-tro">Cho ai</a><a href="#bang-gia">Bảng giá</a><a href="#hoi-dap">Hỏi đáp</a><a href="help/">Trợ giúp</a>
     </nav>
-    <div class="actions"><a class="btn btn-ghost js-app" href="/login">Đăng nhập</a></div>
+    <div class="actions"><a class="lang-sw" href="en/" hreflang="en" lang="en" data-lang="en" title="English">EN</a><a class="btn btn-ghost js-app" href="/login">Đăng nhập</a></div>
     <button class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
   </div>
 </header>
@@ -668,6 +676,20 @@
 <script>
   (function () {
     var cfg = window.BOSSKIN || {};
+    var L = document.documentElement.lang === 'en' ? 'en' : 'vi';
+    var TXT = {
+      vi: { phone: 'Điện thoại / Zalo', sending: 'Đang gửi…', required: 'Vui lòng nhập họ tên, công ty và số điện thoại.',
+            ok: 'Đã nhận yêu cầu của bạn.', sent: 'Đã nhận yêu cầu của bạn. Chúng tôi sẽ liên hệ qua số điện thoại bạn để lại.',
+            fail: 'Chưa gửi được, vui lòng thử lại.', net: 'Không kết nối được máy chủ, vui lòng thử lại.' },
+      en: { phone: 'Phone / Zalo', sending: 'Sending…', required: 'Please enter your name, company and phone number.',
+            ok: 'We have received your request.', sent: 'We have received your request. We will contact you on the phone number you left.',
+            fail: 'Could not send, please try again.', net: 'Cannot reach the server, please try again.' }
+    }[L];
+    // Nhớ ngôn ngữ người dùng chọn bằng nút VI / EN; trang tiếng Việt tự chuyển sang /en/ nếu đã chọn English
+    try {
+      document.querySelectorAll('.lang-sw').forEach(function (a) { a.addEventListener('click', function () { localStorage.setItem('bk_lang', a.dataset.lang); }); });
+      if (L === 'vi' && localStorage.getItem('bk_lang') === 'en' && !location.hash) location.replace('en/');
+    } catch (e) { /* trình duyệt chặn localStorage: bỏ qua */ }
     document.getElementById('yr').textContent = new Date().getFullYear();
     // Menu trên điện thoại: bấm ☰ mở / đóng, bấm một mục thì đóng lại
     var top = document.querySelector('header.top'), tg = document.querySelector('.nav-toggle');
@@ -692,7 +714,7 @@
     });
     var direct = document.getElementById('direct');
     var lines = [];
-    if (cfg.contactPhone) lines.push('Điện thoại / Zalo: <b>' + cfg.contactPhone + '</b>');
+    if (cfg.contactPhone) lines.push(TXT.phone + ': <b>' + cfg.contactPhone + '</b>');
     if (cfg.contactEmail) lines.push('Email: <b>' + cfg.contactEmail + '</b>');
     if (lines.length) { direct.innerHTML = lines.join('<br>'); direct.hidden = false; }
     // Chân trang: điện thoại / Zalo / email / mạng xã hội theo site-config.js; trống thì ẩn
@@ -708,30 +730,40 @@
     document.querySelectorAll('.socials').forEach(function (s) { s.hidden = !anySoc; });
 
     var ERR = {
-      'error.trial.name_required': 'Vui lòng nhập họ tên.',
-      'error.trial.company_required': 'Vui lòng nhập tên công ty.',
-      'error.trial.phone_invalid': 'Số điện thoại chưa đúng.',
-      'error.trial.email_invalid': 'Email chưa đúng.',
-      'error.trial.consent_required': 'Vui lòng đánh dấu đồng ý để được liên hệ.',
-      'error.trial.too_many': 'Bạn đã gửi nhiều lần, vui lòng thử lại sau ít phút.'
-    };
+      vi: {
+        'error.trial.name_required': 'Vui lòng nhập họ tên.',
+        'error.trial.company_required': 'Vui lòng nhập tên công ty.',
+        'error.trial.phone_invalid': 'Số điện thoại chưa đúng.',
+        'error.trial.email_invalid': 'Email chưa đúng.',
+        'error.trial.consent_required': 'Vui lòng đánh dấu đồng ý để được liên hệ.',
+        'error.trial.too_many': 'Bạn đã gửi nhiều lần, vui lòng thử lại sau ít phút.'
+      },
+      en: {
+        'error.trial.name_required': 'Please enter your name.',
+        'error.trial.company_required': 'Please enter your company name.',
+        'error.trial.phone_invalid': 'The phone number is not valid.',
+        'error.trial.email_invalid': 'The email is not valid.',
+        'error.trial.consent_required': 'Please tick the box to agree to be contacted.',
+        'error.trial.too_many': 'You have sent too many requests, please try again in a few minutes.'
+      }
+    }[L];
     var form = document.getElementById('leadForm'), msg = document.getElementById('formMsg');
     var btn = form.querySelector('button[type=submit]');
     function say(text, color) { msg.style.color = color; msg.textContent = text; }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var d = new FormData(form);
-      if (!d.get('name') || !d.get('company') || !d.get('phone')) { say('Vui lòng nhập họ tên, công ty và số điện thoại.', '#dc2626'); return; }
+      if (!d.get('name') || !d.get('company') || !d.get('phone')) { say(TXT.required, '#dc2626'); return; }
       if (!d.get('consent')) { say(ERR['error.trial.consent_required'], '#dc2626'); return; }
       var body = { fullName: d.get('name'), companyName: d.get('company'), phone: d.get('phone'), email: d.get('email') || null,
                    companySize: d.get('size'), need: d.get('need') || null, consent: true, website: d.get('website') || '',
                    source: (location.host + location.pathname).slice(0, 200) };
-      btn.disabled = true; say('Đang gửi…', '#475569');
+      btn.disabled = true; say(TXT.sending, '#475569');
       // Có backend → lưu vào BossKin; không thì Supabase (/admin → Yêu cầu dùng thử đọc cả hai, xem site-config.js).
-      if (body.website) { form.reset(); say('Đã nhận yêu cầu của bạn.', '#0f766e'); btn.disabled = false; return; }   // bẫy bot
+      if (body.website) { form.reset(); say(TXT.ok, '#0f766e'); btn.disabled = false; return; }   // bẫy bot
       var req = cfg.apiUrl
         ? fetch(cfg.apiUrl + '/api/v1/public/trial-requests', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept-Language': 'vi' }, body: JSON.stringify(body) })
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept-Language': L }, body: JSON.stringify(body) })
         : cfg.supabaseUrl
         ? fetch(cfg.supabaseUrl + '/rest/v1/trial_requests', {
             method: 'POST',
@@ -740,11 +772,11 @@
                                    company_size: body.companySize, need: body.need, consent: true, source: body.source }) })
         : Promise.reject(new Error('site-config.js: chưa có apiUrl / supabaseUrl'));
       req.then(function (r) {
-        if (r.ok) { form.reset(); say('Đã nhận yêu cầu của bạn. Chúng tôi sẽ liên hệ qua số điện thoại bạn để lại.', '#0f766e'); return; }
+        if (r.ok) { form.reset(); say(TXT.sent, '#0f766e'); return; }
         return r.json().catch(function () { return {}; }).then(function (j) {
-          say(ERR[j && j.message] || 'Chưa gửi được, vui lòng thử lại.', '#dc2626');
+          say(ERR[j && j.message] || TXT.fail, '#dc2626');
         });
-      }).catch(function () { say('Không kết nối được máy chủ, vui lòng thử lại.', '#dc2626'); })
+      }).catch(function () { say(TXT.net, '#dc2626'); })
         .finally(function () { btn.disabled = false; });
     });
   })();

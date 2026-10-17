@@ -27,6 +27,8 @@ def url_to_file(url):
     path = url[len(SITE):]
     if path == '/':
         return 'landing/index.html'
+    if path == '/en/':
+        return 'landing/en/index.html'
     if path == '/help/':
         return 'help/index.html'
     m = re.fullmatch(r'/help/([\w-]+\.html)', path)
@@ -70,7 +72,7 @@ def main():
         errors.append(f'{len(urls)} URL > 50.000: cần chia sitemap + sitemap index')
 
     slugs = {re.sub(r'^\d+-', '', f[:-3]) for f in os.listdir(os.path.join(ROOT, 'help', 'src')) if f.endswith('.md')}
-    expected = {SITE + '/', SITE + '/help/'} | {f'{SITE}/help/{s}.html' for s in slugs}
+    expected = {SITE + '/', SITE + '/en/', SITE + '/help/'} | {f'{SITE}/help/{s}.html' for s in slugs}
     if set(urls) != expected:
         errors.append(f'thiếu: {sorted(expected - set(urls))}; thừa: {sorted(set(urls) - expected)} '
                       '(chạy lại python3 help/tools/build_help.py)')

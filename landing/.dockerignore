@@ -3,3 +3,4 @@ supabase/
 help/
 **/README.md
 .dockerignore
+i18n/
