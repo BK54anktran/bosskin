@@ -1,4 +1,23 @@
 {
+ "leave-accrual": {
+  "caption": null,
+  "marks": []
+ },
+ "leave-approve": {
+  "caption": null,
+  "marks": [
+   "Approve",
+   "Reject"
+  ]
+ },
+ "leave-balances-hr": {
+  "caption": null,
+  "marks": []
+ },
+ "leave-types": {
+  "caption": null,
+  "marks": []
+ },
  "shift-assign": {
   "caption": null,
   "marks": [
